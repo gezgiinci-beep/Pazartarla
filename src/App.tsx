@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus, 
   Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, X, 
-  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users 
+  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Send 
 } from 'lucide-react';
 
 // --- ÖRNEK İLAN VERİLERİ (PAZARTARLA) ---
@@ -29,7 +29,7 @@ const INITIAL_LISTINGS = [
   {
     id: 2,
     title: 'Ceviz Hasadı İçin 10 Kişilik Tecrübeli İşçi Ekibi',
-    price: 1200, // Yevmiye veya günlük fiyat temsilî
+    price: 1200,
     category: 'Tarım İşçileri',
     mode: 'Hizmet',
     location: 'Gönen / Balıkesir',
@@ -174,9 +174,9 @@ export default function App() {
       setVerificationCode('');
       setPendingListing(null);
       setActiveTab('home');
-      alert('Telefon numarası doğrulandı ve ilanınız başarıyla yayınlandı!');
+      alert('Onay kodu doğrulandı ve ilanınız başarıyla yayınlandı!');
     } else {
-      alert('Hatalı doğrulama kodu! Lütfen tekrar deneyin.');
+      alert('Hatalı onay kodu! Lütfen tekrar deneyin.');
     }
   };
 
@@ -684,7 +684,7 @@ export default function App() {
                   type="submit" 
                   style={{ flex: 2, backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '14px', borderRadius: '12px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)' }}
                 >
-                  Devam Et & SMS Doğrula
+                  Onay Kodunu Gönder (0535 768 1550)
                 </button>
               </div>
 
@@ -693,28 +693,32 @@ export default function App() {
           </div>
         )}
 
-        {/* TELEFON (SMS) DOĞRULAMA EKRANI */}
+        {/* TELEFON (SMS) DOĞRULAMA EKRANI - CAN'A MESAJ SİMÜLASYONU */}
         {activeTab === 'verify' && (
           <div style={{ maxWidth: '480px', margin: '40px auto', backgroundColor: '#fff', borderRadius: '20px', padding: '32px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0', textAlign: 'center' }}>
             
             <div style={{ backgroundColor: '#e8f8f0', width: '64px', height: '64px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px auto' }}>
-              <Phone size={28} color="#22c55e" />
+              <Send size={28} color="#22c55e" />
             </div>
 
-            <h2 style={{ fontSize: '22px', fontWeight: '800', color: '#0f172a', marginBottom: '8px' }}>Telefon Doğrulama</h2>
-            <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '24px' }}>
-              <strong>{form.phone}</strong> numaralı telefonunuza gönderilen 4 haneli doğrulama kodunu girin.
+            <h2 style={{ fontSize: '22px', fontWeight: '800', color: '#0f172a', marginBottom: '8px' }}>Yönetici Onay Kodu Gönderildi</h2>
+            <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '20px' }}>
+              İlanı onaylamanız için <strong>0535 768 1550</strong> numaralı telefonunuza SMS ile onay kodu iletildi.
             </p>
 
-            <div style={{ backgroundColor: '#fef3c7', border: '1px solid #f59e0b', color: '#b45309', padding: '12px', borderRadius: '8px', fontSize: '14px', marginBottom: '20px' }}>
-              Simülasyon SMS Kodu: <strong>{generatedCode}</strong>
+            {/* Simülasyon SMS Bildirimi (Can'ın telefonu için ekranda beliren simüle mesaj) */}
+            <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #22c55e', color: '#166534', padding: '16px', borderRadius: '12px', fontSize: '14px', marginBottom: '24px', textAlign: 'left' }}>
+              <div style={{ fontWeight: '700', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Send size={14} /> Gelen SMS (0535 768 1550):
+              </div>
+              <div>"PazarTarla Yeni İlan Onay Kodunuz: <strong style={{ fontSize: '16px', color: '#15803d' }}>{generatedCode}</strong>"</div>
             </div>
 
             <form onSubmit={handleConfirmVerification} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <input 
                 type="text" 
                 maxLength={4}
-                placeholder="4 haneli kod"
+                placeholder="4 haneli onay kodu"
                 value={verificationCode}
                 onChange={(e) => setVerificationCode(e.target.value)}
                 style={{ width: '100%', padding: '14px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box', textAlign: 'center', fontSize: '24px', letterSpacing: '8px', fontWeight: 'bold' }}
@@ -730,7 +734,7 @@ export default function App() {
                 onClick={() => setActiveTab('add')}
                 style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}
               >
-                ← Bilgileri Düzenle / Geri Dön
+                ← İlan Bilgilerine Geri Dön
               </button>
             </form>
 
@@ -837,7 +841,7 @@ export default function App() {
             onClick={() => setActiveTab('admin')}
             style={{ background: 'none', border: 'none', color: '#cbd5e1', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '500' }}
           >
-            <Settings size={14} /> Yönetim Paneli (Admin)
+            <Settings size={14} /> Yönetici Paneli (Admin)
           </button>
 
         </div>
