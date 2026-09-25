@@ -5,6 +5,7 @@ import {
   Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image, Bug, Shield 
 } from 'lucide-react';
 
+// Her kategoride garanti örnek ilanlar olması için tam liste
 const INITIAL_LISTINGS = [
   {
     id: 1,
@@ -143,6 +144,7 @@ const INITIAL_LISTINGS = [
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home'); 
+  // Her açılışta veya yenilemede doğrudan güncel örnek ilanları yüklüyoruz
   const [listings, setListings] = useState(INITIAL_LISTINGS);
   const [selectedListing, setSelectedListing] = useState(null);
   
@@ -171,23 +173,9 @@ export default function App() {
   });
 
   useEffect(() => {
-    // Hafızada hiç ilan yoksa veya eski bozuk veri varsa doğrudan INITIAL_LISTINGS yükle
-    const saved = localStorage.getItem('pazartarla_listings');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setListings(parsed);
-        } else {
-          setListings(INITIAL_LISTINGS);
-          localStorage.setItem('pazartarla_listings', JSON.stringify(INITIAL_LISTINGS));
-        }
-      } catch (e) {
-        setListings(INITIAL_LISTINGS);
-      }
-    } else {
-      localStorage.setItem('pazartarla_listings', JSON.stringify(INITIAL_LISTINGS));
-    }
+    // Tarayıcı hafızasını tamamen bypass edip her zaman güncel listeyi yüklüyoruz
+    localStorage.setItem('pazartarla_listings', JSON.stringify(INITIAL_LISTINGS));
+    setListings(INITIAL_LISTINGS);
   }, []);
 
   const saveListings = (newListings) => {
@@ -528,7 +516,7 @@ export default function App() {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {listings.map(item => (
-                    <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                    <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0'}}]}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                         <img src={item.image} alt="" style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover' }} />
                         <div>
@@ -559,7 +547,7 @@ export default function App() {
             </div>
           </div>
           <button onClick={() => setActiveTab('admin')} style={{ background: 'none', border: 'none', color: '#cbd5e1', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '500' }}>
-            <Settings size={14} /> Yönetim Paneli (Admin)
+            <Settings size5={14} /> Yönetim Paneli (Admin)
           </button>
         </div>
       </footer>
