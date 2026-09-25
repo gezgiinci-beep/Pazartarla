@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus, 
   Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, X, 
-  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy 
+  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle 
 } from 'lucide-react';
 
 // --- ÖRNEK İLAN VERİLERİ (PAZARTARLA) ---
@@ -143,7 +143,6 @@ export default function App() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // 1. Aşama: İlan bilgilerini al, SMS kodu üret ve doğrulama ekranına geç
   const handleInitiateAdd = (e) => {
     e.preventDefault();
     if (!form.title || !form.price || !form.phone || !form.seller) {
@@ -167,7 +166,6 @@ export default function App() {
     setActiveTab('verify');
   };
 
-  // 2. Aşama: Girilen SMS kodunu kontrol et ve ilanı yayınla
   const handleConfirmVerification = (e) => {
     e.preventDefault();
     if (verificationCode === generatedCode) {
@@ -194,11 +192,14 @@ export default function App() {
     if (adminPassword === '1234' || adminPassword === 'admin') {
       setIsAdminLoggedIn(true);
     } else {
-      alert('Hatalı şifre! (Deneme şifresi: 1234)');
+      alert('Hatalı şifre!');
     }
   };
 
-  // Sosyal Medya Paylaşım Fonksiyonları
+  const handleForgotPassword = () => {
+    alert('Admin Paneli Şifreniz: 1234');
+  };
+
   const shareOnFacebook = (title) => {
     const url = window.location.href;
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(title)}`, '_blank');
@@ -219,7 +220,6 @@ export default function App() {
     alert('İlan bağlantısı panoya kopyalandı!');
   };
 
-  // Filtreleme Mantığı
   const filteredListings = listings.filter(item => {
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           item.location.toLowerCase().includes(searchQuery.toLowerCase());
@@ -267,7 +267,6 @@ export default function App() {
         {/* LİSTELEME EKRANI */}
         {activeTab === 'home' && (
           <div>
-            {/* Karşılama Başlığı */}
             <div style={{ marginBottom: '32px' }}>
               <h2 style={{ fontSize: '32px', fontWeight: '800', color: '#0f172a', margin: '0 0 8px 0', letterSpacing: '-1px' }}>
                 İlanları keşfet
@@ -280,7 +279,6 @@ export default function App() {
             {/* FİLTRELEME PANELİ */}
             <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', marginBottom: '32px', border: '1px solid #e2e8f0' }}>
               
-              {/* Mod Seçimi (Satılık / Kiralık) */}
               <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', borderBottom: '1px solid #f1f5f9', paddingBottom: '16px' }}>
                 {['Tümü', 'Satılık', 'Kiralık'].map(mode => (
                   <button
@@ -303,10 +301,8 @@ export default function App() {
                 ))}
               </div>
 
-              {/* Arama ve Kriterler */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 200px 200px', gap: '16px', flexWrap: 'wrap' }}>
                 
-                {/* Arama Kutusu */}
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                   <Search size={20} color="#94a3b8" style={{ position: 'absolute', left: '14px' }} />
                   <input 
@@ -326,7 +322,6 @@ export default function App() {
                   />
                 </div>
 
-                {/* Kategori Seçimi */}
                 <select 
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
@@ -346,7 +341,6 @@ export default function App() {
                   <option value="Tarım Ekipmanları">Tarım Ekipmanları</option>
                 </select>
 
-                {/* Şehir Seçimi */}
                 <select 
                   value={selectedCity}
                   onChange={(e) => setSelectedCity(e.target.value)}
@@ -368,7 +362,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Sonuç Sayısı */}
             <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#334155', margin: 0 }}>
                 {filteredListings.length} ilan bulundu
@@ -393,7 +386,6 @@ export default function App() {
                     flexDirection: 'column'
                   }}
                 >
-                  {/* Kart Görseli */}
                   <div style={{ position: 'relative', height: '180px', backgroundColor: '#f1f5f9' }}>
                     <img 
                       src={item.image} 
@@ -420,7 +412,6 @@ export default function App() {
                     )}
                   </div>
 
-                  {/* Kart İçeriği */}
                   <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
                     <div>
                       <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase' }}>
@@ -463,7 +454,6 @@ export default function App() {
                 ← Geri dön
               </button>
 
-              {/* Sosyal Medya Paylaşım Butonları */}
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '600', marginRight: '4px' }}>Paylaş:</span>
                 <button 
@@ -515,7 +505,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Teknik Özellikler Kutusu */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', backgroundColor: '#f8fafc', padding: '20px', borderRadius: '12px', margin: '24px 0' }}>
               <div>
                 <span style={{ fontSize: '12px', color: '#64748b', display: 'block' }}>Yıl</span>
@@ -538,7 +527,6 @@ export default function App() {
               </p>
             </div>
 
-            {/* İletişim & WhatsApp Butonları */}
             <div style={{ display: 'flex', gap: '16px', borderTop: '1px solid #e2e8f0', paddingTop: '24px' }}>
               <a 
                 href={`https://wa.me/905325550192?text=Merhaba, ${selectedListing.title} ilanınız hakkında bilgi almak istiyorum.`} 
@@ -715,7 +703,6 @@ export default function App() {
               <strong>{form.phone}</strong> numaralı telefonunuza gönderilen 4 haneli doğrulama kodunu girin.
             </p>
 
-            {/* Simülasyon Bilgisi */}
             <div style={{ backgroundColor: '#fef3c7', border: '1px solid #f59e0b', color: '#b45309', padding: '12px', borderRadius: '8px', fontSize: '14px', marginBottom: '20px' }}>
               Simülasyon SMS Kodu: <strong>{generatedCode}</strong>
             </div>
@@ -747,7 +734,7 @@ export default function App() {
           </div>
         )}
 
-        {/* ADMIN PANELİ */}
+        {/* ADMIN PANELİ (Şifre Unuttum Özellikli) */}
         {activeTab === 'admin' && (
           <div style={{ maxWidth: '900px', margin: '0 auto', backgroundColor: '#fff', borderRadius: '20px', padding: '32px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0' }}>
             
@@ -757,7 +744,7 @@ export default function App() {
                   <Lock size={28} color="#1b3a2b" />
                 </div>
                 <h2 style={{ fontSize: '22px', fontWeight: '800', color: '#0f172a', marginBottom: '8px' }}>Admin Girişi</h2>
-                <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '24px' }}>Yönetim paneline erişmek için şifrenizi girin (Varsayılan şifre: <strong>1234</strong>)</p>
+                <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '24px' }}>Yönetim paneline erişmek için şifrenizi girin</p>
                 
                 <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <input 
@@ -774,6 +761,17 @@ export default function App() {
                     Giriş Yap
                   </button>
                 </form>
+
+                {/* Şifremi Unuttum Bağlantısı */}
+                <div style={{ marginTop: '16px' }}>
+                  <button 
+                    type="button"
+                    onClick={handleForgotPassword}
+                    style={{ background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer', fontSize: '13px', textDecoration: 'underline' }}
+                  >
+                    Şifremi Unuttum?
+                  </button>
+                </div>
               </div>
             ) : (
               <div>
