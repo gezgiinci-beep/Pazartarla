@@ -1,195 +1,120 @@
 import React, { useState, useEffect } from 'react';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('home'); // 'home' veya 'admin'
+  const [activeTab, setActiveTab] = useState('home');
   const [listings, setListings] = useState([]);
-  const [form, setForm] = useState({ title: '', price: '', category: '', location: '', image: '' });
+  const [form, setForm] = useState({ title: '', price: '', category: '', location: '', description: '' });
 
-  // Sayfa açıldığında kayıtlı ilanları yükle (Eğer yoksa örnek bir tarım ilanı koyalım)
   useEffect(() => {
-    const savedListings = JSON.parse(localStorage.getItem('pazartarla_listings'));
-    if (savedListings && savedListings.length > 0) {
-      setListings(savedListings);
+    const saved = JSON.parse(localStorage.getItem('pazartarla_listings'));
+    if (saved && saved.length > 0) {
+      setListings(saved);
     } else {
-      const defaultListings = [
-        { id: 1, title: 'Chandler Ceviz (Kabuklu)', price: '250 TL/Kg', category: 'Tarım Ürünleri', location: 'Gönen / Balıkesir', image: '' },
-        { id: 2, title: 'Doğal Çiçek Balı', price: '400 TL', category: 'Arıcılık', location: 'Gönen / Kalburcu', image: '' }
+      const initial = [
+        { id: 1, title: 'Chandler Ceviz (5 Yaş / Kalburcu)', price: '250 TL/Kg', category: 'Tarım Ürünleri', location: 'Gönen / Balıkesir', description: 'Özenle yetiştirilmiş kaliteli cevizler.' },
+        { id: 2, title: 'Doğal Çiçek Balı', price: '400 TL', category: 'Arıcılık', location: 'Gönen', description: 'Meşe ağaçları çevresindeki kovanlarımızdan.' }
       ];
-      setListings(defaultListings);
-      localStorage.setItem('pazartarla_listings', JSON.stringify(defaultListings));
+      setListings(initial);
+      localStorage.setItem('pazartarla_listings', JSON.stringify(initial));
     }
   }, []);
 
-  // Form değişikliklerini takip et
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // Yeni ilan ekle
-  const handleAddListing = (e) => {
+  const handleAdd = (e) => {
     e.preventDefault();
     if (!form.title || !form.price) {
-      alert('Lütfen başlık ve fiyat alanlarını doldurun.');
+      alert('Lütfen başlık ve fiyat girin.');
       return;
     }
-
-    const newListings = [...listings, { ...form, id: Date.now() }];
-    setListings(newListings);
-    localStorage.setItem('pazartarla_listings', JSON.stringify(newListings));
-    
-    // Formu sıfırla ve ana sayfaya yönlendir
-    setForm({ title: '', price: '', category: '', location: '', image: '' });
+    const updated = [...listings, { ...form, id: Date.now() }];
+    setListings(updated);
+    localStorage.setItem('pazartarla_listings', JSON.stringify(updated));
+    setForm({ title: '', price: '', category: '', location: '', description: '' });
     setActiveTab('home');
-    alert('İlan başarıyla eklendi!');
   };
 
-  // İlan sil
   const handleDelete = (id) => {
-    const filteredListings = listings.filter(item => item.id !== id);
-    setListings(filteredListings);
-    localStorage.setItem('pazartarla_listings', JSON.stringify(filteredListings));
+    const filtered = listings.filter(item => item.id !== id);
+    setListings(filtered);
+    localStorage.setItem('pazartarla_listings', JSON.stringify(filtered));
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#121212', color: '#e0e0e0', fontFamily: 'Arial, sans-serif' }}>
-      {/* Üst Menü / Header */}
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 40px', borderBottom: '1px solid #333', backgroundColor: '#1e1e1e' }}>
-        <h1 style={{ color: '#27ae60', margin: 0, fontSize: '24px', cursor: 'pointer' }} onClick={() => setActiveTab('home')}>
-          🌿 PazarTarla
+    <div style={{ minHeight: '100vh', backgroundColor: '#f4f7f6', color: '#333', fontFamily: 'Arial, sans-serif' }}>
+      {/* Üst Kısım / Navbar */}
+      <header style={{ backgroundColor: '#2c3e50', color: '#fff', padding: '15px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+        <h1 style={{ margin: 0, fontSize: '22px', cursor: 'pointer', color: '#27ae60' }} onClick={() => setActiveTab('home')}>
+          🌿 PazarTarla Tarım Pazarı
         </h1>
-        <nav style={{ display: 'flex', gap: '15px' }}>
+        <div>
           <button 
             onClick={() => setActiveTab('home')} 
-            style={{ background: activeTab === 'home' ? '#27ae60' : 'transparent', color: activeTab === 'home' ? '#fff' : '#aaa', border: '1px solid #444', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+            style={{ backgroundColor: activeTab === 'home' ? '#27ae60' : 'transparent', color: '#fff', border: '1px solid #27ae60', padding: '8px 16px', marginRight: '10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
           >
-            Ana Sayfa (İlanlar)
+            Ana Sayfa
           </button>
           <button 
             onClick={() => setActiveTab('admin')} 
-            style={{ background: activeTab === 'admin' ? '#27ae60' : 'transparent', color: activeTab === 'admin' ? '#fff' : '#aaa', border: '1px solid #444', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+            style={{ backgroundColor: activeTab === 'admin' ? '#27ae60' : 'transparent', color: '#fff', border: '1px solid #27ae60', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
           >
             Yönetim Paneli (İlan Ekle)
           </button>
-        </nav>
+        </div>
       </header>
 
-      {/* Ana İçerik Alanı */}
-      <main style={{ padding: '30px 40px', maxWidth: '1200px', margin: '0 auto' }}>
-        
-        {/* ANA SAYFA GÖRÜNÜMÜ */}
+      <main style={{ padding: '30px', maxWidth: '1100px', margin: '0 auto' }}>
         {activeTab === 'home' && (
           <div>
-            <div style={{ marginBottom: '30px', textAlign: 'center' }}>
-              <h2 style={{ color: '#fff', fontSize: '28px', marginBottom: '10px' }}>Tarım ve Üretici Pazarı</h2>
-              <p style={{ color: '#aaa' }}>Gönen ve çevresindeki üreticilerin taze ürünleri, cevizler ve doğal mahsuller.</p>
+            <div style={{ textAlign: 'center', marginBottom: '30px', background: '#fff', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+              <h2 style={{ color: '#2c3e50', marginTop: 0 }}>Gönen ve Çevresi Üretici Pazarı</h2>
+              <p style={{ color: '#666' }}>Doğal mahsuller, taze tarım ürünleri ve yerel üreticilerin ilanları.</p>
             </div>
 
-            <h3 style={{ borderBottom: '2px solid #27ae60', paddingBottom: '10px', marginBottom: '20px' }}>Güncel İlanlar ({listings.length})</h3>
+            <h3 style={{ borderBottom: '2px solid #27ae60', paddingBottom: '10px', color: '#2c3e50' }}>Aktif İlanlar ({listings.length})</h3>
             
-            {listings.length === 0 ? (
-              <p style={{ color: '#777', textAlign: 'center', padding: '40px' }}>Henüz sergilenen ilan bulunmuyor.</p>
-            ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
-                {listings.map((item) => (
-                  <div key={item.id} style={{ background: '#1e1e1e', border: '1px solid #333', borderRadius: '8px', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                    <div>
-                      <span style={{ fontSize: '12px', background: '#27ae6033', color: '#27ae60', padding: '3px 8px', borderRadius: '4px', fontWeight: 'bold' }}>
-                        {item.category || 'Genel'}
-                      </span>
-                      <h4 style={{ margin: '15px 0 10px 0', fontSize: '18px', color: '#fff' }}>{item.title}</h4>
-                      <p style={{ margin: '0 0 10px 0', color: '#27ae60', fontSize: '20px', fontWeight: 'bold' }}>{item.price}</p>
-                      <p style={{ margin: 0, color: '#aaa', fontSize: '14px' }}>📍 {item.location || 'Konum belirtilmemiş'}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ADMIN / İLAN EKLEME PANELİ */}
-        {activeTab === 'admin' && (
-          <div style={{ background: '#1e1e1e', padding: '30px', borderRadius: '8px', border: '1px solid #333' }}>
-            <h2 style={{ color: '#fff', borderBottom: '2px solid #27ae60', paddingBottom: '10px', marginTop: 0 }}>
-              PazarTarla - İlan Yönetim Paneli
-            </h2>
-
-            <form onSubmit={handleAddListing} style={{ marginTop: '20px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '8px', color: '#aaa' }}>İlan Başlığı *</label>
-                  <input 
-                    type="text" 
-                    name="title" 
-                    placeholder="Örn: Chandler Ceviz (1. Sınıf)" 
-                    value={form.title} 
-                    onChange={handleChange} 
-                    style={{ width: '100%', padding: '12px', borderRadius: '4px', border: '1px solid #444', backgroundColor: '#121212', color: '#fff' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '8px', color: '#aaa' }}>Fiyat *</label>
-                  <input 
-                    type="text" 
-                    name="price" 
-                    placeholder="Örn: 250 TL / Kg" 
-                    value={form.price} 
-                    onChange={handleChange} 
-                    style={{ width: '100%', padding: '12px', borderRadius: '4px', border: '1px solid #444', backgroundColor: '#121212', color: '#fff' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '8px', color: '#aaa' }}>Kategori</label>
-                  <input 
-                    type="text" 
-                    name="category" 
-                    placeholder="Örn: Tarım Ürünleri / Ceviz" 
-                    value={form.category} 
-                    onChange={handleChange} 
-                    style={{ width: '100%', padding: '12px', borderRadius: '4px', border: '1px solid #444', backgroundColor: '#121212', color: '#fff' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '8px', color: '#aaa' }}>Konum</label>
-                  <input 
-                    type="text" 
-                    name="location" 
-                    placeholder="Örn: Gönen / Balıkesir" 
-                    value={form.location} 
-                    onChange={handleChange} 
-                    style={{ width: '100%', padding: '12px', borderRadius: '4px', border: '1px solid #444', backgroundColor: '#121212', color: '#fff' }}
-                  />
-                </div>
-              </div>
-
-              <button 
-                type="submit" 
-                style={{ background: '#27ae60', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' }}
-              >
-                İlanı Yayınla
-              </button>
-            </form>
-
-            <div style={{ marginTop: '40px' }}>
-              <h3 style={{ color: '#fff', borderBottom: '1px solid #333', paddingBottom: '10px' }}>Mevcut İlanları Yönet / Kaldır</h3>
-              {listings.map((item) => (
-                <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#121212', padding: '15px', borderRadius: '6px', border: '1px solid #333', marginBottom: '10px' }}>
-                  <div>
-                    <h4 style={{ margin: '0 0 5px 0', color: '#fff' }}>{item.title} - <span style={{ color: '#27ae60' }}>{item.price}</span></h4>
-                    <p style={{ margin: 0, color: '#888', fontSize: '13px' }}>{item.location} | {item.category}</p>
-                  </div>
-                  <button 
-                    onClick={() => handleDelete(item.id)}
-                    style={{ background: '#e74c3c', color: 'white', border: 'none', padding: '8px 14px', borderRadius: '4px', cursor: 'pointer' }}
-                  >
-                    Sil
-                  </button>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }}>
+              {listings.map(item => (
+                <div key={item.id} style={{ backgroundColor: '#fff', border: '1px solid #e1e1e1', borderRadius: '8px', padding: '20px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+                  <span style={{ fontSize: '11px', backgroundColor: '#e8f8f0', color: '#27ae60', padding: '4px 8px', borderRadius: '4px', fontWeight: 'bold' }}>
+                    {item.category || 'Genel'}
+                  </span>
+                  <h4 style={{ margin: '15px 0 10px 0', fontSize: '18px', color: '#2c3e50' }}>{item.title}</h4>
+                  <p style={{ fontSize: '20px', color: '#27ae60', fontWeight: 'bold', margin: '0 0 10px 0' }}>{item.price}</p>
+                  <p style={{ fontSize: '13px', color: '#777', margin: '0 0 10px 0' }}>📍 {item.location || 'Konum belirtilmemiş'}</p>
+                  {item.description && <p style={{ fontSize: '14px', color: '#555', margin: 0 }}>{item.description}</p>}
                 </div>
               ))}
             </div>
           </div>
         )}
 
+        {activeTab === 'admin' && (
+          <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+            <h2 style={{ color: '#2c3e50', borderBottom: '2px solid #27ae60', paddingBottom: '10px', marginTop: 0 }}>Yeni İlan Ekleme ve Yönetim</h2>
+            
+            <form onSubmit={handleAdd} style={{ marginTop: '20px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+                <input type="text" name="title" placeholder="İlan Başlığı" value={form.title} onChange={handleChange} style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }} />
+                <input type="text" name="price" placeholder="Fiyat (Örn: 250 TL)" value={form.price} onChange={handleChange} style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }} />
+                <input type="text" name="category" placeholder="Kategori" value={form.category} onChange={handleChange} style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }} />
+                <input type="text" name="location" placeholder="Konum" value={form.location} onChange={handleChange} style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }} />
+              </div>
+              <textarea name="description" placeholder="Açıklama" value={form.description} onChange={handleChange} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc', marginBottom: '15px', height: '80px' }} />
+              <button type="submit" style={{ backgroundColor: '#27ae60', color: '#fff', border: 'none', padding: '12px 20px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>İlanı Kaydet</button>
+            </form>
+
+            <h3 style={{ marginTop: '40px', color: '#2c3e50' }}>Mevcut İlanları Yönet</h3>
+            {listings.map(item => (
+              <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', borderBottom: '1px solid #eee' }}>
+                <span><b>{item.title}</b> - {item.price}</span>
+                <button onClick={() => handleDelete(item.id)} style={{ backgroundColor: '#e74c3c', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}>Sil</button>
+              </div>
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );
