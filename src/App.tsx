@@ -6,66 +6,10 @@ import {
 } from 'lucide-react';
 
 const INITIAL_LISTINGS = [
-  // VETERİNERLER VE HAYVAN SAĞLIĞI (YENİ ANA KATEGORİ)
-  {
-    id: 110,
-    title: 'Gönen Şifa Veteriner Kliniği - 7/24 Büyükbaş & Küçükbaş',
-    price: 500,
-    category: 'Veterinerler ve Hayvan Sağlığı',
-    subCategory: 'Klinik & Koruyucu Hekimlik',
-    mode: 'Hizmet',
-    location: 'Gönen / Balıkesir',
-    city: 'Balıkesir',
-    amount: 'Yerinde / Klinik Muayene',
-    description: 'Büyükbaş ve küçükbaş hayvanlar için suni tohumlama, aşılama, doğum ve cerrahi operasyon hizmetleri.',
-    seller: 'Vet. Hekim Mehmet Can',
-    phone: '0532 444 1968',
-    verified: true,
-    featured: true,
-    image: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-  {
-    id: 111,
-    title: 'Bandırma Öncü Veteriner Deposu - Aşı ve İlaç',
-    price: 1200,
-    category: 'Veterinerler ve Hayvan Sağlığı',
-    subCategory: 'Aşı & İlaç Temini',
-    mode: 'Satılık',
-    location: 'Bandırma / Balıkesir',
-    city: 'Balıkesir',
-    amount: 'Soğuk Zincir Sevkiyat',
-    description: 'Sürü sağlığı için koruyucu aşılar, vitamin kombinasyonları ve antibiyotik tedariği.',
-    seller: 'Öncü Veterinerlik',
-    phone: '0533 222 5566',
-    verified: true,
-    featured: false,
-    image: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-  {
-    id: 112,
-    title: 'Bursa Merinos Veterinerlik ve Sürü Sağlığı',
-    price: 800,
-    category: 'Veterinerler ve Hayvan Sağlığı',
-    subCategory: 'Sürü Sağlığı Yönetimi',
-    mode: 'Hizmet',
-    location: 'Karacabey / Bursa',
-    city: 'Bursa',
-    amount: 'Periyodik Kontrol',
-    description: 'Çiftlikler için paraziter mücadele, tırnak bakımı ve koruyucu hekimlik danışmanlığı.',
-    seller: 'Vet. Hekim Selim Demir',
-    phone: '0542 777 3322',
-    verified: true,
-    featured: false,
-    image: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-
-  // ZİRAİ İLAÇ VE GÜBRELER
+  // 1. ZİRAİ İLAÇ VE GÜBRELER (TÜRKİYE GENELİ BAYİLER VE ADRESLER)
   {
     id: 101,
-    title: 'Gönen Güven Zirai İlaç - Bakır Sülfat ve Fungisit',
+    title: 'Gönen Güven Zirai İlaç ve Gübre Bayii',
     price: 450,
     category: 'Zirai İlaç ve Gübreler',
     subCategory: 'Fungisit & Mantar İlacı',
@@ -73,9 +17,9 @@ const INITIAL_LISTINGS = [
     location: 'Gönen / Balıkesir',
     city: 'Balıkesir',
     amount: '1 Litre / Ambalaj',
-    description: 'Ceviz ve meyve ağaçları için ruhsatlı mantar ve küf önleyici zirai ilaç. Stoktan hemen teslim.',
-    seller: 'Güven Zirai İlaç Bayii',
-    phone: '0532 555 1234',
+    description: 'Kurtuluş Mah. Çiftlik Cad. No:12 Gönen/Balıkesir. Ceviz ve meyve bahçeleri için ruhsatlı mantar, küf önleyici zirai ilaçlar ve taban gübreleri.',
+    seller: 'Güven Zirai İlaç',
+    phone: '0266 762 12 34',
     verified: true,
     featured: true,
     image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
@@ -83,7 +27,7 @@ const INITIAL_LISTINGS = [
   },
   {
     id: 102,
-    title: 'Alaşehir Zengin Tarım - Yaprak Gübresi ve İlaç',
+    title: 'Alaşehir Zengin Tarım - Zirai İlaç ve Gübre',
     price: 680,
     category: 'Zirai İlaç ve Gübreler',
     subCategory: 'Yaprak Gübresi',
@@ -91,9 +35,9 @@ const INITIAL_LISTINGS = [
     location: 'Alaşehir / Manisa',
     city: 'Manisa',
     amount: '5 Litre Bidon',
-    description: 'Yüksek verim sağlayan amino asitli sıvı yaprak gübresi ve bitki koruma ürünleri.',
+    description: 'Kurtuluş Mah. Zeki Üngör Cad. No:2/A Alaşehir/Manisa. Bağ, meyve ve tarla bitkileri için amino asitli sıvı yaprak gübresi ve bitki koruma.',
     seller: 'Zengin Tarım Market',
-    phone: '0532 515 14 95',
+    phone: '0236 653 14 95',
     verified: true,
     featured: true,
     image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
@@ -101,7 +45,7 @@ const INITIAL_LISTINGS = [
   },
   {
     id: 103,
-    title: 'Söke Toprak Tarım - İnsektisit ve Haşere İlacı',
+    title: 'Söke Toprak Tarım - İlaç ve Tohum Deposu',
     price: 520,
     category: 'Zirai İlaç ve Gübreler',
     subCategory: 'İnsektisit (Böcek İlacı)',
@@ -109,9 +53,9 @@ const INITIAL_LISTINGS = [
     location: 'Söke / Aydın',
     city: 'Aydın',
     amount: '1 Litre',
-    description: 'Zararlı böceklere karşı etkili sistemik tarım ilacı. Uzman danışmanlık ile.',
+    description: 'Yenidoğan Mah. İstiklal Cad. No:254 Söke/Aydın. Zararlı böceklere karşı etkili sistemik tarım ilaçları ve sertifikalı tohumlar.',
     seller: 'Toprak Zirai İlaçlama',
-    phone: '0533 241 56 24',
+    phone: '0256 518 56 24',
     verified: true,
     featured: false,
     image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
@@ -119,7 +63,7 @@ const INITIAL_LISTINGS = [
   },
   {
     id: 104,
-    title: 'Bursa Atlantis Tarım - Yabancı Ot (Herbisit) İlacı',
+    title: 'Bursa Atlantis Tarım Zirai İlaç Bayii',
     price: 750,
     category: 'Zirai İlaç ve Gübreler',
     subCategory: 'Herbisit (Ot İlacı)',
@@ -127,16 +71,126 @@ const INITIAL_LISTINGS = [
     location: 'Osmangazi / Bursa',
     city: 'Bursa',
     amount: '3 Litre',
-    description: 'Bahçe aralarındaki yabani otlar için etkili seçici herbisit ilaç.',
+    description: 'Küçükbalıklı Mah. Heybe Sk. No:6 Osmangazi/Bursa. Bahçe aralarındaki yabani otlar için seçici herbisit ilaçlar ve gübre çeşitleri.',
     seller: 'Atlantis Ziraat',
-    phone: '0532 315 70 00',
+    phone: '0224 215 70 00',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 105,
+    title: 'Adana Çukurova Gübre ve Zirai İlaç Pazarı',
+    price: 890,
+    category: 'Zirai İlaç ve Gübreler',
+    subCategory: 'Yaprak Gübresi',
+    mode: 'Satılık',
+    location: 'Seyhan / Adana',
+    city: 'Adana',
+    amount: '10 kg Çuval',
+    description: 'Turunçgil ve sebze üretim bölgeleri için yoğunlaştırılmış NPK taban ve üst gübreleri.',
+    seller: 'Çukurova Tarım',
+    phone: '0322 351 22 33',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 106,
+    title: 'Konya Selçuklu Tarım Market ve İlaçlama',
+    price: 600,
+    category: 'Zirai İlaç ve Gübreler',
+    subCategory: 'Fungisit & Mantar İlacı',
+    mode: 'Satılık',
+    location: 'Selçuklu / Konya',
+    city: 'Konya',
+    amount: '5 Litre',
+    description: 'Buğday, arpa ve mısır ekim alanları için pas ve mantar hastalıklarına karşı etkili bitki koruma çözümleri.',
+    seller: 'Selçuklu Ziraat',
+    phone: '0332 235 44 55',
     verified: true,
     featured: false,
     image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
 
-  // MAHSULLER
+  // 2. VETERİNERLER VE HAYVAN SAĞLIĞI (KLİNİKLER VE DEPOLAR)
+  {
+    id: 110,
+    title: 'Gönen Şifa Veteriner Kliniği (7/24)',
+    price: 500,
+    category: 'Veterinerler ve Hayvan Sağlığı',
+    subCategory: 'Klinik & Koruyucu Hekimlik',
+    mode: 'Hizmet',
+    location: 'Gönen / Balıkesir',
+    city: 'Balıkesir',
+    amount: 'Yerinde / Klinik Muayene',
+    description: 'Kurtuluş Mah. Kızılay Cad. Gönen/Balıkesir. Büyükbaş ve küçükbaş hayvanlar için suni tohumlama, aşılama, doğum ve acil cerrahi.',
+    seller: 'Vet. Hekim Mehmet Can',
+    phone: '0266 762 19 68',
+    verified: true,
+    featured: true,
+    image: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 111,
+    title: 'Bandırma Öncü Veteriner Deposu & Aşı Merkezi',
+    price: 1200,
+    category: 'Veterinerler ve Hayvan Sağlığı',
+    subCategory: 'Aşı & İlaç Temini',
+    mode: 'Satılık',
+    location: 'Bandırma / Balıkesir',
+    city: 'Balıkesir',
+    amount: 'Soğuk Zincir Sevkiyat',
+    description: 'Paşabayır Mah. İstasyon Cad. Bandırma. Sürü sağlığı için koruyucu aşılar, vitamin kombinasyonları ve antibiyotik tedariği.',
+    seller: 'Öncü Veterinerlik',
+    phone: '0266 714 55 66',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 112,
+    title: 'Bursa Karacabey Hayvan Sağlığı ve Veterinerlik',
+    price: 800,
+    category: 'Veterinerler ve Hayvan Sağlığı',
+    subCategory: 'Sürü Sağlığı Yönetimi',
+    mode: 'Hizmet',
+    location: 'Karacabey / Bursa',
+    city: 'Bursa',
+    amount: 'Periyodik Kontrol',
+    description: 'Göztepe Mah. Bursa Cad. Karacabey/Bursa. Çiftlikler için paraziter mücadele, tırnak bakımı ve sürü danışmanlığı.',
+    seller: 'Vet. Hekim Selim Demir',
+    phone: '0224 676 33 22',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 113,
+    title: 'İzmir Tire Süt Sığırcılığı Veteriner Kliniği',
+    price: 750,
+    category: 'Veterinerler ve Hayvan Sağlığı',
+    subCategory: 'Klinik & Koruyucu Hekimlik',
+    mode: 'Hizmet',
+    location: 'Tire / İzmir',
+    city: 'İzmir',
+    amount: 'Sürü Takibi',
+    description: 'Fatih Mah. Dr. Ali Necip Cad. Tire/İzmir. Süt sığırcılığı işletmelerinde mastitis önleme, döl tutma ve koruyucu hekimlik.',
+    seller: 'Tire Veteriner Polikliniği',
+    phone: '0232 512 44 11',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+
+  // 3. DİĞER KATEGORİLER (MAHSULLER, HAYVANLAR, TRAKTÖR VB.)
   {
     id: 1,
     title: 'Bursamızın Meşhur Saplı Tatlı Kirazı',
@@ -317,8 +371,6 @@ const INITIAL_LISTINGS = [
     image: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
-
-  // CANLI HAYVANLAR
   {
     id: 11,
     title: 'Holstein Süt İneği ve Buzağısı',
@@ -409,8 +461,6 @@ const INITIAL_LISTINGS = [
     image: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
-
-  // HAYVAN YEMLERİ VE EKİPMANLARI
   {
     id: 16,
     title: 'Besi Süt Yemi (Çuval 50 kg)',
@@ -447,8 +497,6 @@ const INITIAL_LISTINGS = [
     image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
-
-  // ARICILIK & BAL
   {
     id: 18,
     title: 'Meşe Çiçeği Yayla Süzme Balı (1 Kg)',
@@ -485,8 +533,6 @@ const INITIAL_LISTINGS = [
     image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
-
-  // ARICILIK EKİPMANLARI
   {
     id: 20,
     title: '10 Çerçeveli Boyalı Arı Kovanı',
@@ -523,8 +569,6 @@ const INITIAL_LISTINGS = [
     image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
-
-  // TRAKTÖR
   {
     id: 22,
     title: 'John Deere 6130M - Düşük saat, tek elden',
@@ -561,8 +605,6 @@ const INITIAL_LISTINGS = [
     image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
-
-  // BİÇERDÖVER
   {
     id: 24,
     title: 'New Holland TC 5070 Biçerdöver',
@@ -581,8 +623,6 @@ const INITIAL_LISTINGS = [
     image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
-
-  // TARIM EKİPMANLARI
   {
     id: 25,
     title: 'Tarım Römorku 5 Tonluk',
@@ -619,8 +659,6 @@ const INITIAL_LISTINGS = [
     image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
-
-  // TARIM İŞÇİLERİ
   {
     id: 27,
     title: 'Hasat ve Toplama Ekibi (10 Kişilik)',
@@ -918,7 +956,7 @@ export default function App() {
                   >
                     <div style={{ position: 'relative', width: viewMode === 'Detaylı Liste' ? '110px' : '90px', height: viewMode === 'Detaylı Liste' ? '110px' : '90px', backgroundColor: '#f1f5f9', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
                       <img src={item.image} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      <span style={{ position: 'absolute', top: '4px', left: '4px', backgroundColor: item.mode === 'Satılık' ? '#22c55e' : '#f59e0b', color: '#fff', padding: '2px 5px', borderRadius: '4px', fontSize: '9px', fontWeight: '700' }}>
+                      <span style={{ position: 'absolute', top: '4px', left: '4px', backgroundColor: item.mode === 'Satılık' ? '#22c55e' : item.mode === 'Hizmet' ? '#3b82f6' : '#f59e0b', color: '#fff', padding: '2px 5px', borderRadius: '4px', fontSize: '9px', fontWeight: '700' }}>
                         {item.mode}
                       </span>
                     </div>
@@ -1017,12 +1055,12 @@ export default function App() {
             <form onSubmit={handleDirectAdd} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>İlan Başlığı *</label>
-                <input type="text" name="title" placeholder="Örn: Veteriner Kliniği, Aşı Hizmeti" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                <input type="text" name="title" placeholder="Örn: Zirai İlaç, Veteriner Kliniği" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fiyat / Ücret (TL) *</label>
-                  <input type="number" name="price" placeholder="500" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                  <input type="number" name="price" placeholder="450" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Kategori</label>
@@ -1036,17 +1074,17 @@ export default function App() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Alt Ürün / Hizmet</label>
-                  <input type="text" name="subCategory" placeholder="Klinik" value={form.subCategory} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                  <input type="text" name="subCategory" placeholder="Fungisit" value={form.subCategory} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Bilgi / Miktar</label>
-                  <input type="text" name="amount" placeholder="Muayene" value={form.amount} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                  <input type="text" name="amount" placeholder="1 Litre" value={form.amount} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Veteriner / Klinik Adı *</label>
-                  <input type="text" name="seller" placeholder="Klinik Adı" value={form.seller} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Satıcı / Klinik Adı *</label>
+                  <input type="text" name="seller" placeholder="Bayi / Klinik Adı" value={form.seller} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Telefon *</label>
