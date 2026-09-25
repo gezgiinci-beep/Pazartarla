@@ -3,19 +3,21 @@ import React, { useState, useEffect } from 'react';
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [listings, setListings] = useState([]);
-  const [form, setForm] = useState({ title: '', price: '', category: '', location: '', description: '' });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('Tüm kategoriler');
+  const [form, setForm] = useState({ title: '', price: '', category: 'Traktör', location: 'Gönen / Balıkesir', description: '' });
 
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem('pazartarla_listings'));
+    const saved = JSON.parse(localStorage.getItem('tarlepazar_listings'));
     if (saved && saved.length > 0) {
       setListings(saved);
     } else {
       const initial = [
-        { id: 1, title: 'Chandler Ceviz (5 Yaş / Kalburcu)', price: '250 TL/Kg', category: 'Tarım Ürünleri', location: 'Gönen / Balıkesir', description: 'Özenle yetiştirilmiş kaliteli cevizler.' },
-        { id: 2, title: 'Doğal Çiçek Balı', price: '400 TL', category: 'Arıcılık', location: 'Gönen', description: 'Meşe ağaçları çevresindeki kovanlarımızdan.' }
+        { id: 1, title: 'John Deere 6130M - Düşük saat, tek elden', price: '2.450.000 TL', category: 'Traktör', location: 'Gönen / Balıkesir', description: 'Bakımları yetkili serviste yapılmıştır.' },
+        { id: 2, title: 'New Holland T6050 - Bakımlı ve hazır', price: '1.850.000 TL', category: 'Traktör', location: 'Balıkesir Merkez', description: 'Tarla ve bağ işleri için ideal.' }
       ];
       setListings(initial);
-      localStorage.setItem('pazartarla_listings', JSON.stringify(initial));
+      localStorage.setItem('tarlepazar_listings', JSON.stringify(initial));
     }
   }, []);
 
@@ -31,60 +33,99 @@ export default function App() {
     }
     const updated = [...listings, { ...form, id: Date.now() }];
     setListings(updated);
-    localStorage.setItem('pazartarla_listings', JSON.stringify(updated));
-    setForm({ title: '', price: '', category: '', location: '', description: '' });
+    localStorage.setItem('tarlepazar_listings', JSON.stringify(updated));
+    setForm({ title: '', price: '', category: 'Traktör', location: '', description: '' });
     setActiveTab('home');
+    alert('İlan başarıyla eklendi!');
   };
 
   const handleDelete = (id) => {
     const filtered = listings.filter(item => item.id !== id);
     setListings(filtered);
-    localStorage.setItem('pazartarla_listings', JSON.stringify(filtered));
+    localStorage.setItem('tarlepazar_listings', JSON.stringify(filtered));
   };
 
+  const filteredListings = listings.filter(item => {
+    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) || item.location.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === 'Tüm kategoriler' || item.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f4f7f6', color: '#333', fontFamily: 'Arial, sans-serif' }}>
-      {/* Üst Kısım / Navbar */}
-      <header style={{ backgroundColor: '#2c3e50', color: '#fff', padding: '15px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-        <h1 style={{ margin: 0, fontSize: '22px', cursor: 'pointer', color: '#27ae60' }} onClick={() => setActiveTab('home')}>
-          🌿 PazarTarla Tarım Pazarı
-        </h1>
-        <div>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f8f9fa', color: '#2c3e50', fontFamily: 'Arial, sans-serif' }}>
+      {/* Üst Header */}
+      <header style={{ backgroundColor: '#1e3d2f', color: '#fff', padding: '15px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => setActiveTab('home')}>
+          <span style={{ fontSize: '24px' }}>🚜</span>
+          <h1 style={{ margin: 0, fontSize: '22px', fontWeight: 'bold' }}>TarlaPazar</h1>
+        </div>
+        <div style={{ display: 'flex', gap: '15px' }}>
           <button 
             onClick={() => setActiveTab('home')} 
-            style={{ backgroundColor: activeTab === 'home' ? '#27ae60' : 'transparent', color: '#fff', border: '1px solid #27ae60', padding: '8px 16px', marginRight: '10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+            style={{ backgroundColor: activeTab === 'home' ? '#27ae60' : 'transparent', color: '#fff', border: '1px solid #27ae60', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
           >
-            Ana Sayfa
+            İlanları Keşfet
           </button>
           <button 
             onClick={() => setActiveTab('admin')} 
-            style={{ backgroundColor: activeTab === 'admin' ? '#27ae60' : 'transparent', color: '#fff', border: '1px solid #27ae60', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+            style={{ backgroundColor: activeTab === 'admin' ? '#27ae60' : '#27ae60', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
           >
-            Yönetim Paneli (İlan Ekle)
+            + İlan Ver
           </button>
         </div>
       </header>
 
-      <main style={{ padding: '30px', maxWidth: '1100px', margin: '0 auto' }}>
+      {/* Ana İçerik */}
+      <main style={{ padding: '30px 40px', maxWidth: '1200px', margin: '0 auto' }}>
         {activeTab === 'home' && (
           <div>
-            <div style={{ textAlign: 'center', marginBottom: '30px', background: '#fff', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-              <h2 style={{ color: '#2c3e50', marginTop: 0 }}>Gönen ve Çevresi Üretici Pazarı</h2>
-              <p style={{ color: '#666' }}>Doğal mahsuller, taze tarım ürünleri ve yerel üreticilerin ilanları.</p>
+            <div style={{ marginBottom: '30px' }}>
+              <h2 style={{ fontSize: '28px', color: '#1e3d2f', marginBottom: '8px' }}>İlanları keşfet</h2>
+              <p style={{ color: '#666', margin: 0 }}>Tarlana, işine ve bütçene uygun ekipmanı bul.</p>
             </div>
 
-            <h3 style={{ borderBottom: '2px solid #27ae60', paddingBottom: '10px', color: '#2c3e50' }}>Aktif İlanlar ({listings.length})</h3>
-            
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }}>
-              {listings.map(item => (
-                <div key={item.id} style={{ backgroundColor: '#fff', border: '1px solid #e1e1e1', borderRadius: '8px', padding: '20px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-                  <span style={{ fontSize: '11px', backgroundColor: '#e8f8f0', color: '#27ae60', padding: '4px 8px', borderRadius: '4px', fontWeight: 'bold' }}>
-                    {item.category || 'Genel'}
-                  </span>
-                  <h4 style={{ margin: '15px 0 10px 0', fontSize: '18px', color: '#2c3e50' }}>{item.title}</h4>
-                  <p style={{ fontSize: '20px', color: '#27ae60', fontWeight: 'bold', margin: '0 0 10px 0' }}>{item.price}</p>
-                  <p style={{ fontSize: '13px', color: '#777', margin: '0 0 10px 0' }}>📍 {item.location || 'Konum belirtilmemiş'}</p>
-                  {item.description && <p style={{ fontSize: '14px', color: '#555', margin: 0 }}>{item.description}</p>}
+            {/* Arama ve Filtre Çubuğu */}
+            <div style={{ display: 'flex', gap: '15px', marginBottom: '30px', flexWrap: 'wrap' }}>
+              <input 
+                type="text" 
+                placeholder="Marka, model, şehir ara..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{ flex: 1, minWidth: '280px', padding: '12px 16px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '15px' }}
+              />
+              <select 
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                style={{ padding: '12px 16px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '15px', backgroundColor: '#fff' }}
+              >
+                <option value="Tüm kategoriler">Tüm kategoriler</option>
+                <option value="Traktör">Traktör</option>
+                <option value="Biçerdöver">Biçerdöver</option>
+                <option value="Tarım Ekipmanları">Tarım Ekipmanları</option>
+              </select>
+            </div>
+
+            <h3 style={{ fontSize: '18px', marginBottom: '20px', color: '#333' }}>{filteredListings.length} ilan bulundu</h3>
+
+            {/* İlan Kartları Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+              {filteredListings.map(item => (
+                <div key={item.id} style={{ backgroundColor: '#fff', border: '1px solid #e1e8ed', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <div style={{ height: '180px', backgroundColor: '#e9ecef', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '40px' }}>
+                    🚜
+                  </div>
+                  <div style={{ padding: '20px' }}>
+                    <span style={{ fontSize: '11px', backgroundColor: '#e8f8f0', color: '#27ae60', padding: '4px 8px', borderRadius: '4px', fontWeight: 'bold' }}>
+                      {item.category}
+                    </span>
+                    <h4 style={{ margin: '12px 0 8px 0', fontSize: '17px', color: '#2c3e50', lineHeight: '1.4' }}>{item.title}</h4>
+                    <p style={{ fontSize: '20px', color: '#27ae60', fontWeight: 'bold', margin: '0 0 10px 0' }}>{item.price}</p>
+                    <p style={{ fontSize: '13px', color: '#7f8c8d', margin: '0 0 10px 0' }}>📍 {item.location}</p>
+                    <p style={{ fontSize: '13px', color: '#555', margin: 0 }}>{item.description}</p>
+                  </div>
+                  <div style={{ padding: '12px 20px', borderTop: '1px solid #f1f1f1', display: 'flex', justifyContent: 'flex-end' }}>
+                    <button onClick={() => handleDelete(item.id)} style={{ backgroundColor: '#e74c3c', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>İlanı Kaldır</button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -92,27 +133,42 @@ export default function App() {
         )}
 
         {activeTab === 'admin' && (
-          <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-            <h2 style={{ color: '#2c3e50', borderBottom: '2px solid #27ae60', paddingBottom: '10px', marginTop: 0 }}>Yeni İlan Ekleme ve Yönetim</h2>
+          <div style={{ backgroundColor: '#fff', padding: '40px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', maxWidth: '700px', margin: '0 auto' }}>
+            <h2 style={{ color: '#1e3d2f', marginTop: 0, marginBottom: '20px', borderBottom: '2px solid #27ae60', paddingBottom: '10px' }}>TarlaPazar - Yeni İlan Ver</h2>
             
-            <form onSubmit={handleAdd} style={{ marginTop: '20px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
-                <input type="text" name="title" placeholder="İlan Başlığı" value={form.title} onChange={handleChange} style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }} />
-                <input type="text" name="price" placeholder="Fiyat (Örn: 250 TL)" value={form.price} onChange={handleChange} style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }} />
-                <input type="text" name="category" placeholder="Kategori" value={form.category} onChange={handleChange} style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }} />
-                <input type="text" name="location" placeholder="Konum" value={form.location} onChange={handleChange} style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ccc' }} />
+            <form onSubmit={handleAdd}>
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '6px', fontWeight: 'bold', fontSize: '14px' }}>İlan Başlığı *</label>
+                <input type="text" name="title" placeholder="Örn: New Holland T6050" value={form.title} onChange={handleChange} style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #ccc', boxSizing: 'border-box' }} />
               </div>
-              <textarea name="description" placeholder="Açıklama" value={form.description} onChange={handleChange} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc', marginBottom: '15px', height: '80px' }} />
-              <button type="submit" style={{ backgroundColor: '#27ae60', color: '#fff', border: 'none', padding: '12px 20px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>İlanı Kaydet</button>
-            </form>
 
-            <h3 style={{ marginTop: '40px', color: '#2c3e50' }}>Mevcut İlanları Yönet</h3>
-            {listings.map(item => (
-              <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', borderBottom: '1px solid #eee' }}>
-                <span><b>{item.title}</b> - {item.price}</span>
-                <button onClick={() => handleDelete(item.id)} style={{ backgroundColor: '#e74c3c', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}>Sil</button>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '6px', fontWeight: 'bold', fontSize: '14px' }}>Fiyat (TL) *</label>
+                  <input type="text" name="price" placeholder="Örn: 1.850.000 TL" value={form.price} onChange={handleChange} style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #ccc', boxSizing: 'border-box' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '6px', fontWeight: 'bold', fontSize: '14px' }}>Kategori</label>
+                  <select name="category" value={form.category} onChange={handleChange} style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #ccc', backgroundColor: '#fff', boxSizing: 'border-box' }}>
+                    <option value="Traktör">Traktör</option>
+                    <option value="Biçerdöver">Biçerdöver</option>
+                    <option value="Tarım Ekipmanları">Tarım Ekipmanları</option>
+                  </select>
+                </div>
               </div>
-            ))}
+
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '6px', fontWeight: 'bold', fontSize: '14px' }}>Konum (Şehir / İlçe)</label>
+                <input type="text" name="location" placeholder="Örn: Gönen / Balıkesir" value={form.location} onChange={handleChange} style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #ccc', boxSizing: 'border-box' }} />
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '6px', fontWeight: 'bold', fontSize: '14px' }}>Açıklama</label>
+                <textarea name="description" placeholder="Makinenin durumu, bakımları vb. detaylar..." value={form.description} onChange={handleChange} style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #ccc', height: '100px', boxSizing: 'border-box' }} />
+              </div>
+
+              <button type="submit" style={{ backgroundColor: '#27ae60', color: '#fff', border: 'none', padding: '14px 24px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px', width: '100%' }}>İlanı Yayınla</button>
+            </form>
           </div>
         )}
       </main>
