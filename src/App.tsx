@@ -6,6 +6,80 @@ import {
 } from 'lucide-react';
 
 const INITIAL_LISTINGS = [
+  // ZİRAİ İLAÇ & GÜBRE BAYİLERİ (TÜRKİYE GENELİ)
+  {
+    id: 101,
+    title: 'Gönen Güven Zirai İlaç - Bakır Sülfat ve Fungisit',
+    price: 450,
+    category: 'Zirai İlaç ve Gübre',
+    subCategory: 'Fungisit & Mantar İlacı',
+    mode: 'Satılık',
+    location: 'Gönen / Balıkesir',
+    city: 'Balıkesir',
+    amount: '1 Litre / Ambalaj',
+    description: 'Ceviz ve meyve ağaçları için ruhsatlı mantar ve küf önleyici zirai ilaç. Stoktan hemen teslim.',
+    seller: 'Güven Zirai İlaç Bayii',
+    phone: '0532 555 1234',
+    verified: true,
+    featured: true,
+    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 102,
+    title: 'Alaşehir Zengin Tarım - Yaprak Gübresi ve İlaç',
+    price: 680,
+    category: 'Zirai İlaç ve Gübre',
+    subCategory: 'Yaprak Gübresi',
+    mode: 'Satılık',
+    location: 'Alaşehir / Manisa',
+    city: 'Manisa',
+    amount: '5 Litre Bidon',
+    description: 'Yüksek verim sağlayan amino asitli sıvı yaprak gübresi ve bitki koruma ürünleri.',
+    seller: 'Zengin Tarım Market',
+    phone: '0532 515 14 95',
+    verified: true,
+    featured: true,
+    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 103,
+    title: 'Söke Toprak Tarım - İnsektisit ve Haşere İlacı',
+    price: 520,
+    category: 'Zirai İlaç ve Gübre',
+    subCategory: 'İnsektisit (Böcek İlacı)',
+    mode: 'Satılık',
+    location: 'Söke / Aydın',
+    city: 'Aydın',
+    amount: '1 Litre',
+    description: 'Zararlı böceklere karşı etkili sistemik tarım ilacı. Uzman danışmanlık ile.',
+    seller: 'Toprak Zirai İlaçlama',
+    phone: '0533 241 56 24',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 104,
+    title: 'Bursa Atlantis Tarım - Yabancı Ot İlacı',
+    price: 750,
+    category: 'Zirai İlaç ve Gübre',
+    subCategory: 'Herbisit (Ot İlacı)',
+    mode: 'Satılık',
+    location: 'Osmangazi / Bursa',
+    city: 'Bursa',
+    amount: '3 Litre',
+    description: 'Bahçe aralarındaki yabani otlar için etkili seçici herbisit ilaç.',
+    seller: 'Atlantis Ziraat',
+    phone: '0532 315 70 00',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+
   // MAHSULLER
   {
     id: 1,
@@ -30,7 +104,7 @@ const INITIAL_LISTINGS = [
     title: 'Yediveren Taze Siyah Erik',
     price: 60,
     category: 'Mahsuller',
-    subCategory: 'Kiraz', // Alternatif örnek
+    subCategory: 'Kiraz',
     mode: 'Satılık',
     location: 'Gönen / Balıkesir',
     city: 'Balıkesir',
@@ -53,7 +127,7 @@ const INITIAL_LISTINGS = [
     location: 'Gönen / Balıkesir',
     city: 'Balıkesir',
     amount: '5 Ton',
-    description: 'Tarladan doğrudan taze kesim kavun ve karpuz. Manavlar ve tüccarlar önceliklidir.',
+    description: 'Tarladan doğrudan taze kesim kavun ve karpuz.',
     seller: 'Hüseyin Çiftçi',
     phone: '0533 111 2233',
     verified: true,
@@ -63,24 +137,6 @@ const INITIAL_LISTINGS = [
   },
   {
     id: 4,
-    title: 'Şeker Gibi Tatlı Diyarbakır Karpuzu',
-    price: 12,
-    category: 'Mahsuller',
-    subCategory: 'Karpuz / Kavun',
-    mode: 'Satılık',
-    location: 'Bandırma / Balıkesir',
-    city: 'Balıkesir',
-    amount: '10 Ton',
-    description: 'Kütür kütür, tarladan satış.',
-    seller: 'Mehmet Kaplan',
-    phone: '0542 222 3344',
-    verified: true,
-    featured: false,
-    image: 'https://images.unsplash.com/photo-1563111811-1372580a4a6b?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-  {
-    id: 5,
     title: 'Tarladan Doğrudan Taze Chandler Ceviz',
     price: 140,
     category: 'Mahsuller',
@@ -89,7 +145,7 @@ const INITIAL_LISTINGS = [
     location: 'Gönen / Balıkesir',
     city: 'Balıkesir',
     amount: '1 Ton',
-    description: 'Kendi bahçemizin ürünü, ilaçsız ve dolgun Chandler ceviz. Toptan veya perakende satışımız vardır.',
+    description: 'Kendi bahçemizin ürünü, ilaçsız ve dolgun Chandler ceviz.',
     seller: 'Can İnce',
     phone: '0535 768 1550',
     verified: true,
@@ -98,25 +154,7 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
   {
-    id: 6,
-    title: 'Kabuklu Yerli Mahsul Ceviz',
-    price: 110,
-    category: 'Mahsuller',
-    subCategory: 'Ceviz',
-    mode: 'Satılık',
-    location: 'Susurluk / Balıkesir',
-    city: 'Balıkesir',
-    amount: '750 kg',
-    description: 'İnce kabuk, yüksek iç randımanlı yerli ceviz.',
-    seller: 'Ali Ak',
-    phone: '0532 999 8877',
-    verified: true,
-    featured: false,
-    image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
-    date: 'Dün'
-  },
-  {
-    id: 7,
+    id: 5,
     title: 'Erken Hasat Soğuk Sıkım Sızma Zeytinyağı',
     price: 1250,
     category: 'Mahsuller',
@@ -125,7 +163,7 @@ const INITIAL_LISTINGS = [
     location: 'Burhaniye / Balıkesir',
     city: 'Balıkesir',
     amount: '100 Teneke (5 Lt)',
-    description: 'Asit oranı düşük, kendi zeytinliklerimizden üretilen geleneksel soğuk sıkım saf zeytinyağı.',
+    description: 'Asit oranı düşük, geleneksel soğuk sıkım saf zeytinyağı.',
     seller: 'Hasan Bilir',
     phone: '0532 123 4567',
     verified: true,
@@ -134,25 +172,7 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
   {
-    id: 8,
-    title: 'Domat Siyah Zeytin - Salamura',
-    price: 180,
-    category: 'Mahsuller',
-    subCategory: 'Zeytin & Zeytinyağı',
-    mode: 'Satılık',
-    location: 'Ayvalık / Balıkesir',
-    city: 'Balıkesir',
-    amount: '200 kg',
-    description: 'Katkısız ev yapımı salamura zeytin.',
-    seller: 'Fatma Şen',
-    phone: '0533 444 5566',
-    verified: true,
-    featured: false,
-    image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-  {
-    id: 9,
+    id: 6,
     title: 'Sertifikalı Tohumluk Buğday',
     price: 14,
     category: 'Mahsuller',
@@ -169,28 +189,10 @@ const INITIAL_LISTINGS = [
     image: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
-  {
-    id: 10,
-    title: 'Yemlik Arpa',
-    price: 11,
-    category: 'Mahsuller',
-    subCategory: 'Buğday / Arpa',
-    mode: 'Satılık',
-    location: 'Gönen / Balıkesir',
-    city: 'Balıkesir',
-    amount: '15 Ton',
-    description: 'Temiz elekten geçmiş yemlik arpa.',
-    seller: 'Kemal Güneş',
-    phone: '0535 666 5544',
-    verified: true,
-    featured: false,
-    image: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
 
   // CANLI HAYVANLAR
   {
-    id: 11,
+    id: 7,
     title: 'Holstein Süt İneği ve Buzağısı',
     price: 85000,
     category: 'Canlı Hayvanlar',
@@ -208,25 +210,7 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
   {
-    id: 12,
-    title: 'Besilik Simental Dana',
-    price: 70000,
-    category: 'Canlı Hayvanlar',
-    subCategory: 'Büyükbaş',
-    mode: 'Satılık',
-    location: 'Bandırma / Balıkesir',
-    city: 'Balıkesir',
-    amount: '3 Baş',
-    description: 'Veteriner kontrollü, küpeli besilik danalar.',
-    seller: 'Orhan Koç',
-    phone: '0542 888 7766',
-    verified: true,
-    featured: false,
-    image: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-  {
-    id: 13,
+    id: 8,
     title: 'Damızlık Sağlıklı Koyun ve Kuzu Sürüsü',
     price: 12000,
     category: 'Canlı Hayvanlar',
@@ -235,7 +219,7 @@ const INITIAL_LISTINGS = [
     location: 'Bandırma / Balıkesir',
     city: 'Balıkesir',
     amount: '15 Baş',
-    description: 'Veteriner kontrolleri tam, aşılı ve sağlıklı damızlık koyunlar. Toplu ya da tekli görüşülür.',
+    description: 'Veteriner kontrolleri tam, aşılı ve sağlıklı damızlık koyunlar.',
     seller: 'Mehmet Aksoy',
     phone: '0542 333 4455',
     verified: true,
@@ -244,25 +228,7 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
   {
-    id: 14,
-    title: 'Merinos Damızlık Koç',
-    price: 22000,
-    category: 'Canlı Hayvanlar',
-    subCategory: 'Küçükbaş',
-    mode: 'Satılık',
-    location: 'Gönen / Balıkesir',
-    city: 'Balıkesir',
-    amount: '1 Baş',
-    description: 'Safkan damızlık koç.',
-    seller: 'İsmail Güçlü',
-    phone: '0533 555 4433',
-    verified: true,
-    featured: false,
-    image: 'https://images.unsplash.com/photo-1484557077804-29774de7fc76?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-  {
-    id: 15,
+    id: 9,
     title: 'Atak-S Yumurta Tavuğu',
     price: 250,
     category: 'Canlı Hayvanlar',
@@ -282,7 +248,7 @@ const INITIAL_LISTINGS = [
 
   // HAYVAN YEMLERİ VE EKİPMANLARI
   {
-    id: 16,
+    id: 10,
     title: 'Besi Süt Yemi (Çuval 50 kg)',
     price: 450,
     category: 'Hayvan Yemleri ve Ekipmanları',
@@ -300,7 +266,7 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
   {
-    id: 17,
+    id: 11,
     title: 'Otomatik Büyükbaş Suluk',
     price: 650,
     category: 'Hayvan Yemleri ve Ekipmanları',
@@ -320,7 +286,7 @@ const INITIAL_LISTINGS = [
 
   // ARICILIK & BAL
   {
-    id: 18,
+    id: 12,
     title: 'Meşe Çiçeği Yayla Süzme Balı (1 Kg)',
     price: 400,
     category: 'Arıcılık & Bal',
@@ -338,7 +304,7 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
   {
-    id: 19,
+    id: 13,
     title: 'Karakovan Petek Balı',
     price: 600,
     category: 'Arıcılık & Bal',
@@ -358,7 +324,7 @@ const INITIAL_LISTINGS = [
 
   // ARICILIK EKİPMANLARI
   {
-    id: 20,
+    id: 14,
     title: '10 Çerçeveli Boyalı Arı Kovanı',
     price: 1200,
     category: 'Arıcılık Ekipmanları',
@@ -376,7 +342,7 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
   {
-    id: 21,
+    id: 15,
     title: 'Paslanmaz 4 Çerçeveli Bal Süzme Makinesi',
     price: 4500,
     category: 'Arıcılık Ekipmanları',
@@ -396,7 +362,7 @@ const INITIAL_LISTINGS = [
 
   // TRAKTÖR
   {
-    id: 22,
+    id: 16,
     title: 'John Deere 6130M - Düşük saat, tek elden',
     price: 2450000,
     category: 'Traktör',
@@ -414,7 +380,7 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
   {
-    id: 23,
+    id: 17,
     title: 'Tümosan 8165 Kabinli 4x4',
     price: 980000,
     category: 'Traktör',
@@ -434,7 +400,7 @@ const INITIAL_LISTINGS = [
 
   // BİÇERDÖVER
   {
-    id: 24,
+    id: 18,
     title: 'New Holland TC 5070 Biçerdöver',
     price: 3200000,
     category: 'Biçerdöver',
@@ -454,7 +420,7 @@ const INITIAL_LISTINGS = [
 
   // TARIM EKİPMANLARI
   {
-    id: 25,
+    id: 19,
     title: 'Tarım Römorku 5 Tonluk',
     price: 180000,
     category: 'Tarım Ekipmanları',
@@ -472,7 +438,7 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
   {
-    id: 26,
+    id: 20,
     title: 'Asılır Tip İlaçlama Makinesi 600 Lt',
     price: 65000,
     category: 'Tarım Ekipmanları',
@@ -492,7 +458,7 @@ const INITIAL_LISTINGS = [
 
   // TARIM İŞÇİLERİ
   {
-    id: 27,
+    id: 21,
     title: 'Hasat ve Toplama Ekibi (10 Kişilik)',
     price: 1500,
     category: 'Tarım İşçileri',
@@ -510,7 +476,7 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
   {
-    id: 28,
+    id: 22,
     title: 'Profesyonel Ceviz ve Meyve Budama Ekibi',
     price: 2000,
     category: 'Tarım İşçileri',
@@ -640,15 +606,16 @@ export default function App() {
   };
 
   const categoriesWithSubs = {
-    'Mahsuller': ['Kiraz', 'Karpuz / Kavun', 'Ceviz', 'Zeytin & Zeytinyağı', 'Buğday / Arpa', 'Diğer Mahsul'],
+    'Zirai İlaç ve Gübre': ['Fungisit & Mantar İlacı', 'Yaprak Gübresi', 'İnsektisit (Böcek İlacı)', 'Herbisit (Ot İlacı)'],
+    'Mahsuller': ['Kiraz', 'Karpuz / Kavun', 'Ceviz', 'Zeytin & Zeytinyağı', 'Buğday / Arpa'],
     'Canlı Hayvanlar': ['Büyükbaş', 'Küçükbaş', 'Kanatlı'],
     'Hayvan Yemleri ve Ekipmanları': ['Yem Çeşitleri', 'Suluk / Yemlik'],
-    'Arıcılık & Bal': ['Süzme Bal', 'Karakovan Balı', 'Petek Bal'],
-    'Arıcılık Ekipmanları': ['Kovan', 'Petek ve Çerçeve', 'Bal Süzme Makinesi'],
-    'Traktör': ['İkinci El Traktör', 'Sıfır Traktör'],
+    'Arıcılık & Bal': ['Süzme Bal', 'Karakovan Balı'],
+    'Arıcılık Ekipmanları': ['Kovan', 'Bal Süzme Makinesi'],
+    'Traktör': ['İkinci El Traktör'],
     'Biçerdöver': ['Biçerdöver'],
-    'Tarım Ekipmanları': ['Römork', 'İlaçlama Makinesi', 'Toprak İşleme'],
-    'Tarım İşçileri': ['Hasat Ekibi', 'Budama Ekibi', 'Çoban / Bakıcı']
+    'Tarım Ekipmanları': ['Römork', 'İlaçlama Makinesi'],
+    'Tarım İşçileri': ['Hasat Ekibi', 'Budama Ekibi']
   };
 
   const filteredListings = listings.filter(item => {
@@ -786,7 +753,7 @@ export default function App() {
                   >
                     <div style={{ position: 'relative', width: viewMode === 'Detaylı Liste' ? '110px' : '90px', height: viewMode === 'Detaylı Liste' ? '110px' : '90px', backgroundColor: '#f1f5f9', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
                       <img src={item.image} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      <span style={{ position: 'absolute', top: '4px', left: '4px', backgroundColor: item.mode === 'Satılık' ? '#22c55e' : '#f59e0b', color: '#fff', padding: '2px 5px', borderRadius: '4px', fontSize: '9px', fontWeight: '700' }}>
+                      <span style={{ position: 'absolute', top: '4px', left: '4px', backgroundColor: item.mode === 'Satılık' ? '#22c55e' : '#3b82f6', color: '#fff', padding: '2px 5px', borderRadius: '4px', fontSize: '9px', fontWeight: '700' }}>
                         {item.mode}
                       </span>
                     </div>
@@ -861,7 +828,7 @@ export default function App() {
             <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', margin: '8px 0' }}>{selectedListing.title}</h2>
             {selectedListing.amount && (
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#ecfdf5', color: '#059669', padding: '4px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', marginBottom: '12px', border: '1px solid #a7f3d0' }}>
-                <Package size={14} /> Miktar / Kapasite: {selectedListing.amount}
+                <Package size={14} /> Miktar / Bilgi: {selectedListing.amount}
               </div>
             )}
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '14px' }}>{selectedListing.price.toLocaleString('tr-TR')} TL</div>
@@ -885,7 +852,7 @@ export default function App() {
             <form onSubmit={handleDirectAdd} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>İlan Başlığı *</label>
-                <input type="text" name="title" placeholder="Örn: Kiraz, Zeytinyağı, Traktör" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                <input type="text" name="title" placeholder="Örn: Kiraz, Traktör" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
@@ -904,7 +871,7 @@ export default function App() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Alt Ürün</label>
-                  <input type="text" name="subCategory" placeholder="Kiraz, Ceviz" value={form.subCategory} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                  <input type="text" name="subCategory" placeholder="Ceviz" value={form.subCategory} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Miktar / Kapasite</label>
