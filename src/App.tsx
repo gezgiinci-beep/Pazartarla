@@ -86,7 +86,7 @@ const INITIAL_LISTINGS = [
 ];
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('home'); // 'home', 'detail', 'add', 'verify', 'admin'
+  const [activeTab, setActiveTab] = useState('home'); // 'home', 'detail', 'add', 'whatsapp-pending', 'admin'
   const [listings, setListings] = useState(INITIAL_LISTINGS);
   const [selectedListing, setSelectedListing] = useState(null);
   
@@ -117,9 +117,6 @@ export default function App() {
     image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800'
   });
 
-  // Telefon Doğrulama (SMS) State'leri
-  const [verificationCode, setVerificationCode] = useState('');
-  const [generatedCode, setGeneratedCode] = useState('');
   const [pendingListing, setPendingListing] = useState(null);
 
   // LocalStorage senkronizasyonu
@@ -150,9 +147,6 @@ export default function App() {
       return;
     }
 
-    const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
-    setGeneratedCode(randomCode);
-
     const newEntry = {
       ...form,
       id: Date.now(),
@@ -163,21 +157,15 @@ export default function App() {
     };
 
     setPendingListing(newEntry);
-    setActiveTab('verify');
+    setActiveTab('whatsapp-pending');
   };
 
-  const handleConfirmVerification = (e) => {
-    e.preventDefault();
-    if (verificationCode === generatedCode) {
-      const updated = [pendingListing, ...listings];
-      saveListings(updated);
-      setVerificationCode('');
-      setPendingListing(null);
-      setActiveTab('home');
-      alert('Onay kodu doğrulandı ve ilanınız başarıyla yayınlandı!');
-    } else {
-      alert('Hatalı onay kodu! Lütfen tekrar deneyin.');
-    }
+  const handleFinalPublish = () => {
+    const updated = [pendingListing, ...listings];
+    saveListings(updated);
+    setPendingListing(null);
+    setActiveTab('home');
+    alert('İlan başarıyla onaylandı ve yayına alındı!');
   };
 
   const handleDeleteListing = (id) => {
@@ -649,7 +637,7 @@ export default function App() {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Telefon Numarası (SMS Doğrulama) *</label>
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Telefon Numarası *</label>
                   <input 
                     type="text" 
                     name="phone" 
@@ -682,9 +670,9 @@ export default function App() {
                 </button>
                 <button 
                   type="submit" 
-                  style={{ flex: 2, backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '14px', borderRadius: '12px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)' }}
+                  style={{ flex: 2, backgroundColor: '#25D366', color: '#fff', border: 'none', padding: '14px', borderRadius: '12px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 4px 12px rgba(37, 211, 102, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                 >
-                  Onay Kodunu Gönder (0535 768 1550)
+                  <MessageCircle size={20} /> WhatsApp ile Yöneticiye Gönder
                 </button>
               </div>
 
@@ -693,50 +681,52 @@ export default function App() {
           </div>
         )}
 
-        {/* TELEFON (SMS) DOĞRULAMA EKRANI - CAN'A MESAJ SİMÜLASYONU */}
-        {activeTab === 'verify' && (
-          <div style={{ maxWidth: '480px', margin: '40px auto', backgroundColor: '#fff', borderRadius: '20px', padding: '32px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0', textAlign: 'center' }}>
+        {/* WHATSAPP ONAY BEKLEME EKRANI */}
+        {activeTab === 'whatsapp-pending' && pendingListing && (
+          <div style={{ maxWidth: '520px', margin: '40px auto', backgroundColor: '#fff', borderRadius: '20px', padding: '32px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0', textAlign: 'center' }}>
             
-            <div style={{ backgroundColor: '#e8f8f0', width: '64px', height: '64px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px auto' }}>
-              <Send size={28} color="#22c55e" />
+            <div style={{ backgroundColor: '#dcfce7', width: '64px', height: '64px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px auto' }}>
+              <MessageCircle size={32} color="#16a34a" />
             </div>
 
-            <h2 style={{ fontSize: '22px', fontWeight: '800', color: '#0f172a', marginBottom: '8px' }}>Yönetici Onay Kodu Gönderildi</h2>
-            <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '20px' }}>
-              İlanı onaylamanız için <strong>0535 768 1550</strong> numaralı telefonunuza SMS ile onay kodu iletildi.
+            <h2 style={{ fontSize: '22px', fontWeight: '800', color: '#0f172a', marginBottom: '8px' }}>WhatsApp Onayı Gerekiyor</h2>
+            <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '24px' }}>
+              İlanınızın yayınlanması için yöneticinin (Can - 0535 768 1550) WhatsApp üzerinden onay vermesi gerekmektedir.
             </p>
 
-            {/* Simülasyon SMS Bildirimi (Can'ın telefonu için ekranda beliren simüle mesaj) */}
-            <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #22c55e', color: '#166534', padding: '16px', borderRadius: '12px', fontSize: '14px', marginBottom: '24px', textAlign: 'left' }}>
-              <div style={{ fontWeight: '700', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Send size={14} /> Gelen SMS (0535 768 1550):
-              </div>
-              <div>"PazarTarla Yeni İlan Onay Kodunuz: <strong style={{ fontSize: '16px', color: '#15803d' }}>{generatedCode}</strong>"</div>
+            {/* WhatsApp Mesaj Önizlemesi */}
+            <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', padding: '16px', borderRadius: '12px', fontSize: '13px', textAlign: 'left', marginBottom: '24px', color: '#166534' }}>
+              <strong>Gönderilecek WhatsApp Mesajı:</strong><br/>
+              <em>"Merhaba Can, PazarTarla için yeni ilan onayı bekliyor: <b>{pendingListing.title}</b> - Fiyat: {pendingListing.price} TL - Sahibi: {pendingListing.seller} ({pendingListing.phone})"</em>
             </div>
 
-            <form onSubmit={handleConfirmVerification} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <input 
-                type="text" 
-                maxLength={4}
-                placeholder="4 haneli onay kodu"
-                value={verificationCode}
-                onChange={(e) => setVerificationCode(e.target.value)}
-                style={{ width: '100%', padding: '14px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box', textAlign: 'center', fontSize: '24px', letterSpacing: '8px', fontWeight: 'bold' }}
-              />
-              <button 
-                type="submit"
-                style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '14px', borderRadius: '10px', fontWeight: '700', cursor: 'pointer', fontSize: '16px', boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)' }}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {/* WhatsApp'a Git Butonu */}
+              <a 
+                href={`https://wa.me/905357681550?text=${encodeURIComponent(`Merhaba Can, PazarTarla yeni ilan onayı:\n\nBaşlık: ${pendingListing.title}\nFiyat:${pendingListing.price} TL\nKategori: ${pendingListing.category}\nKonum:${pendingListing.location}\nİletişim: ${pendingListing.seller} (${pendingListing.phone})\n\nOnaylıyorum.`)}`}
+                target="_blank"
+                rel="noreferrer"
+                style={{ backgroundColor: '#25D366', color: '#fff', border: 'none', padding: '14px', borderRadius: '12px', fontWeight: '700', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(37, 211, 102, 0.3)' }}
               >
-                Kodu Onayla ve İlanı Yayınla
+                <MessageCircle size={20} /> WhatsApp'ta Onaya Gönder
+              </a>
+
+              {/* Yönetici Hızlı Onay Butonu (Simülasyon/Test için) */}
+              <button 
+                onClick={handleFinalPublish}
+                style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '14px', borderRadius: '12px', fontWeight: '700', cursor: 'pointer' }}
+              >
+                Yönetici Olarak Onayla ve Yayınla
               </button>
+
               <button 
                 type="button"
                 onClick={() => setActiveTab('add')}
-                style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}
+                style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '13px', fontWeight: '600', marginTop: '8px' }}
               >
-                ← İlan Bilgilerine Geri Dön
+                ← İlan Bilgilerini Düzenle
               </button>
-            </form>
+            </div>
 
           </div>
         )}
@@ -829,9 +819,9 @@ export default function App() {
             <span style={{ color: '#fff', fontWeight: '600' }}>© 2026 PazarTarla - Tüm Hakları Saklıdır.</span>
             <div style={{ display: 'flex', gap: '16px', fontSize: '13px', color: '#cbd5e1' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <Phone size={14} color="#22c55e" /> 0535 768 1550
+                <Phone size=14 color="#22c55e" /> 0535 768 1550
               </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <span style={{ display: 'flex', alignItems: '5px', gap: '5px' }}>
                 <Mail size={14} color="#22c55e" /> gezgiinci@gmail.com
               </span>
             </div>
