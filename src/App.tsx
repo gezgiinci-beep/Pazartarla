@@ -204,29 +204,16 @@ export default function App() {
     alert('Admin Paneli Şifreniz: 1234');
   };
 
-  const categoriesList = [
-    'Tüm kategoriler',
-    'Mahsuller',
-    'Canlı Hayvanlar',
-    'Hayvan Yemleri ve Ekipmanları',
-    'Arıcılık & Bal',
-    'Arıcılık Ekipmanları',
-    'Traktör',
-    'Biçerdöver',
-    'Tarım Ekipmanları',
-    'Tarım İşçileri'
-  ];
-
-  const subCategoriesMap = {
-    'Mahsuller': ['Tümü', 'Kiraz', 'Karpuz / Kavun', 'Ceviz', 'Zeytin & Zeytinyağı', 'Buğday / Arpa', 'Diğer Mahsul'],
-    'Canlı Hayvanlar': ['Tümü', 'Büyükbaş', 'Küçükbaş', 'Kanatlı'],
-    'Hayvan Yemleri ve Ekipmanları': ['Tümü', 'Yem Çeşitleri', 'Suluk / Yemlik'],
-    'Arıcılık & Bal': ['Tümü', 'Süzme Bal', 'Karakovan Balı', 'Petek Bal'],
-    'Arıcılık Ekipmanları': ['Tümü', 'Kovan', 'Petek ve Çerçeve', 'Bal Süzme Makinesi'],
-    'Traktör': ['Tümü', 'İkinci El Traktör', 'Sıfır Traktör'],
-    'Biçerdöver': ['Tümü', 'Biçerdöver'],
-    'Tarım Ekipmanları': ['Tümü', 'Römork', 'İlaçlama Makinesi', 'Toprak İşleme'],
-    'Tarım İşçileri': ['Tümü', 'Hasat Ekibi', 'Budama Ekibi', 'Çoban / Bakıcı']
+  const categoriesWithSubs = {
+    'Mahsuller': ['Kiraz', 'Karpuz / Kavun', 'Ceviz', 'Zeytin & Zeytinyağı', 'Buğday / Arpa', 'Diğer Mahsul'],
+    'Canlı Hayvanlar': ['Büyükbaş', 'Küçükbaş', 'Kanatlı'],
+    'Hayvan Yemleri ve Ekipmanları': ['Yem Çeşitleri', 'Suluk / Yemlik'],
+    'Arıcılık & Bal': ['Süzme Bal', 'Karakovan Balı', 'Petek Bal'],
+    'Arıcılık Ekipmanları': ['Kovan', 'Petek ve Çerçeve', 'Bal Süzme Makinesi'],
+    'Traktör': ['İkinci El Traktör', 'Sıfır Traktör'],
+    'Biçerdöver': ['Biçerdöver'],
+    'Tarım Ekipmanları': ['Römork', 'İlaçlama Makinesi', 'Toprak İşleme'],
+    'Tarım İşçileri': ['Hasat Ekibi', 'Budama Ekibi', 'Çoban / Bakıcı']
   };
 
   const filteredListings = listings.filter(item => {
@@ -285,61 +272,7 @@ export default function App() {
               </p>
             </div>
 
-            {/* ANA KATEGORİLER HIZLI SEÇİM LİSTESİ */}
-            <div style={{ backgroundColor: '#fff', padding: '16px 20px', borderRadius: '16px', boxShadow: '0 4px 15px rgba(0,0,0,0.03)', marginBottom: '16px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <span style={{ fontSize: '13px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Kategoriler</span>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {categoriesList.map(cat => (
-                  <button
-                    key={cat}
-                    onClick={() => { setSelectedCategory(cat); setSelectedSubCategory('Tümü'); }}
-                    style={{
-                      padding: '8px 16px',
-                      borderRadius: '8px',
-                      border: 'none',
-                      fontWeight: selectedCategory === cat ? '700' : '500',
-                      fontSize: '13px',
-                      cursor: 'pointer',
-                      backgroundColor: selectedCategory === cat ? '#1b3a2b' : '#f1f5f9',
-                      color: selectedCategory === cat ? '#fff' : '#334155',
-                      transition: 'all 0.2s',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px'
-                    }}
-                  >
-                    {cat} {selectedCategory === cat && <Check size={14} />}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* ALT KATEGORİLER */}
-            {selectedCategory !== 'Tüm kategoriler' && subCategoriesMap[selectedCategory] && (
-              <div style={{ backgroundColor: '#f1f5f9', padding: '12px 20px', borderRadius: '12px', marginBottom: '20px', display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', border: '1px solid #cbd5e1' }}>
-                <span style={{ fontSize: '13px', fontWeight: '700', color: '#334155', marginRight: '8px' }}>{selectedCategory} Çeşitleri:</span>
-                {subCategoriesMap[selectedCategory].map(sub => (
-                  <button
-                    key={sub}
-                    onClick={() => setSelectedSubCategory(sub)}
-                    style={{
-                      padding: '6px 14px',
-                      borderRadius: '6px',
-                      border: 'none',
-                      fontWeight: selectedSubCategory === sub ? '700' : '500',
-                      fontSize: '12px',
-                      cursor: 'pointer',
-                      backgroundColor: selectedSubCategory === sub ? '#22c55e' : '#fff',
-                      color: selectedSubCategory === sub ? '#fff' : '#475569',
-                      boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-                    }}
-                  >
-                    {sub}
-                  </button>
-                ))}
-              </div>
-            )}
-
+            {/* ARAMA VE MOD ÇUBUĞU */}
             <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', marginBottom: '32px', border: '1px solid #e2e8f0' }}>
               <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', borderBottom: '1px solid #f1f5f9', paddingBottom: '16px', flexWrap: 'wrap' }}>
                 {['Tümü', 'Satılık', 'Kiralık', 'Hizmet'].map(mode => (
@@ -395,47 +328,143 @@ export default function App() {
               </div>
             </div>
 
-            <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#334155', margin: 0 }}>
-                {filteredListings.length} ilan bulundu
-              </h3>
-            </div>
+            {/* ANA YAPI: SOLA DİKEY KATEGORİ AĞACI, SAĞA İLANLAR */}
+            <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: '32px', alignItems: 'start' }}>
+              
+              {/* SOL DİKEY KATEGORİ AĞACI (SAHİBİNDEN TARZI) */}
+              <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
+                <h3 style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b', margin: '0 0 16px 0', borderBottom: '2px solid #22c55e', paddingBottom: '8px' }}>
+                  Kategoriler
+                </h3>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }}>
-              {filteredListings.map(item => (
                 <div 
-                  key={item.id} 
-                  onClick={() => { setSelectedListing(item); setActiveTab('detail'); }}
-                  style={{ backgroundColor: '#fff', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
+                  onClick={() => { setSelectedCategory('Tüm kategoriler'); setSelectedSubCategory('Tümü'); }}
+                  style={{ 
+                    padding: '8px 12px', 
+                    borderRadius: '8px', 
+                    cursor: 'pointer', 
+                    fontWeight: selectedCategory === 'Tüm kategoriler' ? '800' : '600', 
+                    color: selectedCategory === 'Tüm kategoriler' ? '#22c55e' : '#334155',
+                    backgroundColor: selectedCategory === 'Tüm kategoriler' ? '#f0fdf4' : 'transparent',
+                    marginBottom: '8px',
+                    fontSize: '14px'
+                  }}
                 >
-                  <div style={{ position: 'relative', height: '180px', backgroundColor: '#f1f5f9' }}>
-                    <img src={item.image} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    <span style={{ position: 'absolute', top: '12px', left: '12px', backgroundColor: item.mode === 'Satılık' ? '#22c55e' : item.mode === 'Kiralık' ? '#f59e0b' : '#3b82f6', color: '#fff', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '700' }}>
-                      {item.mode}
-                    </span>
-                  </div>
-                  <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
-                    <div>
-                      <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase' }}>{item.category} {item.subCategory ? `> ${item.subCategory}` : ''}</span>
-                      <h4 style={{ margin: '6px 0 8px 0', fontSize: '16px', fontWeight: '700', color: '#0f172a', lineHeight: '1.4' }}>{item.title}</h4>
-                      {item.amount && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#059669', fontWeight: '600', marginBottom: '8px' }}>
-                          <Package size={14} /> Miktar / Detay: {item.amount}
+                  Tüm Kategoriler
+                </div>
+
+                {Object.keys(categoriesWithSubs).map(cat => {
+                  const isCatSelected = selectedCategory === cat;
+                  return (
+                    <div key={cat} style={{ marginBottom: '8px' }}>
+                      <div 
+                        onClick={() => { setSelectedCategory(cat); setSelectedSubCategory('Tümü'); }}
+                        style={{ 
+                          padding: '8px 12px', 
+                          borderRadius: '8px', 
+                          cursor: 'pointer', 
+                          fontWeight: isCatSelected ? '800' : '600', 
+                          color: isCatSelected ? '#22c55e' : '#1e293b',
+                          backgroundColor: isCatSelected ? '#f0fdf4' : 'transparent',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          fontSize: '14px'
+                        }}
+                      >
+                        <span>{cat}</span>
+                        <ChevronRight size={14} style={{ transform: isCatSelected ? 'rotate(90deg)' : 'none', transition: '0.2s' }} />
+                      </div>
+
+                      {/* ALT KATEGORİLER ALT ALTA LİSTE */}
+                      {isCatSelected && (
+                        <div style={{ paddingLeft: '16px', marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '4px', borderLeft: '2px solid #22c55e', marginLeft: '12px' }}>
+                          <div 
+                            onClick={() => setSelectedSubCategory('Tümü')}
+                            style={{ 
+                              padding: '6px 10px', 
+                              borderRadius: '6px', 
+                              cursor: 'pointer', 
+                              fontSize: '13px', 
+                              fontWeight: selectedSubCategory === 'Tümü' ? '700' : '500',
+                              color: selectedSubCategory === 'Tümü' ? '#22c55e' : '#64748b' 
+                            }}
+                          >
+                            Tümü ({cat})
+                          </div>
+                          {categoriesWithSubs[cat].map(sub => {
+                            const isSubSelected = selectedSubCategory === sub;
+                            return (
+                              <div 
+                                key={sub}
+                                onClick={() => setSelectedSubCategory(sub)}
+                                style={{ 
+                                  padding: '6px 10px', 
+                                  borderRadius: '6px', 
+                                  cursor: 'pointer', 
+                                  fontSize: '13px', 
+                                  fontWeight: isSubSelected ? '700' : '500',
+                                  color: isSubSelected ? '#22c55e' : '#64748b',
+                                  backgroundColor: isSubSelected ? '#f8fafc' : 'transparent'
+                                }}
+                              >
+                                • {sub}
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
-                    <div>
-                      <div style={{ fontSize: '20px', fontWeight: '800', color: '#1b3a2b', marginBottom: '12px' }}>
-                        {item.price.toLocaleString('tr-TR')} TL
+                  );
+                })}
+              </div>
+
+              {/* SAĞ TARAF: İLAN LİSTESİ */}
+              <div>
+                <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#334155', margin: 0 }}>
+                    {filteredListings.length} ilan bulundu
+                  </h3>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '20px' }}>
+                  {filteredListings.map(item => (
+                    <div 
+                      key={item.id} 
+                      onClick={() => { setSelectedListing(item); setActiveTab('detail'); }}
+                      style={{ backgroundColor: '#fff', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
+                    >
+                      <div style={{ position: 'relative', height: '180px', backgroundColor: '#f1f5f9' }}>
+                        <img src={item.image} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <span style={{ position: 'absolute', top: '12px', left: '12px', backgroundColor: item.mode === 'Satılık' ? '#22c55e' : item.mode === 'Kiralık' ? '#f59e0b' : '#3b82f6', color: '#fff', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '700' }}>
+                          {item.mode}
+                        </span>
                       </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #f1f5f9', paddingTop: '12px', fontSize: '13px', color: '#64748b' }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {item.location}</span>
-                        <span>{item.date}</span>
+                      <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
+                        <div>
+                          <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase' }}>{item.category} {item.subCategory ? `> ${item.subCategory}` : ''}</span>
+                          <h4 style={{ margin: '6px 0 8px 0', fontSize: '15px', fontWeight: '700', color: '#0f172a', lineHeight: '1.4' }}>{item.title}</h4>
+                          {item.amount && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#059669', fontWeight: '600', marginBottom: '8px' }}>
+                              <Package size={13} /> Miktar / Detay: {item.amount}
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '18px', fontWeight: '800', color: '#1b3a2b', marginBottom: '10px' }}>
+                            {item.price.toLocaleString('tr-TR')} TL
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #f1f5f9', paddingTop: '10px', fontSize: '12px', color: '#64748b' }}>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={13} /> {item.location}</span>
+                            <span>{item.date}</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
+              </div>
+
             </div>
           </div>
         )}
@@ -481,7 +510,7 @@ export default function App() {
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Kategori</label>
                   <select name="category" value={form.category} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', backgroundColor: '#fff' }}>
-                    {categoriesList.filter(c => c !== 'Tüm kategoriler').map(cat => (
+                    {Object.keys(categoriesWithSubs).map(cat => (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </select>
@@ -493,7 +522,7 @@ export default function App() {
                   <input type="text" name="subCategory" placeholder="Örn: Kiraz, Ceviz, Süt Yemi vb." value={form.subCategory} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Miktar / Kapasite (Kaç ton, kg, dönüm vb.)</label>
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Miktar / Kapasite (Kaç ton, kg vb.)</label>
                   <input type="text" name="amount" placeholder="Örn: 5 Ton veya 500 kg" value={form.amount} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
                 </div>
               </div>
