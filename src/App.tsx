@@ -136,7 +136,7 @@ export default function App() {
     category: 'Mahsuller',
     subCategory: 'Ceviz',
     mode: 'Satılık',
-    location: 'Gönen / Balıkesir',
+    location: 'Türkiye Geneli',
     city: 'Balıkesir',
     amount: '',
     description: '',
@@ -233,7 +233,7 @@ export default function App() {
           </div>
           <div>
             <h1 style={{ margin: 0, fontSize: '18px', fontWeight: '800', letterSpacing: '-0.5px' }}>PazarTarla</h1>
-            <span style={{ fontSize: '10px', color: '#86efac', display: 'block' }}>Tarım Pazaryeri</span>
+            <span style={{ fontSize: '10px', color: '#86efac', display: 'block' }}>Türkiye Geneli Tarım Pazaryeri</span>
           </div>
         </div>
 
@@ -247,22 +247,22 @@ export default function App() {
         </div>
       </header>
 
-      {/* ANA İÇERİK - KESİNLİKLE TEK SÜTUN VE MOBİL UYUMLU */}
+      {/* ANA İÇERİK */}
       <main style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '12px', flex: 1, boxSizing: 'border-box' }}>
         
-        {/* 1. EKRAN: KATEGORİ SEÇİMİ (SAHİBİNDEN MOBİL GÖRÜNÜMÜ) */}
+        {/* 1. EKRAN: KATEGORİ SEÇİMİ */}
         {activeTab === 'home' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflow: 'hidden', border: '1px solid #e2e8f0', width: '100%', boxSizing: 'border-box' }}>
             <div style={{ backgroundColor: '#1b3a2b', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <Menu size={20} />
-              <span style={{ fontSize: '16px', fontWeight: '700' }}>Kategori Seçimi</span>
+              <span style={{ fontSize: '16px', fontWeight: '700' }}>Kategori Seçimi (Türkiye Geneli)</span>
             </div>
 
             <div 
               onClick={() => { setSelectedCategory('Tüm kategoriler'); setSelectedSubCategory('Tümü'); setActiveTab('results'); }}
               style={{ padding: '14px 16px', borderBottom: '1px solid #edf2f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', backgroundColor: '#f8fafc' }}
             >
-              <span style={{ fontWeight: '700', color: '#1b3a2b', fontSize: '15px' }}>Tüm Tarım İlanları</span>
+              <span style={{ fontWeight: '700', color: '#1b3a2b', fontSize: '15px' }}>Tüm Türkiye Tarım İlanları</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#22c55e', fontWeight: '700', fontSize: '14px' }}>
                 <span>({listings.length})</span>
                 <ChevronRight size={18} />
@@ -305,7 +305,7 @@ export default function App() {
           </div>
         )}
 
-        {/* 2. EKRAN: ARAMA SONUÇLARI (ÜSTTE FİLTRELE, SIRALA, GÖRÜNÜM) */}
+        {/* 2. EKRAN: ARAMA SONUÇLARI */}
         {activeTab === 'results' && (
           <div style={{ width: '100%', boxSizing: 'border-box' }}>
             <div style={{ backgroundColor: '#1b3a2b', color: '#fff', borderRadius: '10px', padding: '10px 14px', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
@@ -545,7 +545,7 @@ export default function App() {
       </main>
 
       <footer style={{ backgroundColor: '#1b3a2b', color: '#94a3b8', padding: '14px', textAlign: 'center', fontSize: '11px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 'auto', boxSizing: 'border-box', width: '100%' }}>
-        <span>© 2026 PazarTarla • Gönen / Balıkesir</span>
+        <span>© 2026 PazarTarla • Türkiye Geneli Tarım ve Hayvancılık Pazaryeri</span>
       </footer>
 
     </div>
