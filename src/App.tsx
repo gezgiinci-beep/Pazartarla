@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 
 const INITIAL_LISTINGS = [
-  // TÜRKİYE GENELİ ZİRAİ İLAÇ VE GÜBRE BAYİLERİ
+  // TÜRKİYE GENELİ ZİRAİ İLAÇ VE GÜBRE BAYİLERİ (DOĞRU ALT KATEGORİ DAĞILIMI)
   {
     id: 101,
     title: 'Gönen Güven Zirai İlaç ve Gübre Bayii',
