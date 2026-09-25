@@ -6,40 +6,41 @@ import {
 } from 'lucide-react';
 
 const INITIAL_LISTINGS = [
+  // MAHSULLER
   {
     id: 1,
-    title: 'John Deere 6130M - Düşük saat, tek elden',
-    price: 2450000,
-    category: 'Traktör',
-    subCategory: 'Traktör',
+    title: 'Bursamızın Meşhur Saplı Tatlı Kirazı',
+    price: 90,
+    category: 'Mahsuller',
+    subCategory: 'Kiraz',
     mode: 'Satılık',
-    location: 'Gönen / Balıkesir',
-    city: 'Balıkesir',
-    amount: '1200 Çalışma Saati / 130 HP',
-    description: 'Kapalı garaj traktörüdür. Tüm bakımları yetkili serviste yapılmıştır. Hiçbir masrafı yoktur.',
-    seller: 'Ahmet Yılmaz',
-    phone: '0532 555 0192',
+    location: 'Karacabey / Bursa',
+    city: 'Bursa',
+    amount: '500 kg',
+    description: 'İhracat kalitesinde iri cins, taze hasat tatlı kiraz. Soğuk zincir araçlarla sevkiyat yapılır.',
+    seller: 'İbrahim Demir',
+    phone: '0532 444 5566',
     verified: true,
     featured: true,
-    image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
+    image: 'https://images.unsplash.com/photo-1528821151447-11f211b5e5a7?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
   {
     id: 2,
-    title: 'Tarladan Doğrudan Taze Chandler Ceviz',
-    price: 140,
+    title: 'Yediveren Taze Siyah Erik',
+    price: 60,
     category: 'Mahsuller',
-    subCategory: 'Ceviz',
+    subCategory: 'Kiraz', // Alternatif örnek
     mode: 'Satılık',
     location: 'Gönen / Balıkesir',
     city: 'Balıkesir',
-    amount: '1 Ton',
-    description: 'Kendi bahçemizin ürünü, ilaçsız ve dolgun Chandler ceviz. Toptan veya perakende satışımız vardır.',
-    seller: 'Can İnce',
-    phone: '0535 768 1550',
+    amount: '300 kg',
+    description: 'Bahçeden taze toplama mis kokulu erik.',
+    seller: 'Ahmet Çiftçi',
+    phone: '0532 111 2233',
     verified: true,
-    featured: true,
-    image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1563111811-1372580a4a6b?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
   {
@@ -62,24 +63,60 @@ const INITIAL_LISTINGS = [
   },
   {
     id: 4,
-    title: 'Bursamızın Meşhur Saplı Tatlı Kirazı',
-    price: 90,
+    title: 'Şeker Gibi Tatlı Diyarbakır Karpuzu',
+    price: 12,
     category: 'Mahsuller',
-    subCategory: 'Kiraz',
+    subCategory: 'Karpuz / Kavun',
     mode: 'Satılık',
-    location: 'Karacabey / Bursa',
-    city: 'Bursa',
-    amount: '500 kg',
-    description: 'İhracat kalitesinde iri cins, taze hasat tatlı kiraz. Soğuk zincir araçlarla sevkiyat yapılır.',
-    seller: 'İbrahim Demir',
-    phone: '0532 444 5566',
+    location: 'Bandırma / Balıkesir',
+    city: 'Balıkesir',
+    amount: '10 Ton',
+    description: 'Kütür kütür, tarladan satış.',
+    seller: 'Mehmet Kaplan',
+    phone: '0542 222 3344',
     verified: true,
-    featured: true,
-    image: 'https://images.unsplash.com/photo-1528821151447-11f211b5e5a7?auto=format&fit=crop&q=80&w=800',
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1563111811-1372580a4a6b?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
   {
     id: 5,
+    title: 'Tarladan Doğrudan Taze Chandler Ceviz',
+    price: 140,
+    category: 'Mahsuller',
+    subCategory: 'Ceviz',
+    mode: 'Satılık',
+    location: 'Gönen / Balıkesir',
+    city: 'Balıkesir',
+    amount: '1 Ton',
+    description: 'Kendi bahçemizin ürünü, ilaçsız ve dolgun Chandler ceviz. Toptan veya perakende satışımız vardır.',
+    seller: 'Can İnce',
+    phone: '0535 768 1550',
+    verified: true,
+    featured: true,
+    image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 6,
+    title: 'Kabuklu Yerli Mahsul Ceviz',
+    price: 110,
+    category: 'Mahsuller',
+    subCategory: 'Ceviz',
+    mode: 'Satılık',
+    location: 'Susurluk / Balıkesir',
+    city: 'Balıkesir',
+    amount: '750 kg',
+    description: 'İnce kabuk, yüksek iç randımanlı yerli ceviz.',
+    seller: 'Ali Ak',
+    phone: '0532 999 8877',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
+    date: 'Dün'
+  },
+  {
+    id: 7,
     title: 'Erken Hasat Soğuk Sıkım Sızma Zeytinyağı',
     price: 1250,
     category: 'Mahsuller',
@@ -97,7 +134,99 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
   {
-    id: 6,
+    id: 8,
+    title: 'Domat Siyah Zeytin - Salamura',
+    price: 180,
+    category: 'Mahsuller',
+    subCategory: 'Zeytin & Zeytinyağı',
+    mode: 'Satılık',
+    location: 'Ayvalık / Balıkesir',
+    city: 'Balıkesir',
+    amount: '200 kg',
+    description: 'Katkısız ev yapımı salamura zeytin.',
+    seller: 'Fatma Şen',
+    phone: '0533 444 5566',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 9,
+    title: 'Sertifikalı Tohumluk Buğday',
+    price: 14,
+    category: 'Mahsuller',
+    subCategory: 'Buğday / Arpa',
+    mode: 'Satılık',
+    location: 'Bandırma / Balıkesir',
+    city: 'Balıkesir',
+    amount: '25 Ton',
+    description: 'Yüksek verimli sertifikalı buğday.',
+    seller: 'Cemal Tarım',
+    phone: '0532 333 2211',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 10,
+    title: 'Yemlik Arpa',
+    price: 11,
+    category: 'Mahsuller',
+    subCategory: 'Buğday / Arpa',
+    mode: 'Satılık',
+    location: 'Gönen / Balıkesir',
+    city: 'Balıkesir',
+    amount: '15 Ton',
+    description: 'Temiz elekten geçmiş yemlik arpa.',
+    seller: 'Kemal Güneş',
+    phone: '0535 666 5544',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+
+  // CANLI HAYVANLAR
+  {
+    id: 11,
+    title: 'Holstein Süt İneği ve Buzağısı',
+    price: 85000,
+    category: 'Canlı Hayvanlar',
+    subCategory: 'Büyükbaş',
+    mode: 'Satılık',
+    location: 'Gönen / Balıkesir',
+    city: 'Balıkesir',
+    amount: '1 Baş + 1',
+    description: 'Günlük 30 litre süt veren, sağlığı yerinde inek.',
+    seller: 'Mustafa Çoban',
+    phone: '0532 777 8899',
+    verified: true,
+    featured: true,
+    image: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 12,
+    title: 'Besilik Simental Dana',
+    price: 70000,
+    category: 'Canlı Hayvanlar',
+    subCategory: 'Büyükbaş',
+    mode: 'Satılık',
+    location: 'Bandırma / Balıkesir',
+    city: 'Balıkesir',
+    amount: '3 Baş',
+    description: 'Veteriner kontrollü, küpeli besilik danalar.',
+    seller: 'Orhan Koç',
+    phone: '0542 888 7766',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 13,
     title: 'Damızlık Sağlıklı Koyun ve Kuzu Sürüsü',
     price: 12000,
     category: 'Canlı Hayvanlar',
@@ -112,6 +241,290 @@ const INITIAL_LISTINGS = [
     verified: true,
     featured: true,
     image: 'https://images.unsplash.com/photo-1484557077804-29774de7fc76?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 14,
+    title: 'Merinos Damızlık Koç',
+    price: 22000,
+    category: 'Canlı Hayvanlar',
+    subCategory: 'Küçükbaş',
+    mode: 'Satılık',
+    location: 'Gönen / Balıkesir',
+    city: 'Balıkesir',
+    amount: '1 Baş',
+    description: 'Safkan damızlık koç.',
+    seller: 'İsmail Güçlü',
+    phone: '0533 555 4433',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1484557077804-29774de7fc76?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 15,
+    title: 'Atak-S Yumurta Tavuğu',
+    price: 250,
+    category: 'Canlı Hayvanlar',
+    subCategory: 'Kanatlı',
+    mode: 'Satılık',
+    location: 'Susurluk / Balıkesir',
+    city: 'Balıkesir',
+    amount: '50 Adet',
+    description: 'Aşılı, yumurtaya yeni başlamış yarka tavuklar.',
+    seller: 'Hasan Tavukçu',
+    phone: '0532 111 0022',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+
+  // HAYVAN YEMLERİ VE EKİPMANLARI
+  {
+    id: 16,
+    title: 'Besi Süt Yemi (Çuval 50 kg)',
+    price: 450,
+    category: 'Hayvan Yemleri ve Ekipmanları',
+    subCategory: 'Yem Çeşitleri',
+    mode: 'Satılık',
+    location: 'Gönen / Balıkesir',
+    city: 'Balıkesir',
+    amount: '100 Çuval',
+    description: 'Yüksek proteinli kaliteli fabrika yemi.',
+    seller: 'Yem Dünyası',
+    phone: '0532 444 3322',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 17,
+    title: 'Otomatik Büyükbaş Suluk',
+    price: 650,
+    category: 'Hayvan Yemleri ve Ekipmanları',
+    subCategory: 'Suluk / Yemlik',
+    mode: 'Satılık',
+    location: 'Balıkesir Merkez',
+    city: 'Balıkesir',
+    amount: '10 Adet',
+    description: 'Pirinç siboplu paslanmaz döküm suluk.',
+    seller: 'Ziraat Ekipman',
+    phone: '0533 222 1100',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+
+  // ARICILIK & BAL
+  {
+    id: 18,
+    title: 'Meşe Çiçeği Yayla Süzme Balı (1 Kg)',
+    price: 400,
+    category: 'Arıcılık & Bal',
+    subCategory: 'Süzme Bal',
+    mode: 'Satılık',
+    location: 'Gönen / Balıkesir',
+    city: 'Balıkesir',
+    amount: '50 Kavanoz',
+    description: 'Meşe ağaçlarıyla çevrili doğal florada üretilmiş saf bal.',
+    seller: 'Can İnce',
+    phone: '0535 768 1550',
+    verified: true,
+    featured: true,
+    image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 19,
+    title: 'Karakovan Petek Balı',
+    price: 600,
+    category: 'Arıcılık & Bal',
+    subCategory: 'Karakovan Balı',
+    mode: 'Satılık',
+    location: 'Balıkesir',
+    city: 'Balıkesir',
+    amount: '20 Adet',
+    description: 'Tamamen doğal karakovan süzülmemiş petek bal.',
+    seller: 'Arıcı Hasan',
+    phone: '0532 333 2211',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+
+  // ARICILIK EKİPMANLARI
+  {
+    id: 20,
+    title: '10 Çerçeveli Boyalı Arı Kovanı',
+    price: 1200,
+    category: 'Arıcılık Ekipmanları',
+    subCategory: 'Kovan',
+    mode: 'Satılık',
+    location: 'Gönen / Balıkesir',
+    city: 'Balıkesir',
+    amount: '15 Adet',
+    description: 'Fırınlanmış çam keresteden arı kovanı.',
+    seller: 'Ahmet Arıcı',
+    phone: '0532 444 5566',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 21,
+    title: 'Paslanmaz 4 Çerçeveli Bal Süzme Makinesi',
+    price: 4500,
+    category: 'Arıcılık Ekipmanları',
+    subCategory: 'Bal Süzme Makinesi',
+    mode: 'Satılık',
+    location: 'Bursa',
+    city: 'Bursa',
+    amount: '2 Adet',
+    description: 'Gıda kodeksine uygun krom bal süzgeci.',
+    seller: 'Makine Market',
+    phone: '0533 111 2233',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+
+  // TRAKTÖR
+  {
+    id: 22,
+    title: 'John Deere 6130M - Düşük saat, tek elden',
+    price: 2450000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Gönen / Balıkesir',
+    city: 'Balıkesir',
+    amount: '1200 Çalışma Saati / 130 HP',
+    description: 'Kapalı garaj traktörüdür. Tüm bakımları yetkili serviste yapılmıştır. Hiçbir masrafı yoktur.',
+    seller: 'Ahmet Yılmaz',
+    phone: '0532 555 0192',
+    verified: true,
+    featured: true,
+    image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 23,
+    title: 'Tümosan 8165 Kabinli 4x4',
+    price: 980000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Bandırma / Balıkesir',
+    city: 'Balıkesir',
+    amount: '2500 Saat',
+    description: 'Temiz kullanılmış, lastikleri iyi durumda traktör.',
+    seller: 'Hüseyin Kaya',
+    phone: '0542 111 2233',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+
+  // BİÇERDÖVER
+  {
+    id: 24,
+    title: 'New Holland TC 5070 Biçerdöver',
+    price: 3200000,
+    category: 'Biçerdöver',
+    subCategory: 'Biçerdöver',
+    mode: 'Satılık',
+    location: 'Karacabey / Bursa',
+    city: 'Bursa',
+    amount: 'Sezona Hazır',
+    description: 'Bütün bakımları yapılmış aktif çalışan biçerdöver.',
+    seller: 'Biçerdöverci Ali',
+    phone: '0532 888 9900',
+    verified: true,
+    featured: true,
+    image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+
+  // TARIM EKİPMANLARI
+  {
+    id: 25,
+    title: 'Tarım Römorku 5 Tonluk',
+    price: 180000,
+    category: 'Tarım Ekipmanları',
+    subCategory: 'Römork',
+    mode: 'Satılık',
+    location: 'Gönen / Balıkesir',
+    city: 'Balıkesir',
+    amount: '1 Adet',
+    description: 'İlavelik hidrolik frenli sağlam römork.',
+    seller: 'Demir Doğrama',
+    phone: '0535 444 3322',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 26,
+    title: 'Asılır Tip İlaçlama Makinesi 600 Lt',
+    price: 65000,
+    category: 'Tarım Ekipmanları',
+    subCategory: 'İlaçlama Makinesi',
+    mode: 'Satılık',
+    location: 'Balıkesir Merkez',
+    city: 'Balıkesir',
+    amount: '1 Adet',
+    description: 'Fiber tanklı, merdaneli ilaçlama pompası.',
+    seller: 'Ziraat Aletleri',
+    phone: '0533 666 5544',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+
+  // TARIM İŞÇİLERİ
+  {
+    id: 27,
+    title: 'Hasat ve Toplama Ekibi (10 Kişilik)',
+    price: 1500,
+    category: 'Tarım İşçileri',
+    subCategory: 'Hasat Ekibi',
+    mode: 'Hizmet',
+    location: 'Gönen / Balıkesir',
+    city: 'Balıkesir',
+    amount: 'Günlük Yevmiye',
+    description: 'Meyve ve sebze hasatında deneyimli tecrübeli ekip.',
+    seller: 'Dayıbaşı Hasan',
+    phone: '0532 999 1122',
+    verified: true,
+    featured: true,
+    image: 'https://images.unsplash.com/photo-1595855759920-86582396756a?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 28,
+    title: 'Profesyonel Ceviz ve Meyve Budama Ekibi',
+    price: 2000,
+    category: 'Tarım İşçileri',
+    subCategory: 'Budama Ekibi',
+    mode: 'Hizmet',
+    location: 'Bursa / Balıkesir',
+    city: 'Balıkesir',
+    amount: 'Günlük',
+    description: 'Ceviz ve meyve ağaçları için uzman budama hizmeti.',
+    seller: 'Usta Budayıcı',
+    phone: '0533 777 6655',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1595855759920-86582396756a?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   }
 ];
@@ -149,7 +562,6 @@ export default function App() {
     localStorage.setItem('pazartarla_listings', JSON.stringify(INITIAL_LISTINGS));
     setListings(INITIAL_LISTINGS);
 
-    // Tarayıcı geri tuşu (popstate) yönetimi
     window.history.replaceState({ tab: 'home' }, '');
 
     const handlePopState = (event) => {
@@ -313,7 +725,10 @@ export default function App() {
                       style={{ padding: '10px 16px 10px 28px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
                     >
                       <span style={{ fontSize: '13px', color: '#64748b' }}>• {sub}</span>
-                      <ChevronRight size={14} color="#cbd5e1" />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#94a3b8', fontSize: '12px' }}>
+                        <span>({listings.filter(i => i.category === cat && i.subCategory === sub).length})</span>
+                        <ChevronRight size={14} color="#cbd5e1" />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -360,7 +775,7 @@ export default function App() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
               {filteredListings.length === 0 ? (
                 <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '10px', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>
-                  Bu kategoride ilan bulunmuyor.
+                  Bu kategoride henüz ilan bulunmuyor.
                 </div>
               ) : (
                 filteredListings.map(item => (
@@ -378,7 +793,7 @@ export default function App() {
 
                     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1, minWidth: 0 }}>
                       <div>
-                        <span style={{ fontSize: '10px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.category}</span>
+                        <span style={{ fontSize: '10px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.category} {item.subCategory ? `> ${item.subCategory}` : ''}</span>
                         <h4 style={{ margin: '2px 0 4px 0', fontSize: '13px', fontWeight: '700', color: '#0f172a', lineHeight: '1.2' }}>{item.title}</h4>
                         {item.amount && (
                           <div style={{ fontSize: '11px', color: '#059669', fontWeight: '600' }}>
