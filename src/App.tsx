@@ -10,7 +10,7 @@ const INITIAL_LISTINGS = [
     id: 1,
     title: 'John Deere 6130M - Düşük saat, tek elden',
     price: 2450000,
-    category: 'Traktör',
+    category: 'Tarım Makineleri',
     subCategory: 'Traktör',
     mode: 'Satılık',
     location: 'Gönen / Balıkesir',
@@ -117,7 +117,7 @@ const INITIAL_LISTINGS = [
 ];
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('home'); // home, results, detail, add, admin
+  const [activeTab, setActiveTab] = useState('home'); 
   const [listings, setListings] = useState(INITIAL_LISTINGS);
   const [selectedListing, setSelectedListing] = useState(null);
   
@@ -130,9 +130,8 @@ export default function App() {
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
   const [selectedCity, setSelectedCity] = useState('Tüm Türkiye');
 
-  // Görünüm ve Sıralama Modalleri
   const [showViewModal, setShowViewModal] = useState(false);
-  const [viewMode, setViewMode] = useState('Liste'); // Liste / Detaylı Liste
+  const [viewMode, setViewMode] = useState('Liste'); 
 
   const [form, setForm] = useState({
     title: '',
@@ -209,13 +208,12 @@ export default function App() {
   };
 
   const categoriesWithSubs = {
+    'Tarım Makineleri': ['Traktör', 'Toprak İşleme', 'Hasat & Harman', 'Bitki Bakım', 'Ekim & Dikim', 'Gübreleme', 'Sulama', 'Hayvancılık', 'Taşıma', 'Ataşman & Yedek Parça'],
     'Mahsuller': ['Kiraz', 'Karpuz / Kavun', 'Ceviz', 'Zeytin & Zeytinyağı', 'Buğday / Arpa', 'Diğer Mahsul'],
     'Canlı Hayvanlar': ['Büyükbaş', 'Küçükbaş', 'Kanatlı'],
     'Hayvan Yemleri ve Ekipmanları': ['Yem Çeşitleri', 'Suluk / Yemlik'],
     'Arıcılık & Bal': ['Süzme Bal', 'Karakovan Balı', 'Petek Bal'],
     'Arıcılık Ekipmanları': ['Kovan', 'Petek ve Çerçeve', 'Bal Süzme Makinesi'],
-    'Traktör': ['İkinci El Traktör', 'Sıfır Traktör'],
-    'Biçerdöver': ['Biçerdöver'],
     'Tarım Ekipmanları': ['Römork', 'İlaçlama Makinesi', 'Toprak İşleme'],
     'Tarım İşçileri': ['Hasat Ekibi', 'Budama Ekibi', 'Çoban / Bakıcı']
   };
@@ -314,10 +312,9 @@ export default function App() {
           </div>
         )}
 
-        {/* 2. EKRAN: ARAMA SONUÇLARI (SAHİBİNDEN ÜST MENÜ BAR İLE) */}
+        {/* 2. EKRAN: ARAMA SONUÇLARI */}
         {activeTab === 'results' && (
           <div>
-            {/* ÜST MAVİ/GRİ SAHİBİNDEN KONTROL ÇUBUĞU (Filtrele, Sırala, Görünüm) */}
             <div style={{ backgroundColor: '#1b3a2b', color: '#fff', borderRadius: '10px', padding: '10px 14px', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
               <button 
                 onClick={() => setActiveTab('home')} 
@@ -339,13 +336,11 @@ export default function App() {
               </div>
             </div>
 
-            {/* SONUÇ BİLGİ BARI */}
             <div style={{ backgroundColor: '#fff', padding: '8px 12px', borderRadius: '8px', marginBottom: '10px', fontSize: '12px', color: '#64748b', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #e2e8f0' }}>
               <span>{selectedSubCategory !== 'Tümü' ? selectedSubCategory : selectedCategory}</span>
               <span style={{ fontWeight: '700', color: '#1b3a2b' }}>{filteredListings.length} sonuç</span>
             </div>
 
-            {/* İLAN LİSTESİ */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {filteredListings.length === 0 ? (
                 <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '10px', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>
@@ -395,7 +390,6 @@ export default function App() {
               )}
             </div>
 
-            {/* GÖRÜNÜM TERCİHİ MODALI (SAHİBİNDEN AYNISI) */}
             {showViewModal && (
               <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 1000 }}>
                 <div style={{ backgroundColor: '#fff', width: '100%', maxWidth: '600px', borderTopLeftRadius: '16px', borderTopRightRadius: '16px', padding: '20px', boxSizing: 'border-box' }}>
@@ -479,7 +473,7 @@ export default function App() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Alt Ürün</label>
-                  <input type="text" name="subCategory" placeholder="Kiraz, Ceviz" value={form.subCategory} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                  <input type="text" name="subCategory" placeholder="Traktör, Ceviz" value={form.subCategory} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Miktar / Kapasite</label>
