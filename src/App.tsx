@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus, 
   Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, X, 
-  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users 
+  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image, Bug, Shield 
 } from 'lucide-react';
 
 const INITIAL_LISTINGS = [
@@ -17,7 +17,7 @@ const INITIAL_LISTINGS = [
     year: 2021,
     hours: 1200,
     power: '130 HP',
-    description: 'Kapalı garaj traktörüdür. Tüm bakımları yetkili serviste yapılmıştır. Hiçbir masrafı yoktur, lastikleri %90 durumdadır.',
+    description: 'Kapalı garaj traktörüdür. Tüm bakımları yetkili serviste yapılmıştır. Hiçbir masrafı yoktur.',
     seller: 'Ahmet Yılmaz',
     phone: '0532 555 0192',
     verified: true,
@@ -27,27 +27,46 @@ const INITIAL_LISTINGS = [
   },
   {
     id: 2,
-    title: 'Ceviz Hasadı İçin 10 Kişilik Tecrübeli İşçi Ekibi',
-    price: 1200,
-    category: 'Tarım İşçileri',
-    mode: 'Hizmet',
+    title: 'Profesyonel 20’li Arı Kovanı ve Petek Seti',
+    price: 3500,
+    category: 'Arıcılık Ekipmanları',
+    mode: 'Satılık',
     location: 'Gönen / Balıkesir',
     city: 'Balıkesir',
     year: 2026,
     hours: 0,
-    power: '10 Kişi',
-    description: 'Ceviz silkme, toplama ve ayıklama işlerinde tecrübeli ekibimizle hizmetinizdeyiz. Günlük yevmiye usulü veya götürü usulü görüşülür.',
-    seller: 'Mehmet Dayıbaşı',
-    phone: '0535 444 3322',
+    power: '20 Adet',
+    description: 'Çam ve meşe balı üretimine uygun, fırınlanmış ahşap arı kovanları ve tam set petekler.',
+    seller: 'Can İnce',
+    phone: '0535 768 1550',
     verified: true,
     featured: true,
-    image: 'https://images.unsplash.com/photo-1595974482597-4f8cae7d1743?auto=format&fit=crop&q=80&w=800',
+    image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
+  },
+  {
+    id: 3,
+    title: 'Kaliteli Süt Yemi ve Büyükbaş/Küçükbaş Besi Yemi',
+    price: 550,
+    category: 'Hayvan Yemleri ve Ekipmanları',
+    mode: 'Satılık',
+    location: 'Bandırma / Balıkesir',
+    city: 'Balıkesir',
+    year: 2026,
+    hours: 0,
+    power: 'Çuval (50 kg)',
+    description: 'Yüksek proteinli, süt verimini artıran kaliteli fabrika yemi. Toptan çuval satışları.',
+    seller: 'Hüseyin Çiftçi',
+    phone: '0533 111 2233',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
+    date: 'Dün'
   }
 ];
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('home'); // 'home', 'detail', 'add', 'admin'
+  const [activeTab, setActiveTab] = useState('home'); 
   const [listings, setListings] = useState(INITIAL_LISTINGS);
   const [selectedListing, setSelectedListing] = useState(null);
   
@@ -62,7 +81,7 @@ export default function App() {
   const [form, setForm] = useState({
     title: '',
     price: '',
-    category: 'Traktör',
+    category: 'Mahsuller (Mahsul Satışı)',
     mode: 'Satılık',
     location: 'Gönen / Balıkesir',
     city: 'Balıkesir',
@@ -72,7 +91,7 @@ export default function App() {
     description: '',
     seller: '',
     phone: '',
-    image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800'
+    image: ''
   });
 
   useEffect(() => {
@@ -95,18 +114,20 @@ export default function App() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // İlan doğrudan eklenir ve yayına girer (Admin sonradan dilerse siler)
   const handleDirectAdd = (e) => {
     e.preventDefault();
     if (!form.title || !form.price || !form.phone || !form.seller) {
-      alert('Lütfen başlık, fiyat/yevmiye, ad Soyad ve telefon numarası alanlarını doldurun.');
+      alert('Lütfen başlık, fiyat, ad Soyad ve telefon numarası alanlarını doldurun.');
       return;
     }
+
+    const finalImage = form.image.trim() !== '' ? form.image : 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800';
 
     const newEntry = {
       ...form,
       id: Date.now(),
       price: Number(form.price),
+      image: finalImage,
       verified: true,
       featured: false,
       date: 'Bugün'
@@ -117,11 +138,10 @@ export default function App() {
     setActiveTab('home');
     alert('İlanınız başarıyla yayınlandı!');
     
-    // Formu sıfırla
     setForm({
       title: '',
       price: '',
-      category: 'Traktör',
+      category: 'Mahsuller (Mahsul Satışı)',
       mode: 'Satılık',
       location: 'Gönen / Balıkesir',
       city: 'Balıkesir',
@@ -131,7 +151,7 @@ export default function App() {
       description: '',
       seller: '',
       phone: '',
-      image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800'
+      image: ''
     });
   };
 
@@ -155,26 +175,6 @@ export default function App() {
     alert('Admin Paneli Şifreniz: 1234');
   };
 
-  const shareOnFacebook = (title) => {
-    const url = window.location.href;
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(title)}`, '_blank');
-  };
-
-  const shareOnTwitter = (title) => {
-    const url = window.location.href;
-    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title + ' - PazarTarla üzerinden incele:')}&url=${encodeURIComponent(url)}`, '_blank');
-  };
-
-  const shareOnWhatsApp = (title) => {
-    const url = window.location.href;
-    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(title + ' İlanı: ' + url)}`, '_blank');
-  };
-
-  const copyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
-    alert('İlan bağlantısı panoya kopyalandı!');
-  };
-
   const filteredListings = listings.filter(item => {
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           item.location.toLowerCase().includes(searchQuery.toLowerCase());
@@ -196,7 +196,7 @@ export default function App() {
           </div>
           <div>
             <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '800', letterSpacing: '-0.5px' }}>PazarTarla</h1>
-            <span style={{ fontSize: '11px', color: '#86efac' }}>Tarım Makineleri ve İşçi Pazaryeri</span>
+            <span style={{ fontSize: '11px', color: '#86efac' }}>Tarım, Hayvancılık ve Arıcılık Pazaryeri</span>
           </div>
         </div>
 
@@ -226,7 +226,7 @@ export default function App() {
                 İlanları keşfet
               </h2>
               <p style={{ color: '#64748b', fontSize: '16px', margin: 0 }}>
-                Tarlana uygun makineyi veya hasat için tarım işçi ekibini hemen bul.
+                Traktör, mahsul, canlı hayvan, yem, arıcılık ekipmanları ve tarım işçisi bul.
               </p>
             </div>
 
@@ -258,7 +258,7 @@ export default function App() {
                   <Search size={20} color="#94a3b8" style={{ position: 'absolute', left: '14px' }} />
                   <input 
                     type="text"
-                    placeholder="Marka, model, işçi grubu, şehir ara..."
+                    placeholder="Yem, arı malzemesi, hayvan, traktör ara..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     style={{
@@ -279,6 +279,11 @@ export default function App() {
                   style={{ padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '15px', backgroundColor: '#fff', outline: 'none', cursor: 'pointer' }}
                 >
                   <option value="Tüm kategoriler">Tüm Kategoriler</option>
+                  <option value="Mahsuller (Mahsul Satışı)">Mahsuller (Ceviz, Kavun vb.)</option>
+                  <option value="Canlı Hayvanlar">Canlı Hayvanlar</option>
+                  <option value="Hayvan Yemleri ve Ekipmanları">Hayvan Yemleri ve Ekipmanları</option>
+                  <option value="Arıcılık & Bal">Arıcılık & Bal</option>
+                  <option value="Arıcılık Ekipmanları">Arıcılık Ekipmanları</option>
                   <option value="Traktör">Traktör</option>
                   <option value="Biçerdöver">Biçerdöver</option>
                   <option value="Tarım Ekipmanları">Tarım Ekipmanları</option>
@@ -323,7 +328,7 @@ export default function App() {
                     </div>
                     <div>
                       <div style={{ fontSize: '20px', fontWeight: '800', color: '#1b3a2b', marginBottom: '12px' }}>
-                        {item.price.toLocaleString('tr-TR')} TL {item.category === 'Tarım İşçileri' ? <span style={{ fontSize: '12px', fontWeight: 'normal', color: '#64748b' }}>/ Günlük</span> : ''}
+                        {item.price.toLocaleString('tr-TR')} TL
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #f1f5f9', paddingTop: '12px', fontSize: '13px', color: '#64748b' }}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {item.location}</span>
@@ -363,16 +368,21 @@ export default function App() {
             <form onSubmit={handleDirectAdd} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div>
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>İlan Başlığı *</label>
-                <input type="text" name="title" placeholder="Örn: 10 Kişilik Ceviz Hasat Ekibi veya Traktör" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+                <input type="text" name="title" placeholder="Örn: Süt Yemi, Arı Kovanı, Bal veya Traktör" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Fiyat / Yevmiye (TL) *</label>
-                  <input type="number" name="price" placeholder="Örn: 1500" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Fiyat (TL) *</label>
+                  <input type="number" name="price" placeholder="Örn: 3500" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Kategori</label>
                   <select name="category" value={form.category} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', backgroundColor: '#fff' }}>
+                    <option value="Mahsuller (Mahsul Satışı)">Mahsuller (Ceviz, Kavun vb.)</option>
+                    <option value="Canlı Hayvanlar">Canlı Hayvanlar</option>
+                    <option value="Hayvan Yemleri ve Ekipmanları">Hayvan Yemleri ve Ekipmanları</option>
+                    <option value="Arıcılık & Bal">Arıcılık & Bal</option>
+                    <option value="Arıcılık Ekipmanları">Arıcılık Ekipmanları</option>
                     <option value="Traktör">Traktör</option>
                     <option value="Biçerdöver">Biçerdöver</option>
                     <option value="Tarım Ekipmanları">Tarım Ekipmanları</option>
@@ -382,13 +392,17 @@ export default function App() {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>İletişim Adı / Dayıbaşı *</label>
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Satıcı Adı *</label>
                   <input type="text" name="seller" placeholder="Adınız Soyadınız" value={form.seller} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Telefon Numarası *</label>
                   <input type="text" name="phone" placeholder="0532 000 0000" value={form.phone} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
                 </div>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Fotoğraf Linki (URL) - İsteğe bağlı</label>
+                <input type="text" name="image" placeholder="Örn: https://ornek.com/yem.jpg (Boş bırakırsanız tarım görseli eklenir)" value={form.image} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               </div>
               <div>
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Açıklama</label>
