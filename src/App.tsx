@@ -2,22 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { 
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus, 
   Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, X, 
-  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image, Bug, Shield 
+  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image, Bug, Shield, Package 
 } from 'lucide-react';
 
-// Bütün ziraat ve tarım ürünlerini kapsayan zengin örnek ilan listesi
 const INITIAL_LISTINGS = [
   {
     id: 1,
     title: 'John Deere 6130M - Düşük saat, tek elden',
     price: 2450000,
     category: 'Traktör',
+    subCategory: 'Traktör',
     mode: 'Satılık',
     location: 'Gönen / Balıkesir',
     city: 'Balıkesir',
-    year: 2021,
-    hours: 1200,
-    power: '130 HP',
+    amount: '1200 Çalışma Saati / 130 HP',
     description: 'Kapalı garaj traktörüdür. Tüm bakımları yetkili serviste yapılmıştır. Hiçbir masrafı yoktur.',
     seller: 'Ahmet Yılmaz',
     phone: '0532 555 0192',
@@ -28,15 +26,14 @@ const INITIAL_LISTINGS = [
   },
   {
     id: 2,
-    title: 'Tarladan Doğrudan Taze Chandler Ceviz (1 Ton)',
+    title: 'Tarladan Doğrudan Taze Chandler Ceviz',
     price: 140,
-    category: 'Mahsuller (Tüm Tarım Ürünleri)',
+    category: 'Mahsuller',
+    subCategory: 'Ceviz',
     mode: 'Satılık',
     location: 'Gönen / Balıkesir',
     city: 'Balıkesir',
-    year: 2026,
-    hours: 0,
-    power: '1 Ton',
+    amount: '1 Ton (Toptan / Perakende)',
     description: 'Kendi bahçemizin ürünü, ilaçsız ve dolgun Chandler ceviz. Toptan veya perakende satışımız vardır.',
     seller: 'Can İnce',
     phone: '0535 768 1550',
@@ -47,15 +44,14 @@ const INITIAL_LISTINGS = [
   },
   {
     id: 3,
-    title: 'Mis Kokulu Gönen Kavunu ve Karpuzu (Toptan)',
+    title: 'Mis Kokulu Gönen Kavunu ve Karpuzu',
     price: 15,
-    category: 'Mahsuller (Tüm Tarım Ürünleri)',
+    category: 'Mahsuller',
+    subCategory: 'Karpuz / Kavun',
     mode: 'Satılık',
     location: 'Gönen / Balıkesir',
     city: 'Balıkesir',
-    year: 2026,
-    hours: 0,
-    power: 'Toptan',
+    amount: '5 Ton Toptan Hasat',
     description: 'Tarladan doğrudan taze kesim kavun ve karpuz. Manavlar ve tüccarlar önceliklidir.',
     seller: 'Hüseyin Çiftçi',
     phone: '0533 111 2233',
@@ -66,34 +62,32 @@ const INITIAL_LISTINGS = [
   },
   {
     id: 4,
-    title: '1. Sınıf Sert Buğday ve Arpa Mahsulü (Toptan)',
-    price: 9.50,
-    category: 'Mahsuller (Tüm Tarım Ürünleri)',
+    title: 'Bursamızın Meşhur Saplı Tatlı Kirazı',
+    price: 90,
+    category: 'Mahsuller',
+    subCategory: 'Kiraz',
     mode: 'Satılık',
-    location: 'Bandırma / Balıkesir',
-    city: 'Balıkesir',
-    year: 2026,
-    hours: 0,
-    power: 'Tonoajlı',
-    description: 'Ambar saklamalı, yüksek hektolitre ekmeklik sert buğday. Değirmencilere ve tüccarlara duyurulur.',
-    seller: 'Mustafa Eren',
-    phone: '0534 888 7766',
+    location: 'Karacabey / Bursa',
+    city: 'Bursa',
+    amount: '500 kg',
+    description: 'İhracat kalitesinde iri cins, taze hasat tatlı kiraz. Soğuk zincir araçlarla sevkiyat yapılır.',
+    seller: 'İbrahim Demir',
+    phone: '0532 444 5566',
     verified: true,
-    featured: false,
-    image: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&q=80&w=800',
+    featured: true,
+    image: 'https://images.unsplash.com/photo-1528821151447-11f211b5e5a7?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
   {
     id: 5,
-    title: 'Erken Hasat Soğuk Sıkım Sızma Zeytinyağı (5 Litre)',
+    title: 'Erken Hasat Soğuk Sıkım Sızma Zeytinyağı',
     price: 1250,
-    category: 'Mahsuller (Tüm Tarım Ürünleri)',
+    category: 'Mahsuller',
+    subCategory: 'Zeytin & Zeytinyağı',
     mode: 'Satılık',
     location: 'Burhaniye / Balıkesir',
     city: 'Balıkesir',
-    year: 2026,
-    hours: 0,
-    power: '5 Lt Teneke',
+    amount: '100 Teneke (5 Litrelik)',
     description: 'Asit oranı düşük, kendi zeytinliklerimizden üretilen geleneksel soğuk sıkım saf zeytinyağı.',
     seller: 'Hasan Bilir',
     phone: '0532 123 4567',
@@ -104,15 +98,14 @@ const INITIAL_LISTINGS = [
   },
   {
     id: 6,
-    title: 'Damızlık Sağlıklı 15 Baş Koyun ve Kuzu Sürüsü',
+    title: 'Damızlık Sağlıklı Koyun ve Kuzu Sürüsü',
     price: 12000,
     category: 'Canlı Hayvanlar',
+    subCategory: 'Küçükbaş',
     mode: 'Satılık',
     location: 'Bandırma / Balıkesir',
     city: 'Balıkesir',
-    year: 2026,
-    hours: 0,
-    power: '15 Baş',
+    amount: '15 Baş',
     description: 'Veteriner kontrolleri tam, aşılı ve sağlıklı damızlık koyunlar. Toplu ya da tekli görüşülür.',
     seller: 'Mehmet Aksoy',
     phone: '0542 333 4455',
@@ -120,63 +113,6 @@ const INITIAL_LISTINGS = [
     featured: true,
     image: 'https://images.unsplash.com/photo-1484557077804-29774de7fc76?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
-  },
-  {
-    id: 7,
-    title: 'Yüksek Proteinli Süt Yemi ve Besi Yemi (50 kg Çuval)',
-    price: 550,
-    category: 'Hayvan Yemleri ve Ekipmanları',
-    mode: 'Satılık',
-    location: 'Gönen / Balıkesir',
-    city: 'Balıkesir',
-    year: 2026,
-    hours: 0,
-    power: '50 kg Çuval',
-    description: 'Süt verimini artıran kaliteli fabrika yemi. Çiftliğe teslim seçenekleri vardır.',
-    seller: 'Tarım Kredi Koop.',
-    phone: '0532 999 0011',
-    verified: true,
-    featured: false,
-    image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
-    date: '2 gün önce'
-  },
-  {
-    id: 8,
-    title: 'Meşe Ormanı Çıkışlı Saf Organik Çiçek Balı',
-    price: 750,
-    category: 'Arıcılık & Bal',
-    mode: 'Satılık',
-    location: 'Gönen / Balıkesir',
-    city: 'Balıkesir',
-    year: 2026,
-    hours: 0,
-    power: 'Kavanoz',
-    description: 'Meşe ağaçlarıyla çevrili zengin florada üretilmiş saf, süzme çiçek balı.',
-    seller: 'Arıcı İsmail',
-    phone: '0536 222 3344',
-    verified: true,
-    featured: true,
-    image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-  {
-    id: 9,
-    title: 'Fırınlanmış Ahşap 10 Adet Arı Kovanı ve Petek Seti',
-    price: 3500,
-    category: 'Arıcılık Ekipmanları',
-    mode: 'Satılık',
-    location: 'Susurluk / Balıkesir',
-    city: 'Balıkesir',
-    year: 2026,
-    hours: 0,
-    power: '10 Adet',
-    description: 'Dayanıklı çam ağacından imal edilmiş, tam set arı kovanları ve bal süzme makinesi.',
-    seller: 'Balcı Arif',
-    phone: '0539 444 5566',
-    verified: false,
-    featured: false,
-    image: 'https://images.unsplash.com/photo-1473081556163-2a17de81fc97?auto=format&fit=crop&q=80&w=800',
-    date: '3 gün önce'
   }
 ];
 
@@ -191,18 +127,18 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMode, setSelectedMode] = useState('Tümü'); 
   const [selectedCategory, setSelectedCategory] = useState('Tüm kategoriler');
+  const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
   const [selectedCity, setSelectedCity] = useState('Tüm Türkiye');
 
   const [form, setForm] = useState({
     title: '',
     price: '',
-    category: 'Mahsuller (Tüm Tarım Ürünleri)',
+    category: 'Mahsuller',
+    subCategory: 'Ceviz',
     mode: 'Satılık',
     location: 'Gönen / Balıkesir',
     city: 'Balıkesir',
-    year: '2026',
-    hours: '',
-    power: '',
+    amount: '',
     description: '',
     seller: '',
     phone: '',
@@ -246,22 +182,6 @@ export default function App() {
     saveListings(updated);
     setActiveTab('home');
     alert('İlanınız başarıyla yayınlandı!');
-    
-    setForm({
-      title: '',
-      price: '',
-      category: 'Mahsuller (Tüm Tarım Ürünleri)',
-      mode: 'Satılık',
-      location: 'Gönen / Balıkesir',
-      city: 'Balıkesir',
-      year: '2026',
-      hours: '',
-      power: '',
-      description: '',
-      seller: '',
-      phone: '',
-      image: ''
-    });
   };
 
   const handleDeleteListing = (id) => {
@@ -284,14 +204,40 @@ export default function App() {
     alert('Admin Paneli Şifreniz: 1234');
   };
 
+  const categoriesList = [
+    'Tüm kategoriler',
+    'Mahsuller',
+    'Canlı Hayvanlar',
+    'Hayvan Yemleri ve Ekipmanları',
+    'Arıcılık & Bal',
+    'Arıcılık Ekipmanları',
+    'Traktör',
+    'Biçerdöver',
+    'Tarım Ekipmanları',
+    'Tarım İşçileri'
+  ];
+
+  const subCategoriesMap = {
+    'Mahsuller': ['Tümü', 'Kiraz', 'Karpuz / Kavun', 'Ceviz', 'Zeytin & Zeytinyağı', 'Buğday / Arpa', 'Diğer Mahsul'],
+    'Canlı Hayvanlar': ['Tümü', 'Büyükbaş', 'Küçükbaş', 'Kanatlı'],
+    'Hayvan Yemleri ve Ekipmanları': ['Tümü', 'Yem Çeşitleri', 'Suluk / Yemlik'],
+    'Arıcılık & Bal': ['Tümü', 'Süzme Bal', 'Karakovan Balı', 'Petek Bal'],
+    'Arıcılık Ekipmanları': ['Tümü', 'Kovan', 'Petek ve Çerçeve', 'Bal Süzme Makinesi'],
+    'Traktör': ['Tümü', 'İkinci El Traktör', 'Sıfır Traktör'],
+    'Biçerdöver': ['Tümü', 'Biçerdöver'],
+    'Tarım Ekipmanları': ['Tümü', 'Römork', 'İlaçlama Makinesi', 'Toprak İşleme'],
+    'Tarım İşçileri': ['Tümü', 'Hasat Ekibi', 'Budama Ekibi', 'Çoban / Bakıcı']
+  };
+
   const filteredListings = listings.filter(item => {
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           item.location.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesMode = selectedMode === 'Tümü' || item.mode === selectedMode;
     const matchesCategory = selectedCategory === 'Tüm kategoriler' || item.category === selectedCategory;
+    const matchesSubCategory = selectedSubCategory === 'Tümü' || item.subCategory === selectedSubCategory;
     const matchesCity = selectedCity === 'Tüm Türkiye' || item.city === selectedCity;
 
-    return matchesSearch && matchesMode && matchesCategory && matchesCity;
+    return matchesSearch && matchesMode && matchesCategory && matchesSubCategory && matchesCity;
   });
 
   return (
@@ -330,14 +276,69 @@ export default function App() {
         
         {activeTab === 'home' && (
           <div>
-            <div style={{ marginBottom: '32px' }}>
+            <div style={{ marginBottom: '24px' }}>
               <h2 style={{ fontSize: '32px', fontWeight: '800', color: '#0f172a', margin: '0 0 8px 0', letterSpacing: '-1px' }}>
                 İlanları keşfet
               </h2>
               <p style={{ color: '#64748b', fontSize: '16px', margin: 0 }}>
-                Traktör, tarım ürünleri, canlı hayvan, yem, arıcılık ve ziraat malzemeleri bul.
+                Traktör, kiraz, karpuz, zeytin, canlı hayvan, yem ve ziraat malzemeleri bul.
               </p>
             </div>
+
+            {/* ANA KATEGORİLER HIZLI SEÇİM LİSTESİ */}
+            <div style={{ backgroundColor: '#fff', padding: '16px 20px', borderRadius: '16px', boxShadow: '0 4px 15px rgba(0,0,0,0.03)', marginBottom: '16px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <span style={{ fontSize: '13px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Kategoriler</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {categoriesList.map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => { setSelectedCategory(cat); setSelectedSubCategory('Tümü'); }}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      fontWeight: selectedCategory === cat ? '700' : '500',
+                      fontSize: '13px',
+                      cursor: 'pointer',
+                      backgroundColor: selectedCategory === cat ? '#1b3a2b' : '#f1f5f9',
+                      color: selectedCategory === cat ? '#fff' : '#334155',
+                      transition: 'all 0.2s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    {cat} {selectedCategory === cat && <Check size={14} />}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* ALT KATEGORİLER */}
+            {selectedCategory !== 'Tüm kategoriler' && subCategoriesMap[selectedCategory] && (
+              <div style={{ backgroundColor: '#f1f5f9', padding: '12px 20px', borderRadius: '12px', marginBottom: '20px', display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', border: '1px solid #cbd5e1' }}>
+                <span style={{ fontSize: '13px', fontWeight: '700', color: '#334155', marginRight: '8px' }}>{selectedCategory} Çeşitleri:</span>
+                {subCategoriesMap[selectedCategory].map(sub => (
+                  <button
+                    key={sub}
+                    onClick={() => setSelectedSubCategory(sub)}
+                    style={{
+                      padding: '6px 14px',
+                      borderRadius: '6px',
+                      border: 'none',
+                      fontWeight: selectedSubCategory === sub ? '700' : '500',
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                      backgroundColor: selectedSubCategory === sub ? '#22c55e' : '#fff',
+                      color: selectedSubCategory === sub ? '#fff' : '#475569',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                    }}
+                  >
+                    {sub}
+                  </button>
+                ))}
+              </div>
+            )}
 
             <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', marginBottom: '32px', border: '1px solid #e2e8f0' }}>
               <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', borderBottom: '1px solid #f1f5f9', paddingBottom: '16px', flexWrap: 'wrap' }}>
@@ -362,12 +363,12 @@ export default function App() {
                 ))}
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 220px 200px', gap: '16px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 200px', gap: '16px', flexWrap: 'wrap' }}>
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                   <Search size={20} color="#94a3b8" style={{ position: 'absolute', left: '14px' }} />
                   <input 
                     type="text"
-                    placeholder="Buğday, zeytinyağı, ceviz, arı, traktör ara..."
+                    placeholder="Kiraz, karpuz, ceviz, zeytinyağı, traktör ara..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     style={{
@@ -381,23 +382,6 @@ export default function App() {
                     }}
                   />
                 </div>
-
-                <select 
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  style={{ padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '15px', backgroundColor: '#fff', outline: 'none', cursor: 'pointer' }}
-                >
-                  <option value="Tüm kategoriler">Tüm Kategoriler</option>
-                  <option value="Mahsuller (Tüm Tarım Ürünleri)">Mahsuller (Tüm Tarım Ürünleri)</option>
-                  <option value="Canlı Hayvanlar">Canlı Hayvanlar</option>
-                  <option value="Hayvan Yemleri ve Ekipmanları">Hayvan Yemleri ve Ekipmanları</option>
-                  <option value="Arıcılık & Bal">Arıcılık & Bal</option>
-                  <option value="Arıcılık Ekipmanları">Arıcılık Ekipmanları</option>
-                  <option value="Traktör">Traktör</option>
-                  <option value="Biçerdöver">Biçerdöver</option>
-                  <option value="Tarım Ekipmanları">Tarım Ekipmanları</option>
-                  <option value="Tarım İşçileri">Tarım İşçileri / Ekipler</option>
-                </select>
 
                 <select 
                   value={selectedCity}
@@ -432,8 +416,13 @@ export default function App() {
                   </div>
                   <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
                     <div>
-                      <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase' }}>{item.category}</span>
-                      <h4 style={{ margin: '6px 0 12px 0', fontSize: '16px', fontWeight: '700', color: '#0f172a', lineHeight: '1.4' }}>{item.title}</h4>
+                      <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase' }}>{item.category} {item.subCategory ? `> ${item.subCategory}` : ''}</span>
+                      <h4 style={{ margin: '6px 0 8px 0', fontSize: '16px', fontWeight: '700', color: '#0f172a', lineHeight: '1.4' }}>{item.title}</h4>
+                      {item.amount && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#059669', fontWeight: '600', marginBottom: '8px' }}>
+                          <Package size={14} /> Miktar / Detay: {item.amount}
+                        </div>
+                      )}
                     </div>
                     <div>
                       <div style={{ fontSize: '20px', fontWeight: '800', color: '#1b3a2b', marginBottom: '12px' }}>
@@ -460,6 +449,11 @@ export default function App() {
               <img src={selectedListing.image} alt={selectedListing.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
             <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a', margin: '12px 0' }}>{selectedListing.title}</h2>
+            {selectedListing.amount && (
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: '#ecfdf5', color: '#059669', padding: '6px 12px', borderRadius: '8px', fontSize: '14px', fontWeight: '700', marginBottom: '16px', border: '1px solid #a7f3d0' }}>
+                <Package size={16} /> Miktar / Kapasite: {selectedListing.amount}
+              </div>
+            )}
             <div style={{ fontSize: '28px', fontWeight: '800', color: '#1b3a2b', marginBottom: '20px' }}>{selectedListing.price.toLocaleString('tr-TR')} TL</div>
             <p style={{ color: '#475569', lineHeight: '1.6', marginBottom: '24px' }}>{selectedListing.description}</p>
             
@@ -477,26 +471,30 @@ export default function App() {
             <form onSubmit={handleDirectAdd} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div>
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>İlan Başlığı *</label>
-                <input type="text" name="title" placeholder="Örn: Buğday, Zeytinyağı, Arı Kovanı veya Traktör" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+                <input type="text" name="title" placeholder="Örn: Kiraz, Karpuz, Zeytinyağı veya Traktör" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Fiyat (TL) *</label>
-                  <input type="number" name="price" placeholder="Örn: 1250" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+                  <input type="number" name="price" placeholder="Örn: 90" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Kategori</label>
                   <select name="category" value={form.category} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', backgroundColor: '#fff' }}>
-                    <option value="Mahsuller (Tüm Tarım Ürünleri)">Mahsuller (Tüm Tarım Ürünleri)</option>
-                    <option value="Canlı Hayvanlar">Canlı Hayvanlar</option>
-                    <option value="Hayvan Yemleri ve Ekipmanları">Hayvan Yemleri ve Ekipmanları</option>
-                    <option value="Arıcılık & Bal">Arıcılık & Bal</option>
-                    <option value="Arıcılık Ekipmanları">Arıcılık Ekipmanları</option>
-                    <option value="Traktör">Traktör</option>
-                    <option value="Biçerdöver">Biçerdöver</option>
-                    <option value="Tarım Ekipmanları">Tarım Ekipmanları</option>
-                    <option value="Tarım İşçileri">Tarım İşçileri / Ekipler</option>
+                    {categoriesList.filter(c => c !== 'Tüm kategoriler').map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
                   </select>
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Alt Ürün / Çeşit</label>
+                  <input type="text" name="subCategory" placeholder="Örn: Kiraz, Ceviz, Süt Yemi vb." value={form.subCategory} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Miktar / Kapasite (Kaç ton, kg, dönüm vb.)</label>
+                  <input type="text" name="amount" placeholder="Örn: 5 Ton veya 500 kg" value={form.amount} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
                 </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
@@ -511,7 +509,7 @@ export default function App() {
               </div>
               <div>
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Fotoğraf Linki (URL) - İsteğe bağlı</label>
-                <input type="text" name="image" placeholder="Örn: https://ornek.com/urun.jpg (Boş bırakırsanız tarım görseli eklenir)" value={form.image} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+                <input type="text" name="image" placeholder="Örn: https://ornek.com/urun.jpg" value={form.image} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               </div>
               <div>
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Açıklama</label>
