@@ -6,13 +6,69 @@ import {
 } from 'lucide-react';
 
 const INITIAL_LISTINGS = [
-  // TÜRKİYE GENELİ ZİRAİ İLAÇ BAYİLERİ (İLAN FORMATINDA)
+  // VETERİNERLER VE HAYVAN SAĞLIĞI (YENİ ANA KATEGORİ)
+  {
+    id: 110,
+    title: 'Gönen Şifa Veteriner Kliniği - 7/24 Büyükbaş & Küçükbaş',
+    price: 500,
+    category: 'Veterinerler ve Hayvan Sağlığı',
+    subCategory: 'Klinik & Koruyucu Hekimlik',
+    mode: 'Hizmet',
+    location: 'Gönen / Balıkesir',
+    city: 'Balıkesir',
+    amount: 'Yerinde / Klinik Muayene',
+    description: 'Büyükbaş ve küçükbaş hayvanlar için suni tohumlama, aşılama, doğum ve cerrahi operasyon hizmetleri.',
+    seller: 'Vet. Hekim Mehmet Can',
+    phone: '0532 444 1968',
+    verified: true,
+    featured: true,
+    image: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 111,
+    title: 'Bandırma Öncü Veteriner Deposu - Aşı ve İlaç',
+    price: 1200,
+    category: 'Veterinerler ve Hayvan Sağlığı',
+    subCategory: 'Aşı & İlaç Temini',
+    mode: 'Satılık',
+    location: 'Bandırma / Balıkesir',
+    city: 'Balıkesir',
+    amount: 'Soğuk Zincir Sevkiyat',
+    description: 'Sürü sağlığı için koruyucu aşılar, vitamin kombinasyonları ve antibiyotik tedariği.',
+    seller: 'Öncü Veterinerlik',
+    phone: '0533 222 5566',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 112,
+    title: 'Bursa Merinos Veterinerlik ve Sürü Sağlığı',
+    price: 800,
+    category: 'Veterinerler ve Hayvan Sağlığı',
+    subCategory: 'Sürü Sağlığı Yönetimi',
+    mode: 'Hizmet',
+    location: 'Karacabey / Bursa',
+    city: 'Bursa',
+    amount: 'Periyodik Kontrol',
+    description: 'Çiftlikler için paraziter mücadele, tırnak bakımı ve koruyucu hekimlik danışmanlığı.',
+    seller: 'Vet. Hekim Selim Demir',
+    phone: '0542 777 3322',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+
+  // ZİRAİ İLAÇ VE GÜBRELER
   {
     id: 101,
     title: 'Gönen Güven Zirai İlaç - Bakır Sülfat ve Fungisit',
     price: 450,
-    category: 'Hayvan Yemleri ve Ekipmanları',
-    subCategory: 'Yem Çeşitleri',
+    category: 'Zirai İlaç ve Gübreler',
+    subCategory: 'Fungisit & Mantar İlacı',
     mode: 'Satılık',
     location: 'Gönen / Balıkesir',
     city: 'Balıkesir',
@@ -29,8 +85,8 @@ const INITIAL_LISTINGS = [
     id: 102,
     title: 'Alaşehir Zengin Tarım - Yaprak Gübresi ve İlaç',
     price: 680,
-    category: 'Hayvan Yemleri ve Ekipmanları',
-    subCategory: 'Yem Çeşitleri',
+    category: 'Zirai İlaç ve Gübreler',
+    subCategory: 'Yaprak Gübresi',
     mode: 'Satılık',
     location: 'Alaşehir / Manisa',
     city: 'Manisa',
@@ -47,8 +103,8 @@ const INITIAL_LISTINGS = [
     id: 103,
     title: 'Söke Toprak Tarım - İnsektisit ve Haşere İlacı',
     price: 520,
-    category: 'Hayvan Yemleri ve Ekipmanları',
-    subCategory: 'Yem Çeşitleri',
+    category: 'Zirai İlaç ve Gübreler',
+    subCategory: 'İnsektisit (Böcek İlacı)',
     mode: 'Satılık',
     location: 'Söke / Aydın',
     city: 'Aydın',
@@ -65,8 +121,8 @@ const INITIAL_LISTINGS = [
     id: 104,
     title: 'Bursa Atlantis Tarım - Yabancı Ot (Herbisit) İlacı',
     price: 750,
-    category: 'Hayvan Yemleri ve Ekipmanları',
-    subCategory: 'Yem Çeşitleri',
+    category: 'Zirai İlaç ve Gübreler',
+    subCategory: 'Herbisit (Ot İlacı)',
     mode: 'Satılık',
     location: 'Osmangazi / Bursa',
     city: 'Bursa',
@@ -714,6 +770,8 @@ export default function App() {
   };
 
   const categoriesWithSubs = {
+    'Veterinerler ve Hayvan Sağlığı': ['Klinik & Koruyucu Hekimlik', 'Aşı & İlaç Temini', 'Sürü Sağlığı Yönetimi', 'Diğer Veterinerlik'],
+    'Zirai İlaç ve Gübreler': ['Fungisit & Mantar İlacı', 'Yaprak Gübresi', 'İnsektisit (Böcek İlacı)', 'Herbisit (Ot İlacı)', 'Diğer Tarım İlacı'],
     'Mahsuller': ['Kiraz', 'Karpuz / Kavun', 'Ceviz', 'Zeytin & Zeytinyağı', 'Buğday / Arpa', 'Diğer Mahsul'],
     'Canlı Hayvanlar': ['Büyükbaş', 'Küçükbaş', 'Kanatlı'],
     'Hayvan Yemleri ve Ekipmanları': ['Yem Çeşitleri', 'Suluk / Yemlik'],
@@ -935,7 +993,7 @@ export default function App() {
             <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', margin: '8px 0' }}>{selectedListing.title}</h2>
             {selectedListing.amount && (
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#ecfdf5', color: '#059669', padding: '4px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', marginBottom: '12px', border: '1px solid #a7f3d0' }}>
-                <Package size={14} /> Ambalaj / Miktar: {selectedListing.amount}
+                <Package size={14} /> Bilgi / Hizmet Şekli: {selectedListing.amount}
               </div>
             )}
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '14px' }}>{selectedListing.price.toLocaleString('tr-TR')} TL</div>
@@ -959,12 +1017,12 @@ export default function App() {
             <form onSubmit={handleDirectAdd} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>İlan Başlığı *</label>
-                <input type="text" name="title" placeholder="Örn: Zirai İlaç, Gübre, Tohum" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                <input type="text" name="title" placeholder="Örn: Veteriner Kliniği, Aşı Hizmeti" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fiyat (TL) *</label>
-                  <input type="number" name="price" placeholder="450" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fiyat / Ücret (TL) *</label>
+                  <input type="number" name="price" placeholder="500" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Kategori</label>
@@ -977,18 +1035,18 @@ export default function App() {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Alt Ürün</label>
-                  <input type="text" name="subCategory" placeholder="Yem Çeşitleri" value={form.subCategory} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Alt Ürün / Hizmet</label>
+                  <input type="text" name="subCategory" placeholder="Klinik" value={form.subCategory} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Ambalaj / Miktar</label>
-                  <input type="text" name="amount" placeholder="1 Litre" value={form.amount} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Bilgi / Miktar</label>
+                  <input type="text" name="amount" placeholder="Muayene" value={form.amount} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Satıcı / Bayi Adı *</label>
-                  <input type="text" name="seller" placeholder="Bayi Adı" value={form.seller} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Veteriner / Klinik Adı *</label>
+                  <input type="text" name="seller" placeholder="Klinik Adı" value={form.seller} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Telefon *</label>
