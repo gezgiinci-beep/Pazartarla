@@ -171,13 +171,22 @@ export default function App() {
   });
 
   useEffect(() => {
+    // Hafızada hiç ilan yoksa veya eski bozuk veri varsa doğrudan INITIAL_LISTINGS yükle
     const saved = localStorage.getItem('pazartarla_listings');
     if (saved) {
       try {
-        setListings(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setListings(parsed);
+        } else {
+          setListings(INITIAL_LISTINGS);
+          localStorage.setItem('pazartarla_listings', JSON.stringify(INITIAL_LISTINGS));
+        }
       } catch (e) {
-        console.error(e);
+        setListings(INITIAL_LISTINGS);
       }
+    } else {
+      localStorage.setItem('pazartarla_listings', JSON.stringify(INITIAL_LISTINGS));
     }
   }, []);
 
