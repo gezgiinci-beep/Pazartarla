@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Search, SlidersHorizontal, MapPin, Phone, Plus, 
-  ChevronRight, X, Tractor, ArrowRight, Filter, LayoutList, ArrowLeft, Menu, Package 
+  Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus, 
+  Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, X, 
+  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star 
 } from 'lucide-react';
 
-const ZIRAI_LISTINGS = [
+const INITIAL_LISTINGS = [
+  // ZİRAİ İLAÇ VE GÜBRELER (TÜM TÜRKİYE GENELİ BAYİLER)
   {
     id: 101,
     title: 'Gönen Güven Zirai İlaç ve Gübre Bayii',
@@ -166,12 +168,106 @@ const ZIRAI_LISTINGS = [
     featured: false,
     image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
+  },
+
+  // VETERİNERLER VE HAYVAN SAĞLIĞI
+  {
+    id: 110,
+    title: 'Gönen Şifa Veteriner Kliniği (7/24)',
+    price: 500,
+    category: 'Veterinerler ve Hayvan Sağlığı',
+    subCategory: 'Klinik & Koruyucu Hekimlik',
+    mode: 'Hizmet',
+    location: 'Gönen / Balıkesir',
+    city: 'Balıkesir',
+    amount: 'Yerinde / Klinik Muayene',
+    description: 'Kurtuluş Mah. Kızılay Cad. Gönen/Balıkesir. Büyükbaş ve küçükbaş hayvanlar için suni tohumlama, aşılama ve cerrahi.',
+    seller: 'Vet. Hekim Mehmet Can',
+    phone: '0266 762 19 68',
+    verified: true,
+    featured: true,
+    image: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 111,
+    title: 'Bandırma Öncü Veteriner Deposu & Aşı Merkezi',
+    price: 1200,
+    category: 'Veterinerler ve Hayvan Sağlığı',
+    subCategory: 'Aşı & İlaç Temini',
+    mode: 'Satılık',
+    location: 'Bandırma / Balıkesir',
+    city: 'Balıkesir',
+    amount: 'Soğuk Zincir Sevkiyat',
+    description: 'Paşabayır Mah. İstasyon Cad. Bandırma. Sürü sağlığı için koruyucu aşılar, vitaminler ve antibiyotik tedariği.',
+    seller: 'Öncü Veterinerlik',
+    phone: '0266 714 55 66',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 112,
+    title: 'Bursa Karacabey Hayvan Sağlığı ve Veterinerlik',
+    price: 800,
+    category: 'Veterinerler ve Hayvan Sağlığı',
+    subCategory: 'Sürü Sağlığı Yönetimi',
+    mode: 'Hizmet',
+    location: 'Karacabey / Bursa',
+    city: 'Bursa',
+    amount: 'Periyodik Kontrol',
+    description: 'Göztepe Mah. Bursa Cad. Karacabey/Bursa. Çiftlikler için paraziter mücadele, tırnak bakımı ve sürü danışmanlığı.',
+    seller: 'Vet. Hekim Selim Demir',
+    phone: '0224 676 33 22',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+
+  // DİĞER MAHSUL VE EKİPMANLAR
+  {
+    id: 5,
+    title: 'Tarladan Doğrudan Taze Chandler Ceviz',
+    price: 140,
+    category: 'Mahsuller',
+    subCategory: 'Ceviz',
+    mode: 'Satılık',
+    location: 'Gönen / Balıkesir',
+    city: 'Balıkesir',
+    amount: '1 Ton',
+    description: 'Kendi bahçemizin ürünü, ilaçsız ve dolgun Chandler ceviz.',
+    seller: 'Can İnce',
+    phone: '0535 768 1550',
+    verified: true,
+    featured: true,
+    image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 22,
+    title: 'John Deere 6130M - Düşük saat, tek elden',
+    price: 2450000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Gönen / Balıkesir',
+    city: 'Balıkesir',
+    amount: '1200 Saat / 130 HP',
+    description: 'Kapalı garaj traktörüdür. Tüm bakımları yetkili serviste yapılmıştır.',
+    seller: 'Ahmet Yılmaz',
+    phone: '0532 555 0192',
+    verified: true,
+    featured: true,
+    image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
   }
 ];
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home'); 
-  const [listings, setListings] = useState(ZIRAI_LISTINGS);
+  const [listings, setListings] = useState(INITIAL_LISTINGS);
   const [selectedListing, setSelectedListing] = useState(null);
   
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
@@ -266,7 +362,10 @@ export default function App() {
   };
 
   const categoriesWithSubs = {
-    'Zirai İlaç ve Gübreler': ['Fungisit & Mantar İlacı', 'Yaprak Gübresi', 'İnsektisit (Böcek İlacı)', 'Herbisit (Ot İlacı)', 'Diğer Tarım İlacı']
+    'Veterinerler ve Hayvan Sağlığı': ['Klinik & Koruyucu Hekimlik', 'Aşı & İlaç Temini', 'Sürü Sağlığı Yönetimi'],
+    'Zirai İlaç ve Gübreler': ['Fungisit & Mantar İlacı', 'Yaprak Gübresi', 'İnsektisit (Böcek İlacı)', 'Herbisit (Ot İlacı)'],
+    'Mahsuller': ['Ceviz', 'Kiraz', 'Zeytin & Zeytinyağı'],
+    'Traktör': ['İkinci El Traktör']
   };
 
   const filteredListings = listings.filter(item => {
@@ -286,7 +385,7 @@ export default function App() {
           </div>
           <div>
             <h1 style={{ margin: 0, fontSize: '18px', fontWeight: '800', letterSpacing: '-0.5px' }}>PazarTarla</h1>
-            <span style={{ fontSize: '10px', color: '#86efac', display: 'block' }}>Zirai İlaç & Gübre Rehberi</span>
+            <span style={{ fontSize: '10px', color: '#86efac', display: 'block' }}>Tarım Pazaryeri</span>
           </div>
         </div>
 
@@ -295,7 +394,7 @@ export default function App() {
             onClick={() => changeTab('add')}
             style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: '700', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '0 2px 8px rgba(34, 197, 94, 0.3)' }}
           >
-            <Plus size={16} /> Bayi Ekle
+            <Plus size={16} /> İlan Ver
           </button>
         </div>
       </header>
@@ -308,14 +407,14 @@ export default function App() {
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflow: 'hidden', border: '1px solid #e2e8f0', width: '100%', boxSizing: 'border-box' }}>
             <div style={{ backgroundColor: '#1b3a2b', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <Menu size={20} />
-              <span style={{ fontSize: '16px', fontWeight: '700' }}>Zirai İlaç & Gübre Kategorileri</span>
+              <span style={{ fontSize: '16px', fontWeight: '700' }}>Kategori Seçimi</span>
             </div>
 
             <div 
               onClick={() => { setSelectedCategory('Tüm kategoriler'); setSelectedSubCategory('Tümü'); changeTab('results'); }}
               style={{ padding: '14px 16px', borderBottom: '1px solid #edf2f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', backgroundColor: '#f8fafc' }}
             >
-              <span style={{ fontWeight: '700', color: '#1b3a2b', fontSize: '15px' }}>Tüm Zirai Bayiler</span>
+              <span style={{ fontWeight: '700', color: '#1b3a2b', fontSize: '15px' }}>Tüm Tarım İlanları</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#22c55e', fontWeight: '700', fontSize: '14px' }}>
                 <span>({listings.length})</span>
                 <ChevronRight size={18} />
@@ -381,13 +480,13 @@ export default function App() {
 
             <div style={{ backgroundColor: '#fff', padding: '8px 12px', borderRadius: '8px', marginBottom: '10px', fontSize: '12px', color: '#64748b', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #e2e8f0' }}>
               <span>{selectedSubCategory !== 'Tümü' ? selectedSubCategory : selectedCategory}</span>
-              <span style={{ fontWeight: '700', color: '#1b3a2b' }}>{filteredListings.length} bayi</span>
+              <span style={{ fontWeight: '700', color: '#1b3a2b' }}>{filteredListings.length} sonuç</span>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
               {filteredListings.length === 0 ? (
                 <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '10px', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>
-                  Bu kategoride henüz bayi bulunmuyor.
+                  Bu kategoride henüz ilan bulunmuyor.
                 </div>
               ) : (
                 filteredListings.map(item => (
@@ -473,7 +572,7 @@ export default function App() {
             <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', margin: '8px 0' }}>{selectedListing.title}</h2>
             {selectedListing.amount && (
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#ecfdf5', color: '#059669', padding: '4px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', marginBottom: '12px', border: '1px solid #a7f3d0' }}>
-                <Package size={14} /> Ambalaj / Ölçü: {selectedListing.amount}
+                <Package size={14} /> Bilgi / Şekil: {selectedListing.amount}
               </div>
             )}
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '14px' }}>{selectedListing.price.toLocaleString('tr-TR')} TL</div>
@@ -487,17 +586,17 @@ export default function App() {
           </div>
         )}
 
-        {/* BAYİ EKLE EKRANI */}
+        {/* İLAN VER EKRANI */}
         {activeTab === 'add' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', boxSizing: 'border-box', width: '100%' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
               <button onClick={() => changeTab('home')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer', fontSize: '13px' }}>← Vazgeç</button>
-              <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>Yeni Zirai Bayi Ekle</h2>
+              <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>Yeni İlan Ver</h2>
             </div>
             <form onSubmit={handleDirectAdd} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Bayi / İlan Başlığı *</label>
-                <input type="text" name="title" placeholder="Örn: Gönen Ziraat Deposu" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>İlan Başlığı *</label>
+                <input type="text" name="title" placeholder="Örn: Zirai İlaç / Mahsul" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
@@ -505,40 +604,30 @@ export default function App() {
                   <input type="number" name="price" placeholder="450" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Alt Kategori</label>
-                  <select name="subCategory" value={form.subCategory} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff', fontSize: '13px' }}>
-                    {categoriesWithSubs['Zirai İlaç ve Gübreler'].map(sub => (
-                      <option key={sub} value={sub}>{sub}</option>
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Kategori</label>
+                  <select name="category" value={form.category} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff', fontSize: '13px' }}>
+                    {Object.keys(categoriesWithSubs).map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </select>
                 </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Konum / İlçe</label>
-                  <input type="text" name="location" placeholder="Gönen / Balıkesir" value={form.location} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Ambalaj / Miktar</label>
-                  <input type="text" name="amount" placeholder="1 Litre" value={form.amount} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
-                </div>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Bayi Adı *</label>
-                  <input type="text" name="seller" placeholder="Bayi Adı" value={form.seller} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Satıcı / Bayi Adı *</label>
+                  <input type="text" name="seller" placeholder="Ad Soyad / İşletme" value={form.seller} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Telefon *</label>
-                  <input type="text" name="phone" placeholder="0266..." value={form.phone} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                  <input type="text" name="phone" placeholder="0532..." value={form.phone} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
               </div>
               <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Açıklama ve Adres</label>
-                <textarea name="description" placeholder="Adres ve ürün detayları..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px', boxSizing: 'border-box', fontSize: '13px' }} />
+                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Açıklama</label>
+                <textarea name="description" placeholder="Detaylar..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px', boxSizing: 'border-box', fontSize: '13px' }} />
               </div>
               <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', fontSize: '14px' }}>
-                Bayiyi Hemen Yayınla
+                İlanı Hemen Yayınla
               </button>
             </form>
           </div>
@@ -551,7 +640,7 @@ export default function App() {
               <div style={{ maxWidth: '300px', margin: '20px auto', textAlign: 'center' }}>
                 <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', marginBottom: '8px' }}>Admin Girişi</h2>
                 <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <input type="password" placeholder="Admin Şifresi (1234)" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', textAlign: 'center', fontSize: '14px' }} />
+                  <input type="password" placeholder="Şifre (1234)" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', textAlign: 'center', fontSize: '14px' }} />
                   <button type="submit" style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Giriş Yap</button>
                 </form>
                 <div style={{ marginTop: '16px' }}>
@@ -561,7 +650,7 @@ export default function App() {
             ) : (
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid #edf2f7', paddingBottom: '10px' }}>
-                  <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>Bayi Denetimi</h2>
+                  <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>İlan Denetimi</h2>
                   <button onClick={() => changeTab('home')} style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}>Ana Sayfa</button>
                 </div>
 
@@ -572,7 +661,7 @@ export default function App() {
                         <img src={item.image} alt="" style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover' }} />
                         <div>
                           <h4 style={{ margin: '0 0 2px 0', fontSize: '13px', fontWeight: '700', color: '#0f172a' }}>{item.title}</h4>
-                          <span style={{ fontSize: '11px', color: '#64748b' }}>{item.location}</span>
+                          <span style={{ fontSize: '11px', color: '#64748b' }}>{item.price.toLocaleString('tr-TR')} TL</span>
                         </div>
                       </div>
                       <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 8px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '11px' }}>
@@ -589,7 +678,7 @@ export default function App() {
       </main>
 
       <footer style={{ backgroundColor: '#1b3a2b', color: '#94a3b8', padding: '14px', textAlign: 'center', fontSize: '11px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 'auto', boxSizing: 'border-box', width: '100%' }}>
-        <span>© 2026 PazarTarla • Zirai İlaç & Gübre Rehberi</span>
+        <span>© 2026 PazarTarla • Gönen / Balıkesir</span>
       </footer>
 
     </div>
