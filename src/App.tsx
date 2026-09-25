@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus, 
   Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, X, 
-  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Send 
+  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users 
 } from 'lucide-react';
 
 const INITIAL_LISTINGS = [
@@ -47,7 +47,7 @@ const INITIAL_LISTINGS = [
 ];
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('home'); 
+  const [activeTab, setActiveTab] = useState('home'); // 'home', 'detail', 'add', 'admin'
   const [listings, setListings] = useState(INITIAL_LISTINGS);
   const [selectedListing, setSelectedListing] = useState(null);
   
@@ -75,8 +75,6 @@ export default function App() {
     image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800'
   });
 
-  const [pendingListing, setPendingListing] = useState(null);
-
   useEffect(() => {
     const saved = localStorage.getItem('pazartarla_listings');
     if (saved) {
@@ -97,8 +95,8 @@ export default function App() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // İlan verince direkt WhatsApp onay ekranına yönlendirir
-  const handleInitiateAdd = (e) => {
+  // İlan doğrudan eklenir ve yayına girer (Admin sonradan dilerse siler)
+  const handleDirectAdd = (e) => {
     e.preventDefault();
     if (!form.title || !form.price || !form.phone || !form.seller) {
       alert('Lütfen başlık, fiyat/yevmiye, ad Soyad ve telefon numarası alanlarını doldurun.');
@@ -114,20 +112,31 @@ export default function App() {
       date: 'Bugün'
     };
 
-    setPendingListing(newEntry);
-    setActiveTab('whatsapp-pending');
-  };
-
-  const handleFinalPublish = () => {
-    const updated = [pendingListing, ...listings];
+    const updated = [newEntry, ...listings];
     saveListings(updated);
-    setPendingListing(null);
     setActiveTab('home');
-    alert('İlan başarıyla onaylandı ve yayına alındı!');
+    alert('İlanınız başarıyla yayınlandı!');
+    
+    // Formu sıfırla
+    setForm({
+      title: '',
+      price: '',
+      category: 'Traktör',
+      mode: 'Satılık',
+      location: 'Gönen / Balıkesir',
+      city: 'Balıkesir',
+      year: '2026',
+      hours: '',
+      power: '',
+      description: '',
+      seller: '',
+      phone: '',
+      image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800'
+    });
   };
 
   const handleDeleteListing = (id) => {
-    if (window.confirm('Bu ilanı silmek istediğinize emin misiniz?')) {
+    if (window.confirm('Bu ilanı yayından kaldırmak/silmek istediğinize emin misiniz?')) {
       const updated = listings.filter(item => item.id !== id);
       saveListings(updated);
     }
@@ -314,7 +323,7 @@ export default function App() {
                     </div>
                     <div>
                       <div style={{ fontSize: '20px', fontWeight: '800', color: '#1b3a2b', marginBottom: '12px' }}>
-                        {item.price.toLocaleString('tr-TR')} TL
+                        {item.price.toLocaleString('tr-TR')} TL {item.category === 'Tarım İşçileri' ? <span style={{ fontSize: '12px', fontWeight: 'normal', color: '#64748b' }}>/ Günlük</span> : ''}
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #f1f5f9', paddingTop: '12px', fontSize: '13px', color: '#64748b' }}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {item.location}</span>
@@ -338,14 +347,20 @@ export default function App() {
             </div>
             <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a', margin: '12px 0' }}>{selectedListing.title}</h2>
             <div style={{ fontSize: '28px', fontWeight: '800', color: '#1b3a2b', marginBottom: '20px' }}>{selectedListing.price.toLocaleString('tr-TR')} TL</div>
-            <p style={{ color: '#475569', lineHeight: '1.6' }}>{selectedListing.description}</p>
+            <p style={{ color: '#475569', lineHeight: '1.6', marginBottom: '24px' }}>{selectedListing.description}</p>
+            
+            <div style={{ display: 'flex', gap: '16px', borderTop: '1px solid #e2e8f0', paddingTop: '24px' }}>
+              <a href={`tel:${selectedListing.phone}`} style={{ flex: 1, backgroundColor: '#1b3a2b', color: '#fff', padding: '14px', borderRadius: '12px', textAlign: 'center', fontWeight: '700', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <Phone size={20} /> {selectedListing.phone} ({selectedListing.seller})
+              </a>
+            </div>
           </div>
         )}
 
         {activeTab === 'add' && (
           <div style={{ maxWidth: '700px', margin: '0 auto', backgroundColor: '#fff', borderRadius: '20px', padding: '32px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0' }}>
             <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a', marginBottom: '24px' }}>PazarTarla - Yeni İlan Ver</h2>
-            <form onSubmit={handleInitiateAdd} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <form onSubmit={handleDirectAdd} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div>
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>İlan Başlığı *</label>
                 <input type="text" name="title" placeholder="Örn: 10 Kişilik Ceviz Hasat Ekibi veya Traktör" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
@@ -365,69 +380,69 @@ export default function App() {
                   </select>
                 </div>
               </div>
-              <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>İletişim Adı / Dayıbaşı *</label>
-                <input type="text" name="seller" placeholder="Adınız Soyadınız" value={form.seller} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>İletişim Adı / Dayıbaşı *</label>
+                  <input type="text" name="seller" placeholder="Adınız Soyadınız" value={form.seller} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Telefon Numarası *</label>
+                  <input type="text" name="phone" placeholder="0532 000 0000" value={form.phone} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+                </div>
               </div>
               <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Telefon Numarası *</label>
-                <input type="text" name="phone" placeholder="0532 000 0000" value={form.phone} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+                <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Açıklama</label>
+                <textarea name="description" placeholder="Detayları yazın..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', height: '100px', boxSizing: 'border-box' }} />
               </div>
-              <button type="submit" style={{ backgroundColor: '#25D366', color: '#fff', border: 'none', padding: '14px', borderRadius: '12px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                <MessageCircle size={20} /> WhatsApp ile Yöneticiye Gönder
+              <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '14px', borderRadius: '12px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)' }}>
+                İlanı Hemen Yayınla
               </button>
             </form>
           </div>
         )}
 
-        {activeTab === 'whatsapp-pending' && pendingListing && (
-          <div style={{ maxWidth: '520px', margin: '40px auto', backgroundColor: '#fff', borderRadius: '20px', padding: '32px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0', textAlign: 'center' }}>
-            <div style={{ backgroundColor: '#dcfce7', width: '64px', height: '64px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px auto' }}>
-              <MessageCircle size={32} color="#16a34a" />
-            </div>
-            <h2 style={{ fontSize: '22px', fontWeight: '800', color: '#0f172a', marginBottom: '8px' }}>WhatsApp Onayı Gerekiyor</h2>
-            <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '24px' }}>
-              İlanınızın yayınlanması için yöneticinin (Can - 0535 768 1550) WhatsApp üzerinden onay vermesi gerekmektedir.
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <a 
-                href={`https://wa.me/905357681550?text=${encodeURIComponent(`Merhaba Can, PazarTarla yeni ilan onayı:\n\nBaşlık: ${pendingListing.title}\nFiyat: ${pendingListing.price} TL\nKategori:${pendingListing.category}\nİletişim: ${pendingListing.seller} (${pendingListing.phone})\n\nOnaylıyorum.`)}`}
-                target="_blank"
-                rel="noreferrer"
-                style={{ backgroundColor: '#25D366', color: '#fff', border: 'none', padding: '14px', borderRadius: '12px', fontWeight: '700', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-              >
-                <MessageCircle size={20} /> WhatsApp'ta Onaya Gönder
-              </a>
-              <button 
-                onClick={handleFinalPublish}
-                style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '14px', borderRadius: '12px', fontWeight: '700', cursor: 'pointer' }}
-              >
-                Yönetici Olarak Onayla ve Yayınla
-              </button>
-            </div>
-          </div>
-        )}
-
+        {/* ADMIN PANELİ */}
         {activeTab === 'admin' && (
-          <div style={{ maxWidth: '900px', margin: '0 auto', backgroundColor: '#fff', borderRadius: '20px', padding: '32px', border: '1px solid #e2e8f0' }}>
+          <div style={{ maxWidth: '900px', margin: '0 auto', backgroundColor: '#fff', borderRadius: '20px', padding: '32px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0' }}>
             {!isAdminLoggedIn ? (
               <div style={{ maxWidth: '400px', margin: '40px auto', textAlign: 'center' }}>
-                <h2 style={{ fontSize: '22px', fontWeight: '800', marginBottom: '8px' }}>Admin Girişi</h2>
+                <div style={{ backgroundColor: '#f1f5f9', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto' }}>
+                  <Lock size={28} color="#1b3a2b" />
+                </div>
+                <h2 style={{ fontSize: '22px', fontWeight: '800', color: '#0f172a', marginBottom: '8px' }}>Admin Girişi</h2>
+                <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '24px' }}>Yönetim paneline erişmek için şifrenizi girin</p>
                 <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <input type="password" placeholder="Admin Şifresi" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', textAlign: 'center' }} />
-                  <button type="submit" style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '12px', borderRadius: '10px', fontWeight: '700' }}>Giriş Yap</button>
+                  <input type="password" placeholder="Admin Şifresi" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box', textAlign: 'center', fontSize: '16px' }} />
+                  <button type="submit" style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '12px', borderRadius: '10px', fontWeight: '700', cursor: 'pointer' }}>Giriş Yap</button>
                 </form>
-                <button type="button" onClick={handleForgotPassword} style={{ background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer', marginTop: '16px', textDecoration: 'underline' }}>Şifremi Unuttum?</button>
+                <button type="button" onClick={handleForgotPassword} style={{ background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer', fontSize: '13px', textDecoration: 'underline', marginTop: '16px' }}>Şifremi Unuttum?</button>
               </div>
             ) : (
               <div>
-                <h2>Yönetim Paneli</h2>
-                {listings.map(item => (
-                  <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', borderBottom: '1px solid #eee' }}>
-                    <span>{item.title}</span>
-                    <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 10px', borderRadius: '6px' }}>Sil</button>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', borderBottom: '1px solid #e2e8f0', paddingBottom: '16px' }}>
+                  <div>
+                    <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a', margin: 0 }}>İlan Denetim Paneli</h2>
+                    <p style={{ color: '#64748b', fontSize: '14px', margin: '4px 0 0 0' }}>Sistemdeki toplam {listings.length} ilan denetleniyor.</p>
                   </div>
-                ))}
+                  <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: '600', cursor: 'pointer', fontSize: '13px' }}>Çıkış Yap</button>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {listings.map(item => (
+                    <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <img src={item.image} alt="" style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover' }} />
+                        <div>
+                          <h4 style={{ margin: '0 0 4px 0', fontSize: '15px', fontWeight: '700', color: '#0f172a' }}>{item.title}</h4>
+                          <span style={{ fontSize: '13px', color: '#64748b' }}>{item.price.toLocaleString('tr-TR')} TL • {item.location} • Tel: {item.phone || 'Belirtilmemiş'}</span>
+                        </div>
+                      </div>
+                      <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '8px 12px', borderRadius: '8px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Trash2 size={16} /> Kaldır / Sil
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -435,12 +450,21 @@ export default function App() {
 
       </main>
 
-      <footer style={{ backgroundColor: '#1b3a2b', color: '#94a3b8', padding: '24px 32px', textAlign: 'center', fontSize: '13px', marginTop: 'auto' }}>
+      <footer style={{ backgroundColor: '#1b3a2b', color: '#94a3b8', padding: '24px 32px', textAlign: 'center', fontSize: '13px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 'auto' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-          <span>© 2026 PazarTarla - Tel: 0535 768 1550</span>
-          <button onClick={() => setActiveTab('admin')} style={{ background: 'none', border: 'none', color: '#cbd5e1', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><Settings size={14} /> Yönetici Paneli</button>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
+            <span style={{ color: '#fff', fontWeight: '600' }}>© 2026 PazarTarla - Tüm Hakları Saklıdır.</span>
+            <div style={{ display: 'flex', gap: '16px', fontSize: '13px', color: '#cbd5e1' }}>
+              <span>0535 768 1550</span>
+              <span>gezgiinci@gmail.com</span>
+            </div>
+          </div>
+          <button onClick={() => setActiveTab('admin')} style={{ background: 'none', border: 'none', color: '#cbd5e1', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '500' }}>
+            <Settings size={14} /> Yönetim Paneli (Admin)
+          </button>
         </div>
       </footer>
+
     </div>
   );
 }
