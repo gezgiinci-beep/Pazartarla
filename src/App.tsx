@@ -124,12 +124,9 @@ export default function App() {
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedMode, setSelectedMode] = useState('Tümü'); 
   const [selectedCategory, setSelectedCategory] = useState('Tüm kategoriler');
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
-  const [selectedCity, setSelectedCity] = useState('Tüm Türkiye');
-
+  
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewMode, setViewMode] = useState('Liste');
 
@@ -220,286 +217,222 @@ export default function App() {
   };
 
   const filteredListings = listings.filter(item => {
-    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          item.location.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesMode = selectedMode === 'Tümü' || item.mode === selectedMode;
     const matchesCategory = selectedCategory === 'Tüm kategoriler' || item.category === selectedCategory;
     const matchesSubCategory = selectedSubCategory === 'Tümü' || item.subCategory === selectedSubCategory;
-    const matchesCity = selectedCity === 'Tüm Türkiye' || item.city === selectedCity;
-
-    return matchesSearch && matchesMode && matchesCategory && matchesSubCategory && matchesCity;
+    return matchesCategory && matchesSubCategory;
   });
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f4f6f8', color: '#1e293b', fontFamily: 'system-ui, -apple-system, sans-serif', display: 'flex', flexDirection: 'column', width: '100%', overflowX: 'hidden', boxSizing: 'border-box' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f4f6f8', color: '#1e293b', fontFamily: 'system-ui, -apple-system, sans-serif', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', overflowX: 'hidden', boxSizing: 'border-box' }}>
       
       {/* ÜST HEADER */}
-      <header style={{ backgroundColor: '#1b3a2b', color: '#ffffff', padding: '14px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 10px rgba(0,0,0,0.1)', position: 'sticky', top: 0, zIndex: 100, width: '100%', boxSizing: 'border-box' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => { setActiveTab('home'); setSelectedCategory('Tüm kategoriler'); setSelectedSubCategory('Tümü'); }}>
-          <div style={{ backgroundColor: '#22c55e', padding: '8px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Tractor size={24} color="#fff" />
+      <header style={{ backgroundColor: '#1b3a2b', color: '#ffffff', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', position: 'sticky', top: 0, zIndex: 100, width: '100%', boxSizing: 'border-box' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => { setActiveTab('home'); setSelectedCategory('Tüm kategoriler'); setSelectedSubCategory('Tümü'); }}>
+          <div style={{ backgroundColor: '#22c55e', padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Tractor size={20} color="#fff" />
           </div>
           <div>
-            <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '800', letterSpacing: '-0.5px' }}>PazarTarla</h1>
-            <span style={{ fontSize: '11px', color: '#86efac', display: 'block' }}>Tarım, Hayvancılık ve Arıcılık Pazaryeri</span>
+            <h1 style={{ margin: 0, fontSize: '18px', fontWeight: '800', letterSpacing: '-0.5px' }}>PazarTarla</h1>
+            <span style={{ fontSize: '10px', color: '#86efac', display: 'block' }}>Tarım Pazaryeri</span>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <button 
-            onClick={() => setActiveTab('home')}
-            style={{ backgroundColor: activeTab === 'home' ? 'rgba(255,255,255,0.15)' : 'transparent', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '14px' }}
-          >
-            İlanları Keşfet
-          </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button 
             onClick={() => setActiveTab('add')}
-            style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: '700', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)' }}
+            style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: '700', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '0 2px 8px rgba(34, 197, 94, 0.3)' }}
           >
-            <Plus size={18} /> İlan Ver
+            <Plus size={16} /> İlan Ver
           </button>
         </div>
       </header>
 
-      {/* ANA İÇERİK (BİLGİSAYARDA YAN YANA AĞAÇ MENÜ + İLANLAR, TELEKonda SAHİBİNDEN AKIŞI) */}
-      <main style={{ maxWidth: '1280px', width: '100%', margin: '0 auto', padding: '24px 20px', flex: 1, boxSizing: 'border-box' }}>
+      {/* ANA İÇERİK - KESİNLİKLE TEK SÜTUN VE MOBİL UYUMLU */}
+      <main style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '12px', flex: 1, boxSizing: 'border-box' }}>
         
+        {/* 1. EKRAN: KATEGORİ SEÇİMİ (SAHİBİNDEN MOBİL GÖRÜNÜMÜ) */}
         {activeTab === 'home' && (
-          <div>
-            <div style={{ marginBottom: '24px' }}>
-              <h2 style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a', margin: '0 0 6px 0', letterSpacing: '-1px' }}>
-                İlanları Keşfet
-              </h2>
-              <p style={{ color: '#64748b', fontSize: '15px', margin: 0 }}>
-                Traktör, kiraz, karpuz, ceviz, canlı hayvan, yem ve ziraat ekipmanları bul.
-              </p>
+          <div style={{ backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflow: 'hidden', border: '1px solid #e2e8f0', width: '100%', boxSizing: 'border-box' }}>
+            <div style={{ backgroundColor: '#1b3a2b', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Menu size={20} />
+              <span style={{ fontSize: '16px', fontWeight: '700' }}>Kategori Seçimi</span>
             </div>
 
-            {/* ARAMA VE MOD ÇUBUĞU */}
-            <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', marginBottom: '24px', border: '1px solid #e2e8f0', boxSizing: 'border-box' }}>
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', borderBottom: '1px solid #f1f5f9', paddingBottom: '14px', flexWrap: 'wrap' }}>
-                {['Tümü', 'Satılık', 'Kiralık', 'Hizmet'].map(mode => (
-                  <button
-                    key={mode}
-                    onClick={() => setSelectedMode(mode)}
-                    style={{
-                      padding: '8px 18px',
-                      borderRadius: '8px',
-                      border: 'none',
-                      fontWeight: '600',
-                      fontSize: '14px',
-                      cursor: 'pointer',
-                      backgroundColor: selectedMode === mode ? '#1b3a2b' : '#f1f5f9',
-                      color: selectedMode === mode ? '#fff' : '#475569',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    {mode}
-                  </button>
-                ))}
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 220px', gap: '16px', flexWrap: 'wrap' }}>
-                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                  <Search size={18} color="#94a3b8" style={{ position: 'absolute', left: '14px' }} />
-                  <input 
-                    type="text"
-                    placeholder="Ürün, malzeme, traktör ara..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '12px 14px 12px 44px',
-                      borderRadius: '10px',
-                      border: '1px solid #cbd5e1',
-                      fontSize: '14px',
-                      outline: 'none',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                </div>
-
-                <select 
-                  value={selectedCity}
-                  onChange={(e) => setSelectedCity(e.target.value)}
-                  style={{ padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '14px', backgroundColor: '#fff', outline: 'none', cursor: 'pointer' }}
-                >
-                  <option value="Tüm Türkiye">Tüm Türkiye</option>
-                  <option value="Balıkesir">Balıkesir</option>
-                  <option value="Bursa">Bursa</option>
-                </select>
+            <div 
+              onClick={() => { setSelectedCategory('Tüm kategoriler'); setSelectedSubCategory('Tümü'); setActiveTab('results'); }}
+              style={{ padding: '14px 16px', borderBottom: '1px solid #edf2f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', backgroundColor: '#f8fafc' }}
+            >
+              <span style={{ fontWeight: '700', color: '#1b3a2b', fontSize: '15px' }}>Tüm Tarım İlanları</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#22c55e', fontWeight: '700', fontSize: '14px' }}>
+                <span>({listings.length})</span>
+                <ChevronRight size={18} />
               </div>
             </div>
 
-            {/* BİLGİSAYAR İÇİN YAN YANA YAPI (SOL DİKEY AĞAÇ MENÜ + SAĞ İLANLAR) */}
-            <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: '28px', alignItems: 'start' }}>
-              
-              {/* SOL DİKEY KATEGORİ AĞACI */}
-              <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
-                <h3 style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b', margin: '0 0 16px 0', borderBottom: '2px solid #22c55e', paddingBottom: '8px' }}>
-                  Kategoriler
-                </h3>
-
+            {Object.keys(categoriesWithSubs).map(cat => (
+              <div key={cat}>
                 <div 
-                  onClick={() => { setSelectedCategory('Tüm kategoriler'); setSelectedSubCategory('Tümü'); }}
-                  style={{ 
-                    padding: '8px 12px', 
-                    borderRadius: '8px', 
-                    cursor: 'pointer', 
-                    fontWeight: selectedCategory === 'Tüm kategoriler' ? '800' : '600', 
-                    color: selectedCategory === 'Tüm kategoriler' ? '#22c55e' : '#334155',
-                    backgroundColor: selectedCategory === 'Tüm kategoriler' ? '#f0fdf4' : 'transparent',
-                    marginBottom: '8px',
-                    fontSize: '14px'
-                  }}
+                  onClick={() => { setSelectedCategory(cat); setSelectedSubCategory('Tümü'); setActiveTab('results'); }}
+                  style={{ padding: '14px 16px', borderBottom: '1px solid #edf2f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
                 >
-                  Tüm Kategoriler
+                  <span style={{ fontWeight: '600', color: '#334155', fontSize: '14px' }}>{cat}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#94a3b8', fontSize: '13px' }}>
+                    <span>({listings.filter(i => i.category === cat).length})</span>
+                    <ChevronRight size={16} />
+                  </div>
                 </div>
 
-                {Object.keys(categoriesWithSubs).map(cat => {
-                  const isCatSelected = selectedCategory === cat;
-                  return (
-                    <div key={cat} style={{ marginBottom: '8px' }}>
-                      <div 
-                        onClick={() => { setSelectedCategory(cat); setSelectedSubCategory('Tümü'); }}
-                        style={{ 
-                          padding: '8px 12px', 
-                          borderRadius: '8px', 
-                          cursor: 'pointer', 
-                          fontWeight: isCatSelected ? '800' : '600', 
-                          color: isCatSelected ? '#22c55e' : '#1e293b',
-                          backgroundColor: isCatSelected ? '#f0fdf4' : 'transparent',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          fontSize: '14px'
-                        }}
-                      >
-                        <span>{cat}</span>
-                        <ChevronRight size={14} style={{ transform: isCatSelected ? 'rotate(90deg)' : 'none', transition: '0.2s' }} />
-                      </div>
-
-                      {isCatSelected && (
-                        <div style={{ paddingLeft: '16px', marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '4px', borderLeft: '2px solid #22c55e', marginLeft: '12px' }}>
-                          <div 
-                            onClick={() => setSelectedSubCategory('Tümü')}
-                            style={{ 
-                              padding: '6px 10px', 
-                              borderRadius: '6px', 
-                              cursor: 'pointer', 
-                              fontSize: '13px', 
-                              fontWeight: selectedSubCategory === 'Tümü' ? '700' : '500',
-                              color: selectedSubCategory === 'Tümü' ? '#22c55e' : '#64748b' 
-                            }}
-                          >
-                            Tümü ({cat})
-                          </div>
-                          {categoriesWithSubs[cat].map(sub => {
-                            const isSubSelected = selectedSubCategory === sub;
-                            return (
-                              <div 
-                                key={sub}
-                                onClick={() => setSelectedSubCategory(sub)}
-                                style={{ 
-                                  padding: '6px 10px', 
-                                  borderRadius: '6px', 
-                                  cursor: 'pointer', 
-                                  fontSize: '13px', 
-                                  fontWeight: isSubSelected ? '700' : '500',
-                                  color: isSubSelected ? '#22c55e' : '#64748b',
-                                  backgroundColor: isSubSelected ? '#f8fafc' : 'transparent'
-                                }}
-                              >
-                                • {sub}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-
-                <div style={{ marginTop: '24px', borderTop: '1px solid #e2e8f0', paddingTop: '16px', textAlign: 'center' }}>
-                  <button onClick={() => setActiveTab('admin')} style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '13px', cursor: 'pointer', textDecoration: 'underline', fontWeight: '600' }}>
-                    Yönetim Paneli (Admin)
-                  </button>
-                </div>
-              </div>
-
-              {/* SAĞ TARAF: İLAN LİSTESİ */}
-              <div>
-                <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#334155', margin: 0 }}>
-                    {filteredListings.length} ilan bulundu
-                  </h3>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '20px' }}>
-                  {filteredListings.map(item => (
+                <div style={{ backgroundColor: '#fafafa', borderBottom: '1px solid #edf2f7' }}>
+                  {categoriesWithSubs[cat].map(sub => (
                     <div 
-                      key={item.id} 
-                      onClick={() => { setSelectedListing(item); setActiveTab('detail'); }}
-                      style={{ backgroundColor: '#fff', borderRadius: '16px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
+                      key={sub}
+                      onClick={(e) => { e.stopPropagation(); setSelectedCategory(cat); setSelectedSubCategory(sub); setActiveTab('results'); }}
+                      style={{ padding: '10px 16px 10px 28px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
                     >
-                      <div style={{ position: 'relative', height: '180px', backgroundColor: '#f1f5f9' }}>
-                        <img src={item.image} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        <span style={{ position: 'absolute', top: '12px', left: '12px', backgroundColor: item.mode === 'Satılık' ? '#22c55e' : item.mode === 'Kiralık' ? '#f59e0b' : '#3b82f6', color: '#fff', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '700' }}>
-                          {item.mode}
-                        </span>
-                      </div>
-                      <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
-                        <div>
-                          <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase' }}>{item.category} {item.subCategory ? `> ${item.subCategory}` : ''}</span>
-                          <h4 style={{ margin: '6px 0 8px 0', fontSize: '15px', fontWeight: '700', color: '#0f172a', lineHeight: '1.4' }}>{item.title}</h4>
-                          {item.amount && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#059669', fontWeight: '600', marginBottom: '8px' }}>
-                              <Package size={13} /> {item.amount}
-                            </div>
-                          )}
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '18px', fontWeight: '800', color: '#1b3a2b', marginBottom: '10px' }}>
-                            {item.price.toLocaleString('tr-TR')} TL
-                          </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #f1f5f9', paddingTop: '10px', fontSize: '12px', color: '#64748b' }}>
-                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={13} /> {item.location}</span>
-                            <span>{item.date}</span>
-                          </div>
-                        </div>
-                      </div>
+                      <span style={{ fontSize: '13px', color: '#64748b' }}>• {sub}</span>
+                      <ChevronRight size={14} color="#cbd5e1" />
                     </div>
                   ))}
                 </div>
               </div>
+            ))}
 
+            <div style={{ padding: '16px', textAlign: 'center', backgroundColor: '#f8fafc' }}>
+              <button onClick={() => setActiveTab('admin')} style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '12px', cursor: 'pointer', textDecoration: 'underline' }}>
+                Yönetim Paneli (Admin)
+              </button>
             </div>
+          </div>
+        )}
+
+        {/* 2. EKRAN: ARAMA SONUÇLARI (ÜSTTE FİLTRELE, SIRALA, GÖRÜNÜM) */}
+        {activeTab === 'results' && (
+          <div style={{ width: '100%', boxSizing: 'border-box' }}>
+            <div style={{ backgroundColor: '#1b3a2b', color: '#fff', borderRadius: '10px', padding: '10px 14px', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
+              <button 
+                onClick={() => setActiveTab('home')} 
+                style={{ background: 'none', border: 'none', color: '#86efac', fontWeight: '700', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                <ArrowLeft size={16} /> Kategoriler
+              </button>
+              
+              <div style={{ display: 'flex', gap: '12px', fontSize: '12px', fontWeight: '600' }}>
+                <span onClick={() => alert('Filtreleme aktif')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                  <Filter size={13} /> Filtrele
+                </span>
+                <span onClick={() => alert('Sıralama aktif')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                  <ArrowUpDown size={13} /> Sırala
+                </span>
+                <span onClick={() => setShowViewModal(true)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px', color: '#86efac' }}>
+                  <LayoutList size={13} /> Görünüm
+                </span>
+              </div>
+            </div>
+
+            <div style={{ backgroundColor: '#fff', padding: '8px 12px', borderRadius: '8px', marginBottom: '10px', fontSize: '12px', color: '#64748b', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #e2e8f0' }}>
+              <span>{selectedSubCategory !== 'Tümü' ? selectedSubCategory : selectedCategory}</span>
+              <span style={{ fontWeight: '700', color: '#1b3a2b' }}>{filteredListings.length} sonuç</span>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
+              {filteredListings.length === 0 ? (
+                <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '10px', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>
+                  Bu kategoride ilan bulunmuyor.
+                </div>
+              ) : (
+                filteredListings.map(item => (
+                  <div 
+                    key={item.id} 
+                    onClick={() => { setSelectedListing(item); setActiveTab('detail'); }}
+                    style={{ backgroundColor: '#fff', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', cursor: 'pointer', display: 'flex', gap: '10px', padding: '10px', boxSizing: 'border-box', width: '100%' }}
+                  >
+                    <div style={{ position: 'relative', width: viewMode === 'Detaylı Liste' ? '110px' : '90px', height: viewMode === 'Detaylı Liste' ? '110px' : '90px', backgroundColor: '#f1f5f9', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
+                      <img src={item.image} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <span style={{ position: 'absolute', top: '4px', left: '4px', backgroundColor: item.mode === 'Satılık' ? '#22c55e' : '#f59e0b', color: '#fff', padding: '2px 5px', borderRadius: '4px', fontSize: '9px', fontWeight: '700' }}>
+                        {item.mode}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1, minWidth: 0 }}>
+                      <div>
+                        <span style={{ fontSize: '10px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.category}</span>
+                        <h4 style={{ margin: '2px 0 4px 0', fontSize: '13px', fontWeight: '700', color: '#0f172a', lineHeight: '1.2' }}>{item.title}</h4>
+                        {item.amount && (
+                          <div style={{ fontSize: '11px', color: '#059669', fontWeight: '600' }}>
+                            {item.amount}
+                          </div>
+                        )}
+                        {viewMode === 'Detaylı Liste' && (
+                          <p style={{ fontSize: '11px', color: '#64748b', margin: '4px 0 0 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                            {item.description}
+                          </p>
+                        )}
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '4px' }}>
+                        <div style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b' }}>
+                          {item.price.toLocaleString('tr-TR')} TL
+                        </div>
+                        <div style={{ fontSize: '10px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                          <MapPin size={10} /> {item.location}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* GÖRÜNÜM TERCİHİ MODALI */}
+            {showViewModal && (
+              <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 1000 }}>
+                <div style={{ backgroundColor: '#fff', width: '100%', maxWidth: '600px', borderTopLeftRadius: '16px', borderTopRightRadius: '16px', padding: '20px', boxSizing: 'border-box' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: '0 0 16px 0', textAlign: 'center' }}>Görünüm Tercihi</h3>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
+                    {['Liste', 'Detaylı Liste'].map(mode => (
+                      <label key={mode} onClick={() => setViewMode(mode)} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', fontWeight: '600', color: '#334155', cursor: 'pointer', padding: '8px 0' }}>
+                        <input type="radio" name="view" checked={viewMode === mode} readOnly style={{ accentColor: '#1b3a2b', width: '16px', height: '16px' }} />
+                        {mode}
+                      </label>
+                    ))}
+                  </div>
+
+                  <button 
+                    onClick={() => setShowViewModal(false)}
+                    style={{ width: '100%', backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', fontSize: '14px', cursor: 'pointer' }}
+                  >
+                    Vazgeç / Kapat
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
         {/* İLAN DETAY EKRANI */}
         {activeTab === 'detail' && selectedListing && (
-          <div style={{ maxWidth: '800px', margin: '0 auto', backgroundColor: '#fff', borderRadius: '20px', padding: '32px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0' }}>
-            <div style={{ marginBottom: '20px' }}>
-              <button onClick={() => setActiveTab('home')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <ArrowLeft size={18} /> Geri dön
+          <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', boxSizing: 'border-box', width: '100%' }}>
+            <div style={{ marginBottom: '14px' }}>
+              <button onClick={() => setActiveTab('results')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <ArrowLeft size={16} /> Listeye Dön
               </button>
             </div>
-            <div style={{ height: '350px', borderRadius: '12px', overflow: 'hidden', marginBottom: '24px' }}>
+            <div style={{ height: '220px', borderRadius: '8px', overflow: 'hidden', marginBottom: '14px', backgroundColor: '#f1f5f9' }}>
               <img src={selectedListing.image} alt={selectedListing.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
-            <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a', margin: '12px 0' }}>{selectedListing.title}</h2>
+            <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', margin: '8px 0' }}>{selectedListing.title}</h2>
             {selectedListing.amount && (
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: '#ecfdf5', color: '#059669', padding: '6px 12px', borderRadius: '8px', fontSize: '14px', fontWeight: '700', marginBottom: '16px', border: '1px solid #a7f3d0' }}>
-                <Package size={16} /> Miktar / Kapasite: {selectedListing.amount}
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#ecfdf5', color: '#059669', padding: '4px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', marginBottom: '12px', border: '1px solid #a7f3d0' }}>
+                <Package size={14} /> Miktar / Kapasite: {selectedListing.amount}
               </div>
             )}
-            <div style={{ fontSize: '28px', fontWeight: '800', color: '#1b3a2b', marginBottom: '20px' }}>{selectedListing.price.toLocaleString('tr-TR')} TL</div>
-            <p style={{ color: '#475569', lineHeight: '1.6', marginBottom: '24px' }}>{selectedListing.description}</p>
+            <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '14px' }}>{selectedListing.price.toLocaleString('tr-TR')} TL</div>
+            <p style={{ color: '#475569', lineHeight: '1.4', marginBottom: '16px', fontSize: '13px' }}>{selectedListing.description}</p>
             
-            <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '24px' }}>
-              <a href={`tel:${selectedListing.phone}`} style={{ width: '100%', backgroundColor: '#1b3a2b', color: '#fff', padding: '14px', borderRadius: '12px', textAlign: 'center', fontWeight: '700', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '15px', boxSizing: 'border-box' }}>
-                <Phone size={20} /> {selectedListing.phone} ({selectedListing.seller})
+            <div style={{ borderTop: '1px solid #edf2f7', paddingTop: '16px' }}>
+              <a href={`tel:${selectedListing.phone}`} style={{ width: '100%', backgroundColor: '#1b3a2b', color: '#fff', padding: '12px', borderRadius: '8px', textAlign: 'center', fontWeight: '700', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '14px', boxSizing: 'border-box' }}>
+                <Phone size={18} /> {selectedListing.phone} ({selectedListing.seller})
               </a>
             </div>
           </div>
@@ -507,59 +440,59 @@ export default function App() {
 
         {/* İLAN VER EKRANI */}
         {activeTab === 'add' && (
-          <div style={{ maxWidth: '700px', margin: '0 auto', backgroundColor: '#fff', borderRadius: '20px', padding: '32px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <button onClick={() => setActiveTab('home')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer', fontSize: '14px' }}>← Vazgeç</button>
-              <h2 style={{ fontSize: '22px', fontWeight: '800', color: '#0f172a', margin: 0 }}>Yeni İlan Ver</h2>
+          <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', boxSizing: 'border-box', width: '100%' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <button onClick={() => setActiveTab('home')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer', fontSize: '13px' }}>← Vazgeç</button>
+              <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>Yeni İlan Ver</h2>
             </div>
-            <form onSubmit={handleDirectAdd} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <form onSubmit={handleDirectAdd} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '6px', fontSize: '13px' }}>İlan Başlığı *</label>
-                <input type="text" name="title" placeholder="Örn: Kiraz, Zeytinyağı, Traktör" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '14px' }} />
+                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>İlan Başlığı *</label>
+                <input type="text" name="title" placeholder="Örn: Kiraz, Zeytinyağı, Traktör" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '6px', fontSize: '13px' }}>Fiyat (TL) *</label>
-                  <input type="number" name="price" placeholder="90" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '14px' }} />
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fiyat (TL) *</label>
+                  <input type="number" name="price" placeholder="90" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '6px', fontSize: '13px' }}>Kategori</label>
-                  <select name="category" value={form.category} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: '#fff', fontSize: '14px' }}>
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Kategori</label>
+                  <select name="category" value={form.category} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff', fontSize: '13px' }}>
                     {Object.keys(categoriesWithSubs).map(cat => (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </select>
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '6px', fontSize: '13px' }}>Alt Ürün</label>
-                  <input type="text" name="subCategory" placeholder="Kiraz, Ceviz" value={form.subCategory} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '14px' }} />
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Alt Ürün</label>
+                  <input type="text" name="subCategory" placeholder="Kiraz, Ceviz" value={form.subCategory} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '6px', fontSize: '13px' }}>Miktar / Kapasite</label>
-                  <input type="text" name="amount" placeholder="5 Ton" value={form.amount} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '14px' }} />
-                </div>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '6px', fontSize: '13px' }}>Satıcı Adı *</label>
-                  <input type="text" name="seller" placeholder="Adınız" value={form.seller} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '14px' }} />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '6px', fontSize: '13px' }}>Telefon *</label>
-                  <input type="text" name="phone" placeholder="0532..." value={form.phone} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '14px' }} />
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Miktar / Kapasite</label>
+                  <input type="text" name="amount" placeholder="5 Ton" value={form.amount} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
               </div>
-              <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '6px', fontSize: '13px' }}>Fotoğraf Linki (URL)</label>
-                <input type="text" name="image" placeholder="https://..." value={form.image} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '14px' }} />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div>
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Satıcı Adı *</label>
+                  <input type="text" name="seller" placeholder="Adınız" value={form.seller} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Telefon *</label>
+                  <input type="text" name="phone" placeholder="0532..." value={form.phone} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                </div>
               </div>
               <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '6px', fontSize: '13px' }}>Açıklama</label>
-                <textarea name="description" placeholder="Detaylar..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', height: '100px', boxSizing: 'border-box', fontSize: '14px' }} />
+                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fotoğraf Linki (URL)</label>
+                <input type="text" name="image" placeholder="https://..." value={form.image} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
               </div>
-              <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '14px', borderRadius: '10px', fontWeight: '700', cursor: 'pointer', fontSize: '15px', boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)' }}>
+              <div>
+                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Açıklama</label>
+                <textarea name="description" placeholder="Detaylar..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px', boxSizing: 'border-box', fontSize: '13px' }} />
+              </div>
+              <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', fontSize: '14px' }}>
                 İlanı Hemen Yayınla
               </button>
             </form>
@@ -568,37 +501,37 @@ export default function App() {
 
         {/* ADMIN PANELİ */}
         {activeTab === 'admin' && (
-          <div style={{ maxWidth: '800px', margin: '0 auto', backgroundColor: '#fff', borderRadius: '20px', padding: '32px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0' }}>
+          <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', boxSizing: 'border-box', width: '100%' }}>
             {!isAdminLoggedIn ? (
-              <div style={{ maxWidth: '350px', margin: '30px auto', textAlign: 'center' }}>
-                <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#0f172a', marginBottom: '10px' }}>Admin Girişi</h2>
-                <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                  <input type="password" placeholder="Admin Şifresi" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', boxSizing: 'border-box', textAlign: 'center', fontSize: '15px' }} />
-                  <button type="submit" style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}>Giriş Yap</button>
+              <div style={{ maxWidth: '300px', margin: '20px auto', textAlign: 'center' }}>
+                <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', marginBottom: '8px' }}>Admin Girişi</h2>
+                <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <input type="password" placeholder="Admin Şifresi" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', textAlign: 'center', fontSize: '14px' }} />
+                  <button type="submit" style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Giriş Yap</button>
                 </form>
-                <button type="button" onClick={handleForgotPassword} style={{ background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer', fontSize: '13px', textDecoration: 'underline', marginTop: '14px' }}>Şifremi Unuttum?</button>
-                <div style={{ marginTop: '20px' }}>
-                  <button onClick={() => setActiveTab('home')} style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '13px', cursor: 'pointer' }}>← Ana Sayfaya Dön</button>
+                <button type="button" onClick={handleForgotPassword} style={{ background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer', fontSize: '12px', textDecoration: 'underline', marginTop: '12px' }}>Şifremi Unuttum?</button>
+                <div style={{ marginTop: '16px' }}>
+                  <button onClick={() => setActiveTab('home')} style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '12px', cursor: 'pointer' }}>← Ana Sayfaya Dön</button>
                 </div>
               </div>
             ) : (
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #e2e8f0', paddingBottom: '14px' }}>
-                  <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#0f172a', margin: 0 }}>İlan Denetim Paneli</h2>
-                  <button onClick={() => setActiveTab('home')} style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '13px', cursor: 'pointer', fontWeight: '600' }}>Ana Sayfaya Dön</button>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid #edf2f7', paddingBottom: '10px' }}>
+                  <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>İlan Denetimi</h2>
+                  <button onClick={() => setActiveTab('home')} style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}>Kategorilere Dön</button>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {listings.map(item => (
-                    <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px', backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0', boxSizing: 'border-box' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                        <img src={item.image} alt="" style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover' }} />
+                    <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', boxSizing: 'border-box' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <img src={item.image} alt="" style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover' }} />
                         <div>
-                          <h4 style={{ margin: '0 0 4px 0', fontSize: '14px', fontWeight: '700', color: '#0f172a' }}>{item.title}</h4>
-                          <span style={{ fontSize: '12px', color: '#64748b' }}>{item.price.toLocaleString('tr-TR')} TL • {item.location}</span>
+                          <h4 style={{ margin: '0 0 2px 0', fontSize: '13px', fontWeight: '700', color: '#0f172a' }}>{item.title}</h4>
+                          <span style={{ fontSize: '11px', color: '#64748b' }}>{item.price.toLocaleString('tr-TR')} TL</span>
                         </div>
                       </div>
-                      <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '8px 12px', borderRadius: '8px', fontWeight: '600', cursor: 'pointer', fontSize: '12px' }}>
+                      <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 8px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '11px' }}>
                         Sil
                       </button>
                     </div>
@@ -611,7 +544,7 @@ export default function App() {
 
       </main>
 
-      <footer style={{ backgroundColor: '#1b3a2b', color: '#94a3b8', padding: '24px', textAlign: 'center', fontSize: '13px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 'auto', boxSizing: 'border-box', width: '100%' }}>
+      <footer style={{ backgroundColor: '#1b3a2b', color: '#94a3b8', padding: '14px', textAlign: 'center', fontSize: '11px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 'auto', boxSizing: 'border-box', width: '100%' }}>
         <span>© 2026 PazarTarla • Gönen / Balıkesir</span>
       </footer>
 
