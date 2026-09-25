@@ -5,7 +5,7 @@ import {
   Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image, Bug, Shield 
 } from 'lucide-react';
 
-// Tüm kategoriler için garanti, fotoğraflı örnek ilanlar
+// Bütün ziraat ve tarım ürünlerini kapsayan zengin örnek ilan listesi
 const INITIAL_LISTINGS = [
   {
     id: 1,
@@ -30,7 +30,7 @@ const INITIAL_LISTINGS = [
     id: 2,
     title: 'Tarladan Doğrudan Taze Chandler Ceviz (1 Ton)',
     price: 140,
-    category: 'Mahsuller (Mahsul Satışı)',
+    category: 'Mahsuller (Tüm Tarım Ürünleri)',
     mode: 'Satılık',
     location: 'Gönen / Balıkesir',
     city: 'Balıkesir',
@@ -49,7 +49,7 @@ const INITIAL_LISTINGS = [
     id: 3,
     title: 'Mis Kokulu Gönen Kavunu ve Karpuzu (Toptan)',
     price: 15,
-    category: 'Mahsuller (Mahsul Satışı)',
+    category: 'Mahsuller (Tüm Tarım Ürünleri)',
     mode: 'Satılık',
     location: 'Gönen / Balıkesir',
     city: 'Balıkesir',
@@ -66,6 +66,44 @@ const INITIAL_LISTINGS = [
   },
   {
     id: 4,
+    title: '1. Sınıf Sert Buğday ve Arpa Mahsulü (Toptan)',
+    price: 9.50,
+    category: 'Mahsuller (Tüm Tarım Ürünleri)',
+    mode: 'Satılık',
+    location: 'Bandırma / Balıkesir',
+    city: 'Balıkesir',
+    year: 2026,
+    hours: 0,
+    power: 'Tonoajlı',
+    description: 'Ambar saklamalı, yüksek hektolitre ekmeklik sert buğday. Değirmencilere ve tüccarlara duyurulur.',
+    seller: 'Mustafa Eren',
+    phone: '0534 888 7766',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 5,
+    title: 'Erken Hasat Soğuk Sıkım Sızma Zeytinyağı (5 Litre)',
+    price: 1250,
+    category: 'Mahsuller (Tüm Tarım Ürünleri)',
+    mode: 'Satılık',
+    location: 'Burhaniye / Balıkesir',
+    city: 'Balıkesir',
+    year: 2026,
+    hours: 0,
+    power: '5 Lt Teneke',
+    description: 'Asit oranı düşük, kendi zeytinliklerimizden üretilen geleneksel soğuk sıkım saf zeytinyağı.',
+    seller: 'Hasan Bilir',
+    phone: '0532 123 4567',
+    verified: true,
+    featured: true,
+    image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 6,
     title: 'Damızlık Sağlıklı 15 Baş Koyun ve Kuzu Sürüsü',
     price: 12000,
     category: 'Canlı Hayvanlar',
@@ -84,7 +122,7 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
   {
-    id: 5,
+    id: 7,
     title: 'Yüksek Proteinli Süt Yemi ve Besi Yemi (50 kg Çuval)',
     price: 550,
     category: 'Hayvan Yemleri ve Ekipmanları',
@@ -103,7 +141,7 @@ const INITIAL_LISTINGS = [
     date: '2 gün önce'
   },
   {
-    id: 6,
+    id: 8,
     title: 'Meşe Ormanı Çıkışlı Saf Organik Çiçek Balı',
     price: 750,
     category: 'Arıcılık & Bal',
@@ -122,7 +160,7 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
   {
-    id: 7,
+    id: 9,
     title: 'Fırınlanmış Ahşap 10 Adet Arı Kovanı ve Petek Seti',
     price: 3500,
     category: 'Arıcılık Ekipmanları',
@@ -158,7 +196,7 @@ export default function App() {
   const [form, setForm] = useState({
     title: '',
     price: '',
-    category: 'Mahsuller (Mahsul Satışı)',
+    category: 'Mahsuller (Tüm Tarım Ürünleri)',
     mode: 'Satılık',
     location: 'Gönen / Balıkesir',
     city: 'Balıkesir',
@@ -212,7 +250,7 @@ export default function App() {
     setForm({
       title: '',
       price: '',
-      category: 'Mahsuller (Mahsul Satışı)',
+      category: 'Mahsuller (Tüm Tarım Ürünleri)',
       mode: 'Satılık',
       location: 'Gönen / Balıkesir',
       city: 'Balıkesir',
@@ -297,7 +335,7 @@ export default function App() {
                 İlanları keşfet
               </h2>
               <p style={{ color: '#64748b', fontSize: '16px', margin: 0 }}>
-                Traktör, taze mahsul, canlı hayvan, yem, arıcılık ekipmanları ve tarım işçisi bul.
+                Traktör, tarım ürünleri, canlı hayvan, yem, arıcılık ve ziraat malzemeleri bul.
               </p>
             </div>
 
@@ -329,7 +367,7 @@ export default function App() {
                   <Search size={20} color="#94a3b8" style={{ position: 'absolute', left: '14px' }} />
                   <input 
                     type="text"
-                    placeholder="Yem, arı malzemesi, hayvan, traktör ara..."
+                    placeholder="Buğday, zeytinyağı, ceviz, arı, traktör ara..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     style={{
@@ -350,7 +388,7 @@ export default function App() {
                   style={{ padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '15px', backgroundColor: '#fff', outline: 'none', cursor: 'pointer' }}
                 >
                   <option value="Tüm kategoriler">Tüm Kategoriler</option>
-                  <option value="Mahsuller (Mahsul Satışı)">Mahsuller (Ceviz, Kavun vb.)</option>
+                  <option value="Mahsuller (Tüm Tarım Ürünleri)">Mahsuller (Tüm Tarım Ürünleri)</option>
                   <option value="Canlı Hayvanlar">Canlı Hayvanlar</option>
                   <option value="Hayvan Yemleri ve Ekipmanları">Hayvan Yemleri ve Ekipmanları</option>
                   <option value="Arıcılık & Bal">Arıcılık & Bal</option>
@@ -439,17 +477,17 @@ export default function App() {
             <form onSubmit={handleDirectAdd} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div>
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>İlan Başlığı *</label>
-                <input type="text" name="title" placeholder="Örn: Süt Yemi, Arı Kovanı, Bal veya Traktör" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+                <input type="text" name="title" placeholder="Örn: Buğday, Zeytinyağı, Arı Kovanı veya Traktör" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Fiyat (TL) *</label>
-                  <input type="number" name="price" placeholder="Örn: 3500" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+                  <input type="number" name="price" placeholder="Örn: 1250" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Kategori</label>
                   <select name="category" value={form.category} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', backgroundColor: '#fff' }}>
-                    <option value="Mahsuller (Mahsul Satışı)">Mahsuller (Ceviz, Kavun vb.)</option>
+                    <option value="Mahsuller (Tüm Tarım Ürünleri)">Mahsuller (Tüm Tarım Ürünleri)</option>
                     <option value="Canlı Hayvanlar">Canlı Hayvanlar</option>
                     <option value="Hayvan Yemleri ve Ekipmanları">Hayvan Yemleri ve Ekipmanları</option>
                     <option value="Arıcılık & Bal">Arıcılık & Bal</option>
@@ -473,7 +511,7 @@ export default function App() {
               </div>
               <div>
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Fotoğraf Linki (URL) - İsteğe bağlı</label>
-                <input type="text" name="image" placeholder="Örn: https://ornek.com/yem.jpg (Boş bırakırsanız tarım görseli eklenir)" value={form.image} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+                <input type="text" name="image" placeholder="Örn: https://ornek.com/urun.jpg (Boş bırakırsanız tarım görseli eklenir)" value={form.image} onChange={handleFormChange} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               </div>
               <div>
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Açıklama</label>
