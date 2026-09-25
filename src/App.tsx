@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus, 
   Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, X, 
-  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image, Bug, Shield, Package, ArrowLeft, Menu 
+  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star 
 } from 'lucide-react';
 
 const INITIAL_LISTINGS = [
@@ -130,6 +130,10 @@ export default function App() {
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
   const [selectedCity, setSelectedCity] = useState('Tüm Türkiye');
 
+  // Görünüm ve Sıralama Modalleri
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [viewMode, setViewMode] = useState('Liste'); // Liste / Detaylı Liste
+
   const [form, setForm] = useState({
     title: '',
     price: '',
@@ -255,17 +259,14 @@ export default function App() {
       {/* ANA İÇERİK */}
       <main style={{ maxWidth: '600px', width: '100%', margin: '0 auto', padding: '12px', flex: 1, boxSizing: 'border-box' }}>
         
-        {/* 1. EKRAN: KATEGORİ SEÇİMİ (SAHİBİNDEN MOBİL GÖRÜNÜM) */}
+        {/* 1. EKRAN: KATEGORİ SEÇİMİ */}
         {activeTab === 'home' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
-            
-            {/* Üst Başlık */}
             <div style={{ backgroundColor: '#1b3a2b', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <Menu size={20} />
               <span style={{ fontSize: '16px', fontWeight: '700' }}>Kategori Seçimi</span>
             </div>
 
-            {/* Tüm İlanlar Seçeneği */}
             <div 
               onClick={() => { setSelectedCategory('Tüm kategoriler'); setSelectedSubCategory('Tümü'); setActiveTab('results'); }}
               style={{ padding: '14px 16px', borderBottom: '1px solid #edf2f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', backgroundColor: '#f8fafc' }}
@@ -277,7 +278,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Kategori Listesi (Alt alta) */}
             {Object.keys(categoriesWithSubs).map(cat => (
               <div key={cat}>
                 <div 
@@ -291,7 +291,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Alt Kategoriler (Hemen altında listelenir) */}
                 <div style={{ backgroundColor: '#fafafa', borderBottom: '1px solid #edf2f7' }}>
                   {categoriesWithSubs[cat].map(sub => (
                     <div 
@@ -307,46 +306,59 @@ export default function App() {
               </div>
             ))}
 
-            {/* Admin ve Yönetim Linki */}
             <div style={{ padding: '16px', textAlign: 'center', backgroundColor: '#f8fafc' }}>
               <button onClick={() => setActiveTab('admin')} style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '12px', cursor: 'pointer', textDecoration: 'underline' }}>
                 Yönetim Paneli (Admin)
               </button>
             </div>
-
           </div>
         )}
 
-        {/* 2. EKRAN: ARAMA SONUÇLARI / İLAN LİSTESİ */}
+        {/* 2. EKRAN: ARAMA SONUÇLARI (SAHİBİNDEN ÜST MENÜ BAR İLE) */}
         {activeTab === 'results' && (
           <div>
-            {/* Geri Dön ve Filtre Barı */}
-            <div style={{ backgroundColor: '#fff', padding: '12px 16px', borderRadius: '10px', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0' }}>
+            {/* ÜST MAVİ/GRİ SAHİBİNDEN KONTROL ÇUBUĞU (Filtrele, Sırala, Görünüm) */}
+            <div style={{ backgroundColor: '#1b3a2b', color: '#fff', borderRadius: '10px', padding: '10px 14px', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
               <button 
                 onClick={() => setActiveTab('home')} 
-                style={{ background: 'none', border: 'none', color: '#1b3a2b', fontWeight: '700', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                style={{ background: 'none', border: 'none', color: '#86efac', fontWeight: '700', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
               >
-                <ArrowLeft size={18} /> Kategoriler
+                <ArrowLeft size={16} /> Kategoriler
               </button>
-              <span style={{ fontSize: '13px', fontWeight: '600', color: '#64748b' }}>
-                {selectedSubCategory !== 'Tümü' ? selectedSubCategory : selectedCategory} ({filteredListings.length})
-              </span>
+              
+              <div style={{ display: 'flex', gap: '12px', fontSize: '12px', fontWeight: '600' }}>
+                <span onClick={() => alert('Filtreleme aktif')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                  <Filter size={13} /> Filtrele
+                </span>
+                <span onClick={() => alert('Sıralama: En yeni ilanlar')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                  <ArrowUpDown size={13} /> Sırala
+                </span>
+                <span onClick={() => setShowViewModal(true)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px', color: '#86efac' }}>
+                  <LayoutList size={13} /> Görünüm
+                </span>
+              </div>
             </div>
 
-            {/* İlan Akış Listesi (Aşağı kaydırmasız temiz dikey kartlar) */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {/* SONUÇ BİLGİ BARI */}
+            <div style={{ backgroundColor: '#fff', padding: '8px 12px', borderRadius: '8px', marginBottom: '10px', fontSize: '12px', color: '#64748b', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #e2e8f0' }}>
+              <span>{selectedSubCategory !== 'Tümü' ? selectedSubCategory : selectedCategory}</span>
+              <span style={{ fontWeight: '700', color: '#1b3a2b' }}>{filteredListings.length} sonuç</span>
+            </div>
+
+            {/* İLAN LİSTESİ */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {filteredListings.length === 0 ? (
-                <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '10px', textAlign: 'center', color: '#64748b', fontSize: '14px' }}>
-                  Bu kategoride henüz ilan bulunmuyor. Hemen ilk ilanı sen ver!
+                <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '10px', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>
+                  Bu kategoride ilan bulunmuyor.
                 </div>
               ) : (
                 filteredListings.map(item => (
                   <div 
                     key={item.id} 
                     onClick={() => { setSelectedListing(item); setActiveTab('detail'); }}
-                    style={{ backgroundColor: '#fff', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', cursor: 'pointer', display: 'flex', gap: '12px', padding: '10px', boxSizing: 'border-box' }}
+                    style={{ backgroundColor: '#fff', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', cursor: 'pointer', display: 'flex', gap: '10px', padding: '10px', boxSizing: 'border-box' }}
                   >
-                    <div style={{ position: 'relative', width: '100px', height: '100px', backgroundColor: '#f1f5f9', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
+                    <div style={{ position: 'relative', width: viewMode === 'Detaylı Liste' ? '120px' : '90px', height: viewMode === 'Detaylı Liste' ? '120px' : '90px', backgroundColor: '#f1f5f9', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
                       <img src={item.image} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       <span style={{ position: 'absolute', top: '4px', left: '4px', backgroundColor: item.mode === 'Satılık' ? '#22c55e' : '#f59e0b', color: '#fff', padding: '2px 5px', borderRadius: '4px', fontSize: '9px', fontWeight: '700' }}>
                         {item.mode}
@@ -355,12 +367,17 @@ export default function App() {
 
                     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1 }}>
                       <div>
-                        <span style={{ fontSize: '10px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase' }}>{item.category} {item.subCategory ? `> ${item.subCategory}` : ''}</span>
+                        <span style={{ fontSize: '10px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase' }}>{item.category}</span>
                         <h4 style={{ margin: '2px 0 4px 0', fontSize: '13px', fontWeight: '700', color: '#0f172a', lineHeight: '1.2' }}>{item.title}</h4>
                         {item.amount && (
                           <div style={{ fontSize: '11px', color: '#059669', fontWeight: '600' }}>
                             {item.amount}
                           </div>
+                        )}
+                        {viewMode === 'Detaylı Liste' && (
+                          <p style={{ fontSize: '11px', color: '#64748b', margin: '4px 0 0 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                            {item.description}
+                          </p>
                         )}
                       </div>
 
@@ -377,6 +394,31 @@ export default function App() {
                 ))
               )}
             </div>
+
+            {/* GÖRÜNÜM TERCİHİ MODALI (SAHİBİNDEN AYNISI) */}
+            {showViewModal && (
+              <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 1000 }}>
+                <div style={{ backgroundColor: '#fff', width: '100%', maxWidth: '600px', borderTopLeftRadius: '16px', borderTopRightRadius: '16px', padding: '20px', boxSizing: 'border-box' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: '0 0 16px 0', textAlign: 'center' }}>Görünüm Tercihi</h3>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
+                    {['Liste', 'Detaylı Liste'].map(mode => (
+                      <label key={mode} onClick={() => setViewMode(mode)} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', fontWeight: '600', color: '#334155', cursor: 'pointer', padding: '8px 0' }}>
+                        <input type="radio" name="view" checked={viewMode === mode} readOnly style={{ accentColor: '#1b3a2b', width: '16px', height: '16px' }} />
+                        {mode}
+                      </label>
+                    ))}
+                  </div>
+
+                  <button 
+                    onClick={() => setShowViewModal(false)}
+                    style={{ width: '100%', backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', fontSize: '14px', cursor: 'pointer' }}
+                  >
+                    Vazgeç / Kapat
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
