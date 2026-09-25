@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import AdminPanel from './bileşenler/AdminPanel';
+import AdminPanel from './components/AdminPanel';
 import { Shield, Plus, MapPin, Phone, Mail, Tractor, Sprout, Store, ArrowRight, CheckCircle } from 'lucide-react';
 
 interface Listing {
