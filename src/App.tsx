@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 
 const INITIAL_LISTINGS = [
+  // MAHSULLER
   {
     id: 1,
     title: 'Bursamızın Meşhur Saplı Tatlı Kirazı',
@@ -22,6 +23,60 @@ const INITIAL_LISTINGS = [
     verified: true,
     featured: true,
     image: 'https://images.unsplash.com/photo-1528821151447-11f211b5e5a7?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 2,
+    title: 'Yediveren Taze Siyah Erik',
+    price: 60,
+    category: 'Mahsuller',
+    subCategory: 'Kiraz', // Alternatif örnek
+    mode: 'Satılık',
+    location: 'Gönen / Balıkesir',
+    city: 'Balıkesir',
+    amount: '300 kg',
+    description: 'Bahçeden taze toplama mis kokulu erik.',
+    seller: 'Ahmet Çiftçi',
+    phone: '0532 111 2233',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1563111811-1372580a4a6b?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 3,
+    title: 'Mis Kokulu Gönen Kavunu ve Karpuzu',
+    price: 15,
+    category: 'Mahsuller',
+    subCategory: 'Karpuz / Kavun',
+    mode: 'Satılık',
+    location: 'Gönen / Balıkesir',
+    city: 'Balıkesir',
+    amount: '5 Ton',
+    description: 'Tarladan doğrudan taze kesim kavun ve karpuz. Manavlar ve tüccarlar önceliklidir.',
+    seller: 'Hüseyin Çiftçi',
+    phone: '0533 111 2233',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
+    date: 'Dün'
+  },
+  {
+    id: 4,
+    title: 'Şeker Gibi Tatlı Diyarbakır Karpuzu',
+    price: 12,
+    category: 'Mahsuller',
+    subCategory: 'Karpuz / Kavun',
+    mode: 'Satılık',
+    location: 'Bandırma / Balıkesir',
+    city: 'Balıkesir',
+    amount: '10 Ton',
+    description: 'Kütür kütür, tarladan satış.',
+    seller: 'Mehmet Kaplan',
+    phone: '0542 222 3344',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1563111811-1372580a4a6b?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
   {
@@ -43,6 +98,24 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
   {
+    id: 6,
+    title: 'Kabuklu Yerli Mahsul Ceviz',
+    price: 110,
+    category: 'Mahsuller',
+    subCategory: 'Ceviz',
+    mode: 'Satılık',
+    location: 'Susurluk / Balıkesir',
+    city: 'Balıkesir',
+    amount: '750 kg',
+    description: 'İnce kabuk, yüksek iç randımanlı yerli ceviz.',
+    seller: 'Ali Ak',
+    phone: '0532 999 8877',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
+    date: 'Dün'
+  },
+  {
     id: 7,
     title: 'Erken Hasat Soğuk Sıkım Sızma Zeytinyağı',
     price: 1250,
@@ -60,6 +133,62 @@ const INITIAL_LISTINGS = [
     image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
+  {
+    id: 8,
+    title: 'Domat Siyah Zeytin - Salamura',
+    price: 180,
+    category: 'Mahsuller',
+    subCategory: 'Zeytin & Zeytinyağı',
+    mode: 'Satılık',
+    location: 'Ayvalık / Balıkesir',
+    city: 'Balıkesir',
+    amount: '200 kg',
+    description: 'Katkısız ev yapımı salamura zeytin.',
+    seller: 'Fatma Şen',
+    phone: '0533 444 5566',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 9,
+    title: 'Sertifikalı Tohumluk Buğday',
+    price: 14,
+    category: 'Mahsuller',
+    subCategory: 'Buğday / Arpa',
+    mode: 'Satılık',
+    location: 'Bandırma / Balıkesir',
+    city: 'Balıkesir',
+    amount: '25 Ton',
+    description: 'Yüksek verimli sertifikalı buğday.',
+    seller: 'Cemal Tarım',
+    phone: '0532 333 2211',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 10,
+    title: 'Yemlik Arpa',
+    price: 11,
+    category: 'Mahsuller',
+    subCategory: 'Buğday / Arpa',
+    mode: 'Satılık',
+    location: 'Gönen / Balıkesir',
+    city: 'Balıkesir',
+    amount: '15 Ton',
+    description: 'Temiz elekten geçmiş yemlik arpa.',
+    seller: 'Kemal Güneş',
+    phone: '0535 666 5544',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+
+  // CANLI HAYVANLAR
   {
     id: 11,
     title: 'Holstein Süt İneği ve Buzağısı',
@@ -79,6 +208,118 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
   {
+    id: 12,
+    title: 'Besilik Simental Dana',
+    price: 70000,
+    category: 'Canlı Hayvanlar',
+    subCategory: 'Büyükbaş',
+    mode: 'Satılık',
+    location: 'Bandırma / Balıkesir',
+    city: 'Balıkesir',
+    amount: '3 Baş',
+    description: 'Veteriner kontrollü, küpeli besilik danalar.',
+    seller: 'Orhan Koç',
+    phone: '0542 888 7766',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 13,
+    title: 'Damızlık Sağlıklı Koyun ve Kuzu Sürüsü',
+    price: 12000,
+    category: 'Canlı Hayvanlar',
+    subCategory: 'Küçükbaş',
+    mode: 'Satılık',
+    location: 'Bandırma / Balıkesir',
+    city: 'Balıkesir',
+    amount: '15 Baş',
+    description: 'Veteriner kontrolleri tam, aşılı ve sağlıklı damızlık koyunlar. Toplu ya da tekli görüşülür.',
+    seller: 'Mehmet Aksoy',
+    phone: '0542 333 4455',
+    verified: true,
+    featured: true,
+    image: 'https://images.unsplash.com/photo-1484557077804-29774de7fc76?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 14,
+    title: 'Merinos Damızlık Koç',
+    price: 22000,
+    category: 'Canlı Hayvanlar',
+    subCategory: 'Küçükbaş',
+    mode: 'Satılık',
+    location: 'Gönen / Balıkesir',
+    city: 'Balıkesir',
+    amount: '1 Baş',
+    description: 'Safkan damızlık koç.',
+    seller: 'İsmail Güçlü',
+    phone: '0533 555 4433',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1484557077804-29774de7fc76?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 15,
+    title: 'Atak-S Yumurta Tavuğu',
+    price: 250,
+    category: 'Canlı Hayvanlar',
+    subCategory: 'Kanatlı',
+    mode: 'Satılık',
+    location: 'Susurluk / Balıkesir',
+    city: 'Balıkesir',
+    amount: '50 Adet',
+    description: 'Aşılı, yumurtaya yeni başlamış yarka tavuklar.',
+    seller: 'Hasan Tavukçu',
+    phone: '0532 111 0022',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+
+  // HAYVAN YEMLERİ VE EKİPMANLARI
+  {
+    id: 16,
+    title: 'Besi Süt Yemi (Çuval 50 kg)',
+    price: 450,
+    category: 'Hayvan Yemleri ve Ekipmanları',
+    subCategory: 'Yem Çeşitleri',
+    mode: 'Satılık',
+    location: 'Gönen / Balıkesir',
+    city: 'Balıkesir',
+    amount: '100 Çuval',
+    description: 'Yüksek proteinli kaliteli fabrika yemi.',
+    seller: 'Yem Dünyası',
+    phone: '0532 444 3322',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 17,
+    title: 'Otomatik Büyükbaş Suluk',
+    price: 650,
+    category: 'Hayvan Yemleri ve Ekipmanları',
+    subCategory: 'Suluk / Yemlik',
+    mode: 'Satılık',
+    location: 'Balıkesir Merkez',
+    city: 'Balıkesir',
+    amount: '10 Adet',
+    description: 'Pirinç siboplu paslanmaz döküm suluk.',
+    seller: 'Ziraat Ekipman',
+    phone: '0533 222 1100',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+
+  // ARICILIK & BAL
+  {
     id: 18,
     title: 'Meşe Çiçeği Yayla Süzme Balı (1 Kg)',
     price: 400,
@@ -97,6 +338,64 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
   {
+    id: 19,
+    title: 'Karakovan Petek Balı',
+    price: 600,
+    category: 'Arıcılık & Bal',
+    subCategory: 'Karakovan Balı',
+    mode: 'Satılık',
+    location: 'Balıkesir',
+    city: 'Balıkesir',
+    amount: '20 Adet',
+    description: 'Tamamen doğal karakovan süzülmemiş petek bal.',
+    seller: 'Arıcı Hasan',
+    phone: '0532 333 2211',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+
+  // ARICILIK EKİPMANLARI
+  {
+    id: 20,
+    title: '10 Çerçeveli Boyalı Arı Kovanı',
+    price: 1200,
+    category: 'Arıcılık Ekipmanları',
+    subCategory: 'Kovan',
+    mode: 'Satılık',
+    location: 'Gönen / Balıkesir',
+    city: 'Balıkesir',
+    amount: '15 Adet',
+    description: 'Fırınlanmış çam keresteden arı kovanı.',
+    seller: 'Ahmet Arıcı',
+    phone: '0532 444 5566',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 21,
+    title: 'Paslanmaz 4 Çerçeveli Bal Süzme Makinesi',
+    price: 4500,
+    category: 'Arıcılık Ekipmanları',
+    subCategory: 'Bal Süzme Makinesi',
+    mode: 'Satılık',
+    location: 'Bursa',
+    city: 'Bursa',
+    amount: '2 Adet',
+    description: 'Gıda kodeksine uygun krom bal süzgeci.',
+    seller: 'Makine Market',
+    phone: '0533 111 2233',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+
+  // TRAKTÖR
+  {
     id: 22,
     title: 'John Deere 6130M - Düşük saat, tek elden',
     price: 2450000,
@@ -112,6 +411,120 @@ const INITIAL_LISTINGS = [
     verified: true,
     featured: true,
     image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 23,
+    title: 'Tümosan 8165 Kabinli 4x4',
+    price: 980000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Bandırma / Balıkesir',
+    city: 'Balıkesir',
+    amount: '2500 Saat',
+    description: 'Temiz kullanılmış, lastikleri iyi durumda traktör.',
+    seller: 'Hüseyin Kaya',
+    phone: '0542 111 2233',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+
+  // BİÇERDÖVER
+  {
+    id: 24,
+    title: 'New Holland TC 5070 Biçerdöver',
+    price: 3200000,
+    category: 'Biçerdöver',
+    subCategory: 'Biçerdöver',
+    mode: 'Satılık',
+    location: 'Karacabey / Bursa',
+    city: 'Bursa',
+    amount: 'Sezona Hazır',
+    description: 'Bütün bakımları yapılmış aktif çalışan biçerdöver.',
+    seller: 'Biçerdöverci Ali',
+    phone: '0532 888 9900',
+    verified: true,
+    featured: true,
+    image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+
+  // TARIM EKİPMANLARI
+  {
+    id: 25,
+    title: 'Tarım Römorku 5 Tonluk',
+    price: 180000,
+    category: 'Tarım Ekipmanları',
+    subCategory: 'Römork',
+    mode: 'Satılık',
+    location: 'Gönen / Balıkesir',
+    city: 'Balıkesir',
+    amount: '1 Adet',
+    description: 'İlavelik hidrolik frenli sağlam römork.',
+    seller: 'Demir Doğrama',
+    phone: '0535 444 3322',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 26,
+    title: 'Asılır Tip İlaçlama Makinesi 600 Lt',
+    price: 65000,
+    category: 'Tarım Ekipmanları',
+    subCategory: 'İlaçlama Makinesi',
+    mode: 'Satılık',
+    location: 'Balıkesir Merkez',
+    city: 'Balıkesir',
+    amount: '1 Adet',
+    description: 'Fiber tanklı, merdaneli ilaçlama pompası.',
+    seller: 'Ziraat Aletleri',
+    phone: '0533 666 5544',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+
+  // TARIM İŞÇİLERİ
+  {
+    id: 27,
+    title: 'Hasat ve Toplama Ekibi (10 Kişilik)',
+    price: 1500,
+    category: 'Tarım İşçileri',
+    subCategory: 'Hasat Ekibi',
+    mode: 'Hizmet',
+    location: 'Gönen / Balıkesir',
+    city: 'Balıkesir',
+    amount: 'Günlük Yevmiye',
+    description: 'Meyve ve sebze hasatında deneyimli tecrübeli ekip.',
+    seller: 'Dayıbaşı Hasan',
+    phone: '0532 999 1122',
+    verified: true,
+    featured: true,
+    image: 'https://images.unsplash.com/photo-1595855759920-86582396756a?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 28,
+    title: 'Profesyonel Ceviz ve Meyve Budama Ekibi',
+    price: 2000,
+    category: 'Tarım İşçileri',
+    subCategory: 'Budama Ekibi',
+    mode: 'Hizmet',
+    location: 'Bursa / Balıkesir',
+    city: 'Balıkesir',
+    amount: 'Günlük',
+    description: 'Ceviz ve meyve ağaçları için uzman budama hizmeti.',
+    seller: 'Usta Budayıcı',
+    phone: '0533 777 6655',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1595855759920-86582396756a?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   }
 ];
@@ -146,6 +559,9 @@ export default function App() {
   });
 
   useEffect(() => {
+    localStorage.setItem('pazartarla_listings', JSON.stringify(INITIAL_LISTINGS));
+    setListings(INITIAL_LISTINGS);
+
     window.history.replaceState({ tab: 'home' }, '');
 
     const handlePopState = (event) => {
@@ -167,6 +583,11 @@ export default function App() {
   const changeTab = (tabName) => {
     window.history.pushState({ tab: tabName }, '');
     setActiveTab(tabName);
+  };
+
+  const saveListings = (newListings) => {
+    setListings(newListings);
+    localStorage.setItem('pazartarla_listings', JSON.stringify(newListings));
   };
 
   const handleFormChange = (e) => {
@@ -192,14 +613,16 @@ export default function App() {
       date: 'Bugün'
     };
 
-    setListings([newEntry, ...listings]);
+    const updated = [newEntry, ...listings];
+    saveListings(updated);
     changeTab('home');
     alert('İlanınız başarıyla yayınlandı!');
   };
 
   const handleDeleteListing = (id) => {
-    if (window.confirm('Bu ilanı silmek istediğinize emin misiniz?')) {
-      setListings(listings.filter(item => item.id !== id));
+    if (window.confirm('Bu ilanı yayından kaldırmak/silmek istediğinize emin misiniz?')) {
+      const updated = listings.filter(item => item.id !== id);
+      saveListings(updated);
     }
   };
 
@@ -212,11 +635,20 @@ export default function App() {
     }
   };
 
+  const handleForgotPassword = () => {
+    alert('Admin Paneli Şifreniz: 1234');
+  };
+
   const categoriesWithSubs = {
-    'Mahsuller': ['Kiraz', 'Ceviz', 'Zeytin & Zeytinyağı'],
-    'Canlı Hayvanlar': ['Büyükbaş'],
-    'Arıcılık & Bal': ['Süzme Bal'],
-    'Traktör': ['İkinci El Traktör']
+    'Mahsuller': ['Kiraz', 'Karpuz / Kavun', 'Ceviz', 'Zeytin & Zeytinyağı', 'Buğday / Arpa', 'Diğer Mahsul'],
+    'Canlı Hayvanlar': ['Büyükbaş', 'Küçükbaş', 'Kanatlı'],
+    'Hayvan Yemleri ve Ekipmanları': ['Yem Çeşitleri', 'Suluk / Yemlik'],
+    'Arıcılık & Bal': ['Süzme Bal', 'Karakovan Balı', 'Petek Bal'],
+    'Arıcılık Ekipmanları': ['Kovan', 'Petek ve Çerçeve', 'Bal Süzme Makinesi'],
+    'Traktör': ['İkinci El Traktör', 'Sıfır Traktör'],
+    'Biçerdöver': ['Biçerdöver'],
+    'Tarım Ekipmanları': ['Römork', 'İlaçlama Makinesi', 'Toprak İşleme'],
+    'Tarım İşçileri': ['Hasat Ekibi', 'Budama Ekibi', 'Çoban / Bakıcı']
   };
 
   const filteredListings = listings.filter(item => {
@@ -323,6 +755,12 @@ export default function App() {
               </button>
               
               <div style={{ display: 'flex', gap: '12px', fontSize: '12px', fontWeight: '600' }}>
+                <span onClick={() => alert('Filtreleme aktif')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                  <Filter size={13} /> Filtrele
+                </span>
+                <span onClick={() => alert('Sıralama aktif')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                  <ArrowUpDown size={13} /> Sırala
+                </span>
                 <span onClick={() => setShowViewModal(true)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px', color: '#86efac' }}>
                   <LayoutList size={13} /> Görünüm
                 </span>
@@ -348,7 +786,7 @@ export default function App() {
                   >
                     <div style={{ position: 'relative', width: viewMode === 'Detaylı Liste' ? '110px' : '90px', height: viewMode === 'Detaylı Liste' ? '110px' : '90px', backgroundColor: '#f1f5f9', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
                       <img src={item.image} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      <span style={{ position: 'absolute', top: '4px', left: '4px', backgroundColor: '#22c55e', color: '#fff', padding: '2px 5px', borderRadius: '4px', fontSize: '9px', fontWeight: '700' }}>
+                      <span style={{ position: 'absolute', top: '4px', left: '4px', backgroundColor: item.mode === 'Satılık' ? '#22c55e' : '#f59e0b', color: '#fff', padding: '2px 5px', borderRadius: '4px', fontSize: '9px', fontWeight: '700' }}>
                         {item.mode}
                       </span>
                     </div>
@@ -423,7 +861,7 @@ export default function App() {
             <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', margin: '8px 0' }}>{selectedListing.title}</h2>
             {selectedListing.amount && (
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#ecfdf5', color: '#059669', padding: '4px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', marginBottom: '12px', border: '1px solid #a7f3d0' }}>
-                <Package size={14} /> Miktar / Ölçü: {selectedListing.amount}
+                <Package size={14} /> Miktar / Kapasite: {selectedListing.amount}
               </div>
             )}
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '14px' }}>{selectedListing.price.toLocaleString('tr-TR')} TL</div>
@@ -447,12 +885,12 @@ export default function App() {
             <form onSubmit={handleDirectAdd} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>İlan Başlığı *</label>
-                <input type="text" name="title" placeholder="Örn: Chandler Ceviz" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                <input type="text" name="title" placeholder="Örn: Kiraz, Zeytinyağı, Traktör" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fiyat / Ücret (TL) *</label>
-                  <input type="number" name="price" placeholder="140" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fiyat (TL) *</label>
+                  <input type="number" name="price" placeholder="90" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Kategori</label>
@@ -465,17 +903,31 @@ export default function App() {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Ad Soyad / Satıcı *</label>
-                  <input type="text" name="seller" placeholder="Can İnce" value={form.seller} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Alt Ürün</label>
+                  <input type="text" name="subCategory" placeholder="Kiraz, Ceviz" value={form.subCategory} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Miktar / Kapasite</label>
+                  <input type="text" name="amount" placeholder="5 Ton" value={form.amount} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div>
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Satıcı Adı *</label>
+                  <input type="text" name="seller" placeholder="Adınız" value={form.seller} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Telefon *</label>
-                  <input type="text" name="phone" placeholder="0535..." value={form.phone} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                  <input type="text" name="phone" placeholder="0532..." value={form.phone} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
               </div>
               <div>
+                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fotoğraf Linki (URL)</label>
+                <input type="text" name="image" placeholder="https://..." value={form.image} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+              </div>
+              <div>
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Açıklama</label>
-                <textarea name="description" placeholder="Ürün detayları..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px', boxSizing: 'border-box', fontSize: '13px' }} />
+                <textarea name="description" placeholder="Detaylar..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px', boxSizing: 'border-box', fontSize: '13px' }} />
               </div>
               <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', fontSize: '14px' }}>
                 İlanı Hemen Yayınla
@@ -491,9 +943,10 @@ export default function App() {
               <div style={{ maxWidth: '300px', margin: '20px auto', textAlign: 'center' }}>
                 <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', marginBottom: '8px' }}>Admin Girişi</h2>
                 <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <input type="password" placeholder="Şifre (1234)" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', textAlign: 'center', fontSize: '14px' }} />
+                  <input type="password" placeholder="Admin Şifresi" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', textAlign: 'center', fontSize: '14px' }} />
                   <button type="submit" style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Giriş Yap</button>
                 </form>
+                <button type="button" onClick={handleForgotPassword} style={{ background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer', fontSize: '12px', textDecoration: 'underline', marginTop: '12px' }}>Şifremi Unuttum?</button>
                 <div style={{ marginTop: '16px' }}>
                   <button onClick={() => changeTab('home')} style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '12px', cursor: 'pointer' }}>← Ana Sayfaya Dön</button>
                 </div>
@@ -502,7 +955,7 @@ export default function App() {
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid #edf2f7', paddingBottom: '10px' }}>
                   <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>İlan Denetimi</h2>
-                  <button onClick={() => changeTab('home')} style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}>Ana Sayfa`, san-serif' }}>Ana Sayfa</button>
+                  <button onClick={() => changeTab('home')} style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}>Kategorilere Dön</button>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
