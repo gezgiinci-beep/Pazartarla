@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus, 
   Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, X, 
-  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle 
+  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users 
 } from 'lucide-react';
 
 // --- ÖRNEK İLAN VERİLERİ (PAZARTARLA) ---
@@ -28,6 +28,25 @@ const INITIAL_LISTINGS = [
   },
   {
     id: 2,
+    title: 'Ceviz Hasadı İçin 10 Kişilik Tecrübeli İşçi Ekibi',
+    price: 1200, // Yevmiye veya günlük fiyat temsilî
+    category: 'Tarım İşçileri',
+    mode: 'Hizmet',
+    location: 'Gönen / Balıkesir',
+    city: 'Balıkesir',
+    year: 2026,
+    hours: 0,
+    power: '10 Kişi',
+    description: 'Ceviz silkme, toplama ve ayıklama işlerinde tecrübeli ekibimizle hizmetinizdeyiz. Günlük yevmiye usulü veya götürü usulü görüşülür.',
+    seller: 'Mehmet Dayıbaşı',
+    phone: '0535 444 3322',
+    verified: true,
+    featured: true,
+    image: 'https://images.unsplash.com/photo-1595974482597-4f8cae7d1743?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 3,
     title: 'New Holland T6050 - Bakımlı ve hazır',
     price: 1850000,
     category: 'Traktör',
@@ -41,47 +60,28 @@ const INITIAL_LISTINGS = [
     seller: 'Mehmet Demir',
     phone: '0533 444 5566',
     verified: true,
-    featured: true,
+    featured: false,
     image: 'https://images.unsplash.com/photo-1530267981375-f0d7943d226d?auto=format&fit=crop&q=80&w=800',
     date: 'Dün'
   },
   {
-    id: 3,
-    title: 'Tumosan 8185 Yarı Otomatik',
-    price: 1450000,
-    category: 'Traktör',
-    mode: 'Satılık',
+    id: 4,
+    title: 'Budama ve Aşılama Ekibi - Profesyonel Hizmet',
+    price: 1500,
+    category: 'Tarım İşçileri',
+    mode: 'Hizmet',
     location: 'Bandırma / Balıkesir',
     city: 'Balıkesir',
-    year: 2018,
-    hours: 2800,
-    power: '85 HP',
-    description: 'İlk sahibinden temiz kullanılmış traktör. Klima aktiftir.',
-    seller: 'Hüseyin Kaya',
-    phone: '0535 111 2233',
-    verified: false,
-    featured: false,
-    image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
-    date: '3 gün önce'
-  },
-  {
-    id: 4,
-    title: 'Case IH JX110 - Sezonluk Kiralık',
-    price: 45000,
-    category: 'Traktör',
-    mode: 'Kiralık',
-    location: 'Karacabey / Bursa',
-    city: 'Bursa',
-    year: 2020,
-    hours: 2100,
-    power: '110 HP',
-    description: 'Sezonluk veya aylık kiralıktır. Operatörlü/operatörsüz görüşülür.',
-    seller: 'Tarım A.Ş.',
-    phone: '0542 999 8877',
+    year: 2026,
+    hours: 0,
+    power: '5 Kişi',
+    description: 'Ceviz ve meyve ağaçları için profesyonel budama, bakım ve aşılama yapılır.',
+    seller: 'Hasan Usta',
+    phone: '0536 777 8899',
     verified: true,
     featured: false,
-    image: 'https://images.unsplash.com/photo-1563514227147-6d2ff665a6a0?auto=format&fit=crop&q=80&w=800',
-    date: '1 hafta önce'
+    image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=800',
+    date: '2 gün önce'
   }
 ];
 
@@ -108,7 +108,7 @@ export default function App() {
     mode: 'Satılık',
     location: 'Gönen / Balıkesir',
     city: 'Balıkesir',
-    year: '2023',
+    year: '2026',
     hours: '',
     power: '',
     description: '',
@@ -146,7 +146,7 @@ export default function App() {
   const handleInitiateAdd = (e) => {
     e.preventDefault();
     if (!form.title || !form.price || !form.phone || !form.seller) {
-      alert('Lütfen başlık, fiyat, ad Soyad ve telefon numarası alanlarını doldurun.');
+      alert('Lütfen başlık, fiyat/yevmiye, ad Soyad ve telefon numarası alanlarını doldurun.');
       return;
     }
 
@@ -241,7 +241,7 @@ export default function App() {
           </div>
           <div>
             <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '800', letterSpacing: '-0.5px' }}>PazarTarla</h1>
-            <span style={{ fontSize: '11px', color: '#86efac' }}>Tarım Makineleri Pazaryeri</span>
+            <span style={{ fontSize: '11px', color: '#86efac' }}>Tarım Makineleri ve İşçi Pazaryeri</span>
           </div>
         </div>
 
@@ -272,15 +272,15 @@ export default function App() {
                 İlanları keşfet
               </h2>
               <p style={{ color: '#64748b', fontSize: '16px', margin: 0 }}>
-                Tarlana, işine ve bütçene uygun ekipmanı bul.
+                Tarlana uygun makineyi veya hasat için tarım işçi ekibini hemen bul.
               </p>
             </div>
 
             {/* FİLTRELEME PANELİ */}
             <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', marginBottom: '32px', border: '1px solid #e2e8f0' }}>
               
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', borderBottom: '1px solid #f1f5f9', paddingBottom: '16px' }}>
-                {['Tümü', 'Satılık', 'Kiralık'].map(mode => (
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', borderBottom: '1px solid #f1f5f9', paddingBottom: '16px', flexWrap: 'wrap' }}>
+                {['Tümü', 'Satılık', 'Kiralık', 'Hizmet'].map(mode => (
                   <button
                     key={mode}
                     onClick={() => setSelectedMode(mode)}
@@ -301,13 +301,13 @@ export default function App() {
                 ))}
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 200px 200px', gap: '16px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 220px 200px', gap: '16px', flexWrap: 'wrap' }}>
                 
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                   <Search size={20} color="#94a3b8" style={{ position: 'absolute', left: '14px' }} />
                   <input 
                     type="text"
-                    placeholder="Marka, model, şehir ara..."
+                    placeholder="Marka, model, işçi grubu, şehir ara..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     style={{
@@ -339,6 +339,7 @@ export default function App() {
                   <option value="Traktör">Traktör</option>
                   <option value="Biçerdöver">Biçerdöver</option>
                   <option value="Tarım Ekipmanları">Tarım Ekipmanları</option>
+                  <option value="Tarım İşçileri">Tarım İşçileri / Ekipler</option>
                 </select>
 
                 <select 
@@ -394,7 +395,7 @@ export default function App() {
                     />
                     <span style={{ 
                       position: 'absolute', top: '12px', left: '12px', 
-                      backgroundColor: item.mode === 'Satılık' ? '#22c55e' : '#f59e0b', 
+                      backgroundColor: item.mode === 'Satılık' ? '#22c55e' : item.mode === 'Kiralık' ? '#f59e0b' : '#3b82f6', 
                       color: '#fff', padding: '4px 10px', borderRadius: '6px', 
                       fontSize: '12px', fontWeight: '700' 
                     }}>
@@ -424,7 +425,7 @@ export default function App() {
 
                     <div>
                       <div style={{ fontSize: '20px', fontWeight: '800', color: '#1b3a2b', marginBottom: '12px' }}>
-                        {item.price.toLocaleString('tr-TR')} TL
+                        {item.price.toLocaleString('tr-TR')} TL {item.category === 'Tarım İşçileri' ? <span style={{ fontSize: '12px', fontWeight: 'normal', color: '#64748b' }}>/ Günlük başı</span> : ''}
                       </div>
 
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #f1f5f9', paddingTop: '12px', fontSize: '13px', color: '#64748b' }}>
@@ -507,16 +508,16 @@ export default function App() {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', backgroundColor: '#f8fafc', padding: '20px', borderRadius: '12px', margin: '24px 0' }}>
               <div>
-                <span style={{ fontSize: '12px', color: '#64748b', display: 'block' }}>Yıl</span>
-                <strong style={{ fontSize: '16px', color: '#0f172a' }}>{selectedListing.year}</strong>
+                <span style={{ fontSize: '12px', color: '#64748b', display: 'block' }}>İlan Tipi</span>
+                <strong style={{ fontSize: '16px', color: '#0f172a' }}>{selectedListing.mode}</strong>
               </div>
               <div>
-                <span style={{ fontSize: '12px', color: '#64748b', display: 'block' }}>Çalışma Saati</span>
-                <strong style={{ fontSize: '16px', color: '#0f172a' }}>{selectedListing.hours || 'Belirtilmemiş'} saat</strong>
+                <span style={{ fontSize: '12px', color: '#64748b', display: 'block' }}>Kapasite / Güç</span>
+                <strong style={{ fontSize: '16px', color: '#0f172a' }}>{selectedListing.power || selectedListing.hours || 'Belirtilmemiş'}</strong>
               </div>
               <div>
-                <span style={{ fontSize: '12px', color: '#64748b', display: 'block' }}>Motor Gücü</span>
-                <strong style={{ fontSize: '16px', color: '#0f172a' }}>{selectedListing.power || 'Belirtilmemiş'}</strong>
+                <span style={{ fontSize: '12px', color: '#64748b', display: 'block' }}>İletişim Yetkilisi</span>
+                <strong style={{ fontSize: '16px', color: '#0f172a' }}>{selectedListing.seller}</strong>
               </div>
             </div>
 
@@ -540,7 +541,7 @@ export default function App() {
                   boxShadow: '0 4px 12px rgba(37, 211, 102, 0.3)'
                 }}
               >
-                <MessageCircle size={20} /> WhatsApp ile Satıcıya Ulaş
+                <MessageCircle size={20} /> WhatsApp ile Ulaş
               </a>
               <a 
                 href={`tel:${selectedListing.phone}`}
@@ -573,7 +574,7 @@ export default function App() {
                 <input 
                   type="text" 
                   name="title" 
-                  placeholder="Örn: John Deere 6130M - Temiz Traktör"
+                  placeholder="Örn: 10 Kişilik Ceviz Hasat Ekibi veya John Deere Traktör"
                   value={form.title} 
                   onChange={handleFormChange}
                   style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }}
@@ -582,11 +583,11 @@ export default function App() {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Fiyat (TL) *</label>
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Fiyat / Yevmiye (TL) *</label>
                   <input 
                     type="number" 
                     name="price" 
-                    placeholder="Örn: 2450000"
+                    placeholder="Örn: 1500"
                     value={form.price} 
                     onChange={handleFormChange}
                     style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }}
@@ -602,6 +603,7 @@ export default function App() {
                   >
                     <option value="Satılık">Satılık</option>
                     <option value="Kiralık">Kiralık</option>
+                    <option value="Hizmet">Hizmet / İşçi Ekibi</option>
                   </select>
                 </div>
               </div>
@@ -618,6 +620,7 @@ export default function App() {
                     <option value="Traktör">Traktör</option>
                     <option value="Biçerdöver">Biçerdöver</option>
                     <option value="Tarım Ekipmanları">Tarım Ekipmanları</option>
+                    <option value="Tarım İşçileri">Tarım İşçileri / Ekipler</option>
                   </select>
                 </div>
                 <div>
@@ -635,7 +638,7 @@ export default function App() {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>İletişim Adı *</label>
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>İletişim Adı / Dayıbaşı *</label>
                   <input 
                     type="text" 
                     name="seller" 
@@ -646,7 +649,7 @@ export default function App() {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Telefon Numarası (SMS Doğrulama için) *</label>
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Telefon Numarası (SMS Doğrulama) *</label>
                   <input 
                     type="text" 
                     name="phone" 
@@ -662,7 +665,7 @@ export default function App() {
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px' }}>Açıklama</label>
                 <textarea 
                   name="description" 
-                  placeholder="Makinenizin durumu, bakımları ve ek detayları yazın..."
+                  placeholder="Ekip kişi sayısı, çalışma şartları, yevmiye veya makine detayları..."
                   value={form.description} 
                   onChange={handleFormChange}
                   style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', height: '120px', boxSizing: 'border-box' }}
@@ -734,7 +737,7 @@ export default function App() {
           </div>
         )}
 
-        {/* ADMIN PANELİ (Şifre Unuttum Özellikli) */}
+        {/* ADMIN PANELİ */}
         {activeTab === 'admin' && (
           <div style={{ maxWidth: '900px', margin: '0 auto', backgroundColor: '#fff', borderRadius: '20px', padding: '32px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0' }}>
             
@@ -762,7 +765,6 @@ export default function App() {
                   </button>
                 </form>
 
-                {/* Şifremi Unuttum Bağlantısı */}
                 <div style={{ marginTop: '16px' }}>
                   <button 
                     type="button"
