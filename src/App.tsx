@@ -61,6 +61,42 @@ const INITIAL_LISTINGS = [
     date: 'Dün'
   },
   {
+    id: 9,
+    title: 'Temiz Biçerdöver - Full Bakımlı',
+    price: 3250000,
+    category: 'Tarım Makineleri',
+    subCategory: 'Hasat & Harman > Biçerdöver',
+    mode: 'Satılık',
+    location: 'Karacabey / Bursa',
+    city: 'Bursa',
+    amount: 'Sezona Hazır',
+    description: 'Sezon bakımları yapılmış, masrafsız biçerdöver.',
+    seller: 'İbrahim Koç',
+    phone: '0535 444 5566',
+    verified: true,
+    featured: true,
+    image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 10,
+    title: 'Hidrolik Kollu Ağaç Silkeleme Makinesi',
+    price: 110000,
+    category: 'Tarım Makineleri',
+    subCategory: 'Hasat & Harman > Ağaç Silkeleme',
+    mode: 'Satılık',
+    location: 'Gönen / Balıkesir',
+    city: 'Balıkesir',
+    amount: 'Ceviz ve Zeytin İçin',
+    description: 'Bahçemizdeki ceviz ve zeytinler için birebir, az kullanılmış silkeleme makinesi.',
+    seller: 'Can İnce',
+    phone: '0535 768 1550',
+    verified: true,
+    featured: true,
+    image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
     id: 2,
     title: 'Tarladan Doğrudan Taze Chandler Ceviz',
     price: 140,
@@ -241,7 +277,22 @@ export default function App() {
   };
 
   const categoriesWithSubs = {
-    'Tarım Makineleri': ['Traktör', 'Toprak İşleme', 'Hasat & Harman', 'Bitki Bakım', 'Ekim & Dikim', 'Gübreleme', 'Sulama', 'Hayvancılık', 'Taşıma', 'Ataşman & Yedek Parça'],
+    'Tarım Makineleri': [
+      'Traktör', 
+      'Toprak İşleme', 
+      'Hasat & Harman > Biçerdöver', 
+      'Hasat & Harman > Ağaç Silkeleme', 
+      'Hasat & Harman > Ayçiçeği Tabla', 
+      'Hasat & Harman > Balya Makinesi', 
+      'Hasat & Harman > Patoz', 
+      'Bitki Bakım', 
+      'Ekim & Dikim', 
+      'Gübreleme', 
+      'Sulama', 
+      'Hayvancılık', 
+      'Taşıma', 
+      'Ataşman & Yedek Parça'
+    ],
     'Mahsuller': ['Kiraz', 'Karpuz / Kavun', 'Ceviz', 'Zeytin & Zeytinyağı', 'Buğday / Arpa', 'Diğer Mahsul'],
     'Canlı Hayvanlar': ['Büyükbaş', 'Küçükbaş', 'Kanatlı'],
     'Hayvan Yemleri ve Ekipmanları': ['Yem Çeşitleri', 'Suluk / Yemlik'],
@@ -256,7 +307,7 @@ export default function App() {
                           item.location.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesMode = selectedMode === 'Tümü' || item.mode === selectedMode;
     const matchesCategory = selectedCategory === 'Tüm kategoriler' || item.category === selectedCategory;
-    const matchesSubCategory = selectedSubCategory === 'Tümü' || item.subCategory === selectedSubCategory;
+    const matchesSubCategory = selectedSubCategory === 'Tümü' || item.subCategory === selectedSubCategory || item.subCategory?.includes(selectedSubCategory);
     const matchesCity = selectedCity === 'Tüm Türkiye' || item.city === selectedCity;
 
     return matchesSearch && matchesMode && matchesCategory && matchesSubCategory && matchesCity;
@@ -293,13 +344,13 @@ export default function App() {
         </div>
       </header>
 
-      {/* ANA İÇERİK - VİTRİN GÖRÜNÜMÜ (SOL MENÜ + SAĞ VİTRİN KUTULARI) */}
+      {/* ANA İÇERİK - VİTRİN GÖRÜNÜMÜ */}
       <main style={{ maxWidth: '1280px', width: '100%', margin: '0 auto', padding: '24px 16px', flex: 1, boxSizing: 'border-box' }}>
         
         {activeTab === 'home' && (
           <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: '24px', alignItems: 'start' }}>
             
-            {/* SOL TARAF: KİRALIK/SATILIK KATEGORİ AĞACI */}
+            {/* SOL TARAF: KATEGORİ AĞACI */}
             <div style={{ backgroundColor: '#fff', borderRadius: '10px', border: '1px solid #cbd5e1', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
               <div style={{ padding: '12px 16px', borderBottom: '1px solid #e2e8f0', fontWeight: '800', fontSize: '15px', color: '#1b3a2b', backgroundColor: '#f8fafc' }}>
                 {selectedCategory}
@@ -317,12 +368,11 @@ export default function App() {
                     onClick={() => setSelectedSubCategory(sub)}
                     style={{ padding: '8px 16px', cursor: 'pointer', fontSize: '13px', fontWeight: selectedSubCategory === sub ? '700' : '400', color: selectedSubCategory === sub ? '#1b3a2b' : '#334155', backgroundColor: selectedSubCategory === sub ? '#f1f5f9' : 'transparent' }}
                   >
-                    {sub} ({listings.filter(i => i.category === selectedCategory && (sub === 'Tümü' || i.subCategory === sub)).length})
+                    {sub}
                   </div>
                 ))}
               </div>
 
-              {/* DİĞER ANA KATEGORİLER GEÇİŞİ */}
               <div style={{ borderTop: '1px solid #e2e8f0', padding: '12px 16px', backgroundColor: '#f8fafc' }}>
                 <span style={{ fontSize: '11px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>Diğer Kategoriler</span>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -339,7 +389,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* SAĞ TARAF: VİTRİN İLANLARI (YAN YANA KUTULAR) */}
+            {/* SAĞ TARAF: VİTRİN İLANLARI */}
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '2px solid #1b3a2b', paddingBottom: '8px' }}>
                 <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#1b3a2b', margin: 0 }}>
@@ -358,7 +408,7 @@ export default function App() {
                     <div 
                       key={item.id} 
                       onClick={() => { setSelectedListing(item); setActiveTab('detail'); }}
-                      style={{ backgroundColor: '#fff', borderRadius: '8px', overflow: 'hidden', border: '1px solid #cbd5e1', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', cursor: 'pointer', display: 'flex', flexDirection: 'column', transition: 'transform 0.2s' }}
+                      style={{ backgroundColor: '#fff', borderRadius: '8px', overflow: 'hidden', border: '1px solid #cbd5e1', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
                     >
                       <div style={{ position: 'relative', height: '130px', backgroundColor: '#f1f5f9' }}>
                         <img src={item.image} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -429,12 +479,12 @@ export default function App() {
             <form onSubmit={handleDirectAdd} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '13px' }}>İlan Başlığı *</label>
-                <input type="text" name="title" placeholder="Örn: Erkunt Traktör, Taze Ceviz" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                <input type="text" name="title" placeholder="Örn: Biçerdöver, Ağaç Silkeleme" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '13px' }}>Fiyat (TL) *</label>
-                  <input type="number" name="price" placeholder="950000" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                  <input type="number" name="price" placeholder="150000" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '13px' }}>Ana Kategori</label>
@@ -448,11 +498,11 @@ export default function App() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '13px' }}>Alt Ürün</label>
-                  <input type="text" name="subCategory" placeholder="Traktör, Ceviz" value={form.subCategory} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                  <input type="text" name="subCategory" placeholder="Hasat & Harman > Biçerdöver" value={form.subCategory} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '13px' }}>Miktar / Kapasite</label>
-                  <input type="text" name="amount" placeholder="70 HP / 1 Ton" value={form.amount} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                  <input type="text" name="amount" placeholder="Sezona Hazır" value={form.amount} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
