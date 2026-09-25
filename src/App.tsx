@@ -6,81 +6,7 @@ import {
 } from 'lucide-react';
 
 const INITIAL_LISTINGS = [
-  // ZİRAİ İLAÇ & GÜBRE BAYİLERİ (TÜRKİYE GENELİ)
-  {
-    id: 101,
-    title: 'Gönen Güven Zirai İlaç - Bakır Sülfat ve Fungisit',
-    price: 450,
-    category: 'Zirai İlaç ve Gübre',
-    subCategory: 'Fungisit & Mantar İlacı',
-    mode: 'Satılık',
-    location: 'Gönen / Balıkesir',
-    city: 'Balıkesir',
-    amount: '1 Litre / Ambalaj',
-    description: 'Ceviz ve meyve ağaçları için ruhsatlı mantar ve küf önleyici zirai ilaç. Stoktan hemen teslim.',
-    seller: 'Güven Zirai İlaç Bayii',
-    phone: '0532 555 1234',
-    verified: true,
-    featured: true,
-    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-  {
-    id: 102,
-    title: 'Alaşehir Zengin Tarım - Yaprak Gübresi ve İlaç',
-    price: 680,
-    category: 'Zirai İlaç ve Gübre',
-    subCategory: 'Yaprak Gübresi',
-    mode: 'Satılık',
-    location: 'Alaşehir / Manisa',
-    city: 'Manisa',
-    amount: '5 Litre Bidon',
-    description: 'Yüksek verim sağlayan amino asitli sıvı yaprak gübresi ve bitki koruma ürünleri.',
-    seller: 'Zengin Tarım Market',
-    phone: '0532 515 14 95',
-    verified: true,
-    featured: true,
-    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-  {
-    id: 103,
-    title: 'Söke Toprak Tarım - İnsektisit ve Haşere İlacı',
-    price: 520,
-    category: 'Zirai İlaç ve Gübre',
-    subCategory: 'İnsektisit (Böcek İlacı)',
-    mode: 'Satılık',
-    location: 'Söke / Aydın',
-    city: 'Aydın',
-    amount: '1 Litre',
-    description: 'Zararlı böceklere karşı etkili sistemik tarım ilacı. Uzman danışmanlık ile.',
-    seller: 'Toprak Zirai İlaçlama',
-    phone: '0533 241 56 24',
-    verified: true,
-    featured: false,
-    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-  {
-    id: 104,
-    title: 'Bursa Atlantis Tarım - Yabancı Ot İlacı',
-    price: 750,
-    category: 'Zirai İlaç ve Gübre',
-    subCategory: 'Herbisit (Ot İlacı)',
-    mode: 'Satılık',
-    location: 'Osmangazi / Bursa',
-    city: 'Bursa',
-    amount: '3 Litre',
-    description: 'Bahçe aralarındaki yabani otlar için etkili seçici herbisit ilaç.',
-    seller: 'Atlantis Ziraat',
-    phone: '0532 315 70 00',
-    verified: true,
-    featured: false,
-    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-
-  // MAHSULLER
+  // 1. MAHSULLER (3 ADET)
   {
     id: 1,
     title: 'Bursamızın Meşhur Saplı Tatlı Kirazı',
@@ -101,42 +27,6 @@ const INITIAL_LISTINGS = [
   },
   {
     id: 2,
-    title: 'Yediveren Taze Siyah Erik',
-    price: 60,
-    category: 'Mahsuller',
-    subCategory: 'Kiraz',
-    mode: 'Satılık',
-    location: 'Gönen / Balıkesir',
-    city: 'Balıkesir',
-    amount: '300 kg',
-    description: 'Bahçeden taze toplama mis kokulu erik.',
-    seller: 'Ahmet Çiftçi',
-    phone: '0532 111 2233',
-    verified: true,
-    featured: false,
-    image: 'https://images.unsplash.com/photo-1563111811-1372580a4a6b?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-  {
-    id: 3,
-    title: 'Mis Kokulu Gönen Kavunu ve Karpuzu',
-    price: 15,
-    category: 'Mahsuller',
-    subCategory: 'Karpuz / Kavun',
-    mode: 'Satılık',
-    location: 'Gönen / Balıkesir',
-    city: 'Balıkesir',
-    amount: '5 Ton',
-    description: 'Tarladan doğrudan taze kesim kavun ve karpuz.',
-    seller: 'Hüseyin Çiftçi',
-    phone: '0533 111 2233',
-    verified: true,
-    featured: false,
-    image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
-    date: 'Dün'
-  },
-  {
-    id: 4,
     title: 'Tarladan Doğrudan Taze Chandler Ceviz',
     price: 140,
     category: 'Mahsuller',
@@ -154,45 +44,27 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
   {
-    id: 5,
+    id: 3,
     title: 'Erken Hasat Soğuk Sıkım Sızma Zeytinyağı',
     price: 1250,
     category: 'Mahsuller',
     subCategory: 'Zeytin & Zeytinyağı',
     mode: 'Satılık',
-    location: 'Burhaniye / Balıkesir',
+    location: 'Ayvalık / Balıkesir',
     city: 'Balıkesir',
     amount: '100 Teneke (5 Lt)',
     description: 'Asit oranı düşük, geleneksel soğuk sıkım saf zeytinyağı.',
     seller: 'Hasan Bilir',
     phone: '0532 123 4567',
     verified: true,
-    featured: true,
+    featured: false,
     image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
-  {
-    id: 6,
-    title: 'Sertifikalı Tohumluk Buğday',
-    price: 14,
-    category: 'Mahsuller',
-    subCategory: 'Buğday / Arpa',
-    mode: 'Satılık',
-    location: 'Bandırma / Balıkesir',
-    city: 'Balıkesir',
-    amount: '25 Ton',
-    description: 'Yüksek verimli sertifikalı buğday.',
-    seller: 'Cemal Tarım',
-    phone: '0532 333 2211',
-    verified: true,
-    featured: false,
-    image: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
 
-  // CANLI HAYVANLAR
+  // 2. CANLI HAYVANLAR (3 ADET)
   {
-    id: 7,
+    id: 4,
     title: 'Holstein Süt İneği ve Buzağısı',
     price: 85000,
     category: 'Canlı Hayvanlar',
@@ -201,7 +73,7 @@ const INITIAL_LISTINGS = [
     location: 'Gönen / Balıkesir',
     city: 'Balıkesir',
     amount: '1 Baş + 1',
-    description: 'Günlük 30 litre süt veren, sağlığı yerinde inek.',
+    description: 'Günlük 30 litre süt veren, sağlığı yerinde inek ve buzağısı.',
     seller: 'Mustafa Çoban',
     phone: '0532 777 8899',
     verified: true,
@@ -210,7 +82,7 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
   {
-    id: 8,
+    id: 5,
     title: 'Damızlık Sağlıklı Koyun ve Kuzu Sürüsü',
     price: 12000,
     category: 'Canlı Hayvanlar',
@@ -223,13 +95,13 @@ const INITIAL_LISTINGS = [
     seller: 'Mehmet Aksoy',
     phone: '0542 333 4455',
     verified: true,
-    featured: true,
+    featured: false,
     image: 'https://images.unsplash.com/photo-1484557077804-29774de7fc76?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
   {
-    id: 9,
-    title: 'Atak-S Yumurta Tavuğu',
+    id: 6,
+    title: 'Atak-S Yumurta Tavuğu (Yarka)',
     price: 250,
     category: 'Canlı Hayvanlar',
     subCategory: 'Kanatlı',
@@ -237,7 +109,7 @@ const INITIAL_LISTINGS = [
     location: 'Susurluk / Balıkesir',
     city: 'Balıkesir',
     amount: '50 Adet',
-    description: 'Aşılı, yumurtaya yeni başlamış yarka tavuklar.',
+    description: 'Aşılı, yumurtaya yeni başlamış verimli yarka tavuklar.',
     seller: 'Hasan Tavukçu',
     phone: '0532 111 0022',
     verified: true,
@@ -246,9 +118,9 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
 
-  // HAYVAN YEMLERİ VE EKİPMANLARI
+  // 3. HAYVAN YEMLERİ VE EKİPMANLARI (3 ADET)
   {
-    id: 10,
+    id: 7,
     title: 'Besi Süt Yemi (Çuval 50 kg)',
     price: 450,
     category: 'Hayvan Yemleri ve Ekipmanları',
@@ -261,12 +133,12 @@ const INITIAL_LISTINGS = [
     seller: 'Yem Dünyası',
     phone: '0532 444 3322',
     verified: true,
-    featured: false,
+    featured: true,
     image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
   {
-    id: 11,
+    id: 8,
     title: 'Otomatik Büyükbaş Suluk',
     price: 650,
     category: 'Hayvan Yemleri ve Ekipmanları',
@@ -283,10 +155,28 @@ const INITIAL_LISTINGS = [
     image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
-
-  // ARICILIK & BAL
   {
-    id: 12,
+    id: 9,
+    title: 'Küçükbaş Çelik Yemlik',
+    price: 900,
+    category: 'Hayvan Yemleri ve Ekipmanları',
+    subCategory: 'Suluk / Yemlik',
+    mode: 'Satılık',
+    location: 'Bursa',
+    city: 'Bursa',
+    amount: '5 Adet',
+    description: 'Dayanıklı galvaniz sacdan imal edilmiş yemlik.',
+    seller: 'Demir Tarım',
+    phone: '0532 888 9900',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+
+  // 4. ARICILIK & BAL (3 ADET)
+  {
+    id: 10,
     title: 'Meşe Çiçeği Yayla Süzme Balı (1 Kg)',
     price: 400,
     category: 'Arıcılık & Bal',
@@ -304,7 +194,7 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
   {
-    id: 13,
+    id: 11,
     title: 'Karakovan Petek Balı',
     price: 600,
     category: 'Arıcılık & Bal',
@@ -321,10 +211,28 @@ const INITIAL_LISTINGS = [
     image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
-
-  // ARICILIK EKİPMANLARI
   {
-    id: 14,
+    id: 12,
+    title: 'Çam Balı - Süzme (1 Kg)',
+    price: 350,
+    category: 'Arıcılık & Bal',
+    subCategory: 'Süzme Bal',
+    mode: 'Satılık',
+    location: 'Muğla',
+    city: 'Muğla',
+    amount: '30 Kavanoz',
+    description: 'Çam ormanlarından elde edilen boğaz yakmayan saf çam balı.',
+    seller: 'Muğla Arıcılık',
+    phone: '0533 111 2233',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+
+  // 5. ARICILIK EKİPMANLARI (3 ADET)
+  {
+    id: 13,
     title: '10 Çerçeveli Boyalı Arı Kovanı',
     price: 1200,
     category: 'Arıcılık Ekipmanları',
@@ -337,12 +245,12 @@ const INITIAL_LISTINGS = [
     seller: 'Ahmet Arıcı',
     phone: '0532 444 5566',
     verified: true,
-    featured: false,
+    featured: true,
     image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
   {
-    id: 15,
+    id: 14,
     title: 'Paslanmaz 4 Çerçeveli Bal Süzme Makinesi',
     price: 4500,
     category: 'Arıcılık Ekipmanları',
@@ -359,8 +267,26 @@ const INITIAL_LISTINGS = [
     image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
+  {
+    id: 15,
+    title: 'Arıcı Körüğü ve Maske Seti',
+    price: 450,
+    category: 'Arıcılık Ekipmanları',
+    subCategory: 'Petek ve Çerçeve',
+    mode: 'Satılık',
+    location: 'Balıkesir',
+    city: 'Balıkesir',
+    amount: '10 Set',
+    description: 'Paslanmaz çelik körük ve havadar arıcı maskesi.',
+    seller: 'Arıcı Ekipmanları',
+    phone: '0532 777 6655',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
 
-  // TRAKTÖR
+  // 6. TRAKTÖR (3 ADET)
   {
     id: 16,
     title: 'John Deere 6130M - Düşük saat, tek elden',
@@ -370,8 +296,8 @@ const INITIAL_LISTINGS = [
     mode: 'Satılık',
     location: 'Gönen / Balıkesir',
     city: 'Balıkesir',
-    amount: '1200 Çalışma Saati / 130 HP',
-    description: 'Kapalı garaj traktörüdür. Tüm bakımları yetkili serviste yapılmıştır. Hiçbir masrafı yoktur.',
+    amount: '1200 Saat / 130 HP',
+    description: 'Kapalı garaj traktörüdür. Tüm bakımları yetkili serviste yapılmıştır.',
     seller: 'Ahmet Yılmaz',
     phone: '0532 555 0192',
     verified: true,
@@ -397,10 +323,28 @@ const INITIAL_LISTINGS = [
     image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
-
-  // BİÇERDÖVER
   {
     id: 18,
+    title: 'New Holland T4.80 SIFIR Ayarında',
+    price: 1350000,
+    category: 'Traktör',
+    subCategory: 'Sıfır Traktör',
+    mode: 'Satılık',
+    location: 'Bursa',
+    city: 'Bursa',
+    amount: '450 Saat',
+    description: 'Neredeyse sıfır hatasız, klimalı kabin.',
+    seller: 'Bursa Traktör',
+    phone: '0535 444 3322',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+
+  // 7. BİÇERDÖVER (3 ADET)
+  {
+    id: 19,
     title: 'New Holland TC 5070 Biçerdöver',
     price: 3200000,
     category: 'Biçerdöver',
@@ -417,10 +361,46 @@ const INITIAL_LISTINGS = [
     image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
-
-  // TARIM EKİPMANLARI
   {
-    id: 19,
+    id: 20,
+    title: 'John Deere W540 Biçerdöver',
+    price: 4500000,
+    category: 'Biçerdöver',
+    subCategory: 'Biçerdöver',
+    mode: 'Satılık',
+    location: 'Konya',
+    city: 'Konya',
+    amount: '3100 Motor Saati',
+    description: 'Sorunsuz temiz kullanılmış biçerdöver.',
+    seller: 'Konya Tarım',
+    phone: '0533 222 1100',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 21,
+    title: 'Claas Dominator 130',
+    price: 2800000,
+    category: 'Biçerdöver',
+    subCategory: 'Biçerdöver',
+    mode: 'Satılık',
+    location: 'Edirne',
+    city: 'Edirne',
+    amount: 'İyi Durumda',
+    description: 'Trakya bölgesi bakımlı biçerdöver.',
+    seller: 'Trakya Makine',
+    phone: '0542 555 6677',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+
+  // 8. TARIM EKİPMANLARI (3 ADET)
+  {
+    id: 22,
     title: 'Tarım Römorku 5 Tonluk',
     price: 180000,
     category: 'Tarım Ekipmanları',
@@ -433,12 +413,12 @@ const INITIAL_LISTINGS = [
     seller: 'Demir Doğrama',
     phone: '0535 444 3322',
     verified: true,
-    featured: false,
+    featured: true,
     image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
   {
-    id: 20,
+    id: 23,
     title: 'Asılır Tip İlaçlama Makinesi 600 Lt',
     price: 65000,
     category: 'Tarım Ekipmanları',
@@ -455,10 +435,28 @@ const INITIAL_LISTINGS = [
     image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
-
-  // TARIM İŞÇİLERİ
   {
-    id: 21,
+    id: 24,
+    title: 'Pulluk 4 Lü Ünlüler',
+    price: 95000,
+    category: 'Tarım Ekipmanları',
+    subCategory: 'Toprak İşleme',
+    mode: 'Satılık',
+    location: 'Balıkesir',
+    city: 'Balıkesir',
+    amount: '14 Numara',
+    description: 'Az kullanılmış hatasız pulluk.',
+    seller: 'Tarım Aletleri',
+    phone: '0532 333 4455',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+
+  // 9. TARIM İŞÇİLERİ (3 ADET)
+  {
+    id: 25,
     title: 'Hasat ve Toplama Ekibi (10 Kişilik)',
     price: 1500,
     category: 'Tarım İşçileri',
@@ -476,7 +474,7 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
   {
-    id: 22,
+    id: 26,
     title: 'Profesyonel Ceviz ve Meyve Budama Ekibi',
     price: 2000,
     category: 'Tarım İşçileri',
@@ -488,6 +486,24 @@ const INITIAL_LISTINGS = [
     description: 'Ceviz ve meyve ağaçları için uzman budama hizmeti.',
     seller: 'Usta Budayıcı',
     phone: '0533 777 6655',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1595855759920-86582396756a?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 27,
+    title: 'Deneyimli Sığır Çobanı ve Bakıcısı',
+    price: 25000,
+    category: 'Tarım İşçileri',
+    subCategory: 'Çoban / Bakıcı',
+    mode: 'Hizmet',
+    location: 'Balıkesir',
+    city: 'Balıkesir',
+    amount: 'Aylık Maaş',
+    description: 'Büyükbaş hayvan bakımında tecrübeli güvenilir çoban.',
+    seller: 'Mehmet Çoban',
+    phone: '0542 111 2233',
     verified: true,
     featured: false,
     image: 'https://images.unsplash.com/photo-1595855759920-86582396756a?auto=format&fit=crop&q=80&w=800',
@@ -606,16 +622,15 @@ export default function App() {
   };
 
   const categoriesWithSubs = {
-    'Zirai İlaç ve Gübre': ['Fungisit & Mantar İlacı', 'Yaprak Gübresi', 'İnsektisit (Böcek İlacı)', 'Herbisit (Ot İlacı)'],
-    'Mahsuller': ['Kiraz', 'Karpuz / Kavun', 'Ceviz', 'Zeytin & Zeytinyağı', 'Buğday / Arpa'],
+    'Mahsuller': ['Kiraz', 'Ceviz', 'Zeytin & Zeytinyağı'],
     'Canlı Hayvanlar': ['Büyükbaş', 'Küçükbaş', 'Kanatlı'],
     'Hayvan Yemleri ve Ekipmanları': ['Yem Çeşitleri', 'Suluk / Yemlik'],
     'Arıcılık & Bal': ['Süzme Bal', 'Karakovan Balı'],
-    'Arıcılık Ekipmanları': ['Kovan', 'Bal Süzme Makinesi'],
-    'Traktör': ['İkinci El Traktör'],
+    'Arıcılık Ekipmanları': ['Kovan', 'Bal Süzme Makinesi', 'Petek ve Çerçeve'],
+    'Traktör': ['İkinci El Traktör', 'Sıfır Traktör'],
     'Biçerdöver': ['Biçerdöver'],
-    'Tarım Ekipmanları': ['Römork', 'İlaçlama Makinesi'],
-    'Tarım İşçileri': ['Hasat Ekibi', 'Budama Ekibi']
+    'Tarım Ekipmanları': ['Römork', 'İlaçlama Makinesi', 'Toprak İşleme'],
+    'Tarım İşçileri': ['Hasat Ekibi', 'Budama Ekibi', 'Çoban / Bakıcı']
   };
 
   const filteredListings = listings.filter(item => {
