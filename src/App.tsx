@@ -508,6 +508,44 @@ const INITIAL_LISTINGS = [
     featured: false,
     image: 'https://images.unsplash.com/photo-1595855759920-86582396756a?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
+  },
+
+  // 10. UZMANLAR (VETERİNERLER VE ZİRAATÇILAR)
+  {
+    id: 28,
+    title: 'Gönen Serbest Veteriner Kliniği - Büyükbaş & Küçükbaş',
+    price: 500,
+    category: 'Uzmanlar',
+    subCategory: 'Veterinerler',
+    mode: 'Hizmet',
+    location: 'Gönen / Balıkesir',
+    city: 'Balıkesir',
+    amount: '7/24 Acil Hizmet',
+    description: 'Aşılama, suni tohumlama, cerrahi operasyonlar ve veteriner danışmanlık hizmeti.',
+    seller: 'Vet. Hekim Ali Yıldız',
+    phone: '0532 987 6543',
+    verified: true,
+    featured: true,
+    image: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 29,
+    title: 'Tarım Danışmanlık ve Ziraat Mühendisliği',
+    price: 750,
+    category: 'Uzmanlar',
+    subCategory: 'Ziraatçılar',
+    mode: 'Hizmet',
+    location: 'Balıkesir Merkez',
+    city: 'Balıkesir',
+    amount: 'Bahçe Analizi',
+    description: 'Toprak analizi, gübreleme programı hazırlama ve ceviz bahçesi bakım danışmanlığı.',
+    seller: 'Ziraat Müh. Murat Can',
+    phone: '0533 456 7890',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
   }
 ];
 
@@ -576,7 +614,6 @@ export default function App() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // Fotoğraf Yükleme Fonksiyonu (Galeriden seçilen resmi önizleme/base64 formatına çevirir)
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -639,7 +676,8 @@ export default function App() {
     'Traktör': ['İkinci El Traktör', 'Sıfır Traktör'],
     'Biçerdöver': ['Biçerdöver'],
     'Tarım Ekipmanları': ['Römork', 'İlaçlama Makinesi', 'Toprak İşleme'],
-    'Tarım İşçileri': ['Hasat Ekibi', 'Budama Ekibi', 'Çoban / Bakıcı']
+    'Tarım İşçileri': ['Hasat Ekibi', 'Budama Ekibi', 'Çoban / Bakıcı'],
+    'Uzmanlar': ['Veterinerler', 'Ziraatçılar']
   };
 
   const filteredListings = listings.filter(item => {
@@ -913,7 +951,6 @@ export default function App() {
                 </div>
               </div>
               
-              {/* GALERİDEN FOTOĞRAF YÜKLEME ALANI */}
               <div>
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fotoğraf Seç (Galeriden / Cihazdan)</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
