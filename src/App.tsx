@@ -513,14 +513,14 @@ const INITIAL_LISTINGS = [
   // 10. UZMANLAR (VETERİNERLER VE ZİRAATÇILAR)
   {
     id: 28,
-    title: 'Gönen Serbest Veteriner Kliniği - Büyükbaş & Küçükbaş',
-    price: 500,
+    title: 'Gönen Serbest Veteriner Kliniği',
+    price: 0,
     category: 'Uzmanlar',
     subCategory: 'Veterinerler',
-    mode: 'Hizmet',
+    mode: 'Uzman',
     location: 'Gönen / Balıkesir',
     city: 'Balıkesir',
-    amount: '7/24 Acil Hizmet',
+    amount: '7/24 Klinik Hizmeti',
     description: 'Aşılama, suni tohumlama, cerrahi operasyonlar ve veteriner danışmanlık hizmeti.',
     seller: 'Vet. Hekim Ali Yıldız',
     phone: '0532 987 6543',
@@ -532,13 +532,13 @@ const INITIAL_LISTINGS = [
   {
     id: 29,
     title: 'Tarım Danışmanlık ve Ziraat Mühendisliği',
-    price: 750,
+    price: 0,
     category: 'Uzmanlar',
     subCategory: 'Ziraatçılar',
-    mode: 'Hizmet',
+    mode: 'Uzman',
     location: 'Balıkesir Merkez',
     city: 'Balıkesir',
-    amount: 'Bahçe Analizi',
+    amount: 'Toprak & Bahçe Analizi',
     description: 'Toprak analizi, gübreleme programı hazırlama ve ceviz bahçesi bakım danışmanlığı.',
     seller: 'Ziraat Müh. Murat Can',
     phone: '0533 456 7890',
@@ -611,7 +611,35 @@ export default function App() {
   };
 
   const handleFormChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    
+    // Kategori değiştiğinde 'Uzmanlar' seçilirse fiyatı ve modu otomatik ayarla
+    if (name === 'category') {
+      if (value === 'Uzmanlar') {
+        setForm(prev => ({ 
+          ...prev, 
+          category: value, 
+          subCategory: 'Veterinerler',
+          mode: 'Uzman', 
+          price: '0', 
+          amount: 'Uzman / Danışman' 
+        }));
+        return;
+      } else if (form.category === 'Uzmanlar') {
+        // Uzmanlardan başka kategoriye geçilirse normale döndür
+        setForm(prev => ({ 
+          ...prev, 
+          category: value, 
+          subCategory: '', 
+          mode: 'Satılık', 
+          price: '', 
+          amount: '' 
+        }));
+        return;
+      }
+    }
+
+    setForm({ ...form, [name]: value });
   };
 
   const handleImageUpload = (e) => {
@@ -627,15 +655,18 @@ export default function App() {
 
   const handleDirectAdd = (e) => {
     e.preventDefault();
-    if (!form.title || !form.price || !form.phone || !form.seller) {
-      alert('Lütfen başlık, fiyat, satıcı adı ve telefon numarası alanlarını doldurun.');
+    if (!form.title || !form.phone || !form.seller) {
+      alert('Lütfen başlık, ad soyad ve telefon numarası alanlarını doldurun.');
       return;
     }
+
+    const isExpert = form.category === 'Uzmanlar';
 
     const newEntry = {
       ...form,
       id: Date.now(),
-      price: Number(form.price),
+      price: isExpert ? 0 : Number(form.price || 0),
+      mode: isExpert ? 'Uzman' : form.mode,
       verified: true,
       featured: false,
       date: 'Bugün'
@@ -644,11 +675,11 @@ export default function App() {
     const updated = [newEntry, ...listings];
     saveListings(updated);
     changeTab('home');
-    alert('İlanınız başarıyla yayınlandı!');
+    alert(isExpert ? 'Uzman kaydınız başarıyla yayınlandı!' : 'İlanınız başarıyla yayınlandı!');
   };
 
   const handleDeleteListing = (id) => {
-    if (window.confirm('Bu ilanı yayından kaldırmak/silmek istediğinize emin misiniz?')) {
+    if (window.confirm('Bu kaydı yayından kaldırmak/silmek istediğinize emin misiniz?')) {
       const updated = listings.filter(item => item.id !== id);
       saveListings(updated);
     }
@@ -685,6 +716,8 @@ export default function App() {
     const matchesSubCategory = selectedSubCategory === 'Tümü' || item.subCategory === selectedSubCategory;
     return matchesCategory && matchesSubCategory;
   });
+
+  const isExpertCategory = form.category === 'Uzmanlar';
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f4f6f8', color: '#1e293b', fontFamily: 'system-ui, -apple-system, sans-serif', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', overflowX: 'hidden', boxSizing: 'border-box' }}>
@@ -804,49 +837,52 @@ export default function App() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
               {filteredListings.length === 0 ? (
                 <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '10px', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>
-                  Bu kategoride henüz ilan bulunmuyor.
+                  Bu kategoride henüz kayıt bulunmuyor.
                 </div>
               ) : (
-                filteredListings.map(item => (
-                  <div 
-                    key={item.id} 
-                    onClick={() => { setSelectedListing(item); changeTab('detail'); }}
-                    style={{ backgroundColor: '#fff', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', cursor: 'pointer', display: 'flex', gap: '10px', padding: '10px', boxSizing: 'border-box', width: '100%' }}
-                  >
-                    <div style={{ position: 'relative', width: viewMode === 'Detaylı Liste' ? '110px' : '90px', height: viewMode === 'Detaylı Liste' ? '110px' : '90px', backgroundColor: '#f1f5f9', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
-                      <img src={item.image} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      <span style={{ position: 'absolute', top: '4px', left: '4px', backgroundColor: item.mode === 'Satılık' ? '#22c55e' : '#3b82f6', color: '#fff', padding: '2px 5px', borderRadius: '4px', fontSize: '9px', fontWeight: '700' }}>
-                        {item.mode}
-                      </span>
-                    </div>
+                filteredListings.map(item => {
+                  const isExpertItem = item.category === 'Uzmanlar';
+                  return (
+                    <div 
+                      key={item.id} 
+                      onClick={() => { setSelectedListing(item); changeTab('detail'); }}
+                      style={{ backgroundColor: '#fff', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', cursor: 'pointer', display: 'flex', gap: '10px', padding: '10px', boxSizing: 'border-box', width: '100%' }}
+                    >
+                      <div style={{ position: 'relative', width: viewMode === 'Detaylı Liste' ? '110px' : '90px', height: viewMode === 'Detaylı Liste' ? '110px' : '90px', backgroundColor: '#f1f5f9', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
+                        <img src={item.image} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <span style={{ position: 'absolute', top: '4px', left: '4px', backgroundColor: isExpertItem ? '#3b82f6' : (item.mode === 'Satılık' ? '#22c55e' : '#3b82f6'), color: '#fff', padding: '2px 5px', borderRadius: '4px', fontSize: '9px', fontWeight: '700' }}>
+                          {item.mode}
+                        </span>
+                      </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1, minWidth: 0 }}>
-                      <div>
-                        <span style={{ fontSize: '10px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.category} {item.subCategory ? `> ${item.subCategory}` : ''}</span>
-                        <h4 style={{ margin: '2px 0 4px 0', fontSize: '13px', fontWeight: '700', color: '#0f172a', lineHeight: '1.2' }}>{item.title}</h4>
-                        {item.amount && (
-                          <div style={{ fontSize: '11px', color: '#059669', fontWeight: '600' }}>
-                            {item.amount}
+                      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1, minWidth: 0 }}>
+                        <div>
+                          <span style={{ fontSize: '10px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.category} {item.subCategory ? `> ${item.subCategory}` : ''}</span>
+                          <h4 style={{ margin: '2px 0 4px 0', fontSize: '13px', fontWeight: '700', color: '#0f172a', lineHeight: '1.2' }}>{item.title}</h4>
+                          {item.amount && (
+                            <div style={{ fontSize: '11px', color: isExpertItem ? '#2563eb' : '#059669', fontWeight: '600' }}>
+                              {item.amount}
+                            </div>
+                          )}
+                          {viewMode === 'Detaylı Liste' && (
+                            <p style={{ fontSize: '11px', color: '#64748b', margin: '4px 0 0 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                              {item.description}
+                            </p>
+                          )}
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '4px' }}>
+                          <div style={{ fontSize: isExpertItem ? '13px' : '15px', fontWeight: '800', color: isExpertItem ? '#2563eb' : '#1b3a2b' }}>
+                            {isExpertItem ? 'Uzman Profili' : `${item.price.toLocaleString('tr-TR')} TL`}
                           </div>
-                        )}
-                        {viewMode === 'Detaylı Liste' && (
-                          <p style={{ fontSize: '11px', color: '#64748b', margin: '4px 0 0 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                            {item.description}
-                          </p>
-                        )}
-                      </div>
-
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '4px' }}>
-                        <div style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b' }}>
-                          {item.price.toLocaleString('tr-TR')} TL
-                        </div>
-                        <div style={{ fontSize: '10px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '2px' }}>
-                          <MapPin size={10} /> {item.location}
+                          <div style={{ fontSize: '10px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                            <MapPin size={10} /> {item.location}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
 
@@ -876,7 +912,7 @@ export default function App() {
           </div>
         )}
 
-        {/* İLAN DETAY EKRANI */}
+        {/* İLAN / UZMAN DETAY EKRANI */}
         {activeTab === 'detail' && selectedListing && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', boxSizing: 'border-box', width: '100%' }}>
             <div style={{ marginBottom: '14px' }}>
@@ -889,11 +925,15 @@ export default function App() {
             </div>
             <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', margin: '8px 0' }}>{selectedListing.title}</h2>
             {selectedListing.amount && (
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#ecfdf5', color: '#059669', padding: '4px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', marginBottom: '12px', border: '1px solid #a7f3d0' }}>
-                <Package size={14} /> Miktar / Bilgi: {selectedListing.amount}
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: selectedListing.category === 'Uzmanlar' ? '#eff6ff' : '#ecfdf5', color: selectedListing.category === 'Uzmanlar' ? '#2563eb' : '#059669', padding: '4px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', marginBottom: '12px', border: `1px solid ${selectedListing.category === 'Uzmanlar' ? '#bfdbfe' : '#a7f3d0'}` }}>
+                <Package size={14} /> {selectedListing.category === 'Uzmanlar' ? 'Alan / Kapsam: ' : 'Miktar / Bilgi: '}{selectedListing.amount}
               </div>
             )}
-            <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '14px' }}>{selectedListing.price.toLocaleString('tr-TR')} TL</div>
+            
+            {selectedListing.category !== 'Uzmanlar' && (
+              <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '14px' }}>{selectedListing.price.toLocaleString('tr-TR')} TL</div>
+            )}
+
             <p style={{ color: '#475569', lineHeight: '1.4', marginBottom: '16px', fontSize: '13px' }}>{selectedListing.description}</p>
             
             <div style={{ borderTop: '1px solid #edf2f7', paddingTop: '16px' }}>
@@ -904,23 +944,16 @@ export default function App() {
           </div>
         )}
 
-        {/* İLAN VER EKRANI */}
+        {/* İLAN / UZMAN EKLEME EKRANI */}
         {activeTab === 'add' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', boxSizing: 'border-box', width: '100%' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
               <button onClick={() => changeTab('home')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer', fontSize: '13px' }}>← Vazgeç</button>
-              <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>Yeni İlan Ver</h2>
+              <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>{isExpertCategory ? 'Uzman Profili Ekle' : 'Yeni İlan Ver'}</h2>
             </div>
             <form onSubmit={handleDirectAdd} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>İlan Başlığı *</label>
-                <input type="text" name="title" placeholder="Örn: Kiraz, Traktör" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
-              </div>
+              
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fiyat (TL) *</label>
-                  <input type="number" name="price" placeholder="90" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
-                </div>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Kategori</label>
                   <select name="category" value={form.category} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff', fontSize: '13px' }}>
@@ -929,26 +962,54 @@ export default function App() {
                     ))}
                   </select>
                 </div>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Alt Ürün</label>
-                  <input type="text" name="subCategory" placeholder="Ceviz" value={form.subCategory} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Miktar / Kapasite</label>
-                  <input type="text" name="amount" placeholder="5 Ton" value={form.amount} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Alt Uzmanlık / Ürün</label>
+                  <select name="subCategory" value={form.subCategory} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff', fontSize: '13px' }}>
+                    {categoriesWithSubs[form.category]?.map(sub => (
+                      <option key={sub} value={sub}>{sub}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
+
+              <div>
+                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>{isExpertCategory ? 'Klinik / Unvan ve İsim Başlığı *' : 'İlan Başlığı *'}</label>
+                <input type="text" name="title" placeholder={isExpertCategory ? "Örn: Gönen Veteriner Kliniği" : "Örn: Kiraz, Traktör"} value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+              </div>
+
+              {/* UZMAN DEĞİLSE FİYAT GÖSTER, UZMANSA GİZLE VE UZMANLIK ALANI GÖSTER */}
+              {!isExpertCategory ? (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fiyat (TL) *</label>
+                    <input type="number" name="price" placeholder="90" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Miktar / Kapasite</label>
+                    <input type="text" name="amount" placeholder="5 Ton" value={form.amount} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Hizmet Kapsamı / Çalışma Alanı</label>
+                  <input type="text" name="amount" placeholder="Örn: 7/24 Acil & Büyükbaş" value={form.amount} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                </div>
+              )}
+
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Satıcı Adı *</label>
-                  <input type="text" name="seller" placeholder="Adınız" value={form.seller} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>{isExpertCategory ? 'Uzman / Hekim Adı *' : 'Satıcı Adı *'}</label>
+                  <input type="text" name="seller" placeholder="Ad Soyad" value={form.seller} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Telefon *</label>
                   <input type="text" name="phone" placeholder="0532..." value={form.phone} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Hizmet / İlan Konumu</label>
+                <input type="text" name="location" placeholder="Gönen / Balıkesir" value={form.location} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
               </div>
               
               <div>
@@ -964,11 +1025,12 @@ export default function App() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Açıklama</label>
-                <textarea name="description" placeholder="Detaylar..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px', boxSizing: 'border-box', fontSize: '13px' }} />
+                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Açıklama / Hizmet Detayları</label>
+                <textarea name="description" placeholder="Hizmetleriniz veya detaylar..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px', boxSizing: 'border-box', fontSize: '13px' }} />
               </div>
+
               <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', fontSize: '14px' }}>
-                İlanı Hemen Yayınla
+                {isExpertCategory ? 'Uzman Profilini Yayınla' : 'İlanı Hemen Yayınla'}
               </button>
             </form>
           </div>
@@ -992,7 +1054,7 @@ export default function App() {
             ) : (
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid #edf2f7', paddingBottom: '10px' }}>
-                  <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>İlan Denetimi</h2>
+                  <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>İlan ve Uzman Denetimi</h2>
                   <button onClick={() => changeTab('home')} style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}>Kategorilere Dön</button>
                 </div>
 
@@ -1003,7 +1065,7 @@ export default function App() {
                         <img src={item.image} alt="" style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover' }} />
                         <div>
                           <h4 style={{ margin: '0 0 2px 0', fontSize: '13px', fontWeight: '700', color: '#0f172a' }}>{item.title}</h4>
-                          <span style={{ fontSize: '11px', color: '#64748b' }}>{item.price.toLocaleString('tr-TR')} TL</span>
+                          <span style={{ fontSize: '11px', color: '#64748b' }}>{item.category === 'Uzmanlar' ? 'Uzman Profili' : `${item.price.toLocaleString('tr-TR')} TL`}</span>
                         </div>
                       </div>
                       <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 8px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '11px' }}>
