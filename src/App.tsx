@@ -340,7 +340,6 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState('Tüm kategoriler');
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
   
-  // Akordiyon için açık olan kategoriyi tutan state (Varsayılan olarak 'Mahsuller' açık başlasın)
   const [openCategory, setOpenCategory] = useState('Mahsuller');
 
   const [showViewModal, setShowViewModal] = useState(false);
@@ -517,7 +516,7 @@ export default function App() {
       {/* ANA İÇERİK */}
       <main style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '12px', flex: 1, boxSizing: 'border-box' }}>
         
-        {/* 1. EKRAN: KATEGORİ SEÇİMİ (Akordiyon / Açılır-Kapanır) */}
+        {/* 1. EKRAN: KATEGORİ SEÇİMİ (Akordiyon) */}
         {activeTab === 'home' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflow: 'hidden', border: '1px solid #e2e8f0', width: '100%', boxSizing: 'border-box' }}>
             <div style={{ backgroundColor: '#1b3a2b', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -540,7 +539,6 @@ export default function App() {
               const isOpen = openCategory === cat;
               return (
                 <div key={cat}>
-                  {/* Ana Kategori Başlığı (Tıklayınca Akordiyon Açılır/Kapanır) */}
                   <div 
                     onClick={() => setOpenCategory(isOpen ? '' : cat)}
                     style={{ padding: '14px 16px', borderBottom: '1px solid #edf2f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', backgroundColor: isOpen ? '#f0fdf4' : '#fff' }}
@@ -552,10 +550,8 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Alt Başlıklar (Sadece akordiyon açıkken görünür) */}
                   {isOpen && (
                     <div style={{ backgroundColor: '#fafafa', borderBottom: '1px solid #edf2f7' }}>
-                      {/* Tüm ana kategoriye gitme seçeneği */}
                       <div 
                         onClick={() => { setSelectedCategory(cat); setSelectedSubCategory('Tümü'); changeTab('results'); }}
                         style={{ padding: '10px 16px 10px 28px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', backgroundColor: '#f0fdf4' }}
@@ -847,7 +843,15 @@ export default function App() {
 
       </main>
 
-      <footer style={{ backgroundColor: '#1b3a2b', color: '#94a3b8', padding: '14px', textAlign: 'center', fontSize: '11px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 'auto', boxSizing: 'border-box', width: '100%' }}>
+      {/* FOOTER - İLETİŞİM VE TELİF BİLGİLERİ GERİ EKLENDİ */}
+      <footer style={{ backgroundColor: '#1b3a2b', color: '#94a3b8', padding: '16px', textAlign: 'center', fontSize: '11px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 'auto', boxSizing: 'border-box', width: '100%', display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '15px', color: '#cbd5e1', fontSize: '12px', fontWeight: '600' }}>
+          <span style={{ cursor: 'pointer' }} onClick={() => alert('İletişim: destek@pazartarla.com.tr')}>İletişim</span>
+          <span>•</span>
+          <span style={{ cursor: 'pointer' }} onClick={() => alert('PazarTarla Tarım Pazaryeri Platformu')}>Hakkımızda</span>
+          <span>•</span>
+          <span style={{ cursor: 'pointer' }} onClick={() => alert('Tüm hakları saklıdır.')}>Güvenli Alışveriş</span>
+        </div>
         <span>© 2026 PazarTarla • Gönen / Balıkesir</span>
       </footer>
 
