@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus, 
-  Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, ChevronDown, X, 
-  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, AlertTriangle 
+  Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, X, 
+  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star 
 } from 'lucide-react';
 
 const INITIAL_LISTINGS = [
-  // 1. MAHSULLER
+  // 1. MAHSULLER (3 ADET)
   {
     id: 1,
     title: 'Bursamızın Meşhur Saplı Tatlı Kirazı',
@@ -22,7 +22,6 @@ const INITIAL_LISTINGS = [
     phone: '0532 444 5566',
     verified: true,
     featured: true,
-    reports: 0,
     image: 'https://images.unsplash.com/photo-1528821151447-11f211b5e5a7?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -41,7 +40,6 @@ const INITIAL_LISTINGS = [
     phone: '0535 768 1550',
     verified: true,
     featured: true,
-    reports: 0,
     image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -60,12 +58,11 @@ const INITIAL_LISTINGS = [
     phone: '0532 123 4567',
     verified: true,
     featured: false,
-    reports: 0,
     image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
 
-  // 2. CANLI HAYVANLAR
+  // 2. CANLI HAYVANLAR (3 ADET)
   {
     id: 4,
     title: 'Holstein Süt İneği ve Buzağısı',
@@ -81,7 +78,6 @@ const INITIAL_LISTINGS = [
     phone: '0532 777 8899',
     verified: true,
     featured: true,
-    reports: 0,
     image: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -100,7 +96,6 @@ const INITIAL_LISTINGS = [
     phone: '0542 333 4455',
     verified: true,
     featured: false,
-    reports: 0,
     image: 'https://images.unsplash.com/photo-1484557077804-29774de7fc76?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -119,12 +114,11 @@ const INITIAL_LISTINGS = [
     phone: '0532 111 0022',
     verified: true,
     featured: false,
-    reports: 0,
     image: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
 
-  // 3. HAYVAN Yemleri ve Ekipmanları
+  // 3. HAYVAN YEMLERİ VE EKİPMANLARI (3 ADET)
   {
     id: 7,
     title: 'Besi Süt Yemi (Çuval 50 kg)',
@@ -140,7 +134,6 @@ const INITIAL_LISTINGS = [
     phone: '0532 444 3322',
     verified: true,
     featured: true,
-    reports: 0,
     image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -159,14 +152,31 @@ const INITIAL_LISTINGS = [
     phone: '0533 222 1100',
     verified: true,
     featured: false,
-    reports: 0,
+    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 9,
+    title: 'Küçükbaş Çelik Yemlik',
+    price: 900,
+    category: 'Hayvan Yemleri ve Ekipmanları',
+    subCategory: 'Suluk / Yemlik',
+    mode: 'Satılık',
+    location: 'Bursa',
+    city: 'Bursa',
+    amount: '5 Adet',
+    description: 'Dayanıklı galvaniz sacdan imal edilmiş yemlik.',
+    seller: 'Demir Tarım',
+    phone: '0532 888 9900',
+    verified: true,
+    featured: false,
     image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
 
-  // 4. ARICILIK & BAL
+  // 4. ARICILIK & BAL (3 ADET)
   {
-    id: 9,
+    id: 10,
     title: 'Meşe Çiçeği Yayla Süzme Balı (1 Kg)',
     price: 400,
     category: 'Arıcılık & Bal',
@@ -180,12 +190,11 @@ const INITIAL_LISTINGS = [
     phone: '0535 768 1550',
     verified: true,
     featured: true,
-    reports: 0,
     image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
   {
-    id: 10,
+    id: 11,
     title: 'Karakovan Petek Balı',
     price: 600,
     category: 'Arıcılık & Bal',
@@ -199,14 +208,31 @@ const INITIAL_LISTINGS = [
     phone: '0532 333 2211',
     verified: true,
     featured: false,
-    reports: 0,
+    image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 12,
+    title: 'Çam Balı - Süzme (1 Kg)',
+    price: 350,
+    category: 'Arıcılık & Bal',
+    subCategory: 'Süzme Bal',
+    mode: 'Satılık',
+    location: 'Muğla',
+    city: 'Muğla',
+    amount: '30 Kavanoz',
+    description: 'Çam ormanlarından elde edilen boğaz yakmayan saf çam balı.',
+    seller: 'Muğla Arıcılık',
+    phone: '0533 111 2233',
+    verified: true,
+    featured: false,
     image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
 
-  // 5. ARICILIK EKİPMANLARI
+  // 5. ARICILIK EKİPMANLARI (3 ADET)
   {
-    id: 11,
+    id: 13,
     title: '10 Çerçeveli Boyalı Arı Kovanı',
     price: 1200,
     category: 'Arıcılık Ekipmanları',
@@ -220,12 +246,11 @@ const INITIAL_LISTINGS = [
     phone: '0532 444 5566',
     verified: true,
     featured: true,
-    reports: 0,
     image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
   {
-    id: 12,
+    id: 14,
     title: 'Paslanmaz 4 Çerçeveli Bal Süzme Makinesi',
     price: 4500,
     category: 'Arıcılık Ekipmanları',
@@ -239,14 +264,31 @@ const INITIAL_LISTINGS = [
     phone: '0533 111 2233',
     verified: true,
     featured: false,
-    reports: 0,
+    image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 15,
+    title: 'Arıcı Körüğü ve Maske Seti',
+    price: 450,
+    category: 'Arıcılık Ekipmanları',
+    subCategory: 'Petek ve Çerçeve',
+    mode: 'Satılık',
+    location: 'Balıkesir',
+    city: 'Balıkesir',
+    amount: '10 Set',
+    description: 'Paslanmaz çelik körük ve havadar arıcı maskesi.',
+    seller: 'Arıcı Ekipmanları',
+    phone: '0532 777 6655',
+    verified: true,
+    featured: false,
     image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
 
-  // 6. TRAKTÖR
+  // 6. TRAKTÖR (3 ADET)
   {
-    id: 13,
+    id: 16,
     title: 'John Deere 6130M - Düşük saat, tek elden',
     price: 2450000,
     category: 'Traktör',
@@ -260,14 +302,49 @@ const INITIAL_LISTINGS = [
     phone: '0532 555 0192',
     verified: true,
     featured: true,
-    reports: 0,
+    image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 17,
+    title: 'Tümosan 8165 Kabinli 4x4',
+    price: 980000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Bandırma / Balıkesir',
+    city: 'Balıkesir',
+    amount: '2500 Saat',
+    description: 'Temiz kullanılmış, lastikleri iyi durumda traktör.',
+    seller: 'Hüseyin Kaya',
+    phone: '0542 111 2233',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 18,
+    title: 'New Holland T4.80 SIFIR Ayarında',
+    price: 1350000,
+    category: 'Traktör',
+    subCategory: 'Sıfır Traktör',
+    mode: 'Satılık',
+    location: 'Bursa',
+    city: 'Bursa',
+    amount: '450 Saat',
+    description: 'Neredeyse sıfır hatasız, klimalı kabin.',
+    seller: 'Bursa Traktör',
+    phone: '0535 444 3322',
+    verified: true,
+    featured: false,
     image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
 
-  // 7. BİÇERDÖVER
+  // 7. BİÇERDÖVER (3 ADET)
   {
-    id: 14,
+    id: 19,
     title: 'New Holland TC 5070 Biçerdöver',
     price: 3200000,
     category: 'Biçerdöver',
@@ -281,14 +358,49 @@ const INITIAL_LISTINGS = [
     phone: '0532 888 9900',
     verified: true,
     featured: true,
-    reports: 0,
+    image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 20,
+    title: 'John Deere W540 Biçerdöver',
+    price: 4500000,
+    category: 'Biçerdöver',
+    subCategory: 'Biçerdöver',
+    mode: 'Satılık',
+    location: 'Konya',
+    city: 'Konya',
+    amount: '3100 Motor Saati',
+    description: 'Sorunsuz temiz kullanılmış biçerdöver.',
+    seller: 'Konya Tarım',
+    phone: '0533 222 1100',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 21,
+    title: 'Claas Dominator 130',
+    price: 2800000,
+    category: 'Biçerdöver',
+    subCategory: 'Biçerdöver',
+    mode: 'Satılık',
+    location: 'Edirne',
+    city: 'Edirne',
+    amount: 'İyi Durumda',
+    description: 'Trakya bölgesi bakımlı biçerdöver.',
+    seller: 'Trakya Makine',
+    phone: '0542 555 6677',
+    verified: true,
+    featured: false,
     image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
 
-  // 8. TARIM EKİPMANLARI
+  // 8. TARIM EKİPMANLARI (3 ADET)
   {
-    id: 15,
+    id: 22,
     title: 'Tarım Römorku 5 Tonluk',
     price: 180000,
     category: 'Tarım Ekipmanları',
@@ -302,14 +414,49 @@ const INITIAL_LISTINGS = [
     phone: '0535 444 3322',
     verified: true,
     featured: true,
-    reports: 0,
+    image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 23,
+    title: 'Asılır Tip İlaçlama Makinesi 600 Lt',
+    price: 65000,
+    category: 'Tarım Ekipmanları',
+    subCategory: 'İlaçlama Makinesi',
+    mode: 'Satılık',
+    location: 'Balıkesir Merkez',
+    city: 'Balıkesir',
+    amount: '1 Adet',
+    description: 'Fiber tanklı, merdaneli ilaçlama pompası.',
+    seller: 'Ziraat Aletleri',
+    phone: '0533 666 5544',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 24,
+    title: 'Pulluk 4 Lü Ünlüler',
+    price: 95000,
+    category: 'Tarım Ekipmanları',
+    subCategory: 'Toprak İşleme',
+    mode: 'Satılık',
+    location: 'Balıkesir',
+    city: 'Balıkesir',
+    amount: '14 Numara',
+    description: 'Az kullanılmış hatasız pulluk.',
+    seller: 'Tarım Aletleri',
+    phone: '0532 333 4455',
+    verified: true,
+    featured: false,
     image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
 
-  // 9. TARIM İŞÇİLERİ
+  // 9. TARIM İŞÇİLERİ (3 ADET)
   {
-    id: 16,
+    id: 25,
     title: 'Hasat ve Toplama Ekibi (10 Kişilik)',
     price: 1500,
     category: 'Tarım İşçileri',
@@ -323,7 +470,42 @@ const INITIAL_LISTINGS = [
     phone: '0532 999 1122',
     verified: true,
     featured: true,
-    reports: 0,
+    image: 'https://images.unsplash.com/photo-1595855759920-86582396756a?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 26,
+    title: 'Profesyonel Ceviz ve Meyve Budama Ekibi',
+    price: 2000,
+    category: 'Tarım İşçileri',
+    subCategory: 'Budama Ekibi',
+    mode: 'Hizmet',
+    location: 'Bursa / Balıkesir',
+    city: 'Balıkesir',
+    amount: 'Günlük',
+    description: 'Ceviz ve meyve ağaçları için uzman budama hizmeti.',
+    seller: 'Usta Budayıcı',
+    phone: '0533 777 6655',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1595855759920-86582396756a?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 27,
+    title: 'Deneyimli Sığır Çobanı ve Bakıcısı',
+    price: 25000,
+    category: 'Tarım İşçileri',
+    subCategory: 'Çoban / Bakıcı',
+    mode: 'Hizmet',
+    location: 'Balıkesir',
+    city: 'Balıkesir',
+    amount: 'Aylık Maaş',
+    description: 'Büyükbaş hayvan bakımında tecrübeli güvenilir çoban.',
+    seller: 'Mehmet Çoban',
+    phone: '0542 111 2233',
+    verified: true,
+    featured: false,
     image: 'https://images.unsplash.com/photo-1595855759920-86582396756a?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   }
@@ -340,8 +522,6 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState('Tüm kategoriler');
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
   
-  const [openCategory, setOpenCategory] = useState('Mahsuller');
-
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewMode, setViewMode] = useState('Liste');
 
@@ -349,7 +529,7 @@ export default function App() {
     title: '',
     price: '',
     category: 'Mahsuller',
-    subCategory: 'Kiraz',
+    subCategory: 'Ceviz',
     mode: 'Satılık',
     location: 'Gönen / Balıkesir',
     city: 'Balıkesir',
@@ -361,16 +541,8 @@ export default function App() {
   });
 
   useEffect(() => {
-    const saved = localStorage.getItem('pazartarla_listings');
-    if (saved) {
-      try {
-        setListings(JSON.parse(saved));
-      } catch (e) {
-        setListings(INITIAL_LISTINGS);
-      }
-    } else {
-      setListings(INITIAL_LISTINGS);
-    }
+    localStorage.setItem('pazartarla_listings', JSON.stringify(INITIAL_LISTINGS));
+    setListings(INITIAL_LISTINGS);
 
     window.history.replaceState({ tab: 'home' }, '');
 
@@ -404,6 +576,7 @@ export default function App() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // Fotoğraf Yükleme Fonksiyonu (Galeriden seçilen resmi önizleme/base64 formatına çevirir)
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -428,7 +601,6 @@ export default function App() {
       price: Number(form.price),
       verified: true,
       featured: false,
-      reports: 0,
       date: 'Bugün'
     };
 
@@ -443,18 +615,6 @@ export default function App() {
       const updated = listings.filter(item => item.id !== id);
       saveListings(updated);
     }
-  };
-
-  const handleReportListing = (id) => {
-    const updated = listings.map(item => {
-      if (item.id === id) {
-        const newReports = (item.reports || 0) + 1;
-        return { ...item, reports: newReports };
-      }
-      return item;
-    });
-    saveListings(updated);
-    alert('İlan şikayet edildi. İncelenmek üzere yönetici paneline bildirildi.');
   };
 
   const handleAdminLogin = (e) => {
@@ -475,11 +635,11 @@ export default function App() {
     'Canlı Hayvanlar': ['Büyükbaş', 'Küçükbaş', 'Kanatlı'],
     'Hayvan Yemleri ve Ekipmanları': ['Yem Çeşitleri', 'Suluk / Yemlik'],
     'Arıcılık & Bal': ['Süzme Bal', 'Karakovan Balı'],
-    'Arıcılık Ekipmanları': ['Kovan', 'Bal Süzme Makinesi'],
-    'Traktör': ['İkinci El Traktör'],
+    'Arıcılık Ekipmanları': ['Kovan', 'Bal Süzme Makinesi', 'Petek ve Çerçeve'],
+    'Traktör': ['İkinci El Traktör', 'Sıfır Traktör'],
     'Biçerdöver': ['Biçerdöver'],
-    'Tarım Ekipmanları': ['Römork'],
-    'Tarım İşçileri': ['Hasat Ekibi']
+    'Tarım Ekipmanları': ['Römork', 'İlaçlama Makinesi', 'Toprak İşleme'],
+    'Tarım İşçileri': ['Hasat Ekibi', 'Budama Ekibi', 'Çoban / Bakıcı']
   };
 
   const filteredListings = listings.filter(item => {
@@ -516,7 +676,7 @@ export default function App() {
       {/* ANA İÇERİK */}
       <main style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '12px', flex: 1, boxSizing: 'border-box' }}>
         
-        {/* 1. EKRAN: KATEGORİ SEÇİMİ (Akordiyon) */}
+        {/* 1. EKRAN: KATEGORİ SEÇİMİ */}
         {activeTab === 'home' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflow: 'hidden', border: '1px solid #e2e8f0', width: '100%', boxSizing: 'border-box' }}>
             <div style={{ backgroundColor: '#1b3a2b', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -535,49 +695,36 @@ export default function App() {
               </div>
             </div>
 
-            {Object.keys(categoriesWithSubs).map(cat => {
-              const isOpen = openCategory === cat;
-              return (
-                <div key={cat}>
-                  <div 
-                    onClick={() => setOpenCategory(isOpen ? '' : cat)}
-                    style={{ padding: '14px 16px', borderBottom: '1px solid #edf2f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', backgroundColor: isOpen ? '#f0fdf4' : '#fff' }}
-                  >
-                    <span style={{ fontWeight: '600', color: isOpen ? '#1b3a2b' : '#334155', fontSize: '14px' }}>{cat}</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#94a3b8', fontSize: '13px' }}>
-                      <span>({listings.filter(i => i.category === cat).length})</span>
-                      {isOpen ? <ChevronDown size={16} color="#22c55e" /> : <ChevronRight size={16} />}
-                    </div>
+            {Object.keys(categoriesWithSubs).map(cat => (
+              <div key={cat}>
+                <div 
+                  onClick={() => { setSelectedCategory(cat); setSelectedSubCategory('Tümü'); changeTab('results'); }}
+                  style={{ padding: '14px 16px', borderBottom: '1px solid #edf2f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+                >
+                  <span style={{ fontWeight: '600', color: '#334155', fontSize: '14px' }}>{cat}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#94a3b8', fontSize: '13px' }}>
+                    <span>({listings.filter(i => i.category === cat).length})</span>
+                    <ChevronRight size={16} />
                   </div>
-
-                  {isOpen && (
-                    <div style={{ backgroundColor: '#fafafa', borderBottom: '1px solid #edf2f7' }}>
-                      <div 
-                        onClick={() => { setSelectedCategory(cat); setSelectedSubCategory('Tümü'); changeTab('results'); }}
-                        style={{ padding: '10px 16px 10px 28px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', backgroundColor: '#f0fdf4' }}
-                      >
-                        <span style={{ fontSize: '13px', color: '#166534', fontWeight: '600' }}>→ Tüm {cat} İlanları</span>
-                        <ChevronRight size={14} color="#166534" />
-                      </div>
-
-                      {categoriesWithSubs[cat].map(sub => (
-                        <div 
-                          key={sub}
-                          onClick={(e) => { e.stopPropagation(); setSelectedCategory(cat); setSelectedSubCategory(sub); changeTab('results'); }}
-                          style={{ padding: '10px 16px 10px 28px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
-                        >
-                          <span style={{ fontSize: '13px', color: '#64748b' }}>• {sub}</span>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#94a3b8', fontSize: '12px' }}>
-                            <span>({listings.filter(i => i.category === cat && i.subCategory === sub).length})</span>
-                            <ChevronRight size={14} color="#cbd5e1" />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
-              );
-            })}
+
+                <div style={{ backgroundColor: '#fafafa', borderBottom: '1px solid #edf2f7' }}>
+                  {categoriesWithSubs[cat].map(sub => (
+                    <div 
+                      key={sub}
+                      onClick={(e) => { e.stopPropagation(); setSelectedCategory(cat); setSelectedSubCategory(sub); changeTab('results'); }}
+                      style={{ padding: '10px 16px 10px 28px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+                    >
+                      <span style={{ fontSize: '13px', color: '#64748b' }}>• {sub}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#94a3b8', fontSize: '12px' }}>
+                        <span>({listings.filter(i => i.category === cat && i.subCategory === sub).length})</span>
+                        <ChevronRight size={14} color="#cbd5e1" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
 
             <div style={{ padding: '16px', textAlign: 'center', backgroundColor: '#f8fafc' }}>
               <button onClick={() => changeTab('admin')} style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '12px', cursor: 'pointer', textDecoration: 'underline' }}>
@@ -694,19 +841,11 @@ export default function App() {
         {/* İLAN DETAY EKRANI */}
         {activeTab === 'detail' && selectedListing && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', boxSizing: 'border-box', width: '100%' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+            <div style={{ marginBottom: '14px' }}>
               <button onClick={() => changeTab('results')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <ArrowLeft size={16} /> Listeye Dön
               </button>
-              
-              <button 
-                onClick={() => handleReportListing(selectedListing.id)}
-                style={{ backgroundColor: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-              >
-                <AlertTriangle size={14} /> Şikayet Et
-              </button>
             </div>
-
             <div style={{ height: '220px', borderRadius: '8px', overflow: 'hidden', marginBottom: '14px', backgroundColor: '#f1f5f9' }}>
               <img src={selectedListing.image} alt={selectedListing.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
@@ -774,7 +913,7 @@ export default function App() {
                 </div>
               </div>
               
-              {/* GALERİDEN FOTOĞRAF YÜKLEME */}
+              {/* GALERİDEN FOTOĞRAF YÜKLEME ALANI */}
               <div>
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fotoğraf Seç (Galeriden / Cihazdan)</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -816,18 +955,18 @@ export default function App() {
             ) : (
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid #edf2f7', paddingBottom: '10px' }}>
-                  <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>İlan Denetimi & Şikayetler</h2>
+                  <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>İlan Denetimi</h2>
                   <button onClick={() => changeTab('home')} style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}>Kategorilere Dön</button>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {listings.map(item => (
-                    <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', backgroundColor: item.reports > 0 ? '#fef2f2' : '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', boxSizing: 'border-box' }}>
+                    <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', boxSizing: 'border-box' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <img src={item.image} alt="" style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover' }} />
                         <div>
                           <h4 style={{ margin: '0 0 2px 0', fontSize: '13px', fontWeight: '700', color: '#0f172a' }}>{item.title}</h4>
-                          <span style={{ fontSize: '11px', color: '#64748b' }}>{item.price.toLocaleString('tr-TR')} TL {item.reports > 0 ? `| ⚠️ Şikayet: ${item.reports}` : ''}</span>
+                          <span style={{ fontSize: '11px', color: '#64748b' }}>{item.price.toLocaleString('tr-TR')} TL</span>
                         </div>
                       </div>
                       <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 8px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '11px' }}>
@@ -843,15 +982,7 @@ export default function App() {
 
       </main>
 
-      {/* FOOTER - İLETİŞİM VE TELİF BİLGİLERİ GERİ EKLENDİ */}
-      <footer style={{ backgroundColor: '#1b3a2b', color: '#94a3b8', padding: '16px', textAlign: 'center', fontSize: '11px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 'auto', boxSizing: 'border-box', width: '100%', display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center' }}>
-        <div style={{ display: 'flex', gap: '15px', color: '#cbd5e1', fontSize: '12px', fontWeight: '600' }}>
-          <span style={{ cursor: 'pointer' }} onClick={() => alert('İletişim: destek@pazartarla.com.tr')}>İletişim</span>
-          <span>•</span>
-          <span style={{ cursor: 'pointer' }} onClick={() => alert('PazarTarla Tarım Pazaryeri Platformu')}>Hakkımızda</span>
-          <span>•</span>
-          <span style={{ cursor: 'pointer' }} onClick={() => alert('Tüm hakları saklıdır.')}>Güvenli Alışveriş</span>
-        </div>
+      <footer style={{ backgroundColor: '#1b3a2b', color: '#94a3b8', padding: '14px', textAlign: 'center', fontSize: '11px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 'auto', boxSizing: 'border-box', width: '100%' }}>
         <span>© 2026 PazarTarla • Gönen / Balıkesir</span>
       </footer>
 
