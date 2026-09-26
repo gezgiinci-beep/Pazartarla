@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus, 
-  Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, X, 
+  Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, ChevronDown, X, 
   Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star 
 } from 'lucide-react';
 
@@ -230,12 +230,12 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
 
-  // 5. ARICILIK EKİPMANLARI (3 ADET)
+  // 5. ARICILIK MALZEMELERİ (3 ADET)
   {
     id: 13,
     title: '10 Çerçeveli Boyalı Arı Kovanı',
     price: 1200,
-    category: 'Arıcılık Ekipmanları',
+    category: 'Arıcılık Malzemeleri',
     subCategory: 'Kovan',
     mode: 'Satılık',
     location: 'Gönen / Balıkesir',
@@ -253,7 +253,7 @@ const INITIAL_LISTINGS = [
     id: 14,
     title: 'Paslanmaz 4 Çerçeveli Bal Süzme Makinesi',
     price: 4500,
-    category: 'Arıcılık Ekipmanları',
+    category: 'Arıcılık Malzemeleri',
     subCategory: 'Bal Süzme Makinesi',
     mode: 'Satılık',
     location: 'Bursa',
@@ -271,7 +271,7 @@ const INITIAL_LISTINGS = [
     id: 15,
     title: 'Arıcı Körüğü ve Maske Seti',
     price: 450,
-    category: 'Arıcılık Ekipmanları',
+    category: 'Arıcılık Malzemeleri',
     subCategory: 'Petek ve Çerçeve',
     mode: 'Satılık',
     location: 'Balıkesir',
@@ -722,6 +722,9 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState('Tüm kategoriler');
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
   
+  // Akordiyon için hangi kategorinin açık olduğunu tutan state
+  const [openCategory, setOpenCategory] = useState(null);
+
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewMode, setViewMode] = useState('Liste');
 
@@ -729,7 +732,7 @@ export default function App() {
     title: '',
     price: '',
     category: 'Mahsuller',
-    subCategory: 'Ceviz',
+    subCategory: 'Kiraz',
     mode: 'Satılık',
     location: 'Gönen / Balıkesir',
     city: 'Balıkesir',
@@ -790,10 +793,17 @@ export default function App() {
         setForm(prev => ({ 
           ...prev, 
           category: value, 
-          subCategory: '', 
+          subCategory: categoriesWithSubs[value]?.[0] || '', 
           mode: 'Satılık', 
           price: '', 
           amount: '' 
+        }));
+        return;
+      } else {
+        setForm(prev => ({
+          ...prev,
+          category: value,
+          subCategory: categoriesWithSubs[value]?.[0] || ''
         }));
         return;
       }
@@ -863,7 +873,7 @@ export default function App() {
     'Canlı Hayvanlar': ['Büyükbaş', 'Küçükbaş', 'Kanatlı'],
     'Hayvan Yemleri ve Ekipmanları': ['Yem Çeşitleri', 'Suluk / Yemlik'],
     'Arıcılık & Bal': ['Süzme Bal', 'Karakovan Balı'],
-    'Arıcılık Ekipmanları': ['Kovan', 'Bal Süzme Makinesi', 'Petek ve Çerçeve'],
+    'Arıcılık Malzemeleri': ['Kovan', 'Bal Süzme Makinesi', 'Petek ve Çerçeve'],
     'Traktör': ['İkinci El Traktör', 'Sıfır Traktör'],
     'Biçerdöver': ['Biçerdöver'],
     'Tarım Ekipmanları': ['Römork', 'İlaçlama Makinesi', 'Toprak İşleme'],
@@ -884,7 +894,7 @@ export default function App() {
       
       {/* ÜST HEADER */}
       <header style={{ backgroundColor: '#1b3a2b', color: '#ffffff', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', position: 'sticky', top: 0, zIndex: 100, width: '100%', boxSizing: 'border-box' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => { changeTab('home'); setSelectedCategory('Tüm kategoriler'); setSelectedSubCategory('Tümü'); }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => { changeTab('home'); setSelectedCategory('Tüm kategoriler'); setSelectedSubCategory('Tümü'); setOpenCategory(null); }}>
           <div style={{ backgroundColor: '#22c55e', padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Tractor size={20} color="#fff" />
           </div>
@@ -907,7 +917,7 @@ export default function App() {
       {/* ANA İÇERİK */}
       <main style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '12px', flex: 1, boxSizing: 'border-box' }}>
         
-        {/* 1. EKRAN: KATEGORİ SEÇİMİ */}
+        {/* 1. EKRAN: KATEGORİ SEÇİMİ (AKORDİYON YAPISI) */}
         {activeTab === 'home' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflow: 'hidden', border: '1px solid #e2e8f0', width: '100%', boxSizing: 'border-box' }}>
             <div style={{ backgroundColor: '#1b3a2b', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -926,36 +936,51 @@ export default function App() {
               </div>
             </div>
 
-            {Object.keys(categoriesWithSubs).map(cat => (
-              <div key={cat}>
-                <div 
-                  onClick={() => { setSelectedCategory(cat); setSelectedSubCategory('Tümü'); changeTab('results'); }}
-                  style={{ padding: '14px 16px', borderBottom: '1px solid #edf2f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
-                >
-                  <span style={{ fontWeight: '600', color: '#334155', fontSize: '14px' }}>{cat}</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#94a3b8', fontSize: '13px' }}>
-                    <span>({listings.filter(i => i.category === cat).length})</span>
-                    <ChevronRight size={16} />
-                  </div>
-                </div>
-
-                <div style={{ backgroundColor: '#fafafa', borderBottom: '1px solid #edf2f7' }}>
-                  {categoriesWithSubs[cat].map(sub => (
-                    <div 
-                      key={sub}
-                      onClick={(e) => { e.stopPropagation(); setSelectedCategory(cat); setSelectedSubCategory(sub); changeTab('results'); }}
-                      style={{ padding: '10px 16px 10px 28px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
-                    >
-                      <span style={{ fontSize: '13px', color: '#64748b' }}>• {sub}</span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#94a3b8', fontSize: '12px' }}>
-                        <span>({listings.filter(i => i.category === cat && i.subCategory === sub).length})</span>
-                        <ChevronRight size={14} color="#cbd5e1" />
-                      </div>
+            {Object.keys(categoriesWithSubs).map(cat => {
+              const isOpen = openCategory === cat;
+              return (
+                <div key={cat} style={{ borderBottom: '1px solid #edf2f7' }}>
+                  {/* ANA KATEGORİ SATIRI */}
+                  <div 
+                    onClick={() => setOpenCategory(isOpen ? null : cat)}
+                    style={{ padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', backgroundColor: isOpen ? '#f1f5f9' : '#fff' }}
+                  >
+                    <span style={{ fontWeight: '600', color: '#334155', fontSize: '14px' }}>{cat}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '12px', color: '#94a3b8' }}>({listings.filter(i => i.category === cat).length})</span>
+                      {isOpen ? <ChevronDown size={18} color="#1b3a2b" /> : <ChevronRight size={18} color="#94a3b8" />}
                     </div>
-                  ))}
+                  </div>
+
+                  {/* ALT SEÇENEKLER (AKORDİYON AÇILDIĞINDA GÖRÜNÜR) */}
+                  {isOpen && (
+                    <div style={{ backgroundColor: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
+                      <div 
+                        onClick={() => { setSelectedCategory(cat); setSelectedSubCategory('Tümü'); changeTab('results'); }}
+                        style={{ padding: '10px 16px 10px 28px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', fontWeight: '700', color: '#1b3a2b', fontSize: '13px' }}
+                      >
+                        <span>Tüm {cat} İlanları</span>
+                        <ChevronRight size={14} color="#1b3a2b" />
+                      </div>
+
+                      {categoriesWithSubs[cat].map(sub => (
+                        <div 
+                          key={sub}
+                          onClick={() => { setSelectedCategory(cat); setSelectedSubCategory(sub); changeTab('results'); }}
+                          style={{ padding: '10px 16px 10px 28px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+                        >
+                          <span style={{ fontSize: '13px', color: '#64748b' }}>• {sub}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#94a3b8', fontSize: '12px' }}>
+                            <span>({listings.filter(i => i.category === cat && i.subCategory === sub).length})</span>
+                            <ChevronRight size={14} color="#cbd5e1" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             <div style={{ padding: '16px', textAlign: 'center', backgroundColor: '#f8fafc' }}>
               <button onClick={() => changeTab('admin')} style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '12px', cursor: 'pointer', textDecoration: 'underline' }}>
@@ -1123,7 +1148,7 @@ export default function App() {
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Alt Uzmanlık / Ürün</label>
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Alt Ürün / Seçenek</label>
                   <select name="subCategory" value={form.subCategory} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff', fontSize: '13px' }}>
                     {categoriesWithSubs[form.category]?.map(sub => (
                       <option key={sub} value={sub}>{sub}</option>
@@ -1162,13 +1187,13 @@ export default function App() {
                 </div>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Telefon *</label>
-                  <input type="text" name="phone" placeholder="0322..." value={form.phone} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                  <input type="text" name="phone" placeholder="0532..." value={form.phone} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
               </div>
 
               <div>
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Hizmet / İlan Konumu</label>
-                <input type="text" name="location" placeholder="Seyhan / Adana" value={form.location} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                <input type="text" name="location" placeholder="Gönen / Balıkesir" value={form.location} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
               </div>
               
               <div>
