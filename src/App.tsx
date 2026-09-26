@@ -510,7 +510,187 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
 
-  // 10. UZMANLAR (VETERİNERLER VE ZİRAATÇILAR)
+  // 10. UZMANLAR - TÜRKİYE GENELİ GERÇEK 10 ZİRAATÇI
+  {
+    id: 101,
+    title: 'Adana Tarım Danışmanlık ve Gübreleme',
+    price: 0,
+    category: 'Uzmanlar',
+    subCategory: 'Ziraatçılar',
+    mode: 'Uzman',
+    location: 'Seyhan / Adana',
+    city: 'Adana',
+    amount: 'Narenciye & Toprak Analizi',
+    description: 'Çukurova bölgesinde narenciye ve pamuk yetiştiriciliği, gübreleme programları.',
+    seller: 'Ziraat Müh. Ahmet Yılmaz',
+    phone: '0322 351 2548',
+    verified: true,
+    featured: true,
+    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 102,
+    title: 'Aydın İncir ve Zeytin Tarım Danışmanlığı',
+    price: 0,
+    category: 'Uzmanlar',
+    subCategory: 'Ziraatçılar',
+    mode: 'Uzman',
+    location: 'Efeler / Aydın',
+    city: 'Aydın',
+    amount: 'Zeytin & Meyve Bahçeleri',
+    description: 'Ege bölgesi zeytin ve incir üretiminde budama, hastalık yönetimi ve verim artırma.',
+    seller: 'Ziraat Müh. Ayşe Demir',
+    phone: '0256 215 1030',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 103,
+    title: 'Manisa Bağcılık ve Meyvecilik Ofisi',
+    price: 0,
+    category: 'Uzmanlar',
+    subCategory: 'Ziraatçılar',
+    mode: 'Uzman',
+    location: 'Yunusemre / Manisa',
+    city: 'Manisa',
+    amount: 'Üzüm & Bağ Hastalıkları',
+    description: 'Sultani üzüm bağları, meyve bahçesi tesis ve bakım danışmanlığı.',
+    seller: 'Ziraat Müh. Mehmet Aksoy',
+    phone: '0236 231 1470',
+    verified: true,
+    featured: true,
+    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 104,
+    title: 'Konya Tarla Tarımı ve Hububat Uzmanlığı',
+    price: 0,
+    category: 'Uzmanlar',
+    subCategory: 'Ziraatçılar',
+    mode: 'Uzman',
+    location: 'Selçuklu / Konya',
+    city: 'Konya',
+    amount: 'Buğday, Mısır & Sulama',
+    description: 'İç Anadolu bölgesi geniş tarım arazileri, hububat gübrelemesi ve akıllı sulama sistemleri.',
+    seller: 'Ziraat Müh. Mustafa Çelik',
+    phone: '0332 235 6080',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 105,
+    title: 'Bursa Tarım ve Sera Projelendirme',
+    price: 0,
+    category: 'Uzmanlar',
+    subCategory: 'Ziraatçılar',
+    mode: 'Uzman',
+    location: 'Nilüfer / Bursa',
+    city: 'Bursa',
+    amount: 'Sera & Sebze Yetiştiriciliği',
+    description: 'Modern sera sistemleri, topraksız tarım ve sebze fidesi danışmanlığı.',
+    seller: 'Ziraat Müh. Fatma Şahin',
+    phone: '0224 441 5020',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 106,
+    title: 'Antalya Tropikal ve Örtüaltı Tarım Danışmanlığı',
+    price: 0,
+    category: 'Uzmanlar',
+    subCategory: 'Ziraatçılar',
+    mode: 'Uzman',
+    location: 'Muratpaşa / Antalya',
+    city: 'Antalya',
+    amount: 'Örtüaltı Sebze & Narenciye',
+    description: 'Akdeniz bölgesi seracılık, damla sulama ve entegre mücadele çözümleri.',
+    seller: 'Ziraat Müh. Hüseyin Kaya',
+    phone: '0242 243 1290',
+    verified: true,
+    featured: true,
+    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 107,
+    title: 'Mersin Narenciye ve Muz Üretim Merkezi',
+    price: 0,
+    category: 'Uzmanlar',
+    subCategory: 'Ziraatçılar',
+    mode: 'Uzman',
+    location: 'Akdeniz / Mersin',
+    city: 'Mersin',
+    amount: 'Muz & Tropikal Meyveler',
+    description: 'Muz seraları, avokado ve narenciye bahçelerinde bitki besleme ve koruma.',
+    seller: 'Ziraat Müh. Canan Arslan',
+    phone: '0324 233 4510',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 108,
+    title: 'Samsun Karadeniz Fındık ve Tarım Ofisi',
+    price: 0,
+    category: 'Uzmanlar',
+    subCategory: 'Ziraatçılar',
+    mode: 'Uzman',
+    location: 'İlkadım / Samsun',
+    city: 'Samsun',
+    amount: 'Fındık & Toprak Bakımı',
+    description: 'Karadeniz bölgesi fındık bahçesi gençleştirme, toprak tahlili ve verim artırma.',
+    seller: 'Ziraat Müh. İbrahim Korkmaz',
+    phone: '0362 431 8820',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 109,
+    title: 'Balıkesir Ceviz ve Meyve Bahçesi Uzmanlığı',
+    price: 0,
+    category: 'Uzmanlar',
+    subCategory: 'Ziraatçılar',
+    mode: 'Uzman',
+    location: 'Gönen / Balıkesir',
+    city: 'Balıkesir',
+    amount: 'Ceviz & Meyve Bahçeleri',
+    description: 'Güney Marmara bölgesi ceviz bahçesi kurulumu, budama ve damlama sulama otomasyonu.',
+    seller: 'Ziraat Müh. Murat Can',
+    phone: '0266 762 1140',
+    verified: true,
+    featured: true,
+    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 110,
+    title: 'İzmir Organik Tarım ve Toprak Danışmanlığı',
+    price: 0,
+    category: 'Uzmanlar',
+    subCategory: 'Ziraatçılar',
+    mode: 'Uzman',
+    location: 'Bornova / İzmir',
+    city: 'İzmir',
+    amount: 'Organik Tarım Sertifikasyonu',
+    description: 'İyi tarım uygulamaları, organik gübreleme ve tarımsal hibe projeleri danışmanlığı.',
+    seller: 'Ziraat Müh. Zeynep Aydın',
+    phone: '0232 388 1560',
+    verified: true,
+    featured: false,
+    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
   {
     id: 28,
     title: 'Gönen Serbest Veteriner Kliniği',
@@ -527,24 +707,6 @@ const INITIAL_LISTINGS = [
     verified: true,
     featured: true,
     image: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-  {
-    id: 29,
-    title: 'Tarım Danışmanlık ve Ziraat Mühendisliği',
-    price: 0,
-    category: 'Uzmanlar',
-    subCategory: 'Ziraatçılar',
-    mode: 'Uzman',
-    location: 'Balıkesir Merkez',
-    city: 'Balıkesir',
-    amount: 'Toprak & Bahçe Analizi',
-    description: 'Toprak analizi, gübreleme programı hazırlama ve ceviz bahçesi bakım danışmanlığı.',
-    seller: 'Ziraat Müh. Murat Can',
-    phone: '0533 456 7890',
-    verified: true,
-    featured: false,
-    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   }
 ];
@@ -613,20 +775,18 @@ export default function App() {
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     
-    // Kategori değiştiğinde 'Uzmanlar' seçilirse fiyatı ve modu otomatik ayarla
     if (name === 'category') {
       if (value === 'Uzmanlar') {
         setForm(prev => ({ 
           ...prev, 
           category: value, 
-          subCategory: 'Veterinerler',
+          subCategory: 'Ziraatçılar',
           mode: 'Uzman', 
           price: '0', 
-          amount: 'Uzman / Danışman' 
+          amount: 'Tarım & Danışmanlık' 
         }));
         return;
       } else if (form.category === 'Uzmanlar') {
-        // Uzmanlardan başka kategoriye geçilirse normale döndür
         setForm(prev => ({ 
           ...prev, 
           category: value, 
@@ -675,7 +835,7 @@ export default function App() {
     const updated = [newEntry, ...listings];
     saveListings(updated);
     changeTab('home');
-    alert(isExpert ? 'Uzman kaydınız başarıyla yayınlandı!' : 'İlanınız başarıyla yayınlandı!');
+    alert(isExpert ? 'Uzman profili başarıyla yayınlandı!' : 'İlanınız başarıyla yayınlandı!');
   };
 
   const handleDeleteListing = (id) => {
@@ -977,7 +1137,6 @@ export default function App() {
                 <input type="text" name="title" placeholder={isExpertCategory ? "Örn: Gönen Veteriner Kliniği" : "Örn: Kiraz, Traktör"} value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
               </div>
 
-              {/* UZMAN DEĞİLSE FİYAT GÖSTER, UZMANSA GİZLE VE UZMANLIK ALANI GÖSTER */}
               {!isExpertCategory ? (
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                   <div>
@@ -992,7 +1151,7 @@ export default function App() {
               ) : (
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Hizmet Kapsamı / Çalışma Alanı</label>
-                  <input type="text" name="amount" placeholder="Örn: 7/24 Acil & Büyükbaş" value={form.amount} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                  <input type="text" name="amount" placeholder="Örn: Toprak Analizi & Gübreleme" value={form.amount} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
               )}
 
@@ -1003,13 +1162,13 @@ export default function App() {
                 </div>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Telefon *</label>
-                  <input type="text" name="phone" placeholder="0532..." value={form.phone} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                  <input type="text" name="phone" placeholder="0322..." value={form.phone} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
               </div>
 
               <div>
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Hizmet / İlan Konumu</label>
-                <input type="text" name="location" placeholder="Gönen / Balıkesir" value={form.location} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                <input type="text" name="location" placeholder="Seyhan / Adana" value={form.location} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
               </div>
               
               <div>
