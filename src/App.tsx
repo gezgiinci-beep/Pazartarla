@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus, 
-  Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, ChevronDown, X, 
-  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Headphones, Send 
+  Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, X, 
+  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, AlertTriangle 
 } from 'lucide-react';
 
 const INITIAL_LISTINGS = [
@@ -22,6 +22,7 @@ const INITIAL_LISTINGS = [
     phone: '0532 444 5566',
     verified: true,
     featured: true,
+    reports: 0,
     image: 'https://images.unsplash.com/photo-1528821151447-11f211b5e5a7?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -40,6 +41,7 @@ const INITIAL_LISTINGS = [
     phone: '0535 768 1550',
     verified: true,
     featured: true,
+    reports: 0,
     image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -58,6 +60,7 @@ const INITIAL_LISTINGS = [
     phone: '0532 123 4567',
     verified: true,
     featured: false,
+    reports: 0,
     image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -78,6 +81,7 @@ const INITIAL_LISTINGS = [
     phone: '0532 777 8899',
     verified: true,
     featured: true,
+    reports: 0,
     image: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -96,6 +100,7 @@ const INITIAL_LISTINGS = [
     phone: '0542 333 4455',
     verified: true,
     featured: false,
+    reports: 0,
     image: 'https://images.unsplash.com/photo-1484557077804-29774de7fc76?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -114,6 +119,7 @@ const INITIAL_LISTINGS = [
     phone: '0532 111 0022',
     verified: true,
     featured: false,
+    reports: 0,
     image: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -134,6 +140,7 @@ const INITIAL_LISTINGS = [
     phone: '0532 444 3322',
     verified: true,
     featured: true,
+    reports: 0,
     image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -152,6 +159,7 @@ const INITIAL_LISTINGS = [
     phone: '0533 222 1100',
     verified: true,
     featured: false,
+    reports: 0,
     image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -170,6 +178,7 @@ const INITIAL_LISTINGS = [
     phone: '0532 888 9900',
     verified: true,
     featured: false,
+    reports: 0,
     image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -190,6 +199,7 @@ const INITIAL_LISTINGS = [
     phone: '0535 768 1550',
     verified: true,
     featured: true,
+    reports: 0,
     image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -208,6 +218,7 @@ const INITIAL_LISTINGS = [
     phone: '0532 333 2211',
     verified: true,
     featured: false,
+    reports: 0,
     image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -226,16 +237,17 @@ const INITIAL_LISTINGS = [
     phone: '0533 111 2233',
     verified: true,
     featured: false,
+    reports: 0,
     image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
 
-  // 5. ARICILIK MALZEMELERİ (3 ADET)
+  // 5. ARICILIK EKİPMANLARI (3 ADET)
   {
     id: 13,
     title: '10 Çerçeveli Boyalı Arı Kovanı',
     price: 1200,
-    category: 'Arıcılık Malzemeleri',
+    category: 'Arıcılık Ekipmanları',
     subCategory: 'Kovan',
     mode: 'Satılık',
     location: 'Gönen / Balıkesir',
@@ -246,6 +258,7 @@ const INITIAL_LISTINGS = [
     phone: '0532 444 5566',
     verified: true,
     featured: true,
+    reports: 0,
     image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -253,7 +266,7 @@ const INITIAL_LISTINGS = [
     id: 14,
     title: 'Paslanmaz 4 Çerçeveli Bal Süzme Makinesi',
     price: 4500,
-    category: 'Arıcılık Malzemeleri',
+    category: 'Arıcılık Ekipmanları',
     subCategory: 'Bal Süzme Makinesi',
     mode: 'Satılık',
     location: 'Bursa',
@@ -264,6 +277,7 @@ const INITIAL_LISTINGS = [
     phone: '0533 111 2233',
     verified: true,
     featured: false,
+    reports: 0,
     image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -271,7 +285,7 @@ const INITIAL_LISTINGS = [
     id: 15,
     title: 'Arıcı Körüğü ve Maske Seti',
     price: 450,
-    category: 'Arıcılık Malzemeleri',
+    category: 'Arıcılık Ekipmanları',
     subCategory: 'Petek ve Çerçeve',
     mode: 'Satılık',
     location: 'Balıkesir',
@@ -282,6 +296,7 @@ const INITIAL_LISTINGS = [
     phone: '0532 777 6655',
     verified: true,
     featured: false,
+    reports: 0,
     image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -302,6 +317,7 @@ const INITIAL_LISTINGS = [
     phone: '0532 555 0192',
     verified: true,
     featured: true,
+    reports: 0,
     image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -320,6 +336,7 @@ const INITIAL_LISTINGS = [
     phone: '0542 111 2233',
     verified: true,
     featured: false,
+    reports: 0,
     image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -338,6 +355,7 @@ const INITIAL_LISTINGS = [
     phone: '0535 444 3322',
     verified: true,
     featured: false,
+    reports: 0,
     image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -358,6 +376,7 @@ const INITIAL_LISTINGS = [
     phone: '0532 888 9900',
     verified: true,
     featured: true,
+    reports: 0,
     image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -376,6 +395,7 @@ const INITIAL_LISTINGS = [
     phone: '0533 222 1100',
     verified: true,
     featured: false,
+    reports: 0,
     image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -394,6 +414,7 @@ const INITIAL_LISTINGS = [
     phone: '0542 555 6677',
     verified: true,
     featured: false,
+    reports: 0,
     image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -414,6 +435,7 @@ const INITIAL_LISTINGS = [
     phone: '0535 444 3322',
     verified: true,
     featured: true,
+    reports: 0,
     image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -432,6 +454,7 @@ const INITIAL_LISTINGS = [
     phone: '0533 666 5544',
     verified: true,
     featured: false,
+    reports: 0,
     image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -450,6 +473,7 @@ const INITIAL_LISTINGS = [
     phone: '0532 333 4455',
     verified: true,
     featured: false,
+    reports: 0,
     image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -470,6 +494,7 @@ const INITIAL_LISTINGS = [
     phone: '0532 999 1122',
     verified: true,
     featured: true,
+    reports: 0,
     image: 'https://images.unsplash.com/photo-1595855759920-86582396756a?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -488,6 +513,7 @@ const INITIAL_LISTINGS = [
     phone: '0533 777 6655',
     verified: true,
     featured: false,
+    reports: 0,
     image: 'https://images.unsplash.com/photo-1595855759920-86582396756a?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
@@ -506,207 +532,8 @@ const INITIAL_LISTINGS = [
     phone: '0542 111 2233',
     verified: true,
     featured: false,
+    reports: 0,
     image: 'https://images.unsplash.com/photo-1595855759920-86582396756a?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-
-  // 10. UZMANLAR - TÜRKİYE GENELİ GERÇEK 10 ZİRAATÇI
-  {
-    id: 101,
-    title: 'Adana Tarım Danışmanlık ve Gübreleme',
-    price: 0,
-    category: 'Uzmanlar',
-    subCategory: 'Ziraatçılar',
-    mode: 'Uzman',
-    location: 'Seyhan / Adana',
-    city: 'Adana',
-    amount: 'Narenciye & Toprak Analizi',
-    description: 'Çukurova bölgesinde narenciye ve pamuk yetiştiriciliği, gübreleme programları.',
-    seller: 'Ziraat Müh. Ahmet Yılmaz',
-    phone: '0322 351 2548',
-    verified: true,
-    featured: true,
-    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-  {
-    id: 102,
-    title: 'Aydın İncir ve Zeytin Tarım Danışmanlığı',
-    price: 0,
-    category: 'Uzmanlar',
-    subCategory: 'Ziraatçılar',
-    mode: 'Uzman',
-    location: 'Efeler / Aydın',
-    city: 'Aydın',
-    amount: 'Zeytin & Meyve Bahçeleri',
-    description: 'Ege bölgesi zeytin ve incir üretiminde budama, hastalık yönetimi ve verim artırma.',
-    seller: 'Ziraat Müh. Ayşe Demir',
-    phone: '0256 215 1030',
-    verified: true,
-    featured: false,
-    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-  {
-    id: 103,
-    title: 'Manisa Bağcılık ve Meyvecilik Ofisi',
-    price: 0,
-    category: 'Uzmanlar',
-    subCategory: 'Ziraatçılar',
-    mode: 'Uzman',
-    location: 'Yunusemre / Manisa',
-    city: 'Manisa',
-    amount: 'Üzüm & Bağ Hastalıkları',
-    description: 'Sultani üzüm bağları, meyve bahçesi tesis ve bakım danışmanlığı.',
-    seller: 'Ziraat Müh. Mehmet Aksoy',
-    phone: '0236 231 1470',
-    verified: true,
-    featured: true,
-    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-  {
-    id: 104,
-    title: 'Konya Tarla Tarımı ve Hububat Uzmanlığı',
-    price: 0,
-    category: 'Uzmanlar',
-    subCategory: 'Ziraatçılar',
-    mode: 'Uzman',
-    location: 'Selçuklu / Konya',
-    city: 'Konya',
-    amount: 'Buğday, Mısır & Sulama',
-    description: 'İç Anadolu bölgesi geniş tarım arazileri, hububat gübrelemesi ve akıllı sulama sistemleri.',
-    seller: 'Ziraat Müh. Mustafa Çelik',
-    phone: '0332 235 6080',
-    verified: true,
-    featured: false,
-    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-  {
-    id: 105,
-    title: 'Bursa Tarım ve Sera Projelendirme',
-    price: 0,
-    category: 'Uzmanlar',
-    subCategory: 'Ziraatçılar',
-    mode: 'Uzman',
-    location: 'Nilüfer / Bursa',
-    city: 'Bursa',
-    amount: 'Sera & Sebze Yetiştiriciliği',
-    description: 'Modern sera sistemleri, topraksız tarım ve sebze fidesi danışmanlığı.',
-    seller: 'Ziraat Müh. Fatma Şahin',
-    phone: '0224 441 5020',
-    verified: true,
-    featured: false,
-    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-  {
-    id: 106,
-    title: 'Antalya Tropikal ve Örtüaltı Tarım Danışmanlığı',
-    price: 0,
-    category: 'Uzmanlar',
-    subCategory: 'Ziraatçılar',
-    mode: 'Uzman',
-    location: 'Muratpaşa / Antalya',
-    city: 'Antalya',
-    amount: 'Örtüaltı Sebze & Narenciye',
-    description: 'Akdeniz bölgesi seracılık, damla sulama ve entegre mücadele çözümleri.',
-    seller: 'Ziraat Müh. Hüseyin Kaya',
-    phone: '0242 243 1290',
-    verified: true,
-    featured: true,
-    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-  {
-    id: 107,
-    title: 'Mersin Narenciye ve Muz Üretim Merkezi',
-    price: 0,
-    category: 'Uzmanlar',
-    subCategory: 'Ziraatçılar',
-    mode: 'Uzman',
-    location: 'Akdeniz / Mersin',
-    city: 'Mersin',
-    amount: 'Muz & Tropikal Meyveler',
-    description: 'Muz seraları, avokado ve narenciye bahçelerinde bitki besleme ve koruma.',
-    seller: 'Ziraat Müh. Canan Arslan',
-    phone: '0324 233 4510',
-    verified: true,
-    featured: false,
-    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-  {
-    id: 108,
-    title: 'Samsun Karadeniz Fındık ve Tarım Ofisi',
-    price: 0,
-    category: 'Uzmanlar',
-    subCategory: 'Ziraatçılar',
-    mode: 'Uzman',
-    location: 'İlkadım / Samsun',
-    city: 'Samsun',
-    amount: 'Fındık & Toprak Bakımı',
-    description: 'Karadeniz bölgesi fındık bahçesi gençleştirme, toprak tahlili ve verim artırma.',
-    seller: 'Ziraat Müh. İbrahim Korkmaz',
-    phone: '0362 431 8820',
-    verified: true,
-    featured: false,
-    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-  {
-    id: 109,
-    title: 'Balıkesir Ceviz ve Meyve Bahçesi Uzmanlığı',
-    price: 0,
-    category: 'Uzmanlar',
-    subCategory: 'Ziraatçılar',
-    mode: 'Uzman',
-    location: 'Gönen / Balıkesir',
-    city: 'Balıkesir',
-    amount: 'Ceviz & Meyve Bahçeleri',
-    description: 'Güney Marmara bölgesi ceviz bahçesi kurulumu, budama ve damlama sulama otomasyonu.',
-    seller: 'Ziraat Müh. Murat Can',
-    phone: '0266 762 1140',
-    verified: true,
-    featured: true,
-    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-  {
-    id: 110,
-    title: 'İzmir Organik Tarım ve Toprak Danışmanlığı',
-    price: 0,
-    category: 'Uzmanlar',
-    subCategory: 'Ziraatçılar',
-    mode: 'Uzman',
-    location: 'Bornova / İzmir',
-    city: 'İzmir',
-    amount: 'Organik Tarım Sertifikasyonu',
-    description: 'İyi tarım uygulamaları, organik gübreleme ve tarımsal hibe projeleri danışmanlığı.',
-    seller: 'Ziraat Müh. Zeynep Aydın',
-    phone: '0232 388 1560',
-    verified: true,
-    featured: false,
-    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-  {
-    id: 28,
-    title: 'Gönen Serbest Veteriner Kliniği',
-    price: 0,
-    category: 'Uzmanlar',
-    subCategory: 'Veterinerler',
-    mode: 'Uzman',
-    location: 'Gönen / Balıkesir',
-    city: 'Balıkesir',
-    amount: '7/24 Klinik Hizmeti',
-    description: 'Aşılama, suni tohumlama, cerrahi operasyonlar ve veteriner danışmanlık hizmeti.',
-    seller: 'Vet. Hekim Ali Yıldız',
-    phone: '0532 987 6543',
-    verified: true,
-    featured: true,
-    image: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   }
 ];
@@ -722,8 +549,6 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState('Tüm kategoriler');
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
   
-  const [openCategory, setOpenCategory] = useState(null);
-
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewMode, setViewMode] = useState('Liste');
 
@@ -731,7 +556,7 @@ export default function App() {
     title: '',
     price: '',
     category: 'Mahsuller',
-    subCategory: 'Kiraz',
+    subCategory: 'Ceviz',
     mode: 'Satılık',
     location: 'Gönen / Balıkesir',
     city: 'Balıkesir',
@@ -743,8 +568,16 @@ export default function App() {
   });
 
   useEffect(() => {
-    localStorage.setItem('pazartarla_listings', JSON.stringify(INITIAL_LISTINGS));
-    setListings(INITIAL_LISTINGS);
+    const saved = localStorage.getItem('pazartarla_listings');
+    if (saved) {
+      try {
+        setListings(JSON.parse(saved));
+      } catch (e) {
+        setListings(INITIAL_LISTINGS);
+      }
+    } else {
+      setListings(INITIAL_LISTINGS);
+    }
 
     window.history.replaceState({ tab: 'home' }, '');
 
@@ -775,40 +608,7 @@ export default function App() {
   };
 
   const handleFormChange = (e) => {
-    const { name, value } = e.target;
-    
-    if (name === 'category') {
-      if (value === 'Uzmanlar') {
-        setForm(prev => ({ 
-          ...prev, 
-          category: value, 
-          subCategory: 'Ziraatçılar',
-          mode: 'Uzman', 
-          price: '0', 
-          amount: 'Tarım & Danışmanlık' 
-        }));
-        return;
-      } else if (form.category === 'Uzmanlar') {
-        setForm(prev => ({ 
-          ...prev, 
-          category: value, 
-          subCategory: categoriesWithSubs[value]?.[0] || '', 
-          mode: 'Satılık', 
-          price: '', 
-          amount: '' 
-        }));
-        return;
-      } else {
-        setForm(prev => ({
-          ...prev,
-          category: value,
-          subCategory: categoriesWithSubs[value]?.[0] || ''
-        }));
-        return;
-      }
-    }
-
-    setForm({ ...form, [name]: value });
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleImageUpload = (e) => {
@@ -824,34 +624,44 @@ export default function App() {
 
   const handleDirectAdd = (e) => {
     e.preventDefault();
-    if (!form.title || !form.phone || !form.seller) {
-      alert('Lütfen başlık, ad soyad ve telefon numarası alanlarını doldurun.');
+    if (!form.title || !form.price || !form.phone || !form.seller) {
+      alert('Lütfen başlık, fiyat, satıcı adı ve telefon numarası alanlarını doldurun.');
       return;
     }
-
-    const isExpert = form.category === 'Uzmanlar';
 
     const newEntry = {
       ...form,
       id: Date.now(),
-      price: isExpert ? 0 : Number(form.price || 0),
-      mode: isExpert ? 'Uzman' : form.mode,
+      price: Number(form.price),
       verified: true,
       featured: false,
+      reports: 0,
       date: 'Bugün'
     };
 
     const updated = [newEntry, ...listings];
     saveListings(updated);
     changeTab('home');
-    alert(isExpert ? 'Uzman profili başarıyla yayınlandı!' : 'İlanınız başarıyla yayınlandı!');
+    alert('İlanınız başarıyla yayınlandı!');
   };
 
   const handleDeleteListing = (id) => {
-    if (window.confirm('Bu kaydı yayından kaldırmak/silmek istediğinize emin misiniz?')) {
+    if (window.confirm('Bu ilanı yayından kaldırmak/silmek istediğinize emin misiniz?')) {
       const updated = listings.filter(item => item.id !== id);
       saveListings(updated);
     }
+  };
+
+  const handleReportListing = (id) => {
+    const updated = listings.map(item => {
+      if (item.id === id) {
+        const newReports = (item.reports || 0) + 1;
+        return { ...item, reports: newReports };
+      }
+      return item;
+    });
+    saveListings(updated);
+    alert('İlan şikayet edildi. İncelenmek üzere yönetici paneline bildirildi.');
   };
 
   const handleAdminLogin = (e) => {
@@ -867,37 +677,16 @@ export default function App() {
     alert('Admin Paneli Şifreniz: 1234');
   };
 
-  const handleShare = (platform) => {
-    if (!selectedListing) return;
-    const text = `PazarTarla İlanı: ${selectedListing.title} - ${selectedListing.price ? selectedListing.price.toLocaleString('tr-TR') + ' TL' : 'Uzman Profili'} (${selectedListing.location})`;
-    const url = window.location.href;
-
-    if (platform === 'whatsapp') {
-      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
-    } else if (platform === 'copy') {
-      navigator.clipboard.writeText(`${text} - İletişim: ${selectedListing.phone}`);
-      alert('İlan bilgileri ve telefon numarası panoya kopyalandı!');
-    } else {
-      if (navigator.share) {
-        navigator.share({ title: selectedListing.title, text: text, url: url }).catch(() => {});
-      } else {
-        navigator.clipboard.writeText(url);
-        alert('İlan bağlantısı kopyalandı!');
-      }
-    }
-  };
-
   const categoriesWithSubs = {
     'Mahsuller': ['Kiraz', 'Ceviz', 'Zeytin & Zeytinyağı'],
     'Canlı Hayvanlar': ['Büyükbaş', 'Küçükbaş', 'Kanatlı'],
     'Hayvan Yemleri ve Ekipmanları': ['Yem Çeşitleri', 'Suluk / Yemlik'],
     'Arıcılık & Bal': ['Süzme Bal', 'Karakovan Balı'],
-    'Arıcılık Malzemeleri': ['Kovan', 'Bal Süzme Makinesi', 'Petek ve Çerçeve'],
+    'Arıcılık Ekipmanları': ['Kovan', 'Bal Süzme Makinesi', 'Petek ve Çerçeve'],
     'Traktör': ['İkinci El Traktör', 'Sıfır Traktör'],
     'Biçerdöver': ['Biçerdöver'],
     'Tarım Ekipmanları': ['Römork', 'İlaçlama Makinesi', 'Toprak İşleme'],
-    'Tarım İşçileri': ['Hasat Ekibi', 'Budama Ekibi', 'Çoban / Bakıcı'],
-    'Uzmanlar': ['Veterinerler', 'Ziraatçılar']
+    'Tarım İşçileri': ['Hasat Ekibi', 'Budama Ekibi', 'Çoban / Bakıcı']
   };
 
   const filteredListings = listings.filter(item => {
@@ -906,14 +695,12 @@ export default function App() {
     return matchesCategory && matchesSubCategory;
   });
 
-  const isExpertCategory = form.category === 'Uzmanlar';
-
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f4f6f8', color: '#1e293b', fontFamily: 'system-ui, -apple-system, sans-serif', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', overflowX: 'hidden', boxSizing: 'border-box' }}>
       
       {/* ÜST HEADER */}
       <header style={{ backgroundColor: '#1b3a2b', color: '#ffffff', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', position: 'sticky', top: 0, zIndex: 100, width: '100%', boxSizing: 'border-box' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => { changeTab('home'); setSelectedCategory('Tüm kategoriler'); setSelectedSubCategory('Tümü'); setOpenCategory(null); }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => { changeTab('home'); setSelectedCategory('Tüm kategoriler'); setSelectedSubCategory('Tümü'); }}>
           <div style={{ backgroundColor: '#22c55e', padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Tractor size={20} color="#fff" />
           </div>
@@ -936,7 +723,7 @@ export default function App() {
       {/* ANA İÇERİK */}
       <main style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '12px', flex: 1, boxSizing: 'border-box' }}>
         
-        {/* 1. EKRAN: KATEGORİ SEÇİMİ (AKORDİYON YAPISI) */}
+        {/* 1. EKRAN: KATEGORİ SEÇİMİ */}
         {activeTab === 'home' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflow: 'hidden', border: '1px solid #e2e8f0', width: '100%', boxSizing: 'border-box' }}>
             <div style={{ backgroundColor: '#1b3a2b', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -955,51 +742,36 @@ export default function App() {
               </div>
             </div>
 
-            {Object.keys(categoriesWithSubs).map(cat => {
-              const isOpen = openCategory === cat;
-              return (
-                <div key={cat} style={{ borderBottom: '1px solid #edf2f7' }}>
-                  {/* ANA KATEGORİ SATIRI */}
-                  <div 
-                    onClick={() => setOpenCategory(isOpen ? null : cat)}
-                    style={{ padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', backgroundColor: isOpen ? '#f1f5f9' : '#fff' }}
-                  >
-                    <span style={{ fontWeight: '600', color: '#334155', fontSize: '14px' }}>{cat}</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '12px', color: '#94a3b8' }}>({listings.filter(i => i.category === cat).length})</span>
-                      {isOpen ? <ChevronDown size={18} color="#1b3a2b" /> : <ChevronRight size={18} color="#94a3b8" />}
-                    </div>
+            {Object.keys(categoriesWithSubs).map(cat => (
+              <div key={cat}>
+                <div 
+                  onClick={() => { setSelectedCategory(cat); setSelectedSubCategory('Tümü'); changeTab('results'); }}
+                  style={{ padding: '14px 16px', borderBottom: '1px solid #edf2f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+                >
+                  <span style={{ fontWeight: '600', color: '#334155', fontSize: '14px' }}>{cat}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#94a3b8', fontSize: '13px' }}>
+                    <span>({listings.filter(i => i.category === cat).length})</span>
+                    <ChevronRight size={16} />
                   </div>
-
-                  {/* ALT SEÇENEKLER (AKORDİYON AÇILDIĞINDA GÖRÜNÜR) */}
-                  {isOpen && (
-                    <div style={{ backgroundColor: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
-                      <div 
-                        onClick={() => { setSelectedCategory(cat); setSelectedSubCategory('Tümü'); changeTab('results'); }}
-                        style={{ padding: '10px 16px 10px 28px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', fontWeight: '700', color: '#1b3a2b', fontSize: '13px' }}
-                      >
-                        <span>Tüm {cat} İlanları</span>
-                        <ChevronRight size={14} color="#1b3a2b" />
-                      </div>
-
-                      {categoriesWithSubs[cat].map(sub => (
-                        <div 
-                          key={sub}
-                          onClick={() => { setSelectedCategory(cat); setSelectedSubCategory(sub); changeTab('results'); }}
-                          style={{ padding: '10px 16px 10px 28px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
-                        >
-                          <span style={{ fontSize: '13px', color: '#64748b' }}>• {sub}</span>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#94a3b8', fontSize: '12px' }}>
-                            <span>({listings.filter(i => i.category === cat && i.subCategory === sub).length})</span>
-                            <ChevronRight size={14} color="#cbd5e1" />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
-              );
-            })}
+
+                <div style={{ backgroundColor: '#fafafa', borderBottom: '1px solid #edf2f7' }}>
+                  {categoriesWithSubs[cat].map(sub => (
+                    <div 
+                      key={sub}
+                      onClick={(e) => { e.stopPropagation(); setSelectedCategory(cat); setSelectedSubCategory(sub); changeTab('results'); }}
+                      style={{ padding: '10px 16px 10px 28px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+                    >
+                      <span style={{ fontSize: '13px', color: '#64748b' }}>• {sub}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#94a3b8', fontSize: '12px' }}>
+                        <span>({listings.filter(i => i.category === cat && i.subCategory === sub).length})</span>
+                        <ChevronRight size={14} color="#cbd5e1" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
 
             <div style={{ padding: '16px', textAlign: 'center', backgroundColor: '#f8fafc' }}>
               <button onClick={() => changeTab('admin')} style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '12px', cursor: 'pointer', textDecoration: 'underline' }}>
@@ -1041,52 +813,49 @@ export default function App() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
               {filteredListings.length === 0 ? (
                 <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '10px', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>
-                  Bu kategoride henüz kayıt bulunmuyor.
+                  Bu kategoride henüz ilan bulunmuyor.
                 </div>
               ) : (
-                filteredListings.map(item => {
-                  const isExpertItem = item.category === 'Uzmanlar';
-                  return (
-                    <div 
-                      key={item.id} 
-                      onClick={() => { setSelectedListing(item); changeTab('detail'); }}
-                      style={{ backgroundColor: '#fff', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', cursor: 'pointer', display: 'flex', gap: '10px', padding: '10px', boxSizing: 'border-box', width: '100%' }}
-                    >
-                      <div style={{ position: 'relative', width: viewMode === 'Detaylı Liste' ? '110px' : '90px', height: viewMode === 'Detaylı Liste' ? '110px' : '90px', backgroundColor: '#f1f5f9', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
-                        <img src={item.image} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        <span style={{ position: 'absolute', top: '4px', left: '4px', backgroundColor: isExpertItem ? '#3b82f6' : (item.mode === 'Satılık' ? '#22c55e' : '#3b82f6'), color: '#fff', padding: '2px 5px', borderRadius: '4px', fontSize: '9px', fontWeight: '700' }}>
-                          {item.mode}
-                        </span>
+                filteredListings.map(item => (
+                  <div 
+                    key={item.id} 
+                    onClick={() => { setSelectedListing(item); changeTab('detail'); }}
+                    style={{ backgroundColor: '#fff', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', cursor: 'pointer', display: 'flex', gap: '10px', padding: '10px', boxSizing: 'border-box', width: '100%' }}
+                  >
+                    <div style={{ position: 'relative', width: viewMode === 'Detaylı Liste' ? '110px' : '90px', height: viewMode === 'Detaylı Liste' ? '110px' : '90px', backgroundColor: '#f1f5f9', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
+                      <img src={item.image} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <span style={{ position: 'absolute', top: '4px', left: '4px', backgroundColor: item.mode === 'Satılık' ? '#22c55e' : '#3b82f6', color: '#fff', padding: '2px 5px', borderRadius: '4px', fontSize: '9px', fontWeight: '700' }}>
+                        {item.mode}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1, minWidth: 0 }}>
+                      <div>
+                        <span style={{ fontSize: '10px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.category} {item.subCategory ? `> ${item.subCategory}` : ''}</span>
+                        <h4 style={{ margin: '2px 0 4px 0', fontSize: '13px', fontWeight: '700', color: '#0f172a', lineHeight: '1.2' }}>{item.title}</h4>
+                        {item.amount && (
+                          <div style={{ fontSize: '11px', color: '#059669', fontWeight: '600' }}>
+                            {item.amount}
+                          </div>
+                        )}
+                        {viewMode === 'Detaylı Liste' && (
+                          <p style={{ fontSize: '11px', color: '#64748b', margin: '4px 0 0 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                            {item.description}
+                          </p>
+                        )}
                       </div>
 
-                      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1, minWidth: 0 }}>
-                        <div>
-                          <span style={{ fontSize: '10px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.category} {item.subCategory ? `> ${item.subCategory}` : ''}</span>
-                          <h4 style={{ margin: '2px 0 4px 0', fontSize: '13px', fontWeight: '700', color: '#0f172a', lineHeight: '1.2' }}>{item.title}</h4>
-                          {item.amount && (
-                            <div style={{ fontSize: '11px', color: isExpertItem ? '#2563eb' : '#059669', fontWeight: '600' }}>
-                              {item.amount}
-                            </div>
-                          )}
-                          {viewMode === 'Detaylı Liste' && (
-                            <p style={{ fontSize: '11px', color: '#64748b', margin: '4px 0 0 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                              {item.description}
-                            </p>
-                          )}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '4px' }}>
+                        <div style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b' }}>
+                          {item.price.toLocaleString('tr-TR')} TL
                         </div>
-
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '4px' }}>
-                          <div style={{ fontSize: isExpertItem ? '13px' : '15px', fontWeight: '800', color: isExpertItem ? '#2563eb' : '#1b3a2b' }}>
-                            {isExpertItem ? 'Uzman Profili' : `${item.price.toLocaleString('tr-TR')} TL`}
-                          </div>
-                          <div style={{ fontSize: '10px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '2px' }}>
-                            <MapPin size={10} /> {item.location}
-                          </div>
+                        <div style={{ fontSize: '10px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                          <MapPin size={10} /> {item.location}
                         </div>
                       </div>
                     </div>
-                  );
-                })
+                  </div>
+                ))
               )}
             </div>
 
@@ -1116,55 +885,34 @@ export default function App() {
           </div>
         )}
 
-        {/* İLAN / UZMAN DETAY EKRANI */}
+        {/* İLAN DETAY EKRANI */}
         {activeTab === 'detail' && selectedListing && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', boxSizing: 'border-box', width: '100%' }}>
-            <div style={{ marginBottom: '14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
               <button onClick={() => changeTab('results')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <ArrowLeft size={16} /> Listeye Dön
               </button>
+              
+              <button 
+                onClick={() => handleReportListing(selectedListing.id)}
+                style={{ backgroundColor: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                <AlertTriangle size={14} /> Şikayet Et
+              </button>
             </div>
+
             <div style={{ height: '220px', borderRadius: '8px', overflow: 'hidden', marginBottom: '14px', backgroundColor: '#f1f5f9' }}>
               <img src={selectedListing.image} alt={selectedListing.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
             <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', margin: '8px 0' }}>{selectedListing.title}</h2>
             {selectedListing.amount && (
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: selectedListing.category === 'Uzmanlar' ? '#eff6ff' : '#ecfdf5', color: selectedListing.category === 'Uzmanlar' ? '#2563eb' : '#059669', padding: '4px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', marginBottom: '12px', border: `1px solid ${selectedListing.category === 'Uzmanlar' ? '#bfdbfe' : '#a7f3d0'}` }}>
-                <Package size={14} /> {selectedListing.category === 'Uzmanlar' ? 'Alan / Kapsam: ' : 'Miktar / Bilgi: '}{selectedListing.amount}
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#ecfdf5', color: '#059669', padding: '4px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', marginBottom: '12px', border: '1px solid #a7f3d0' }}>
+                <Package size={14} /> Miktar / Bilgi: {selectedListing.amount}
               </div>
             )}
-            
-            {selectedListing.category !== 'Uzmanlar' && (
-              <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '14px' }}>{selectedListing.price.toLocaleString('tr-TR')} TL</div>
-            )}
-
+            <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '14px' }}>{selectedListing.price.toLocaleString('tr-TR')} TL</div>
             <p style={{ color: '#475569', lineHeight: '1.4', marginBottom: '16px', fontSize: '13px' }}>{selectedListing.description}</p>
             
-            {/* SOSYAL MEDYA PAYLAŞIM ALANI */}
-            <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '16px' }}>
-              <span style={{ fontSize: '12px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '8px' }}>Bu İlanı Sosyal Medyada Paylaş:</span>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                <button 
-                  onClick={() => handleShare('whatsapp')}
-                  style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-                >
-                  <MessageCircle size={14} /> WhatsApp
-                </button>
-                <button 
-                  onClick={() => handleShare('copy')}
-                  style={{ backgroundColor: '#64748b', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-                >
-                  <Copy size={14} /> Bilgileri Kopyala
-                </button>
-                <button 
-                  onClick={() => handleShare('general')}
-                  style={{ backgroundColor: '#3b82f6', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-                >
-                  <Share2 size={14} /> Paylaş / Link
-                </button>
-              </div>
-            </div>
-
             <div style={{ borderTop: '1px solid #edf2f7', paddingTop: '16px' }}>
               <a href={`tel:${selectedListing.phone}`} style={{ width: '100%', backgroundColor: '#1b3a2b', color: '#fff', padding: '12px', borderRadius: '8px', textAlign: 'center', fontWeight: '700', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '14px', boxSizing: 'border-box' }}>
                 <Phone size={18} /> {selectedListing.phone} ({selectedListing.seller})
@@ -1173,16 +921,23 @@ export default function App() {
           </div>
         )}
 
-        {/* İLAN / UZMAN EKLEME EKRANI */}
+        {/* İLAN VER EKRANI */}
         {activeTab === 'add' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', boxSizing: 'border-box', width: '100%' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
               <button onClick={() => changeTab('home')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer', fontSize: '13px' }}>← Vazgeç</button>
-              <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>{isExpertCategory ? 'Uzman Profili Ekle' : 'Yeni İlan Ver'}</h2>
+              <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>Yeni İlan Ver</h2>
             </div>
             <form onSubmit={handleDirectAdd} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              
+              <div>
+                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>İlan Başlığı *</label>
+                <input type="text" name="title" placeholder="Örn: Kiraz, Traktör" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+              </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div>
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fiyat (TL) *</label>
+                  <input type="number" name="price" placeholder="90" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                </div>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Kategori</label>
                   <select name="category" value={form.category} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff', fontSize: '13px' }}>
@@ -1191,55 +946,29 @@ export default function App() {
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Alt Ürün / Seçenek</label>
-                  <select name="subCategory" value={form.subCategory} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff', fontSize: '13px' }}>
-                    {categoriesWithSubs[form.category]?.map(sub => (
-                      <option key={sub} value={sub}>{sub}</option>
-                    ))}
-                  </select>
-                </div>
               </div>
-
-              <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>{isExpertCategory ? 'Klinik / Unvan ve İsim Başlığı *' : 'İlan Başlığı *'}</label>
-                <input type="text" name="title" placeholder={isExpertCategory ? "Örn: Gönen Veteriner Kliniği" : "Örn: Kiraz, Traktör"} value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
-              </div>
-
-              {!isExpertCategory ? (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                  <div>
-                    <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fiyat (TL) *</label>
-                    <input type="number" name="price" placeholder="90" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Miktar / Kapasite</label>
-                    <input type="text" name="amount" placeholder="5 Ton" value={form.amount} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Hizmet Kapsamı / Çalışma Alanı</label>
-                  <input type="text" name="amount" placeholder="Örn: Toprak Analizi & Gübreleme" value={form.amount} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
-                </div>
-              )}
-
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>{isExpertCategory ? 'Uzman / Hekim Adı *' : 'Satıcı Adı *'}</label>
-                  <input type="text" name="seller" placeholder="Ad Soyad" value={form.seller} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Alt Ürün</label>
+                  <input type="text" name="subCategory" placeholder="Ceviz" value={form.subCategory} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Miktar / Kapasite</label>
+                  <input type="text" name="amount" placeholder="5 Ton" value={form.amount} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div>
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Satıcı Adı *</label>
+                  <input type="text" name="seller" placeholder="Adınız" value={form.seller} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Telefon *</label>
                   <input type="text" name="phone" placeholder="0532..." value={form.phone} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
               </div>
-
-              <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Hizmet / İlan Konumu</label>
-                <input type="text" name="location" placeholder="Gönen / Balıkesir" value={form.location} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
-              </div>
               
+              {/* GALERİDEN FOTOĞRAF YÜKLEME */}
               <div>
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fotoğraf Seç (Galeriden / Cihazdan)</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -1253,12 +982,11 @@ export default function App() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Açıklama / Hizmet Detayları</label>
-                <textarea name="description" placeholder="Hizmetleriniz veya detaylar..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px', boxSizing: 'border-box', fontSize: '13px' }} />
+                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Açıklama</label>
+                <textarea name="description" placeholder="Detaylar..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px', boxSizing: 'border-box', fontSize: '13px' }} />
               </div>
-
               <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', fontSize: '14px' }}>
-                {isExpertCategory ? 'Uzman Profilini Yayınla' : 'İlanı Hemen Yayınla'}
+                İlanı Hemen Yayınla
               </button>
             </form>
           </div>
@@ -1282,18 +1010,18 @@ export default function App() {
             ) : (
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid #edf2f7', paddingBottom: '10px' }}>
-                  <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>İlan ve Uzman Denetimi</h2>
+                  <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>İlan Denetimi & Şikayetler</h2>
                   <button onClick={() => changeTab('home')} style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}>Kategorilere Dön</button>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {listings.map(item => (
-                    <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', boxSizing: 'border-box' }}>
+                    <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', backgroundColor: item.reports > 0 ? '#fef2f2' : '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', boxSizing: 'border-box' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <img src={item.image} alt="" style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover' }} />
                         <div>
                           <h4 style={{ margin: '0 0 2px 0', fontSize: '13px', fontWeight: '700', color: '#0f172a' }}>{item.title}</h4>
-                          <span style={{ fontSize: '11px', color: '#64748b' }}>{item.category === 'Uzmanlar' ? 'Uzman Profili' : `${item.price.toLocaleString('tr-TR')} TL`}</span>
+                          <span style={{ fontSize: '11px', color: '#64748b' }}>{item.price.toLocaleString('tr-TR')} TL {item.reports > 0 ? `| ⚠️ Şikayet: ${item.reports}` : ''}</span>
                         </div>
                       </div>
                       <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 8px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '11px' }}>
@@ -1309,25 +1037,8 @@ export default function App() {
 
       </main>
 
-      {/* MÜŞTERİ HİZMETLERİ & İLETİŞİM ÇERÇEVESİ */}
-      <footer style={{ backgroundColor: '#1b3a2b', color: '#cbd5e1', padding: '16px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 'auto', boxSizing: 'border-box', width: '100%' }}>
-        <div style={{ maxWidth: '600px', margin: '0 auto', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', padding: '12px 16px', backgroundColor: 'rgba(255,255,255,0.03)', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#86efac', fontWeight: '700', fontSize: '13px' }}>
-            <Headphones size={16} /> Müşteri Hizmetleri & Destek
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', fontSize: '12px' }}>
-            <a href="mailto:gezgiinci@gmail.com" style={{ color: '#fff', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Mail size={14} color="#86efac" /> gezgiinci@gmail.com
-            </a>
-            <a href="tel:05357681550" style={{ color: '#fff', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '700' }}>
-              <Phone size={14} color="#86efac" /> GSM: 0535 768 15 50
-            </a>
-          </div>
-        </div>
-
-        <div style={{ textAlign: 'center', fontSize: '11px', color: '#94a3b8', marginTop: '12px' }}>
-          © 2026 PazarTarla • Gönen / Balıkesir
-        </div>
+      <footer style={{ backgroundColor: '#1b3a2b', color: '#94a3b8', padding: '14px', textAlign: 'center', fontSize: '11px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 'auto', boxSizing: 'border-box', width: '100%' }}>
+        <span>© 2026 PazarTarla • Gönen / Balıkesir</span>
       </footer>
 
     </div>
