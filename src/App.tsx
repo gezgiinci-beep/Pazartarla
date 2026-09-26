@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus, 
   Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, ChevronDown, X, 
-  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Headphones 
+  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Headphones, Send 
 } from 'lucide-react';
 
 const INITIAL_LISTINGS = [
@@ -867,6 +867,26 @@ export default function App() {
     alert('Admin Paneli Şifreniz: 1234');
   };
 
+  const handleShare = (platform) => {
+    if (!selectedListing) return;
+    const text = `PazarTarla İlanı: ${selectedListing.title} - ${selectedListing.price ? selectedListing.price.toLocaleString('tr-TR') + ' TL' : 'Uzman Profili'} (${selectedListing.location})`;
+    const url = window.location.href;
+
+    if (platform === 'whatsapp') {
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
+    } else if (platform === 'copy') {
+      navigator.clipboard.writeText(`${text} - İletişim: ${selectedListing.phone}`);
+      alert('İlan bilgileri ve telefon numarası panoya kopyalandı!');
+    } else {
+      if (navigator.share) {
+        navigator.share({ title: selectedListing.title, text: text, url: url }).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(url);
+        alert('İlan bağlantısı kopyalandı!');
+      }
+    }
+  };
+
   const categoriesWithSubs = {
     'Mahsuller': ['Kiraz', 'Ceviz', 'Zeytin & Zeytinyağı'],
     'Canlı Hayvanlar': ['Büyükbaş', 'Küçükbaş', 'Kanatlı'],
@@ -1120,6 +1140,31 @@ export default function App() {
 
             <p style={{ color: '#475569', lineHeight: '1.4', marginBottom: '16px', fontSize: '13px' }}>{selectedListing.description}</p>
             
+            {/* SOSYAL MEDYA PAYLAŞIM ALANI */}
+            <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '16px' }}>
+              <span style={{ fontSize: '12px', fontWeight: '700', color: '#334155', display: 'block', marginBottom: '8px' }}>Bu İlanı Sosyal Medyada Paylaş:</span>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <button 
+                  onClick={() => handleShare('whatsapp')}
+                  style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                >
+                  <MessageCircle size={14} /> WhatsApp
+                </button>
+                <button 
+                  onClick={() => handleShare('copy')}
+                  style={{ backgroundColor: '#64748b', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                >
+                  <Copy size={14} /> Bilgileri Kopyala
+                </button>
+                <button 
+                  onClick={() => handleShare('general')}
+                  style={{ backgroundColor: '#3b82f6', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                >
+                  <Share2 size={14} /> Paylaş / Link
+                </button>
+              </div>
+            </div>
+
             <div style={{ borderTop: '1px solid #edf2f7', paddingTop: '16px' }}>
               <a href={`tel:${selectedListing.phone}`} style={{ width: '100%', backgroundColor: '#1b3a2b', color: '#fff', padding: '12px', borderRadius: '8px', textAlign: 'center', fontWeight: '700', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '14px', boxSizing: 'border-box' }}>
                 <Phone size={18} /> {selectedListing.phone} ({selectedListing.seller})
