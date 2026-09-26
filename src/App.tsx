@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus, 
   Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, ChevronDown, X, 
-  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star 
+  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Headphones 
 } from 'lucide-react';
 
 const INITIAL_LISTINGS = [
@@ -722,7 +722,6 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState('Tüm kategoriler');
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
   
-  // Akordiyon için hangi kategorinin açık olduğunu tutan state
   const [openCategory, setOpenCategory] = useState(null);
 
   const [showViewModal, setShowViewModal] = useState(false);
@@ -1265,8 +1264,25 @@ export default function App() {
 
       </main>
 
-      <footer style={{ backgroundColor: '#1b3a2b', color: '#94a3b8', padding: '14px', textAlign: 'center', fontSize: '11px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 'auto', boxSizing: 'border-box', width: '100%' }}>
-        <span>© 2026 PazarTarla • Gönen / Balıkesir</span>
+      {/* MÜŞTERİ HİZMETLERİ & İLETİŞİM ÇERÇEVESİ */}
+      <footer style={{ backgroundColor: '#1b3a2b', color: '#cbd5e1', padding: '16px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 'auto', boxSizing: 'border-box', width: '100%' }}>
+        <div style={{ maxWidth: '600px', margin: '0 auto', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', padding: '12px 16px', backgroundColor: 'rgba(255,255,255,0.03)', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#86efac', fontWeight: '700', fontSize: '13px' }}>
+            <Headphones size={16} /> Müşteri Hizmetleri & Destek
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', fontSize: '12px' }}>
+            <a href="mailto:gezgiinci@gmail.com" style={{ color: '#fff', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Mail size={14} color="#86efac" /> gezgiinci@gmail.com
+            </a>
+            <a href="tel:05357681550" style={{ color: '#fff', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '700' }}>
+              <Phone size={14} color="#86efac" /> GSM: 0535 768 15 50
+            </a>
+          </div>
+        </div>
+
+        <div style={{ textAlign: 'center', fontSize: '11px', color: '#94a3b8', marginTop: '12px' }}>
+          © 2026 PazarTarla • Gönen / Balıkesir
+        </div>
       </footer>
 
     </div>
