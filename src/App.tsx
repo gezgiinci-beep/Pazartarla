@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 
 const INITIAL_LISTINGS = [
-  // 1. MAHSULLER
+  // 1. MAHSULLER (3 ADET)
   {
     id: 1,
     title: 'Bursamızın Meşhur Saplı Tatlı Kirazı',
@@ -62,7 +62,7 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
 
-  // 2. CANLI HAYVANLAR
+  // 2. CANLI HAYVANLAR (3 ADET)
   {
     id: 4,
     title: 'Holstein Süt İneği ve Buzağısı',
@@ -118,7 +118,7 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
 
-  // 3. HAYVAN YEMLERİ VE EKİPMANLARI
+  // 3. HAYVAN YEMLERİ VE EKİPMANLARI (2 ADET)
   {
     id: 7,
     title: 'Besi Süt Yemi (Çuval 50 kg)',
@@ -156,7 +156,7 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
 
-  // 4. ARICILIK & BAL
+  // 4. ARICILIK & BAL (2 ADET)
   {
     id: 9,
     title: 'Meşe Çiçeği Yayla Süzme Balı (1 Kg)',
@@ -194,7 +194,7 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
 
-  // 5. ARICILIK EKİPMANLARI
+  // 5. ARICILIK EKİPMANLARI (2 ADET)
   {
     id: 11,
     title: '10 Çerçeveli Boyalı Arı Kovanı',
@@ -232,7 +232,7 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
 
-  // 6. TRAKTÖR
+  // 6. TRAKTÖR (1 ADET)
   {
     id: 13,
     title: 'John Deere 6130M - Düşük saat, tek elden',
@@ -252,7 +252,7 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
 
-  // 7. BİÇERDÖVER
+  // 7. BİÇERDÖVER (1 ADET)
   {
     id: 14,
     title: 'New Holland TC 5070 Biçerdöver',
@@ -272,7 +272,7 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
 
-  // 8. TARIM EKİPMANLARI
+  // 8. TARIM EKİPMANLARI (1 ADET)
   {
     id: 15,
     title: 'Tarım Römorku 5 Tonluk',
@@ -292,7 +292,7 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
 
-  // 9. TARIM İŞÇİLERİ
+  // 9. TARIM İŞÇİLERİ (1 ADET)
   {
     id: 16,
     title: 'Hasat ve Toplama Ekibi (10 Kişilik)',
@@ -309,6 +309,44 @@ const INITIAL_LISTINGS = [
     verified: true,
     featured: true,
     image: 'https://images.unsplash.com/photo-1595855759920-86582396756a?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+
+  // 10. UZMANLAR & DANIŞMANLAR (VETERİNER, ZİRAAT MÜHENDİSİ)
+  {
+    id: 17,
+    title: 'Saha Veteriner Hekimi - Büyükbaş & Küçükbaş Sağlık Danışmanlığı',
+    price: 1000,
+    category: 'Uzmanlar ve Danışmanlar',
+    subCategory: 'Veteriner',
+    mode: 'Hizmet',
+    location: 'Gönen / Balıkesir',
+    city: 'Balıkesir',
+    amount: 'Muayene / Danışmanlık',
+    description: 'Aşılama, suni tohumlama, doğum ve sürü sağlığı takibi.',
+    seller: 'Vet. Hekim Murat Arslan',
+    phone: '0532 666 7788',
+    verified: true,
+    featured: true,
+    image: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&q=80&w=800',
+    date: 'Bugün'
+  },
+  {
+    id: 18,
+    title: 'Ziraat Mühendisi - Toprak Analizi ve Gübreleme Planı',
+    price: 1500,
+    category: 'Uzmanlar ve Danışmanlar',
+    subCategory: 'Ziraat Mühendisi',
+    mode: 'Hizmet',
+    location: 'Balıkesir / Bursa',
+    city: 'Balıkesir',
+    amount: 'Bahçe / Tarla Başı',
+    description: 'Ceviz ve meyve bahçeleri için budama, gübreleme ve hastalıklarla mücadele danışmanlığı.',
+    seller: 'Ziraat Müh. Selim Akar',
+    phone: '0535 222 3344',
+    verified: true,
+    featured: true,
+    image: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   }
 ];
@@ -439,7 +477,8 @@ export default function App() {
     'Traktör': ['İkinci El Traktör'],
     'Biçerdöver': ['Biçerdöver'],
     'Tarım Ekipmanları': ['Römork'],
-    'Tarım İşçileri': ['Hasat Ekibi']
+    'Tarım İşçileri': ['Hasat Ekibi'],
+    'Uzmanlar ve Danışmanlar': ['Veteriner', 'Ziraat Mühendisi']
   };
 
   const filteredListings = listings.filter(item => {
