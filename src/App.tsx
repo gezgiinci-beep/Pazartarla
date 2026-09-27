@@ -312,7 +312,7 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
 
-  // 10. UZMANLAR (VETERİNERLER, ZİRAATÇİLER)
+  // 10. UZMANLAR (VETERİNERLER, ZİRAATÇİLER) - Miktar alanları kaldırıldı
   {
     id: 17,
     title: 'Saha Veteriner Hekimi - Büyükbaş & Küçükbaş Sağlık Danışmanlığı',
@@ -322,7 +322,7 @@ const INITIAL_LISTINGS = [
     mode: 'Hizmet',
     location: 'Gönen / Balıkesir',
     city: 'Balıkesir',
-    amount: 'Muayene / Danışmanlık',
+    amount: '',
     description: 'Aşılama, suni tohumlama, doğum ve sürü sağlığı takibi.',
     seller: 'Vet. Hekim Murat Arslan',
     phone: '0532 666 7788',
@@ -340,7 +340,7 @@ const INITIAL_LISTINGS = [
     mode: 'Hizmet',
     location: 'Balıkesir / Bursa',
     city: 'Balıkesir',
-    amount: 'Bahçe / Tarla Başı',
+    amount: '',
     description: 'Ceviz ve meyve bahçeleri için budama, gübreleme ve hastalıklarla mücadele danışmanlığı.',
     seller: 'Ziraat Müh. Selim Akar',
     phone: '0535 222 3344',
@@ -695,7 +695,7 @@ export default function App() {
               <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 1000 }}>
                 <div style={{ backgroundColor: '#fff', width: '100%', maxWidth: '600px', borderTopLeftRadius: '16px', borderTopRightRadius: '16px', padding: '20px', boxSizing: 'border-box' }}>
                   <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: '0 0 16px 0', textAlign: 'center' }}>Görünüm Tercihi</h3>
-                  
+                   
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
                     {['Liste', 'Detaylı Liste'].map(mode => (
                       <label key={mode} onClick={() => setViewMode(mode)} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', fontWeight: '600', color: '#334155', cursor: 'pointer', padding: '8px 0' }}>
@@ -761,7 +761,7 @@ export default function App() {
             )}
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '14px' }}>{selectedListing.price.toLocaleString('tr-TR')} TL</div>
             <p style={{ color: '#475569', lineHeight: '1.4', marginBottom: '16px', fontSize: '13px' }}>{selectedListing.description}</p>
-            
+             
             <div style={{ borderTop: '1px solid #edf2f7', paddingTop: '16px' }}>
               <a href={`tel:${selectedListing.phone}`} style={{ width: '100%', backgroundColor: '#1b3a2b', color: '#fff', padding: '12px', borderRadius: '8px', textAlign: 'center', fontWeight: '700', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '14px', boxSizing: 'border-box' }}>
                 <Phone size={18} /> {selectedListing.phone} ({selectedListing.seller})
