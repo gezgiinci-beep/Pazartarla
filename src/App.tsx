@@ -20,6 +20,157 @@ const FALLBACK_LISTINGS = [
     phone: '0535 768 1550',
     image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
     seoTags: 'taze ceviz, chandler ceviz, gönen ceviz, tarım ilanı, mahsul'
+  },
+  // 🚜 İkinci El Traktör Kategorisi İçin 10 Özenle Hazırlanmış İlan
+  {
+    id: 101,
+    title: 'Massey Ferguson 285 S Kaporta Boya Orijinal',
+    price: 485000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Gönen / Balıkesir',
+    amount: '85 HP',
+    description: 'Motoru ve yürüyeni sorunsuz, traktörümüz çiftlik işlerinde kullanılmıştır. Lastikleri %80 durumdadır.',
+    seller: 'Ahmet Yılmaz',
+    phone: '0532 555 4433',
+    image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'massey ferguson 285, ikinci el traktör, gönen traktör, tarım makinaları'
+  },
+  {
+    id: 102,
+    title: 'New Holland TD 65D 4x4 Kabinli Klima',
+    price: 720000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Bandırma / Balıkesir',
+    amount: '65 HP',
+    description: 'İlk sahibinden kapalı garaj traktörüdür. Kliması aktif çalışmaktadır, bakımları yetkili serviste yapılmıştır.',
+    seller: 'Hüseyin Demir',
+    phone: '0533 444 2211',
+    image: 'https://images.unsplash.com/photo-1533555776392-4a18d8d44476?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'new holland td65d, 4x4 traktör, bandırma traktör, kabinli traktör'
+  },
+  {
+    id: 103,
+    title: 'Tümosan 8065 4WD Turbo Intercooler',
+    price: 610000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Mustafakemalpaşa / Bursa',
+    amount: '75 HP',
+    description: 'Ağır iş görmemiş, bahçe ve tarlada temiz kullanılmış güçlü traktör. Fiyatı muadillerine göre uygundur.',
+    seller: 'Mustafa Çelik',
+    phone: '0542 333 1188',
+    image: 'https://images.unsplash.com/photo-1615840287214-7ff58936c4cf?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'tümosan 8065, turbo traktör, bursa traktör, satılık ikinci el'
+  },
+  {
+    id: 104,
+    title: 'John Deere 5075E 3lü Damper Çıkışlı',
+    price: 890000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'İnegöl / Bursa',
+    amount: '75 HP',
+    description: 'Model yükselteceğim için satılıktır. Hiçbir masrafı yoktur, lastikler sıfır ayarındadır.',
+    seller: 'İsmail Koç',
+    phone: '0530 111 2299',
+    image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'john deere 5075e, lüks traktör, inegöl tarım, ikinci el traktör'
+  },
+  {
+    id: 105,
+    title: 'Fiat 480 S Kurbağa Göz',
+    price: 295000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Susurluk / Balıkesir',
+    amount: '48 HP',
+    description: 'Efsana kasa Fiat 480. Motor şanzıman kusursuzdur, vites atma ötme kesinlikle yoktur.',
+    seller: 'Şakir Korkmaz',
+    phone: '0536 777 8844',
+    image: 'https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'fiat 480, kurbağa göz fiat, susurluk tarım, klasik traktör'
+  },
+  {
+    id: 106,
+    title: 'Case IH JX 75 C Başakşehir Üretimi',
+    price: 840000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Karacabey / Bursa',
+    amount: '75 HP',
+    description: 'Kabinli, klimalı ve inverter shutle viteslidir. Bahçe işleri için ideal, temiz kullanılmıştır.',
+    seller: 'Mehmet Aksoy',
+    phone: '0537 222 3355',
+    image: 'https://images.unsplash.com/photo-1563514227147-6d2ff665a6a0?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'case ih jx75, kabinli traktör, karacabey traktör, satılık case'
+  },
+  {
+    id: 107,
+    title: 'Erkunt Haşmet 110 Luxury CRD',
+    price: 1150000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Çanakkale Merkez',
+    amount: '110 HP',
+    description: 'Güçlü motoru ve konforlu kabini ile büyük araziler için birebir. Full servis bakımlıdır.',
+    seller: 'Ramazan Güneş',
+    phone: '0544 888 9900',
+    image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'erkunt haşmet 110, güçlü traktör, çanakkale tarım, lüks traktör'
+  },
+  {
+    id: 108,
+    title: 'Başak 2073 4x2 Bahçe Traktörü',
+    price: 450000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Edremit / Balıkesir',
+    amount: '65 HP',
+    description: 'Zeytinlik ve meyve bahçeleri için özel tasarım dar şasi. Hidrolik kolları çok güçlüdür.',
+    seller: 'Hasan Bilgin',
+    phone: '0538 999 0011',
+    image: 'https://images.unsplash.com/photo-1533555776392-4a18d8d44476?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'başak traktör, bahçe traktörü, edremit zeytin, ikinci el tarım'
+  },
+  {
+    id: 109,
+    title: 'Hema 265 S Çift Çeker',
+    price: 520000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Biga / Çanakkale',
+    amount: '65 HP',
+    description: 'Muayenesi yeni yapılmıştır. Hidrolik sistem ve kuyruk mili sorunsuz çalışmaktadır.',
+    seller: 'Ali İhsan Yıldız',
+    phone: '0539 123 4567',
+    image: 'https://images.unsplash.com/photo-1615840287214-7ff58936c4cf?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'hema 265, çift çeker traktör, biga tarım, ikinci el'
+  },
+  {
+    id: 110,
+    title: 'Landini Powerfarm 90',
+    price: 790000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Gönen / Balıkesir',
+    amount: '88 HP',
+    description: 'İtalyan mühendisliği, ağır toprak işleme ve mibzer çekme işlerinde üstün performans.',
+    seller: 'Necati Acar',
+    phone: '0531 654 9870',
+    image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'landini powerfarm 90, italyan traktör, gönen ikinci el traktör'
   }
 ];
 
@@ -272,7 +423,6 @@ export default function App() {
     }
   };
 
-  // 🛠️ DÜZELTİLEN KATEGORİ VE ALT KATEGORİ EKLEME FONKSİYONU
   const handleAddCategory = (e) => {
     e.preventDefault();
     if (!newCategoryName.trim()) {
@@ -284,8 +434,6 @@ export default function App() {
       alert('Bu kategori zaten mevcut!');
       return;
     }
-    
-    // Alt kategorileri virgülle ayırıp güvenli bir dizi (array) haline getiriyoruz
     const subs = newSubCategoryName.trim() 
       ? newSubCategoryName.split(',').map(s => s.trim()).filter(Boolean) 
       : ['Genel'];
