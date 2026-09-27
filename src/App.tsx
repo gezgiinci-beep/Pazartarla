@@ -426,6 +426,18 @@ export default function App() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // Cihazdan fotoğraf seçme ve Base64'e çevirme fonksiyonu
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setForm(prev => ({ ...prev, image: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleDirectAdd = (e) => {
     e.preventDefault();
     if (!form.title || !form.price || !form.phone || !form.seller) {
@@ -445,7 +457,7 @@ export default function App() {
     const updated = [newEntry, ...listings];
     saveListings(updated);
     changeTab('home');
-    alert('İlanınız başarıyla yayınlandı!');
+    alert('İlanınız ve fotoğrafınız başarıyla yayınlandı!');
   };
 
   const handleDeleteListing = (id) => {
@@ -718,7 +730,7 @@ export default function App() {
           </div>
         )}
 
-        {/* İLAN VER EKRANI */}
+        {/* İLAN VER EKRANI (FOTOĞRAF YÜKLEME ÖZELLİKLİ) */}
         {activeTab === 'add' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', boxSizing: 'border-box', width: '100%' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
@@ -764,10 +776,24 @@ export default function App() {
                   <input type="text" name="phone" placeholder="0532..." value={form.phone} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
               </div>
+
+              {/* FOTOĞRAF YÜKLEME ALANI */}
               <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fotoğraf Linki (URL)</label>
-                <input type="text" name="image" placeholder="https://..." value={form.image} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fotoğraf Yükle (Cihazdan Seç)</label>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleImageUpload} 
+                  style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#f8fafc', fontSize: '12px', cursor: 'pointer' }} 
+                />
+                {form.image && (
+                  <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <img src={form.image} alt="Önizleme" style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                    <span style={{ fontSize: '11px', color: '#166534', fontWeight: '600' }}>✓ Fotoğraf yüklendi ve hazır</span>
+                  </div>
+                )}
               </div>
+
               <div>
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Açıklama</label>
                 <textarea name="description" placeholder="Detaylar..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px', boxSizing: 'border-box', fontSize: '13px' }} />
