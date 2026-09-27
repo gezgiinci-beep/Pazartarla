@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus, 
   Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, ChevronDown, X, 
-  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star 
+  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send 
 } from 'lucide-react';
 
 const INITIAL_LISTINGS = [
@@ -312,13 +312,13 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
 
-  // 10. UZMANLAR & DANIŞMANLAR (VETERİNER, ZİRAAT MÜHENDİSİ)
+  // 10. UZMANLAR (VETERİNERLER, ZİRAATÇİLER)
   {
     id: 17,
     title: 'Saha Veteriner Hekimi - Büyükbaş & Küçükbaş Sağlık Danışmanlığı',
     price: 1000,
-    category: 'Uzmanlar ve Danışmanlar',
-    subCategory: 'Veteriner',
+    category: 'Uzmanlar',
+    subCategory: 'Veterinerler',
     mode: 'Hizmet',
     location: 'Gönen / Balıkesir',
     city: 'Balıkesir',
@@ -335,8 +335,8 @@ const INITIAL_LISTINGS = [
     id: 18,
     title: 'Ziraat Mühendisi - Toprak Analizi ve Gübreleme Planı',
     price: 1500,
-    category: 'Uzmanlar ve Danışmanlar',
-    subCategory: 'Ziraat Mühendisi',
+    category: 'Uzmanlar',
+    subCategory: 'Ziraatçiler',
     mode: 'Hizmet',
     location: 'Balıkesir / Bursa',
     city: 'Balıkesir',
@@ -426,7 +426,6 @@ export default function App() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // Cihazdan fotoğraf seçme ve Base64'e çevirme fonksiyonu
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -480,6 +479,22 @@ export default function App() {
     alert('Admin Paneli Şifreniz: 1234');
   };
 
+  const shareOnWhatsApp = (item) => {
+    const text = encodeURIComponent(`🌾 PazarTarla İlanı:\n*${item.title}*\nFiyat: ${item.price.toLocaleString('tr-TR')} TL\nKonum: ${item.location}\nİletişim: ${item.phone}`);
+    window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+  };
+
+  const shareOnTwitter = (item) => {
+    const text = encodeURIComponent(`PazarTarla'da tarım ilanı: ${item.title} - ${item.price.toLocaleString('tr-TR')} TL (${item.location})`);
+    window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
+  };
+
+  const copyListingLink = (item) => {
+    const shareText = `PazarTarla İlanı: ${item.title} - Fiyat: ${item.price.toLocaleString('tr-TR')} TL - Tel: ${item.phone}`;
+    navigator.clipboard.writeText(shareText);
+    alert('İlan bilgileri panoya kopyalandı! İstediğiniz yere yapıştırabilirsiniz.');
+  };
+
   const categoriesWithSubs = {
     'Mahsuller': ['Kiraz', 'Ceviz', 'Zeytin & Zeytinyağı'],
     'Canlı Hayvanlar': ['Büyükbaş', 'Küçükbaş', 'Kanatlı'],
@@ -490,7 +505,7 @@ export default function App() {
     'Biçerdöver': ['Biçerdöver'],
     'Tarım Ekipmanları': ['Römork'],
     'Tarım İşçileri': ['Hasat Ekibi'],
-    'Uzmanlar ve Danışmanlar': ['Veteriner', 'Ziraat Mühendisi']
+    'Uzmanlar': ['Veterinerler', 'Ziraatçiler']
   };
 
   const filteredListings = listings.filter(item => {
@@ -527,7 +542,7 @@ export default function App() {
       {/* ANA İÇERİK */}
       <main style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '12px', flex: 1, boxSizing: 'border-box' }}>
         
-        {/* 1. EKRAN: KATEGORİ SEÇİMİ (Akordiyon - Başlangıçta Kapalı) */}
+        {/* 1. EKRAN: KATEGORİ SEÇİMİ */}
         {activeTab === 'home' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflow: 'hidden', border: '1px solid #e2e8f0', width: '100%', boxSizing: 'border-box' }}>
             <div style={{ backgroundColor: '#1b3a2b', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -705,11 +720,36 @@ export default function App() {
         {/* İLAN DETAY EKRANI */}
         {activeTab === 'detail' && selectedListing && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', boxSizing: 'border-box', width: '100%' }}>
-            <div style={{ marginBottom: '14px' }}>
+            <div style={{ marginBottom: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <button onClick={() => changeTab('results')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <ArrowLeft size={16} /> Listeye Dön
               </button>
+
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <button 
+                  onClick={() => shareOnWhatsApp(selectedListing)} 
+                  title="WhatsApp ile Paylaş"
+                  style={{ backgroundColor: '#25D366', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                >
+                  <Send size={13} /> WhatsApp
+                </button>
+                <button 
+                  onClick={() => shareOnTwitter(selectedListing)} 
+                  title="X (Twitter) ile Paylaş"
+                  style={{ backgroundColor: '#0f172a', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
+                >
+                  X
+                </button>
+                <button 
+                  onClick={() => copyListingLink(selectedListing)} 
+                  title="İlanı Kopyala"
+                  style={{ backgroundColor: '#e2e8f0', color: '#334155', border: 'none', padding: '6px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
+                >
+                  <Copy size={13} />
+                </button>
+              </div>
             </div>
+
             <div style={{ height: '220px', borderRadius: '8px', overflow: 'hidden', marginBottom: '14px', backgroundColor: '#f1f5f9' }}>
               <img src={selectedListing.image} alt={selectedListing.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
@@ -730,7 +770,7 @@ export default function App() {
           </div>
         )}
 
-        {/* İLAN VER EKRANI (FOTOĞRAF YÜKLEME ÖZELLİKLİ) */}
+        {/* İLAN VER EKRANI */}
         {activeTab === 'add' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', boxSizing: 'border-box', width: '100%' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
@@ -777,7 +817,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* FOTOĞRAF YÜKLEME ALANI */}
               <div>
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fotoğraf Yükle (Cihazdan Seç)</label>
                 <input 
