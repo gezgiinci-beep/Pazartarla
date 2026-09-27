@@ -182,7 +182,6 @@ export default function App() {
     localStorage.setItem('pazartarla_favorites', JSON.stringify(updatedFavs));
   };
 
-  // 🤖 OTOMATİK SEO ÜRETİCİ FONKSİYON
   const generateAutoSEO = (title, category, subCategory, location) => {
     const cleanTitle = title.trim() ? title.trim() : 'Tarım İlanı';
     const cleanLoc = location.trim() ? location.trim() : 'Türkiye';
@@ -197,7 +196,6 @@ export default function App() {
         updated.subCategory = categoriesWithSubs[value]?.[0] || 'Tümü';
       }
       
-      // Başlık, kategori veya konum değiştikçe otomatik SEO etiketlerini güncelle
       updated.seoTags = generateAutoSEO(
         name === 'title' ? value : updated.title,
         name === 'category' ? value : updated.category,
@@ -220,10 +218,13 @@ export default function App() {
     }
   };
 
+  // 🛠️ DÜZELTİLEN İLAN EKLEME FONKSİYONU
   const handleDirectAdd = (e) => {
     e.preventDefault();
-    if (!form.title || !form.price || !form.phone || !form.seller) {
-      alert('Lütfen başlık, fiyat, satıcı adı ve telefon numarası alanlarını doldurun.');
+    
+    // Güvenli kontrol: Boşlukları temizleyerek kontrol et
+    if (!form.title.trim() || !form.price || !form.phone.trim() || !form.seller.trim()) {
+      alert('Lütfen başlık, fiyat, satıcı adı ve telefon numarası alanlarını eksiksiz doldurun.');
       return;
     }
 
@@ -242,8 +243,26 @@ export default function App() {
 
     const updated = [newEntry, ...listings];
     saveListings(updated);
+    
+    // Formu sıfırla
+    setForm({
+      title: '',
+      price: '',
+      category: 'Mahsuller',
+      subCategory: categoriesWithSubs['Mahsuller']?.[0] || 'Tümü',
+      mode: 'Satılık',
+      location: 'Gönen / Balıkesir',
+      city: 'Balıkesir',
+      amount: '',
+      description: '',
+      seller: 'Can İnce',
+      phone: '0535 768 1550',
+      image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
+      seoTags: ''
+    });
+
     changeTab('home');
-    alert('İlanınız otomatik SEO optimizasyonu ile başarıyla yayınlandı!');
+    alert('İlanınız başarıyla yayınlandı!');
   };
 
   const handleDeleteListing = (id) => {
@@ -655,7 +674,6 @@ export default function App() {
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '14px' }}>{selectedListing.price.toLocaleString('tr-TR')} TL</div>
             <p style={{ color: '#475569', lineHeight: '1.4', marginBottom: '16px', fontSize: '13px' }}>{selectedListing.description}</p>
             
-            {/* 🏷️ Otomatik Oluşturulan SEO Etiketleri Gösterimi */}
             {selectedListing.seoTags && (
               <div style={{ backgroundColor: '#f8fafc', padding: '10px', borderRadius: '6px', border: '1px dashed #cbd5e1', marginBottom: '16px', fontSize: '11px', color: '#64748b' }}>
                 <strong style={{ color: '#1b3a2b', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
@@ -746,7 +764,6 @@ export default function App() {
                 <textarea name="description" placeholder="Detaylar..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px', boxSizing: 'border-box', fontSize: '13px' }} />
               </div>
 
-              {/* 🤖 Canlı Otomatik SEO Önizleme Kutusu */}
               <div style={{ backgroundColor: '#f0fdf4', padding: '10px', borderRadius: '6px', border: '1px solid #bbf7d0', fontSize: '11px', color: '#166534' }}>
                 <strong style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
                   <Tag size={12} /> Otomatik Üretilen SEO Etiketleri:
