@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus, 
   Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, ChevronDown, X, 
-  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus 
+  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag 
 } from 'lucide-react';
 
 const FALLBACK_LISTINGS = [
@@ -18,7 +18,8 @@ const FALLBACK_LISTINGS = [
     description: 'Kendi bahçemizin ürünü, ilaçsız ve dolgun Chandler ceviz.',
     seller: 'Can İnce',
     phone: '0535 768 1550',
-    image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800'
+    image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'taze ceviz, chandler ceviz, gönen ceviz, tarım ilanı, mahsul'
   }
 ];
 
@@ -37,7 +38,6 @@ const FALLBACK_CATEGORIES = {
 export default function App() {
   const [activeTab, setActiveTab] = useState('home'); 
   
-  // 🔒 GÜVENLİ BAŞLANGIÇ: Kayıtlı ilanlarınız ve favorileriniz asla silinmez.
   const [listings, setListings] = useState(() => {
     const saved = localStorage.getItem('pazartarla_listings');
     if (saved) {
@@ -64,7 +64,6 @@ export default function App() {
     return FALLBACK_CATEGORIES;
   });
 
-  // ❤️ Favoriler Listesi State'i
   const [favorites, setFavorites] = useState(() => {
     const savedFavs = localStorage.getItem('pazartarla_favorites');
     if (savedFavs) {
@@ -109,7 +108,8 @@ export default function App() {
     description: '',
     seller: 'Can İnce',
     phone: '0535 768 1550',
-    image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800'
+    image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
+    seoTags: ''
   });
 
   useEffect(() => {
@@ -170,9 +170,8 @@ export default function App() {
     localStorage.setItem('pazartarla_categories', JSON.stringify(newCats));
   };
 
-  // ❤️ Favori Ekleme / Çıkarma Fonksiyonu
   const toggleFavorite = (e, item) => {
-    e.stopPropagation(); // Kart tıklanıp detay sayfasına gitmesin diye
+    e.stopPropagation();
     let updatedFavs;
     if (favorites.some(fav => fav.id === item.id)) {
       updatedFavs = favorites.filter(fav => fav.id !== item.id);
@@ -183,6 +182,13 @@ export default function App() {
     localStorage.setItem('pazartarla_favorites', JSON.stringify(updatedFavs));
   };
 
+  // 🤖 OTOMATİK SEO ÜRETİCİ FONKSİYON
+  const generateAutoSEO = (title, category, subCategory, location) => {
+    const cleanTitle = title.trim() ? title.trim() : 'Tarım İlanı';
+    const cleanLoc = location.trim() ? location.trim() : 'Türkiye';
+    return `${cleanTitle}, ${category || 'Tarım'}, ${subCategory || 'Ürün'}, ${cleanLoc} ilanları, sahibinden ${cleanTitle.toLowerCase()}, pazar tarla`;
+  };
+
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setForm(prev => {
@@ -190,6 +196,15 @@ export default function App() {
       if (name === 'category') {
         updated.subCategory = categoriesWithSubs[value]?.[0] || 'Tümü';
       }
+      
+      // Başlık, kategori veya konum değiştikçe otomatik SEO etiketlerini güncelle
+      updated.seoTags = generateAutoSEO(
+        name === 'title' ? value : updated.title,
+        name === 'category' ? value : updated.category,
+        name === 'subCategory' ? value : updated.subCategory,
+        name === 'location' ? value : updated.location
+      );
+
       return updated;
     });
   };
@@ -212,6 +227,8 @@ export default function App() {
       return;
     }
 
+    const finalSeoTags = form.seoTags || generateAutoSEO(form.title, form.category, form.subCategory, form.location);
+
     const newEntry = {
       ...form,
       id: Date.now(),
@@ -219,20 +236,20 @@ export default function App() {
       amount: form.category === 'Uzmanlar' ? '' : form.amount,
       verified: true,
       featured: false,
-      date: 'Bugün'
+      date: 'Bugün',
+      seoTags: finalSeoTags
     };
 
     const updated = [newEntry, ...listings];
     saveListings(updated);
     changeTab('home');
-    alert('İlanınız ve fotoğrafınız başarıyla yayınlandı!');
+    alert('İlanınız otomatik SEO optimizasyonu ile başarıyla yayınlandı!');
   };
 
   const handleDeleteListing = (id) => {
     if (window.confirm('Bu ilanı yayından kaldırmak/silmek istediğinize emin misiniz?')) {
       const updated = listings.filter(item => item.id !== id);
       saveListings(updated);
-      // Favorilerden de kaldır
       const updatedFavs = favorites.filter(item => item.id !== id);
       setFavorites(updatedFavs);
       localStorage.setItem('pazartarla_favorites', JSON.stringify(updatedFavs));
@@ -322,7 +339,6 @@ export default function App() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {/* ❤️ Favoriler Butonu */}
           <button 
             onClick={() => changeTab('favorites')}
             style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}
@@ -406,7 +422,6 @@ export default function App() {
           </div>
         )}
 
-        {/* ❤️ FAVORİLER EKRANI */}
         {activeTab === 'favorites' && (
           <div style={{ width: '100%', boxSizing: 'border-box' }}>
             <div style={{ backgroundColor: '#1b3a2b', color: '#fff', borderRadius: '10px', padding: '10px 14px', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
@@ -423,7 +438,7 @@ export default function App() {
               {favorites.length === 0 ? (
                 <div style={{ backgroundColor: '#fff', padding: '40px 20px', borderRadius: '10px', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>
                   <Heart size={32} color="#cbd5e1" style={{ margin: '0 auto 10px auto', display: 'block' }} />
-                  Henüz favorilere eklediğiniz bir ilan bulunmuyor.<br/>İlanlardaki kalp simgesine tıklayarak favorilerinize ekleyebilirsiniz.
+                  Henüz favorilere eklediğiniz bir ilan bulunmuyor.
                 </div>
               ) : (
                 favorites.map(item => (
@@ -454,7 +469,6 @@ export default function App() {
                         <button 
                           onClick={(e) => toggleFavorite(e, item)}
                           style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}
-                          title="Favorilerden Çıkar"
                         >
                           <Heart size={18} color="#ef4444" fill="#ef4444" />
                         </button>
@@ -521,11 +535,9 @@ export default function App() {
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                             <span style={{ fontSize: '10px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.category} {item.subCategory ? `> ${item.subCategory}` : ''}</span>
                             
-                            {/* ❤️ Kart Üzerindeki Kalp Butonu */}
                             <button 
                               onClick={(e) => toggleFavorite(e, item)}
                               style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px' }}
-                              title={isFav ? "Favorilerden Çıkar" : "Favorilere Ekle"}
                             >
                               <Heart size={18} color="#ef4444" fill={isFav ? "#ef4444" : "none"} />
                             </button>
@@ -592,7 +604,6 @@ export default function App() {
                 <ArrowLeft size={16} /> Listeye Dön
               </button>
 
-              {/* ❤️ Detay Sayfasında Favori Butonu */}
               <button 
                 onClick={(e) => toggleFavorite(e, selectedListing)}
                 style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '600' }}
@@ -607,28 +618,24 @@ export default function App() {
               <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                 <button 
                   onClick={() => shareOnWhatsApp(selectedListing)} 
-                  title="WhatsApp ile Paylaş"
                   style={{ backgroundColor: '#25D366', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                 >
                   <Send size={13} /> WhatsApp
                 </button>
                 <button 
                   onClick={() => shareOnTwitter(selectedListing)} 
-                  title="X (Twitter) ile Paylaş"
                   style={{ backgroundColor: '#0f172a', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                 >
                   X
                 </button>
                 <button 
                   onClick={shareOnFacebook} 
-                  title="Facebook'ta Paylaş"
                   style={{ backgroundColor: '#1877F2', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                 >
                   Facebook
                 </button>
                 <button 
                   onClick={() => copyListingLink(selectedListing)} 
-                  title="Bağlantıyı Kopyala"
                   style={{ backgroundColor: '#64748b', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                 >
                   <Copy size={13} /> Kopyala
@@ -647,6 +654,16 @@ export default function App() {
             )}
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '14px' }}>{selectedListing.price.toLocaleString('tr-TR')} TL</div>
             <p style={{ color: '#475569', lineHeight: '1.4', marginBottom: '16px', fontSize: '13px' }}>{selectedListing.description}</p>
+            
+            {/* 🏷️ Otomatik Oluşturulan SEO Etiketleri Gösterimi */}
+            {selectedListing.seoTags && (
+              <div style={{ backgroundColor: '#f8fafc', padding: '10px', borderRadius: '6px', border: '1px dashed #cbd5e1', marginBottom: '16px', fontSize: '11px', color: '#64748b' }}>
+                <strong style={{ color: '#1b3a2b', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
+                  <Tag size={12} color="#166534" /> Otomatik SEO Anahtar Kelimeleri:
+                </strong>
+                {selectedListing.seoTags}
+              </div>
+            )}
              
             <div style={{ borderTop: '1px solid #edf2f7', paddingTop: '16px' }}>
               <a href={`tel:${selectedListing.phone}`} style={{ width: '100%', backgroundColor: '#1b3a2b', color: '#fff', padding: '12px', borderRadius: '8px', textAlign: 'center', fontWeight: '700', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '14px', boxSizing: 'border-box' }}>
@@ -728,6 +745,15 @@ export default function App() {
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Açıklama</label>
                 <textarea name="description" placeholder="Detaylar..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px', boxSizing: 'border-box', fontSize: '13px' }} />
               </div>
+
+              {/* 🤖 Canlı Otomatik SEO Önizleme Kutusu */}
+              <div style={{ backgroundColor: '#f0fdf4', padding: '10px', borderRadius: '6px', border: '1px solid #bbf7d0', fontSize: '11px', color: '#166534' }}>
+                <strong style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
+                  <Tag size={12} /> Otomatik Üretilen SEO Etiketleri:
+                </strong>
+                <span>{form.seoTags || 'İlan başlığı yazıldıkça otomatik SEO etiketleri oluşur...'}</span>
+              </div>
+
               <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', fontSize: '14px' }}>
                 İlanı Hemen Yayınla
               </button>
