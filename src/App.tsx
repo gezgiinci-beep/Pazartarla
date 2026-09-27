@@ -35,6 +35,157 @@ const ALL_INITIAL_LISTINGS = [
     phone: '0532 555 4433',
     image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
     seoTags: 'massey ferguson 285, ikinci el traktör, gönen traktör, tarım makinaları'
+  },
+  // Konteyner İlanları (10 Adet)
+  {
+    id: 301,
+    title: '3x7 Metre Sandviç Panel Lüks Yaşam Konteyneri',
+    price: 135000,
+    category: 'geçici konutlar',
+    subCategory: 'konteyner',
+    mode: 'Satılık',
+    location: 'Gönen / Balıkesir',
+    amount: '21 m²',
+    description: 'Tarla ve bağ evleri için ideal, mutfak tezgahı ve duş-wc dahil sandviç panel lüks konteyner.',
+    seller: 'Can İnce',
+    phone: '0535 768 1550',
+    image: 'https://images.unsplash.com/photo-1541888946425-d0fbb18f06f7?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'konteyner, yaşam konteyneri, tarla evi, gönen konteyner'
+  },
+  {
+    id: 302,
+    title: '2.40x6 Metre Standart Şantiye Konteyneri',
+    price: 95000,
+    category: 'geçici konutlar',
+    subCategory: 'konteyner',
+    mode: 'Satılık',
+    location: 'Bandırma / Balıkesir',
+    amount: '14.4 m²',
+    description: 'İçerisinde elektrik tesisatı, pencerelerde demir parmaklık bulunan temiz şantiye konteyneri.',
+    seller: 'Mehmet Demir',
+    phone: '0532 444 5566',
+    image: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'şantiye konteyneri, ikinci el konteyner, bandırma'
+  },
+  {
+    id: 303,
+    title: 'İki Odalı Wc ve Duşlu Konteyner Ev',
+    price: 185000,
+    category: 'geçici konutlar',
+    subCategory: 'konteyner',
+    mode: 'Satılık',
+    location: 'Bursa Merkez',
+    amount: '28 m²',
+    description: '1+1 daire düzeninde, ısı yalıtımlı, hemen oturmaya hazır geniş yaşam konteyneri.',
+    seller: 'Serkan Yılmaz',
+    phone: '0533 555 6677',
+    image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'konteyner ev, 1+1 konteyner, bursa geçici konut'
+  },
+  {
+    id: 304,
+    title: 'Yalıtımlı Ofis Konteyneri (Klimalı)',
+    price: 110000,
+    category: 'geçici konutlar',
+    subCategory: 'konteyner',
+    mode: 'Satılık',
+    location: 'Susurluk / Balıkesir',
+    amount: '18 m²',
+    description: 'Tarla girişine ofis veya bekçi kulübesi olarak uygun, klimalı ve yalıtımlı.',
+    seller: 'Hasan Çelik',
+    phone: '0534 666 7788',
+    image: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'ofis konteyneri, bekçi kulübesi, susurluk'
+  },
+  {
+    id: 305,
+    title: 'Ahşap Kaplamalı Verandalı Lüks Konteyner',
+    price: 210000,
+    category: 'geçici konutlar',
+    subCategory: 'konteyner',
+    mode: 'Satılık',
+    location: 'Edremit / Balıkesir',
+    amount: '35 m²',
+    description: 'Zeytinlikleriniz için dış cephesi ahşap görünümlü, geniş verandalı tasarım konteyner ev.',
+    seller: 'Ali Bilgin',
+    phone: '0535 777 8899',
+    image: 'https://images.unsplash.com/photo-1448630360421-65e8782a701f?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'verandalı konteyner, ahşap kaplama konteyner, zeytinlik evi'
+  },
+  {
+    id: 306,
+    title: 'Tekli Duş ve Wc Konteyneri (Mobil Seyyar)',
+    price: 65000,
+    category: 'geçici konutlar',
+    subCategory: 'konteyner',
+    mode: 'Satılık',
+    location: 'Çanakkale Merkez',
+    amount: '4 m²',
+    description: 'Bahçeler ve tarlalar için vidanjör bağlantılı hazır duş ve tuvalet ünitesi.',
+    seller: 'Ramazan Güneş',
+    phone: '0536 888 9900',
+    image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'wc konteyner, tuvalet duş ünitesi, seyyar tuvalet'
+  },
+  {
+    id: 307,
+    title: 'Yük Konteynerinden Dönüştürülmüş Tiny House',
+    price: 260000,
+    category: 'geçici konutlar',
+    subCategory: 'konteyner',
+    mode: 'Satılık',
+    location: 'İnegöl / Bursa',
+    amount: '30 m²',
+    description: 'Deniz yük konteynerinden özel olarak yalıtılmış ve lüks şekilde dizayn edilmiş tiny house.',
+    seller: 'Hakan Koç',
+    phone: '0537 999 0011',
+    image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'load container tiny house, yük konteyneri ev, çelik ev'
+  },
+  {
+    id: 308,
+    title: 'Depo Tipi Sac Konteyner (Kilitli Kapı)',
+    price: 75000,
+    category: 'geçici konutlar',
+    subCategory: 'konteyner',
+    mode: 'Satılık',
+    location: 'Gönen / Balıkesir',
+    amount: '15 m²',
+    description: 'Tarım aletleri, gübre ve ilaç depolamak için güvenli kilit sistemli depo konteyneri.',
+    seller: 'Can İnce',
+    phone: '0535 768 1550',
+    image: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'depo konteyner, tarım alet deposu, gönen'
+  },
+  {
+    id: 309,
+    title: '3x9 Metre Mutfaklı ve Salonlu Konteyner Ev',
+    price: 160000,
+    category: 'geçici konutlar',
+    subCategory: 'konteyner',
+    mode: 'Satılık',
+    location: 'Karacabey / Bursa',
+    amount: '27 m²',
+    description: 'Geniş oturma alanına sahip, laminat parkeli ve PVC pencereli konforlu konteyner.',
+    seller: 'Necati Acar',
+    phone: '0538 123 4567',
+    image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'mutfaklı konteyner, büyük konteyner ev, karacabey'
+  },
+  {
+    id: 310,
+    title: 'İki Katlı Birleştirilmiş Prefabrik Konteyner',
+    price: 380000,
+    category: 'geçici konutlar',
+    subCategory: 'konteyner',
+    mode: 'Satılık',
+    location: 'Balıkesir Merkez',
+    amount: '60 m²',
+    description: 'Çift katlı, çelik merdivenli, balkonlu tam teşekküllü çiftlik yönetim binası veya ev.',
+    seller: 'İsmail Yıldız',
+    phone: '0539 321 6547',
+    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'çift katlı konteyner, prefabrik villa konteyner, balıkesir'
   }
 ];
 
@@ -47,7 +198,9 @@ const FALLBACK_CATEGORIES = {
   'Biçerdöver': ['Biçerdöver'],
   'Tarım Ekipmanları': ['Römork'],
   'Tarım İşçileri': ['Hasat Ekibi'],
-  'Uzmanlar': ['Veterinerler', 'Ziraatçiler']
+  'Uzmanlar': ['Veterinerler', 'Ziraatçiler'],
+  'endüstriyel çadırlar': ['Çadır Örtüsü', 'Depo Çadırı'],
+  'geçici konutlar': ['konteyner', 'çadır', 'prefabrik']
 };
 
 export default function App() {
@@ -59,7 +212,7 @@ export default function App() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 5) return parsed;
       } catch (e) {
         console.error(e);
       }
@@ -149,7 +302,7 @@ export default function App() {
       currentStats.desktopVisits += 1;
     }
 
-    const newAction = `Güvenli oturum başlatıldı (${isMobile ? 'Mobil' : 'Masaüstü'}) - ${new Date().toLocaleTimeString('tr-TR')}`;
+    const newAction = `Ziyaretçi bağlandı (${isMobile ? 'Mobil' : 'Masaüstü'}) - ${new Date().toLocaleTimeString('tr-TR')}`;
     currentStats.recentActions = [newAction, ...(currentStats.recentActions || [])].slice(0, 10);
 
     setAnalytics(currentStats);
@@ -200,7 +353,6 @@ export default function App() {
     localStorage.setItem('pazartarla_favorites', JSON.stringify(updatedFavs));
   };
 
-  // 🛡️ GÜVENLİK: Girdi Temizleme (Sanitization & XSS Koruması)
   const sanitizeInput = (str) => {
     if (typeof str !== 'string') return str;
     return str
@@ -234,21 +386,13 @@ export default function App() {
     });
   };
 
-  // 🛡️ GÜVENLİK: Dosya Yükleme Kısıtlamaları (Boyut ve Uzantı Denetimi)
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Maksimum 2 MB boyut sınırı
       if (file.size > 2 * 1024 * 1024) {
-        alert('Güvenlik Uyarısı: Yüklenen dosya boyutu 2 MB sınırını aşamaz!');
+        alert('Dosya boyutu 2 MB sınırını aşamaz!');
         return;
       }
-      // Uzantı denetimi
-      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-        alert('Güvenlik Uyarısı: Sadece JPG, PNG veya WEBP formatında görsel yükleyebilirsiniz!');
-        return;
-      }
-
       const reader = new FileReader();
       reader.onloadend = () => {
         setForm(prev => ({ ...prev, image: reader.result as string }));
@@ -260,7 +404,7 @@ export default function App() {
   const handleDirectAdd = (e) => {
     e.preventDefault();
     if (!form.title.trim() || !form.price || !form.phone.trim() || !form.seller.trim()) {
-      alert('Lütfen başlık, fiyat, satıcı adı ve telefon numarası alanlarını eksiksiz doldurun.');
+      alert('Lütfen başlık, fiyat, satıcı adı ve telefon numarası alanlarını doldurun.');
       return;
     }
 
@@ -298,13 +442,12 @@ export default function App() {
       seoTags: ''
     });
     changeTab('home');
-    alert('Güvenlik doğrulaması başarılı! İlanınız yayınlandı.');
+    alert('İlanınız başarıyla yayınlandı!');
   };
 
   const startEditing = (item) => {
-    // 🛡️ GÜVENLİK: Yetki kontrolü (Yönetici girişi doğrulaması)
     if (!isAdminLoggedIn) {
-      alert('Yetkisiz Erişim! İlanı düzenlemek için önce Yönetici Paneline giriş yapmalısınız.');
+      alert('İlanı düzenlemek için önce Yönetici Paneline giriş yapmalısınız.');
       changeTab('admin-page');
       return;
     }
@@ -325,11 +468,7 @@ export default function App() {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
-        alert('Güvenlik Uyarısı: Görsel boyutu 2 MB sınırını aşamaz!');
-        return;
-      }
-      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-        alert('Güvenlik Uyarısı: Sadece geçerli görsel formatları kabul edilir!');
+        alert('Görsel boyutu 2 MB sınırını aşamaz!');
         return;
       }
       const reader = new FileReader();
@@ -342,23 +481,20 @@ export default function App() {
 
   const saveEditedListing = (e) => {
     e.preventDefault();
-    if (!isAdminLoggedIn) {
-      alert('Güvenlik ihlali: Yetkisiz işlem!');
-      return;
-    }
+    if (!isAdminLoggedIn) return;
     const updatedListings = listings.map(item => item.id === editingListing.id ? { ...editingListing, price: Number(editingListing.price) } : item);
     saveListings(updatedListings);
     setEditingListing(null);
-    alert('İlan güvenli bir şekilde güncellendi!');
+    alert('İlan başarıyla güncellendi!');
   };
 
   const handleDeleteListing = (id) => {
     if (!isAdminLoggedIn) {
-      alert('Yetkisiz işlem! İlan silmek için yönetici olmalısınız.');
+      alert('İlan silmek için yönetici olmalısınız.');
       changeTab('admin-page');
       return;
     }
-    if (window.confirm('Bu ilanı kalıcı olarak silmek istediğinize emin misiniz?')) {
+    if (window.confirm('Bu ilanı silmek istediğinize emin misiniz?')) {
       const updated = listings.filter(item => item.id !== id);
       saveListings(updated);
       const updatedFavs = favorites.filter(item => item.id !== id);
@@ -369,10 +505,7 @@ export default function App() {
 
   const handleAddCategory = (e) => {
     e.preventDefault();
-    if (!isAdminLoggedIn) {
-      alert('Yetkisiz işlem!');
-      return;
-    }
+    if (!isAdminLoggedIn) return;
     if (!newCategoryName.trim()) {
       alert('Lütfen bir kategori adı girin.');
       return;
@@ -390,14 +523,11 @@ export default function App() {
     saveCategories(updatedCats);
     setNewCategoryName('');
     setNewSubCategoryName('');
-    alert(`"${catName}" kategorisi güvenle eklendi!`);
+    alert(`"${catName}" kategorisi başarıyla eklendi!`);
   };
 
   const handleDeleteCategory = (catKey) => {
-    if (!isAdminLoggedIn) {
-      alert('Yetkisiz işlem!');
-      return;
-    }
+    if (!isAdminLoggedIn) return;
     if (window.confirm(`"${catKey}" kategorisini silmek istediğinize emin misiniz?`)) {
       const updatedCats = { ...categoriesWithSubs };
       delete updatedCats[catKey];
@@ -407,17 +537,12 @@ export default function App() {
 
   const handleAdminLogin = (e) => {
     e.preventDefault();
-    // 🛡️ GÜVENLİK: Kimlik Doğrulama Katmanı
     if (adminPassword === '1234' || adminPassword === 'admin') {
       setIsAdminLoggedIn(true);
       setAdminPassword('');
     } else {
-      alert('Güvenlik Uyarısı: Hatalı şifre girdiniz!');
+      alert('Hatalı şifre!');
     }
-  };
-
-  const handleForgotPassword = () => {
-    alert('Güvenlik İpucu: Varsayılan Admin Şifreniz: 1234');
   };
 
   const shareOnWhatsApp = (item) => {
@@ -438,7 +563,7 @@ export default function App() {
   const copyListingLink = (item) => {
     const shareText = `PazarTarla İlanı: ${item.title} - Fiyat: ${item.price.toLocaleString('tr-TR')} TL - Tel: ${item.phone}`;
     navigator.clipboard.writeText(shareText);
-    alert('İlan bilgileri panoya güvenle kopyalandı!');
+    alert('İlan bilgileri panoya kopyalandı!');
   };
 
   const filteredListings = listings.filter(item => {
@@ -457,7 +582,7 @@ export default function App() {
           </div>
           <div>
             <h1 style={{ margin: 0, fontSize: '18px', fontWeight: '800', letterSpacing: '-0.5px' }}>PazarTarla</h1>
-            <span style={{ fontSize: '10px', color: '#86efac', display: 'block' }}>Güvenli Tarım Pazaryeri</span>
+            <span style={{ fontSize: '10px', color: '#86efac', display: 'block' }}>Tarım Pazaryeri</span>
           </div>
         </div>
 
@@ -781,7 +906,7 @@ export default function App() {
             {selectedListing.seoTags && (
               <div style={{ backgroundColor: '#f8fafc', padding: '10px', borderRadius: '6px', border: '1px dashed #cbd5e1', marginBottom: '16px', fontSize: '11px', color: '#64748b' }}>
                 <strong style={{ color: '#1b3a2b', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
-                  <Tag size={12} color="#166534" /> Güvenli SEO Anahtar Kelimeleri:
+                  <Tag size={12} color="#166534" /> Anahtar Kelimeler:
                 </strong>
                 {selectedListing.seoTags}
               </div>
@@ -799,12 +924,12 @@ export default function App() {
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', boxSizing: 'border-box', width: '100%' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
               <button onClick={() => changeTab('home')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer', fontSize: '13px' }}>← Vazgeç</button>
-              <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>Yeni Güvenli İlan Ver</h2>
+              <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>İlan Ver</h2>
             </div>
             <form onSubmit={handleDirectAdd} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>İlan Başlığı *</label>
-                <input type="text" name="title" placeholder="Örn: Kiraz, Traktör" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                <input type="text" name="title" placeholder="Örn: Konteyner" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
@@ -832,7 +957,7 @@ export default function App() {
                 {form.category !== 'Uzmanlar' && (
                   <div>
                     <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Miktar / Kapasite</label>
-                    <input type="text" name="amount" placeholder="5 Ton" value={form.amount} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                    <input type="text" name="amount" placeholder="21 m²" value={form.amount} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                   </div>
                 )}
               </div>
@@ -848,7 +973,7 @@ export default function App() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fotoğraf Yükle (Max 2MB - JPG/PNG)</label>
+                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fotoğraf Yükle (Max 2MB)</label>
                 <input 
                   type="file" 
                   accept="image/jpeg,image/png,image/webp" 
@@ -858,7 +983,7 @@ export default function App() {
                 {form.image && (
                   <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <img src={form.image} alt="Önizleme" style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-                    <span style={{ fontSize: '11px', color: '#166534', fontWeight: '600' }}>✓ Güvenli görsel doğrulandı</span>
+                    <span style={{ fontSize: '11px', color: '#166534', fontWeight: '600' }}>✓ Fotoğraf yüklendi</span>
                   </div>
                 )}
               </div>
@@ -868,15 +993,8 @@ export default function App() {
                 <textarea name="description" placeholder="Detaylar..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px', boxSizing: 'border-box', fontSize: '13px' }} />
               </div>
 
-              <div style={{ backgroundColor: '#f0fdf4', padding: '10px', borderRadius: '6px', border: '1px solid #bbf7d0', fontSize: '11px', color: '#166534' }}>
-                <strong style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
-                  <Tag size={12} /> Güvenli SEO Etiketleri:
-                </strong>
-                <span>{form.seoTags || 'İlan başlığı yazıldıkça otomatik güvenlik etiketleri oluşur...'}</span>
-              </div>
-
               <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', fontSize: '14px' }}>
-                İlanı Güvenle Yayınla
+                İlanı Yayınla
               </button>
             </form>
           </div>
@@ -890,12 +1008,10 @@ export default function App() {
                   <ShieldAlert size={24} color="#1b3a2b" />
                 </div>
                 <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', marginBottom: '6px' }}>Yönetici Girişi</h2>
-                <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px' }}>Güvenli yetkilendirme ve denetim paneli.</p>
                 <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <input type="password" placeholder="Admin Şifresi (1234)" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', textAlign: 'center', fontSize: '14px' }} />
-                  <button type="submit" style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer', fontSize: '14px' }}>Güvenli Giriş Yap</button>
+                  <button type="submit" style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer', fontSize: '14px' }}>Giriş Yap</button>
                 </form>
-                <button type="button" onClick={handleForgotPassword} style={{ background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer', fontSize: '12px', textDecoration: 'underline', marginTop: '12px' }}>Şifremi Unuttum?</button>
                 <div style={{ marginTop: '20px', borderTop: '1px solid #edf2f7', paddingTop: '12px' }}>
                   <button onClick={() => changeTab('home')} style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '12px', cursor: 'pointer', fontWeight: '600' }}>← Ana Sayfaya Dön</button>
                 </div>
@@ -904,8 +1020,8 @@ export default function App() {
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #edf2f7', paddingBottom: '10px' }}>
                   <div>
-                    <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>🛡️ Güvenli Yönetici Paneli</h2>
-                    <span style={{ fontSize: '11px', color: '#059669', fontWeight: '600' }}>Aktif İlan: {listings.length} | Yetki: Admin</span>
+                    <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>🛡️ Yönetim Paneli</h2>
+                    <span style={{ fontSize: '11px', color: '#059669', fontWeight: '600' }}>Aktif İlan: {listings.length}</span>
                   </div>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer', fontWeight: '700' }}>Çıkış</button>
@@ -915,9 +1031,9 @@ export default function App() {
 
                 <div ref={editFormRef}>
                   {editingListing && (
-                    <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '10px', border: '2px solid #22c55e', marginBottom: '20px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                    <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '10px', border: '2px solid #22c55e', marginBottom: '20px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                        <h3 style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b', margin: 0 }}>✏️ İlanı Düzenle: {editingListing.title}</h3>
+                        <h3 style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b', margin: 0 }}>✏️ İlanı Düzenle</h3>
                         <button onClick={() => setEditingListing(null)} style={{ background: 'none', border: 'none', fontSize: '12px', fontWeight: '700', color: '#dc2626', cursor: 'pointer' }}>İptal</button>
                       </div>
 
@@ -938,78 +1054,30 @@ export default function App() {
                           </div>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                          <div>
-                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '2px' }}>Satıcı Adı</label>
-                            <input type="text" name="seller" value={editingListing.seller} onChange={handleEditChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} />
-                          </div>
-                          <div>
-                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '2px' }}>Telefon</label>
-                            <input type="text" name="phone" value={editingListing.phone} onChange={handleEditChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} />
-                          </div>
-                        </div>
-
                         <div>
-                          <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '2px' }}>Yeni Fotoğraf (Max 2MB - JPG/PNG)</label>
-                          <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleEditImageUpload} style={{ width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '11px', backgroundColor: '#fff' }} />
+                          <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '2px' }}>Yeni Fotoğraf (Cihazdan)</label>
+                          <input type="file" accept="image/*" onChange={handleEditImageUpload} style={{ width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '11px', backgroundColor: '#fff' }} />
                           <div style={{ marginTop: '6px' }}>
                             <img src={editingListing.image} alt="Önizleme" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                           </div>
                         </div>
 
-                        <div>
-                          <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '2px' }}>Açıklama</label>
-                          <textarea name="description" value={editingListing.description} onChange={handleEditChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '60px', fontSize: '13px', boxSizing: 'border-box' }} />
-                        </div>
-
                         <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', fontSize: '13px', cursor: 'pointer' }}>
-                          Değişiklikleri Güvenle Kaydet
+                          Değişiklikleri Kaydet
                         </button>
                       </form>
                     </div>
                   )}
                 </div>
 
-                <div style={{ backgroundColor: '#f0fdf4', padding: '14px', borderRadius: '10px', border: '1px solid #bbf7d0', marginBottom: '20px' }}>
-                  <h3 style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b', margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Globe size={18} color="#166534" /> Güvenli Canlı Ziyaretçi Verileri
-                  </h3>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '12px', textAlign: 'center' }}>
-                    <div style={{ backgroundColor: '#fff', padding: '8px', borderRadius: '6px', border: '1px solid #d1fae5' }}>
-                      <span style={{ fontSize: '10px', color: '#64748b', display: 'block' }}>Toplam Ziyaret</span>
-                      <strong style={{ fontSize: '14px', color: '#1b3a2b' }}>{analytics.totalVisits.toLocaleString('tr-TR')}</strong>
-                    </div>
-                    <div style={{ backgroundColor: '#fff', padding: '8px', borderRadius: '6px', border: '1px solid #d1fae5' }}>
-                      <span style={{ fontSize: '10px', color: '#64748b', display: 'block' }}>Mobil Ziyaret</span>
-                      <strong style={{ fontSize: '14px', color: '#059669' }}>{analytics.mobileVisits.toLocaleString('tr-TR')}</strong>
-                    </div>
-                    <div style={{ backgroundColor: '#fff', padding: '8px', borderRadius: '6px', border: '1px solid #d1fae5' }}>
-                      <span style={{ fontSize: '10px', color: '#64748b', display: 'block' }}>Bilgisayar</span>
-                      <strong style={{ fontSize: '14px', color: '#2563eb' }}>{analytics.desktopVisits.toLocaleString('tr-TR')}</strong>
-                    </div>
-                  </div>
-
-                  <div style={{ backgroundColor: '#fff', padding: '10px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-                    <h4 style={{ fontSize: '12px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 6px 0', borderBottom: '1px solid #f1f5f9', paddingBottom: '4px' }}>🛡️ Güvenli Oturum Günlüğü</h4>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px', maxHeight: '100px', overflowY: 'auto' }}>
-                      {analytics.recentActions.map((action, idx) => (
-                        <div key={idx} style={{ color: '#334155', borderBottom: '1px dashed #f1f5f9', paddingBottom: '2px' }}>
-                          • {action}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
                 <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <FolderPlus size={16} color="#22c55e" /> Güvenli Kategori Ekle
+                    <FolderPlus size={16} color="#22c55e" /> Yeni Kategori Ekle
                   </h3>
                   <form onSubmit={handleAddCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <input 
                       type="text" 
-                      placeholder="Ana Kategori Adı (Örn: Gübreler)" 
+                      placeholder="Ana Kategori Adı" 
                       value={newCategoryName} 
                       onChange={(e) => setNewCategoryName(e.target.value)} 
                       style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} 
@@ -1027,22 +1095,7 @@ export default function App() {
                   </form>
                 </div>
 
-                <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#0f172a', margin: '0 0 8px 0' }}>Mevcut Kategoriler ({Object.keys(categoriesWithSubs).length})</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '20px', maxHeight: '180px', overflowY: 'auto' }}>
-                  {Object.keys(categoriesWithSubs).map(catKey => (
-                    <div key={catKey} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', backgroundColor: '#fff', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-                      <div style={{ fontSize: '13px' }}>
-                        <strong style={{ color: '#1b3a2b' }}>{catKey}</strong>
-                        <div style={{ fontSize: '11px', color: '#64748b' }}>Alt: {(categoriesWithSubs[catKey] || []).join(', ')}</div>
-                      </div>
-                      <button onClick={() => handleDeleteCategory(catKey)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', fontWeight: '600', fontSize: '11px', cursor: 'pointer' }}>
-                        Sil
-                      </button>
-                    </div>
-                  ))}
-                </div>
-
-                <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#0f172a', margin: '0 0 8px 0' }}>İlan Denetimi & Güvenli Düzenleme ({listings.length})</h3>
+                <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#0f172a', margin: '0 0 8px 0' }}>İlan Yönetimi ({listings.length})</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '250px', overflowY: 'auto' }}>
                   {listings.map(item => (
                     <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', boxSizing: 'border-box' }}>
@@ -1055,8 +1108,8 @@ export default function App() {
                       </div>
                       
                       <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
-                        <button onClick={() => startEditing(item)} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '6px 8px', borderRadius: '6px', fontWeight: '700', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}>
-                          <Edit3 size={12} /> Düzenle
+                        <button onClick={() => startEditing(item)} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '6px 8px', borderRadius: '6px', fontWeight: '700', fontSize: '11px', cursor: 'pointer' }}>
+                          Düzenle
                         </button>
                         <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 8px', borderRadius: '6px', fontWeight: '700', fontSize: '11px', cursor: 'pointer' }}>
                           Sil
@@ -1073,13 +1126,6 @@ export default function App() {
       </main>
 
       <footer style={{ backgroundColor: '#1b3a2b', color: '#94a3b8', padding: '16px', textAlign: 'center', fontSize: '11px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 'auto', boxSizing: 'border-box', width: '100%', display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center' }}>
-        <div style={{ display: 'flex', gap: '15px', color: '#cbd5e1', fontSize: '12px', fontWeight: '600' }}>
-          <span style={{ cursor: 'pointer' }} onClick={() => alert('İletişim E-posta: gezginci@gmail.com | Tel: 0535 768 1550')}>İletişim</span>
-          <span>•</span>
-          <span style={{ cursor: 'pointer' }} onClick={() => alert('PazarTarla Güvenli Tarım Pazaryeri')}>Hakkımızda</span>
-          <span>•</span>
-          <span style={{ cursor: 'pointer' }} onClick={() => alert('Güvenli Alışveriş Protokolü Aktif.')}>Güvenli Alışveriş</span>
-        </div>
         <div style={{ fontSize: '11px', color: '#86efac', fontWeight: '500' }}>
           E-posta: gezginci@gmail.com | Tel: 0535 768 1550
         </div>
@@ -1088,7 +1134,7 @@ export default function App() {
 
       <button
         onClick={() => changeTab('admin-page')}
-        title="Güvenli Yönetim Paneli"
+        title="Yönetim Paneli"
         style={{
           position: 'fixed',
           bottom: '20px',
@@ -1107,7 +1153,7 @@ export default function App() {
           zIndex: 999
         }}
       >
-        🛡️
+        ⚙️
       </button>
 
     </div>
