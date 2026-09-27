@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus, 
   Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, ChevronDown, X, 
   Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag, Edit3 
 } from 'lucide-react';
 
-const ALL_NEW_TRACTOR_LISTINGS = [
+const ALL_INITIAL_LISTINGS = [
   {
     id: 1,
     title: 'Tarladan Doğrudan Taze Chandler Ceviz',
@@ -21,6 +21,7 @@ const ALL_NEW_TRACTOR_LISTINGS = [
     image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
     seoTags: 'taze ceviz, chandler ceviz, gönen ceviz, tarım ilanı, mahsul'
   },
+  // Traktör İlanları (10 Adet)
   {
     id: 101,
     title: 'Massey Ferguson 285 S Kaporta Boya Orijinal',
@@ -170,6 +171,157 @@ const ALL_NEW_TRACTOR_LISTINGS = [
     phone: '0531 654 9870',
     image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
     seoTags: 'landini powerfarm 90, italyan traktör, gönen ikinci el traktör'
+  },
+  // Canlı Hayvanlar İlanları (10 Adet)
+  {
+    id: 201,
+    title: 'Simental Damızlık Düve Gebe',
+    price: 95000,
+    category: 'Canlı Hayvanlar',
+    subCategory: 'Büyükbaş',
+    mode: 'Satılık',
+    location: 'Gönen / Balıkesir',
+    amount: '1 Adet',
+    description: '7 aylık gebe simental düve, aşısı tam, veteriner kontrollüdür.',
+    seller: 'Hüseyin Korkmaz',
+    phone: '0532 112 3344',
+    image: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'simental düve, gebe düve, büyükbaş, gönen'
+  },
+  {
+    id: 202,
+    title: 'Holstein Süt İneği 2. Batın',
+    price: 85000,
+    category: 'Canlı Hayvanlar',
+    subCategory: 'Büyükbaş',
+    mode: 'Satılık',
+    location: 'Bandırma / Balıkesir',
+    amount: '1 Adet',
+    description: 'Günlük 28 litre süt verimi olan sağmal inek.',
+    seller: 'İbrahim Çetin',
+    phone: '0533 223 4455',
+    image: 'https://images.unsplash.com/photo-1527153857715-3908f2ae5e61?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'holstein inek, süt ineği, büyükbaş'
+  },
+  {
+    id: 203,
+    title: 'Kurbanlık Simmental Besi Tosunu',
+    price: 130000,
+    category: 'Canlı Hayvanlar',
+    subCategory: 'Büyükbaş',
+    mode: 'Satılık',
+    location: 'Susurluk / Balıkesir',
+    amount: '650 Kg',
+    description: 'Arpa ve yonca ile beslenmiş, canlı 650 kg.',
+    seller: 'Mehmet Ali Baş',
+    phone: '0534 334 5566',
+    image: 'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'besi tosunu, kurbanlık, simmental'
+  },
+  {
+    id: 204,
+    title: 'Bafra Irkı Damızlık Koç',
+    price: 18000,
+    category: 'Canlı Hayvanlar',
+    subCategory: 'Küçükbaş',
+    mode: 'Satılık',
+    location: 'Karacabey / Bursa',
+    amount: '1 Adet',
+    description: 'Safkan bafrakoç, aşım gücü yüksek.',
+    seller: 'Osman Yıldız',
+    phone: '0535 445 6677',
+    image: 'https://images.unsplash.com/photo-1484557077804-d703138b3400?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'bafra koç, küçükbaş, damızlık'
+  },
+  {
+    id: 205,
+    title: 'Merinos Koyun Sürüsü (10 Adet)',
+    price: 120000,
+    category: 'Canlı Hayvanlar',
+    subCategory: 'Küçükbaş',
+    mode: 'Satılık',
+    location: 'Manyas / Balıkesir',
+    amount: '10 Adet',
+    description: 'Sağlıklı merinos ırkı koyunlar, toplu satılıktır.',
+    seller: 'Şerif Acar',
+    phone: '0536 556 7788',
+    image: 'https://images.unsplash.com/photo-1533738363-b7f9aef128ce?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'merinos koyun, küçükbaş sürü, manyas'
+  },
+  {
+    id: 206,
+    title: 'Kıvırcık Toklu Koyun',
+    price: 12500,
+    category: 'Canlı Hayvanlar',
+    subCategory: 'Küçükbaş',
+    mode: 'Satılık',
+    location: 'Gönen / Balıkesir',
+    amount: '1 Adet',
+    description: 'Gönen yöresinin meşhur kıvırcık ırkı.',
+    seller: 'Ramazan Demir',
+    phone: '0537 667 8899',
+    image: 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'kıvırcık koyun, gönen küçükbaş'
+  },
+  {
+    id: 207,
+    title: 'Atak-S Yumurta Tavuğu (Yarka)',
+    price: 220,
+    category: 'Canlı Hayvanlar',
+    subCategory: 'Kanatlı',
+    mode: 'Satılık',
+    location: 'Bursa Merkez',
+    amount: '50 Adet',
+    description: '17 haftalık aşılı yarkalar, yumurtlamaya hazır.',
+    seller: 'Ayhan Aydın',
+    phone: '0538 778 9900',
+    image: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'atak-s, yarka, yumurta tavuğu'
+  },
+  {
+    id: 208,
+    title: 'Ligorin Yarka Tavuk',
+    price: 200,
+    category: 'Canlı Hayvanlar',
+    subCategory: 'Kanatlı',
+    mode: 'Satılık',
+    location: 'Balıkesir Merkez',
+    amount: '30 Adet',
+    description: 'Beyaz yumurtacı ligorin ırkı.',
+    seller: 'İsmail Güneş',
+    phone: '0539 889 0011',
+    image: 'https://images.unsplash.com/photo-1563281577-a7be47e20db9?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'ligorin, yarka, kanatlı'
+  },
+  {
+    id: 209,
+    title: 'Kore Ördeği (Pekin) Damızlık Takım',
+    price: 1500,
+    category: 'Canlı Hayvanlar',
+    subCategory: 'Kanatlı',
+    mode: 'Satılık',
+    location: 'Gönen / Balıkesir',
+    amount: '1 Takım (1 Erkek 3 Dişi)',
+    description: 'Sağlıklı pekin ördeği damızlık grubu.',
+    seller: 'Necmi Özkan',
+    phone: '0540 990 1122',
+    image: 'https://images.unsplash.com/photo-1445053023192-8d45cb66099d?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'pekin ördeği, kanatlı, ördek'
+  },
+  {
+    id: 210,
+    title: 'Bronz Hindi Damızlık Çift',
+    price: 2500,
+    category: 'Canlı Hayvanlar',
+    subCategory: 'Kanatlı',
+    mode: 'Satılık',
+    location: 'Bandırma / Balıkesir',
+    amount: '1 Çift',
+    description: 'Doğal salma besicilik yapılmış bronz hindi çifti.',
+    seller: 'Selim Korkmaz',
+    phone: '0541 001 2233',
+    image: 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'bronz hindi, hindi, kanatlı'
   }
 ];
 
@@ -187,19 +339,20 @@ const FALLBACK_CATEGORIES = {
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home'); 
+  const editFormRef = useRef(null);
   
   const [listings, setListings] = useState(() => {
     const saved = localStorage.getItem('pazartarla_listings');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 5) return parsed;
       } catch (e) {
         console.error(e);
       }
     }
-    localStorage.setItem('pazartarla_listings', JSON.stringify(ALL_NEW_TRACTOR_LISTINGS));
-    return ALL_NEW_TRACTOR_LISTINGS;
+    localStorage.setItem('pazartarla_listings', JSON.stringify(ALL_INITIAL_LISTINGS));
+    return ALL_INITIAL_LISTINGS;
   });
 
   const [categoriesWithSubs, setCategoriesWithSubs] = useState(() => {
@@ -239,7 +392,6 @@ export default function App() {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
 
-  // 🛠️ Düzenleme Modu için State'ler
   const [editingListing, setEditingListing] = useState(null);
 
   const [analytics, setAnalytics] = useState({
@@ -410,9 +562,14 @@ export default function App() {
     alert('İlanınız başarıyla yayınlandı!');
   };
 
-  // 🛠️ İLAN DÜZENLEME FONKSİYONLARI
   const startEditing = (item) => {
     setEditingListing(item);
+    // Düzenleme butonuna basıldığında formu direkt ekrana kaydırıyoruz
+    setTimeout(() => {
+      if (editFormRef.current) {
+        editFormRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
   };
 
   const handleEditChange = (e) => {
@@ -985,61 +1142,63 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* 🛠️ İLAN DÜZENLEME MODALI / PANELİ */}
-                {editingListing ? (
-                  <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '10px', border: '2px solid #22c55e', marginBottom: '20px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                      <h3 style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b', margin: 0 }}>✏️ İlanı Düzenle: {editingListing.title}</h3>
-                      <button onClick={() => setEditingListing(null)} style={{ background: 'none', border: 'none', fontSize: '12px', fontWeight: '700', color: '#dc2626', cursor: 'pointer' }}>İptal</button>
+                {/* 🛠️ DÜZENLEME FORMU (Otomatik Odaklanma Alanı) */}
+                <div ref={editFormRef}>
+                  {editingListing && (
+                    <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '10px', border: '2px solid #22c55e', marginBottom: '20px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                        <h3 style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b', margin: 0 }}>✏️ İlanı Düzenle: {editingListing.title}</h3>
+                        <button onClick={() => setEditingListing(null)} style={{ background: 'none', border: 'none', fontSize: '12px', fontWeight: '700', color: '#dc2626', cursor: 'pointer' }}>İptal</button>
+                      </div>
+
+                      <form onSubmit={saveEditedListing} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '2px' }}>İlan Başlığı</label>
+                          <input type="text" name="title" value={editingListing.title} onChange={handleEditChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} />
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                          <div>
+                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '2px' }}>Fiyat (TL)</label>
+                            <input type="number" name="price" value={editingListing.price} onChange={handleEditChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} />
+                          </div>
+                          <div>
+                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '2px' }}>Konum</label>
+                            <input type="text" name="location" value={editingListing.location} onChange={handleEditChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} />
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                          <div>
+                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '2px' }}>Satıcı Adı</label>
+                            <input type="text" name="seller" value={editingListing.seller} onChange={handleEditChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} />
+                          </div>
+                          <div>
+                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '2px' }}>Telefon</label>
+                            <input type="text" name="phone" value={editingListing.phone} onChange={handleEditChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '2px' }}>Yeni Fotoğraf Seç (Cihazdan)</label>
+                          <input type="file" accept="image/*" onChange={handleEditImageUpload} style={{ width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '11px', backgroundColor: '#fff' }} />
+                          <div style={{ marginTop: '6px' }}>
+                            <img src={editingListing.image} alt="Önizleme" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '2px' }}>Açıklama</label>
+                          <textarea name="description" value={editingListing.description} onChange={handleEditChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '60px', fontSize: '13px', boxSizing: 'border-box' }} />
+                        </div>
+
+                        <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', fontSize: '13px', cursor: 'pointer' }}>
+                          Değişiklikleri Kaydet
+                        </button>
+                      </form>
                     </div>
-
-                    <form onSubmit={saveEditedListing} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      <div>
-                        <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '2px' }}>İlan Başlığı</label>
-                        <input type="text" name="title" value={editingListing.title} onChange={handleEditChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} />
-                      </div>
-
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                        <div>
-                          <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '2px' }}>Fiyat (TL)</label>
-                          <input type="number" name="price" value={editingListing.price} onChange={handleEditChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} />
-                        </div>
-                        <div>
-                          <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '2px' }}>Konum</label>
-                          <input type="text" name="location" value={editingListing.location} onChange={handleEditChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} />
-                        </div>
-                      </div>
-
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                        <div>
-                          <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '2px' }}>Satıcı Adı</label>
-                          <input type="text" name="seller" value={editingListing.seller} onChange={handleEditChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} />
-                        </div>
-                        <div>
-                          <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '2px' }}>Telefon</label>
-                          <input type="text" name="phone" value={editingListing.phone} onChange={handleEditChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '2px' }}>Yeni Fotoğraf Seç (Cihazdan)</label>
-                        <input type="file" accept="image/*" onChange={handleEditImageUpload} style={{ width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '11px', backgroundColor: '#fff' }} />
-                        <div style={{ marginTop: '6px' }}>
-                          <img src={editingListing.image} alt="Önizleme" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '2px' }}>Açıklama</label>
-                        <textarea name="description" value={editingListing.description} onChange={handleEditChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '60px', fontSize: '13px', boxSizing: 'border-box' }} />
-                      </div>
-
-                      <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', fontSize: '13px', cursor: 'pointer' }}>
-                        Değişiklikleri Kaydet
-                      </button>
-                    </form>
-                  </div>
-                ) : null}
+                  )}
+                </div>
 
                 <div style={{ backgroundColor: '#f0fdf4', padding: '14px', borderRadius: '10px', border: '1px solid #bbf7d0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b', margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
