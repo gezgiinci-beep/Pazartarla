@@ -5,47 +5,24 @@ import {
   Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus 
 } from 'lucide-react';
 
-// İlk kurulum için yedek veriler (Sadece localStorage tamamen boşsa kullanılır)
-const INITIAL_LISTINGS = [
+const FALLBACK_LISTINGS = [
   {
     id: 1,
-    title: 'Bursamızın Meşhur Saplı Tatlı Kirazı',
-    price: 90,
-    category: 'Mahsuller',
-    subCategory: 'Kiraz',
-    mode: 'Satılık',
-    location: 'Karacabey / Bursa',
-    city: 'Bursa',
-    amount: '500 kg',
-    description: 'İhracat kalitesinde iri cins, taze hasat tatlı kiraz. Soğuk zincir araçlarla sevkiyat yapılır.',
-    seller: 'İbrahim Demir',
-    phone: '0532 444 5566',
-    verified: true,
-    featured: true,
-    image: 'https://images.unsplash.com/photo-1528821151447-11f211b5e5a7?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-  {
-    id: 2,
     title: 'Tarladan Doğrudan Taze Chandler Ceviz',
     price: 140,
     category: 'Mahsuller',
     subCategory: 'Ceviz',
     mode: 'Satılık',
     location: 'Gönen / Balıkesir',
-    city: 'Balıkesir',
     amount: '1 Ton',
     description: 'Kendi bahçemizin ürünü, ilaçsız ve dolgun Chandler ceviz.',
     seller: 'Can İnce',
     phone: '0535 768 1550',
-    verified: true,
-    featured: true,
-    image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
+    image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800'
   }
 ];
 
-const INITIAL_CATEGORIES = {
+const FALLBACK_CATEGORIES = {
   'Mahsuller': ['Kiraz', 'Ceviz', 'Zeytin & Zeytinyağı'],
   'Canlı Hayvanlar': ['Büyükbaş', 'Küçükbaş', 'Kanatlı'],
   'Hayvan Yemleri ve Ekipmanları': ['Yem Çeşitleri', 'Suluk / Yemlik'],
@@ -60,34 +37,44 @@ const INITIAL_CATEGORIES = {
 export default function App() {
   const [activeTab, setActiveTab] = useState('home'); 
   
-  // 🔒 GÜVENLİ BAŞLANGIÇ: Önce localStorage kontrol edilir, varsa eski veriler yüklenir!
+  // 🔒 GÜVENLİ BAŞLANGIÇ: Kayıtlı ilanlarınız varsa asla silinmez, direkt yüklenir.
   const [listings, setListings] = useState(() => {
     const saved = localStorage.getItem('pazartarla_listings');
-    return saved ? JSON.parse(saved) : INITIAL_LISTINGS;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return FALLBACK_LISTINGS;
   });
 
   const [categoriesWithSubs, setCategoriesWithSubs] = useState(() => {
     const saved = localStorage.getItem('pazartarla_categories');
-    return saved ? JSON.parse(saved) : INITIAL_CATEGORIES;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object') return parsed;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return FALLBACK_CATEGORIES;
   });
 
   const [selectedListing, setSelectedListing] = useState(null);
-   
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
-
   const [selectedCategory, setSelectedCategory] = useState('Tüm kategoriler');
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
-   
   const [openCategory, setOpenCategory] = useState('');
-
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewMode, setViewMode] = useState('Liste');
-
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
 
-  // 📊 GERÇEK ZAMANLI CANLI ANALİTİK VERİSİ
   const [analytics, setAnalytics] = useState({
     totalVisits: 1,
     mobileVisits: 0,
@@ -112,7 +99,6 @@ export default function App() {
   });
 
   useEffect(() => {
-    // 🌐 Gerçek Zamanlı Ziyaretçi ve Cihaz Kaydı
     const isMobile = /Mobi|Android/i.test(navigator.userAgent);
     const savedData = localStorage.getItem('pazartarla_live_analytics');
      
@@ -263,7 +249,6 @@ export default function App() {
     alert('Admin Paneli Şifreniz: 1234');
   };
 
-  // Sosyal Medya Paylaşım Fonksiyonları
   const shareOnWhatsApp = (item) => {
     const text = encodeURIComponent(`🌾 PazarTarla İlanı:\n*${item.title}*\nFiyat: ${item.price.toLocaleString('tr-TR')} TL\nKonum: ${item.location}\nİletişim: ${item.phone}`);
     window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
@@ -294,7 +279,6 @@ export default function App() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f4f6f8', color: '#1e293b', fontFamily: 'system-ui, -apple-system, sans-serif', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', overflowX: 'hidden', boxSizing: 'border-box', position: 'relative' }}>
        
-      {/* ÜST HEADER */}
       <header style={{ backgroundColor: '#1b3a2b', color: '#ffffff', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', position: 'sticky', top: 0, zIndex: 100, width: '100%', boxSizing: 'border-box' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => { changeTab('home'); setSelectedCategory('Tüm kategoriler'); setSelectedSubCategory('Tümü'); }}>
           <div style={{ backgroundColor: '#22c55e', padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -316,10 +300,8 @@ export default function App() {
         </div>
       </header>
 
-      {/* ANA İÇERİK */}
       <main style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '12px', flex: 1, boxSizing: 'border-box' }}>
          
-        {/* 1. EKRAN: KATEGORİ SEÇİMİ */}
         {activeTab === 'home' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflow: 'hidden', border: '1px solid #e2e8f0', width: '100%', boxSizing: 'border-box' }}>
             <div style={{ backgroundColor: '#1b3a2b', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -384,7 +366,6 @@ export default function App() {
           </div>
         )}
 
-        {/* 2. EKRAN: ARAMA SONUÇLARI */}
         {activeTab === 'results' && (
           <div style={{ width: '100%', boxSizing: 'border-box' }}>
             <div style={{ backgroundColor: '#1b3a2b', color: '#fff', borderRadius: '10px', padding: '10px 14px', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
@@ -488,7 +469,6 @@ export default function App() {
           </div>
         )}
 
-        {/* İLAN DETAY EKRANI */}
         {activeTab === 'detail' && selectedListing && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', boxSizing: 'border-box', width: '100%' }}>
             <div style={{ marginBottom: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -497,7 +477,6 @@ export default function App() {
               </button>
             </div>
 
-            {/* Şık Sosyal Medya Paylaşım Butonları Alanı */}
             <div style={{ marginBottom: '14px', backgroundColor: '#f8fafc', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
               <span style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>Bu İlanı Sosyal Medyada Paylaş:</span>
               <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
@@ -552,7 +531,6 @@ export default function App() {
           </div>
         )}
 
-        {/* İLAN VER EKRANI */}
         {activeTab === 'add' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', boxSizing: 'border-box', width: '100%' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
@@ -632,7 +610,6 @@ export default function App() {
           </div>
         )}
 
-        {/* ADMIN SAYFASI VE GERÇEK ZAMANLI ANALİTİK PANELİ */}
         {activeTab === 'admin-page' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', boxSizing: 'border-box', width: '100%' }}>
             {!isAdminLoggedIn ? (
@@ -664,7 +641,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* 📊 GERÇEK ZAMANLI CANLI İSTATİSTİKLER */}
                 <div style={{ backgroundColor: '#f0fdf4', padding: '14px', borderRadius: '10px', border: '1px solid #bbf7d0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b', margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Globe size={18} color="#166534" /> Canlı Ziyaretçi Verileri (Gerçek Zamanlı)
@@ -685,7 +661,6 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Son Canlı Hareketler */}
                   <div style={{ backgroundColor: '#fff', padding: '10px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
                     <h4 style={{ fontSize: '12px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 6px 0', borderBottom: '1px solid #f1f5f9', paddingBottom: '4px' }}>⚡ Canlı Oturum Günlüğü</h4>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px', maxHeight: '100px', overflowY: 'auto' }}>
@@ -698,7 +673,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* YENİ KATEGORİ EKLEME BÖLÜMÜ */}
                 <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <FolderPlus size={16} color="#22c55e" /> Yeni Kategori Ekle
@@ -724,7 +698,6 @@ export default function App() {
                   </form>
                 </div>
 
-                {/* MEVCUT KATEGORİLERİ LİSTELEME VE SİLME */}
                 <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#0f172a', margin: '0 0 8px 0' }}>Mevcut Kategoriler ({Object.keys(categoriesWithSubs).length})</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '20px', maxHeight: '180px', overflowY: 'auto' }}>
                   {Object.keys(categoriesWithSubs).map(catKey => (
@@ -740,7 +713,6 @@ export default function App() {
                   ))}
                 </div>
 
-                {/* İLAN DENETİMİ */}
                 <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#0f172a', margin: '0 0 8px 0' }}>İlan Denetimi ({listings.length})</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '220px', overflowY: 'auto' }}>
                   {listings.map(item => (
@@ -765,7 +737,6 @@ export default function App() {
 
       </main>
 
-      {/* PROFESYONEL İLETİŞİM FOOTER ALANI */}
       <footer style={{ backgroundColor: '#1b3a2b', color: '#94a3b8', padding: '16px', textAlign: 'center', fontSize: '11px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 'auto', boxSizing: 'border-box', width: '100%', display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center' }}>
         <div style={{ display: 'flex', gap: '15px', color: '#cbd5e1', fontSize: '12px', fontWeight: '600' }}>
           <span style={{ cursor: 'pointer' }} onClick={() => alert('İletişim E-posta: gezginci@gmail.com | Tel: 0535 768 1550')}>İletişim</span>
@@ -780,7 +751,6 @@ export default function App() {
         <span>© 2026 PazarTarla • Gönen / Balıkesir</span>
       </footer>
 
-      {/* SAYFANIN EN ALT SAĞ KÖŞESİNDE KÜÇÜK SABİT ADMIN SİMGESİ */}
       <button
         onClick={() => changeTab('admin-page')}
         title="Yönetim Paneli"
