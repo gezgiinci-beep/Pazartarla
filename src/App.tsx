@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus, 
   Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, ChevronDown, X, 
-  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send 
+  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert 
 } from 'lucide-react';
 
 const INITIAL_LISTINGS = [
@@ -521,6 +521,13 @@ export default function App() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button 
+            onClick={() => changeTab('admin-page')}
+            title="Yönetim Paneli"
+            style={{ backgroundColor: '#0f172a', color: '#86efac', border: '1px solid rgba(255,255,255,0.2)', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', fontWeight: '700', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px' }}
+          >
+            <ShieldAlert size={16} /> Admin
+          </button>
+          <button 
             onClick={() => changeTab('add')}
             style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: '700', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '0 2px 8px rgba(34, 197, 94, 0.3)' }}
           >
@@ -596,8 +603,8 @@ export default function App() {
             })}
 
             <div style={{ padding: '16px', textAlign: 'center', backgroundColor: '#f8fafc' }}>
-              <button onClick={() => changeTab('admin')} style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '12px', cursor: 'pointer', textDecoration: 'underline' }}>
-                Yönetim Paneli (Admin)
+              <button onClick={() => changeTab('admin-page')} style={{ background: 'none', border: 'none', color: '#1b3a2b', fontSize: '13px', cursor: 'pointer', fontWeight: '700', textDecoration: 'underline' }}>
+                Yönetim Paneline Git (Admin Sayfası)
               </button>
             </div>
           </div>
@@ -840,40 +847,50 @@ export default function App() {
           </div>
         )}
 
-        {/* ADMIN PANELİ */}
-        {activeTab === 'admin' && (
+        {/* AYRI ADMIN SAYFASI */}
+        {activeTab === 'admin-page' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', boxSizing: 'border-box', width: '100%' }}>
             {!isAdminLoggedIn ? (
-              <div style={{ maxWidth: '300px', margin: '20px auto', textAlign: 'center' }}>
-                <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', marginBottom: '8px' }}>Admin Girişi</h2>
+              <div style={{ maxWidth: '320px', margin: '30px auto', textAlign: 'center', padding: '20px' }}>
+                <div style={{ backgroundColor: '#f0fdf4', width: '50px', height: '50px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px auto' }}>
+                  <ShieldAlert size={24} color="#1b3a2b" />
+                </div>
+                <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', marginBottom: '6px' }}>Yönetici Girişi</h2>
+                <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px' }}>PazarTarla ilan yönetim paneline hoş geldiniz.</p>
                 <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <input type="password" placeholder="Admin Şifresi" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', textAlign: 'center', fontSize: '14px' }} />
-                  <button type="submit" style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Giriş Yap</button>
+                  <button type="submit" style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer', fontSize: '14px' }}>Giriş Yap</button>
                 </form>
                 <button type="button" onClick={handleForgotPassword} style={{ background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer', fontSize: '12px', textDecoration: 'underline', marginTop: '12px' }}>Şifremi Unuttum?</button>
-                <div style={{ marginTop: '16px' }}>
-                  <button onClick={() => changeTab('home')} style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '12px', cursor: 'pointer' }}>← Ana Sayfaya Dön</button>
+                <div style={{ marginTop: '20px', borderTop: '1px solid #edf2f7', paddingTop: '12px' }}>
+                  <button onClick={() => changeTab('home')} style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '12px', cursor: 'pointer', fontWeight: '600' }}>← Ana Sayfaya Dön</button>
                 </div>
               </div>
             ) : (
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid #edf2f7', paddingBottom: '10px' }}>
-                  <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>İlan Denetimi</h2>
-                  <button onClick={() => changeTab('home')} style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}>Kategorilere Dön</button>
+                  <div>
+                    <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>Yönetim Paneli (Admin)</h2>
+                    <span style={{ fontSize: '11px', color: '#059669', fontWeight: '600' }}>Aktif İlan Sayısı: {listings.length}</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer', fontWeight: '700' }}>Çıkış</button>
+                    <button onClick={() => changeTab('home')} style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer', fontWeight: '700' }}>Siteye Dön</button>
+                  </div>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {listings.map(item => (
                     <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', boxSizing: 'border-box' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <img src={item.image} alt="" style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover' }} />
-                        <div>
-                          <h4 style={{ margin: '0 0 2px 0', fontSize: '13px', fontWeight: '700', color: '#0f172a' }}>{item.title}</h4>
-                          <span style={{ fontSize: '11px', color: '#64748b' }}>{item.price.toLocaleString('tr-TR')} TL</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                        <img src={item.image} alt="" style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover', flexShrink: 0 }} />
+                        <div style={{ minWidth: 0 }}>
+                          <h4 style={{ margin: '0 0 2px 0', fontSize: '13px', fontWeight: '700', color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</h4>
+                          <span style={{ fontSize: '11px', color: '#64748b' }}>{item.price.toLocaleString('tr-TR')} TL • {item.location}</span>
                         </div>
                       </div>
-                      <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 8px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer', fontSize: '11px' }}>
-                        Sil
+                      <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer', fontSize: '11px', flexShrink: 0 }}>
+                        İlanı Sil
                       </button>
                     </div>
                   ))}
@@ -892,7 +909,7 @@ export default function App() {
           <span>•</span>
           <span style={{ cursor: 'pointer' }} onClick={() => alert('PazarTarla Tarım Pazaryeri Platformu')}>Hakkımızda</span>
           <span>•</span>
-          <span style={{ cursor: 'pointer' }} onClick={() => alert('Tüm hakları saklıdır.')}>Güvenli Alışveriş</span>
+          <span style={{ cursor: 'pointer' }} onClick={() => changeTab('admin-page')} style={{ cursor: 'pointer', color: '#86efac' }}>Yönetim Paneli</span>
         </div>
         <div style={{ fontSize: '11px', color: '#86efac', fontWeight: '500' }}>
           E-posta: gezginci@gmail.com | Tel: 0535 768 1550
