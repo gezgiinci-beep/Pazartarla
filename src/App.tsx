@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus, 
   Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, ChevronDown, X, 
-  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus 
+  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, BarChart3, TrendingUp 
 } from 'lucide-react';
 
 const INITIAL_LISTINGS = [
@@ -343,6 +343,26 @@ const INITIAL_CATEGORIES = {
   'Uzmanlar': ['Veterinerler', 'Ziraatçiler']
 };
 
+const MOCK_ANALYTICS = {
+  totalViews: 14250,
+  turkeyViews: 11800,
+  globalViews: 2450,
+  cities: [
+    { name: 'Balıkesir (Gönen)', count: 4200, percent: '35%' },
+    { name: 'Bursa', count: 2800, percent: '23%' },
+    { name: 'İstanbul', count: 2100, percent: '18%' },
+    { name: 'İzmir', count: 1400, percent: '12%' },
+    { name: 'Ankara', count: 1300, percent: '12%' }
+  ],
+  countries: [
+    { name: 'Türkiye', count: 11800, percent: '82.8%' },
+    { name: 'Almanya', count: 950, percent: '6.7%' },
+    { name: 'Hollanda', count: 620, percent: '4.3%' },
+    { name: 'Azerbaycan', count: 480, percent: '3.4%' },
+    { name: 'Diğer (ABD, İngiltere vb.)', count: 400, percent: '2.8%' }
+  ]
+};
+
 export default function App() {
   const [activeTab, setActiveTab] = useState('home'); 
   const [listings, setListings] = useState(INITIAL_LISTINGS);
@@ -552,7 +572,7 @@ export default function App() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f4f6f8', color: '#1e293b', fontFamily: 'system-ui, -apple-system, sans-serif', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', overflowX: 'hidden', boxSizing: 'border-box', position: 'relative' }}>
       
-      {/* ÜST HEADER (Admin Butonu Kaldırıldı) */}
+      {/* ÜST HEADER */}
       <header style={{ backgroundColor: '#1b3a2b', color: '#ffffff', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', position: 'sticky', top: 0, zIndex: 100, width: '100%', boxSizing: 'border-box' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => { changeTab('home'); setSelectedCategory('Tüm kategoriler'); setSelectedSubCategory('Tümü'); }}>
           <div style={{ backgroundColor: '#22c55e', padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -879,7 +899,7 @@ export default function App() {
           </div>
         )}
 
-        {/* ADMIN SAYFASI VE KATEGORİ YÖNETİMİ */}
+        {/* ADMIN SAYFASI: TRAFİK, KATEGORİ VE İLAN YÖNETİMİ */}
         {activeTab === 'admin-page' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', boxSizing: 'border-box', width: '100%' }}>
             {!isAdminLoggedIn ? (
@@ -888,7 +908,7 @@ export default function App() {
                   <ShieldAlert size={24} color="#1b3a2b" />
                 </div>
                 <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', marginBottom: '6px' }}>Yönetici Girişi</h2>
-                <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px' }}>PazarTarla ilan ve kategori yönetim paneli.</p>
+                <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px' }}>PazarTarla yönetim paneli ve trafik analitiği.</p>
                 <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <input type="password" placeholder="Admin Şifresi" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', textAlign: 'center', fontSize: '14px' }} />
                   <button type="submit" style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer', fontSize: '14px' }}>Giriş Yap</button>
@@ -902,12 +922,62 @@ export default function App() {
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #edf2f7', paddingBottom: '10px' }}>
                   <div>
-                    <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>Yönetim Paneli</h2>
+                    <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>Yönetim Paneli & Analitik</h2>
                     <span style={{ fontSize: '11px', color: '#059669', fontWeight: '600' }}>Aktif İlan: {listings.length} | Kategori: {Object.keys(categoriesWithSubs).length}</span>
                   </div>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer', fontWeight: '700' }}>Çıkış</button>
                     <button onClick={() => changeTab('home')} style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer', fontWeight: '700' }}>Siteye Dön</button>
+                  </div>
+                </div>
+
+                {/* 🌍 TÜRKİYE VE DÜNYA İZLEME / TRAFİK ANALİTİĞİ */}
+                <div style={{ backgroundColor: '#f0fdf4', padding: '14px', borderRadius: '10px', border: '1px solid #bbf7d0', marginBottom: '20px' }}>
+                  <h3 style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b', margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Globe size={18} color="#166534" /> Türkiye ve Dünya Ziyaretçi Analitiği
+                  </h3>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '12px', textAlign: 'center' }}>
+                    <div style={{ backgroundColor: '#fff', padding: '8px', borderRadius: '6px', border: '1px solid #d1fae5' }}>
+                      <span style={{ fontSize: '10px', color: '#64748b', display: 'block' }}>Toplam Görüntülenme</span>
+                      <strong style={{ fontSize: '14px', color: '#1b3a2b' }}>{MOCK_ANALYTICS.totalViews.toLocaleString('tr-TR')}</strong>
+                    </div>
+                    <div style={{ backgroundColor: '#fff', padding: '8px', borderRadius: '6px', border: '1px solid #d1fae5' }}>
+                      <span style={{ fontSize: '10px', color: '#64748b', display: 'block' }}>Türkiye İçi</span>
+                      <strong style={{ fontSize: '14px', color: '#059669' }}>{MOCK_ANALYTICS.turkeyViews.toLocaleString('tr-TR')}</strong>
+                    </div>
+                    <div style={{ backgroundColor: '#fff', padding: '8px', borderRadius: '6px', border: '1px solid #d1fae5' }}>
+                      <span style={{ fontSize: '10px', color: '#64748b', display: 'block' }}>Yurtdışı</span>
+                      <strong style={{ fontSize: '14px', color: '#2563eb' }}>{MOCK_ANALYTICS.globalViews.toLocaleString('tr-TR')}</strong>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    {/* Şehirler */}
+                    <div style={{ backgroundColor: '#fff', padding: '10px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                      <h4 style={{ fontSize: '12px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 6px 0', borderBottom: '1px solid #f1f5f9', paddingBottom: '4px' }}>🇹🇷 En Çok İzlenen Şehirler</h4>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px' }}>
+                        {MOCK_ANALYTICS.cities.map((city, idx) => (
+                          <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', color: '#334155' }}>
+                            <span>{city.name}</span>
+                            <strong style={{ color: '#059669' }}>{city.percent}</strong>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Ülkeler */}
+                    <div style={{ backgroundColor: '#fff', padding: '10px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                      <h4 style={{ fontSize: '12px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 6px 0', borderBottom: '1px solid #f1f5f9', paddingBottom: '4px' }}>🌍 En Çok İzlenen Ülkeler</h4>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px' }}>
+                        {MOCK_ANALYTICS.countries.map((country, idx) => (
+                          <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', color: '#334155' }}>
+                            <span>{country.name}</span>
+                            <strong style={{ color: '#2563eb' }}>{country.percent}</strong>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
