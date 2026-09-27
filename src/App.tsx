@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus, 
   Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, ChevronDown, X, 
-  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag 
+  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag, Edit3 
 } from 'lucide-react';
 
 const ALL_NEW_TRACTOR_LISTINGS = [
@@ -188,8 +188,17 @@ const FALLBACK_CATEGORIES = {
 export default function App() {
   const [activeTab, setActiveTab] = useState('home'); 
   
-  // ZORLA GÜNCELLEME: Traktör ilanlarını doğrudan yüklüyoruz
   const [listings, setListings] = useState(() => {
+    const saved = localStorage.getItem('pazartarla_listings');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    localStorage.setItem('pazartarla_listings', JSON.stringify(ALL_NEW_TRACTOR_LISTINGS));
     return ALL_NEW_TRACTOR_LISTINGS;
   });
 
@@ -230,6 +239,9 @@ export default function App() {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
 
+  // 🛠️ Düzenleme Modu için State'ler
+  const [editingListing, setEditingListing] = useState(null);
+
   const [analytics, setAnalytics] = useState({
     totalVisits: 1,
     mobileVisits: 0,
@@ -255,8 +267,6 @@ export default function App() {
   });
 
   useEffect(() => {
-    localStorage.setItem('pazartarla_listings', JSON.stringify(ALL_NEW_TRACTOR_LISTINGS));
-    
     const isMobile = /Mobi|Android/i.test(navigator.userAgent);
     const savedData = localStorage.getItem('pazartarla_live_analytics');
      
@@ -339,14 +349,12 @@ export default function App() {
       if (name === 'category') {
         updated.subCategory = categoriesWithSubs[value]?.[0] || 'Tümü';
       }
-      
       updated.seoTags = generateAutoSEO(
         name === 'title' ? value : updated.title,
         name === 'category' ? value : updated.category,
         name === 'subCategory' ? value : updated.subCategory,
         name === 'location' ? value : updated.location
       );
-
       return updated;
     });
   };
@@ -364,14 +372,12 @@ export default function App() {
 
   const handleDirectAdd = (e) => {
     e.preventDefault();
-    
     if (!form.title.trim() || !form.price || !form.phone.trim() || !form.seller.trim()) {
       alert('Lütfen başlık, fiyat, satıcı adı ve telefon numarası alanlarını eksiksiz doldurun.');
       return;
     }
 
     const finalSeoTags = form.seoTags || generateAutoSEO(form.title, form.category, form.subCategory, form.location);
-
     const newEntry = {
       ...form,
       id: Date.now(),
@@ -385,7 +391,6 @@ export default function App() {
 
     const updated = [newEntry, ...listings];
     saveListings(updated);
-    
     setForm({
       title: '',
       price: '',
@@ -401,9 +406,37 @@ export default function App() {
       image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
       seoTags: ''
     });
-
     changeTab('home');
     alert('İlanınız başarıyla yayınlandı!');
+  };
+
+  // 🛠️ İLAN DÜZENLEME FONKSİYONLARI
+  const startEditing = (item) => {
+    setEditingListing(item);
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditingListing(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleEditImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditingListing(prev => ({ ...prev, image: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const saveEditedListing = (e) => {
+    e.preventDefault();
+    const updatedListings = listings.map(item => item.id === editingListing.id ? { ...editingListing, price: Number(editingListing.price) } : item);
+    saveListings(updatedListings);
+    setEditingListing(null);
+    alert('İlan başarıyla güncellendi!');
   };
 
   const handleDeleteListing = (id) => {
@@ -952,6 +985,62 @@ export default function App() {
                   </div>
                 </div>
 
+                {/* 🛠️ İLAN DÜZENLEME MODALI / PANELİ */}
+                {editingListing ? (
+                  <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '10px', border: '2px solid #22c55e', marginBottom: '20px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                      <h3 style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b', margin: 0 }}>✏️ İlanı Düzenle: {editingListing.title}</h3>
+                      <button onClick={() => setEditingListing(null)} style={{ background: 'none', border: 'none', fontSize: '12px', fontWeight: '700', color: '#dc2626', cursor: 'pointer' }}>İptal</button>
+                    </div>
+
+                    <form onSubmit={saveEditedListing} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '2px' }}>İlan Başlığı</label>
+                        <input type="text" name="title" value={editingListing.title} onChange={handleEditChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} />
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '2px' }}>Fiyat (TL)</label>
+                          <input type="number" name="price" value={editingListing.price} onChange={handleEditChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '2px' }}>Konum</label>
+                          <input type="text" name="location" value={editingListing.location} onChange={handleEditChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} />
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '2px' }}>Satıcı Adı</label>
+                          <input type="text" name="seller" value={editingListing.seller} onChange={handleEditChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} />
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '2px' }}>Telefon</label>
+                          <input type="text" name="phone" value={editingListing.phone} onChange={handleEditChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '2px' }}>Yeni Fotoğraf Seç (Cihazdan)</label>
+                        <input type="file" accept="image/*" onChange={handleEditImageUpload} style={{ width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '11px', backgroundColor: '#fff' }} />
+                        <div style={{ marginTop: '6px' }}>
+                          <img src={editingListing.image} alt="Önizleme" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '2px' }}>Açıklama</label>
+                        <textarea name="description" value={editingListing.description} onChange={handleEditChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '60px', fontSize: '13px', boxSizing: 'border-box' }} />
+                      </div>
+
+                      <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', fontSize: '13px', cursor: 'pointer' }}>
+                        Değişiklikleri Kaydet
+                      </button>
+                    </form>
+                  </div>
+                ) : null}
+
                 <div style={{ backgroundColor: '#f0fdf4', padding: '14px', borderRadius: '10px', border: '1px solid #bbf7d0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b', margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Globe size={18} color="#166534" /> Canlı Ziyaretçi Verileri (Gerçek Zamanlı)
@@ -1024,8 +1113,8 @@ export default function App() {
                   ))}
                 </div>
 
-                <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#0f172a', margin: '0 0 8px 0' }}>İlan Denetimi ({listings.length})</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '220px', overflowY: 'auto' }}>
+                <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#0f172a', margin: '0 0 8px 0' }}>İlan Denetimi & Düzenleme ({listings.length})</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '250px', overflowY: 'auto' }}>
                   {listings.map(item => (
                     <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', boxSizing: 'border-box' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
@@ -1035,9 +1124,15 @@ export default function App() {
                           <span style={{ fontSize: '11px', color: '#64748b' }}>{item.price.toLocaleString('tr-TR')} TL</span>
                         </div>
                       </div>
-                      <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer', fontSize: '11px', flexShrink: 0 }}>
-                        İlanı Sil
-                      </button>
+                      
+                      <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+                        <button onClick={() => startEditing(item)} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '6px 8px', borderRadius: '6px', fontWeight: '700', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                          <Edit3 size={12} /> Düzenle
+                        </button>
+                        <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 8px', borderRadius: '6px', fontWeight: '700', fontSize: '11px', cursor: 'pointer' }}>
+                          Sil
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
