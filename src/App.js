@@ -25,33 +25,32 @@ export default function App() {
   const initialListings = [
     {
       id: 1,
-      title: "John Deere 5075E 3lü Damper Çıkışlı",
-      category: "Tarım Makineleri",
-      subCategory: "Traktör",
-      price: 890000,
-      city: "Balıkesir",
+      title: "Tarladan Doğrudan Taze Chandler Ceviz",
+      category: "Mahsuller",
+      subCategory: "Ceviz",
+      price: 140,
+      city: "Gönen / Balıkesir",
       district: "Gönen",
-      description: "Çok temiz, bakımlı traktör. Kapalı garajda muhafaza edilmiştir.",
-      image: "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&q=80&w=800",
+      description: "Kendi bahçemizin ürünü, ilaçsız ve dolgun Chandler ceviz.",
+      image: "https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800",
       phone: "0535 768 1550",
       email: "gezgiinci@gmail.com",
       date: "2026-09-01"
     },
     {
-      id: 2,
-      title: "Fiat 480 S Kurbağa Göz",
-      category: "Tarım Makineleri",
-      subCategory: "Traktör",
-      price: 295000,
-      city: "Bursa",
-      district: "Karacabey",
-      description: "Orijinal boya, motoru yürüyeni sorunsuz.",
-      image: "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800",
+      id: 101,
+      title: "Massey Ferguson 285 S Kaporta Boya Orijinal",
+      category: "Traktör",
+      subCategory: "İkinci El Traktör",
+      price: 485000,
+      city: "Gönen / Balıkesir",
+      district: "Gönen",
+      description: "Temiz kullanılmış, motoru şanzımanı kusursuz.",
+      image: "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&q=80&w=800",
       phone: "0535 768 1550",
       email: "gezgiinci@gmail.com",
       date: "2026-09-02"
     },
-    // Konteyner İlanları
     {
       id: 3,
       title: "3x7 Sandviç Panel Lüks Yaşam Konteyneri",
@@ -60,120 +59,8 @@ export default function App() {
       price: 165000,
       city: "Balıkesir",
       district: "Gönen",
-      description: "Isı yalıtımlı sandviç panel, içinde mutfak tezgâhı ve duş-WC bulunmaktadır. Tarla ve bağ evleri için ideal.",
+      description: "Isı yalıtımlı sandviç panel, içinde mutfak tezgâhı ve duş-WC bulunmaktadır.",
       image: "https://images.unsplash.com/photo-1541888946425-d0fbb18f248e?auto=format&fit=crop&q=80&w=800",
-      phone: "0535 768 1550",
-      email: "gezgiinci@gmail.com",
-      date: "2026-09-25"
-    },
-    {
-      id: 4,
-      title: "2x3 Güvenlik ve Bekçi Kabini",
-      category: "Konteyner ve Yaşam Alanı",
-      subCategory: "2x3 Konteyner",
-      price: 45000,
-      city: "İzmir",
-      district: "Torbalı",
-      description: "PVC kapı pencereli, elektrik tesisatlı hazır kabin.",
-      image: "https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&q=80&w=800",
-      phone: "0535 768 1550",
-      email: "gezgiinci@gmail.com",
-      date: "2026-09-25"
-    },
-    {
-      id: 5,
-      title: "40 Feet Yük Container (Modifyeye Uygun)",
-      category: "Konteyner ve Yaşam Alanı",
-      subCategory: "Yük Container",
-      price: 210000,
-      city: "İstanbul",
-      district: "Büyükçekmece",
-      description: "Sağlam yapıda, alt tabanı ahşap, taşınabilir yaşam alanı yapımına uygun deniz konteyneri.",
-      image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=800",
-      phone: "0535 768 1550",
-      email: "gezgiinci@gmail.com",
-      date: "2026-09-25"
-    },
-    {
-      id: 6,
-      title: "WC ve Duş Kombine Seyyar Konteyner",
-      category: "Konteyner ve Yaşam Alanı",
-      subCategory: "Wc Konteyner",
-      price: 95000,
-      city: "Bursa",
-      district: "Nilüfer",
-      description: "2 kabinli tuvalet ve 1 duşluklu, gider bağlantıları hazır.",
-      image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=800",
-      phone: "0535 768 1550",
-      email: "gezgiinci@gmail.com",
-      date: "2026-09-25"
-    },
-    {
-      id: 7,
-      title: "3x9 Geniş Yaşam Alanı Prefabrik Konteyner",
-      category: "Konteyner ve Yaşam Alanı",
-      subCategory: "3x7 Prefabrik",
-      price: 195000,
-      city: "Balıkesir",
-      district: "Gönen",
-      description: "2 odalı, salon ve mutfak nişli ferah konteyner yapı.",
-      image: "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&q=80&w=800",
-      phone: "0535 768 1550",
-      email: "gezgiinci@gmail.com",
-      date: "2026-09-25"
-    },
-    {
-      id: 8,
-      title: "Demonte Bahçe Konteyneri (İzole)",
-      category: "Konteyner ve Yaşam Alanı",
-      subCategory: "Sandviç Panel Konteyner",
-      price: 130000,
-      city: "Manisa",
-      district: "Turgutlu",
-      description: "Modüler sistem demonte gönderilebilir, kolay kurulum.",
-      image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=800",
-      phone: "0535 768 1550",
-      email: "gezgiinci@gmail.com",
-      date: "2026-09-25"
-    },
-    {
-      id: 9,
-      title: "20 Feet High Cube Konteyner",
-      category: "Konteyner ve Yaşam Alanı",
-      subCategory: "Yük Container",
-      price: 150000,
-      city: "İzmir",
-      district: "Aliağa",
-      description: "Standarttan yüksek, temiz ikinci el yük konteyneri.",
-      image: "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&q=80&w=800",
-      phone: "0535 768 1550",
-      email: "gezgiinci@gmail.com",
-      date: "2026-09-25"
-    },
-    {
-      id: 10,
-      title: "Ofis Tipi Cam Cepheli Konteyner 3x6",
-      category: "Konteyner ve Yaşam Alanı",
-      subCategory: "Sandviç Panel Konteyner",
-      price: 175000,
-      city: "Ankara",
-      district: "Yenimahalle",
-      description: "Full cam cepheli, şık görünümlü tarla giriş ofisi veya satış bürosu.",
-      image: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=800",
-      phone: "0535 768 1550",
-      email: "gezgiinci@gmail.com",
-      date: "2026-09-25"
-    },
-    {
-      id: 11,
-      title: "20 Tonluk Tarımsal Sulama ve Yağmur Hasadı Tankı",
-      category: "Bahçe ve Sulama",
-      subCategory: "Su Tankı",
-      price: 35000,
-      city: "Balıkesir",
-      district: "Gönen",
-      description: "Bahçe sulamaları için uygun, sağlam plastik modüler su deposu.",
-      image: "https://images.unsplash.com/photo-1585435557343-3b092031a831?auto=format&fit=crop&q=80&w=800",
       phone: "0535 768 1550",
       email: "gezgiinci@gmail.com",
       date: "2026-09-25"
@@ -413,7 +300,7 @@ export default function App() {
               ))}
             </div>
 
-            {/* Alt Kategori Barı (Eğer Kategori Seçiliyse) */}
+            {/* Alt Kategori Barı */}
             {activeCategoryObj && activeCategoryObj.subCategories && activeCategoryObj.subCategories.length > 0 && (
               <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '10px', marginBottom: '25px' }}>
                 <button 
@@ -460,7 +347,7 @@ export default function App() {
                         {item.price.toLocaleString('tr-TR')} TL
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: '#6b7280', marginTop: 'auto', paddingTop: '10px', borderTop: '1px solid #f3f4f6' }}>
-                        <MapPin size={14} /> {item.city} / {item.district}
+                        <MapPin size={14} /> {item.city}
                       </div>
                     </div>
                   </div>
@@ -485,7 +372,7 @@ export default function App() {
                 <h2 style={{ fontSize: '24px', margin: '10px 0', color: '#111827' }}>{selectedListing.title}</h2>
                 <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#134e4a', marginBottom: '20px' }}>{selectedListing.price.toLocaleString('tr-TR')} TL</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#4b5563', marginBottom: '20px' }}>
-                  <MapPin size={18} /> {selectedListing.city} / {selectedListing.district}
+                  <MapPin size={18} /> {selectedListing.city}
                 </div>
                 <div style={{ backgroundColor: '#f9fafb', padding: '15px', borderRadius: '8px', marginBottom: '20px', border: '1px solid #e5e7eb' }}>
                   <h4 style={{ margin: '0 0 10px 0', color: '#374151' }}>İletişim Bilgileri</h4>
@@ -533,23 +420,13 @@ export default function App() {
                   />
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '5px' }}>Şehir</label>
-                  <input 
-                    type="text" required placeholder="Örn: Balıkesir"
-                    value={newListing.city} onChange={e => setNewListing({...newListing, city: e.target.value})}
-                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #d1d5db', boxSizing: 'border-box' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '5px' }}>İlçe</label>
-                  <input 
-                    type="text" required placeholder="Örn: Gönen"
-                    value={newListing.district} onChange={e => setNewListing({...newListing, district: e.target.value})}
-                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #d1d5db', boxSizing: 'border-box' }}
-                  />
-                </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '5px' }}>Şehir / Bölge</label>
+                <input 
+                  type="text" required placeholder="Örn: Gönen / Balıkesir"
+                  value={newListing.city} onChange={e => setNewListing({...newListing, city: e.target.value})}
+                  style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #d1d5db', boxSizing: 'border-box' }}
+                />
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '5px' }}>Fotoğraf URL (İsteğe bağlı)</label>
@@ -651,15 +528,15 @@ export default function App() {
               </form>
             </div>
 
-            {/* Mevcut Kategorileri Listeleme ve Silme */}
-            <h3 style={{ fontSize: '18px', color: '#1f2937', marginBottom: '15px' }}>Kategori Listesi ve Yönetimi</h3>
+            {/* MEVCUT KATEGORİLERİ LİSTELEME VE SİLME */}
+            <h3 style={{ fontSize: '18px', color: '#1f2937', marginBottom: '15px' }}>Kategori Listesi ve Yönetimi ({categories.length})</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '30px' }}>
               {categories.map(cat => (
                 <div key={cat.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 15px', backgroundColor: '#f9fafb', borderRadius: '6px', border: '1px solid #e5e7eb' }}>
                   <div>
-                    <strong>{cat.name}</strong> 
+                    <strong style={{ color: '#134e4a' }}>{cat.name}</strong> 
                     <span style={{ fontSize: '12px', color: '#6b7280', marginLeft: '10px' }}>
-                      ({cat.subCategories ? cat.subCategories.join(', ') : 'Alt ürün yok'})
+                      ({cat.subCategories && cat.subCategories.length > 0 ? cat.subCategories.join(', ') : 'Alt ürün yok'})
                     </span>
                   </div>
                   <button onClick={() => handleDeleteCategory(cat.id)} style={{ backgroundColor: '#dc2626', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
