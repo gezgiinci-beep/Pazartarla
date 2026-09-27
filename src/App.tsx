@@ -5,23 +5,8 @@ import {
   Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus 
 } from 'lucide-react';
 
-// 🔥 FIREBASE BAĞLANTISI VE FIRESTORE MODÜLLERİ
-import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "firebase/firestore";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyC-jMs4FRACwwm2ZXSkL8Kd3htIAib2bng",
-  authDomain: "pazartarla.firebaseapp.com",
-  projectId: "pazartarla",
-  storageBucket: "pazartarla.appspot.com",
-  messagingSenderId: "355358688670",
-  appId: "1:355358688670:web:a8c524c3af1b25f299c28f"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
 const INITIAL_LISTINGS = [
+  // 1. MAHSULLER (3 ADET)
   {
     id: 1,
     title: 'Bursamızın Meşhur Saplı Tatlı Kirazı',
@@ -76,6 +61,8 @@ const INITIAL_LISTINGS = [
     image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
+
+  // 2. CANLI HAYVANLAR (3 ADET)
   {
     id: 4,
     title: 'Holstein Süt İneği ve Buzağısı',
@@ -130,6 +117,8 @@ const INITIAL_LISTINGS = [
     image: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
+
+  // 3. HAYVAN YEMLERİ VE EKİPMANLARI (2 ADET)
   {
     id: 7,
     title: 'Besi Süt Yemi (Çuval 50 kg)',
@@ -166,6 +155,8 @@ const INITIAL_LISTINGS = [
     image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
+
+  // 4. ARICILIK
   {
     id: 9,
     title: 'Meşe Çiçeği Yayla Süzme Balı (1 Kg)',
@@ -220,6 +211,8 @@ const INITIAL_LISTINGS = [
     image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
+
+  // 5. TRAKTÖR (1 ADET)
   {
     id: 13,
     title: 'John Deere 6130M - Düşük saat, tek elden',
@@ -238,6 +231,8 @@ const INITIAL_LISTINGS = [
     image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
+
+  // 6. BİÇERDÖVER (1 ADET)
   {
     id: 14,
     title: 'New Holland TC 5070 Biçerdöver',
@@ -256,6 +251,8 @@ const INITIAL_LISTINGS = [
     image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
+
+  // 7. TARIM EKİPMANLARI (1 ADET)
   {
     id: 15,
     title: 'Tarım Römorku 5 Tonluk',
@@ -274,6 +271,8 @@ const INITIAL_LISTINGS = [
     image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
+
+  // 8. TARIM İŞÇİLERİ (1 ADET)
   {
     id: 16,
     title: 'Hasat ve Toplama Ekibi (10 Kişilik)',
@@ -292,6 +291,8 @@ const INITIAL_LISTINGS = [
     image: 'https://images.unsplash.com/photo-1595855759920-86582396756a?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
   },
+
+  // 9. UZMANLAR (VETERİNERLER, ZİRAATÇİLER)
   {
     id: 17,
     title: 'Saha Veteriner Hekimi - Büyükbaş & Küçükbaş Sağlık Danışmanlığı',
@@ -362,6 +363,7 @@ export default function App() {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
 
+  // 📊 GERÇEK ZAMANLI CANLI ANALİTİK VERİSİ
   const [analytics, setAnalytics] = useState({
     totalVisits: 1,
     mobileVisits: 0,
@@ -385,22 +387,8 @@ export default function App() {
     image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800'
   });
 
-  // 🔄 FIRESTORE'DAN VERİLERİ ÇEKME
   useEffect(() => {
-    const fetchFirestoreData = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, "listings"));
-        if (!querySnapshot.empty) {
-          const cloudListings = querySnapshot.docs.map(doc => ({ ...doc.data(), docId: doc.id }));
-          setListings(cloudListings);
-        }
-      } catch (error) {
-        console.error("Firestore veri çekme hatası:", error);
-      }
-    };
-
-    fetchFirestoreData();
-
+    // 🌐 Gerçek Zamanlı Ziyaretçi ve Cihaz Kaydı
     const isMobile = /Mobi|Android/i.test(navigator.userAgent);
     const savedData = localStorage.getItem('pazartarla_live_analytics');
     
@@ -412,6 +400,7 @@ export default function App() {
       recentActions: []
     };
 
+    // Her sayfa yenilemede veya girişte sayaçları artır
     currentStats.totalVisits += 1;
     if (isMobile) {
       currentStats.mobileVisits += 1;
@@ -425,6 +414,17 @@ export default function App() {
     setAnalytics(currentStats);
     localStorage.setItem('pazartarla_live_analytics', JSON.stringify(currentStats));
 
+    const savedListings = localStorage.getItem('pazartarla_listings');
+    if (savedListings) {
+      try {
+        setListings(JSON.parse(savedListings));
+      } catch (e) {
+        setListings(INITIAL_LISTINGS);
+      }
+    } else {
+      setListings(INITIAL_LISTINGS);
+    }
+
     const savedCats = localStorage.getItem('pazartarla_categories');
     if (savedCats) {
       try {
@@ -432,6 +432,8 @@ export default function App() {
       } catch (e) {
         setCategoriesWithSubs(INITIAL_CATEGORIES);
       }
+    } else {
+      setCategoriesWithSubs(INITIAL_CATEGORIES);
     }
 
     window.history.replaceState({ tab: 'home' }, '');
@@ -455,6 +457,11 @@ export default function App() {
   const changeTab = (tabName) => {
     window.history.pushState({ tab: tabName }, '');
     setActiveTab(tabName);
+  };
+
+  const saveListings = (newListings) => {
+    setListings(newListings);
+    localStorage.setItem('pazartarla_listings', JSON.stringify(newListings));
   };
 
   const saveCategories = (newCats) => {
@@ -484,8 +491,7 @@ export default function App() {
     }
   };
 
-  // 🚀 İLANI FIRESTORE'A KAYDETME
-  const handleDirectAdd = async (e) => {
+  const handleDirectAdd = (e) => {
     e.preventDefault();
     if (!form.title || !form.price || !form.phone || !form.seller) {
       alert('Lütfen başlık, fiyat, satıcı adı ve telefon numarası alanlarını doldurun.');
@@ -502,32 +508,16 @@ export default function App() {
       date: 'Bugün'
     };
 
-    try {
-      const docRef = await addDoc(collection(db, "listings"), newEntry);
-      const savedEntryWithId = { ...newEntry, docId: docRef.id };
-      setListings([savedEntryWithId, ...listings]);
-      changeTab('home');
-      alert('İlanınız Firebase veritabanına başarıyla kaydedildi ve yayınlandı!');
-    } catch (error) {
-      console.error("İlan eklenirken hata oluştu:", error);
-      alert('İlan eklenirken bir hata oluştu.');
-    }
+    const updated = [newEntry, ...listings];
+    saveListings(updated);
+    changeTab('home');
+    alert('İlanınız ve fotoğrafınız başarıyla yayınlandı!');
   };
 
-  // 🗑️ FIRESTORE'DAN İLAN SİLME
-  const handleDeleteListing = async (item) => {
+  const handleDeleteListing = (id) => {
     if (window.confirm('Bu ilanı yayından kaldırmak/silmek istediğinize emin misiniz?')) {
-      try {
-        if (item.docId) {
-          await deleteDoc(doc(db, "listings", item.docId));
-        }
-        const updated = listings.filter(i => i.id !== item.id);
-        setListings(updated);
-        alert('İlan başarıyla silindi.');
-      } catch (error) {
-        console.error("İlan silinirken hata:", error);
-        alert('İlan silinirken hata oluştu.');
-      }
+      const updated = listings.filter(item => item.id !== id);
+      saveListings(updated);
     }
   };
 
@@ -956,9 +946,10 @@ export default function App() {
                   </div>
                 </div>
 
+                {/* 📊 GERÇEK ZAMANLI CANLI İSTATİSTİKLER */}
                 <div style={{ backgroundColor: '#f0fdf4', padding: '14px', borderRadius: '10px', border: '1px solid #bbf7d0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b', margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Globe size={18} color="#166534" /> Canlı Ziyaretçi Verileri (Firebase Bağlı)
+                    <Globe size={18} color="#166534" /> Canlı Ziyaretçi Verileri (Gerçek Zamanlı)
                   </h3>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '12px', textAlign: 'center' }}>
@@ -976,6 +967,7 @@ export default function App() {
                     </div>
                   </div>
 
+                  {/* Son Canlı Hareketler */}
                   <div style={{ backgroundColor: '#fff', padding: '10px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
                     <h4 style={{ fontSize: '12px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 6px 0', borderBottom: '1px solid #f1f5f9', paddingBottom: '4px' }}>⚡ Canlı Oturum Günlüğü</h4>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px', maxHeight: '100px', overflowY: 'auto' }}>
@@ -988,6 +980,7 @@ export default function App() {
                   </div>
                 </div>
 
+                {/* YENİ KATEGORİ EKLEME BÖLÜMÜ */}
                 <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <FolderPlus size={16} color="#22c55e" /> Yeni Kategori Ekle
@@ -1013,6 +1006,7 @@ export default function App() {
                   </form>
                 </div>
 
+                {/* MEVCUT KATEGORİLERİ LİSTELEME VE SİLME */}
                 <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#0f172a', margin: '0 0 8px 0' }}>Mevcut Kategoriler ({Object.keys(categoriesWithSubs).length})</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '20px', maxHeight: '180px', overflowY: 'auto' }}>
                   {Object.keys(categoriesWithSubs).map(catKey => (
@@ -1028,6 +1022,7 @@ export default function App() {
                   ))}
                 </div>
 
+                {/* İLAN DENETİMİ */}
                 <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#0f172a', margin: '0 0 8px 0' }}>İlan Denetimi ({listings.length})</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '220px', overflowY: 'auto' }}>
                   {listings.map(item => (
@@ -1039,7 +1034,7 @@ export default function App() {
                           <span style={{ fontSize: '11px', color: '#64748b' }}>{item.price.toLocaleString('tr-TR')} TL</span>
                         </div>
                       </div>
-                      <button onClick={() => handleDeleteListing(item)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer', fontSize: '11px', flexShrink: 0 }}>
+                      <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer', fontSize: '11px', flexShrink: 0 }}>
                         İlanı Sil
                       </button>
                     </div>
