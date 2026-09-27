@@ -5,8 +5,8 @@ import {
   Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus 
 } from 'lucide-react';
 
+// İlk kurulum için yedek veriler (Sadece localStorage tamamen boşsa kullanılır)
 const INITIAL_LISTINGS = [
-  // 1. MAHSULLER (3 ADET)
   {
     id: 1,
     title: 'Bursamızın Meşhur Saplı Tatlı Kirazı',
@@ -42,292 +42,6 @@ const INITIAL_LISTINGS = [
     featured: true,
     image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
     date: 'Bugün'
-  },
-  {
-    id: 3,
-    title: 'Erken Hasat Soğuk Sıkım Sızma Zeytinyağı',
-    price: 1250,
-    category: 'Mahsuller',
-    subCategory: 'Zeytin & Zeytinyağı',
-    mode: 'Satılık',
-    location: 'Ayvalık / Balıkesir',
-    city: 'Balıkesir',
-    amount: '100 Teneke (5 Lt)',
-    description: 'Asit oranı düşük, geleneksel soğuk sıkım saf zeytinyağı.',
-    seller: 'Hasan Bilir',
-    phone: '0532 123 4567',
-    verified: true,
-    featured: false,
-    image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-
-  // 2. CANLI HAYVANLAR (3 ADET)
-  {
-    id: 4,
-    title: 'Holstein Süt İneği ve Buzağısı',
-    price: 85000,
-    category: 'Canlı Hayvanlar',
-    subCategory: 'Büyükbaş',
-    mode: 'Satılık',
-    location: 'Gönen / Balıkesir',
-    city: 'Balıkesir',
-    amount: '1 Baş + 1',
-    description: 'Günlük 30 litre süt veren, sağlığı yerinde inek ve buzağısı.',
-    seller: 'Mustafa Çoban',
-    phone: '0532 777 8899',
-    verified: true,
-    featured: true,
-    image: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-  {
-    id: 5,
-    title: 'Damızlık Sağlıklı Koyun ve Kuzu Sürüsü',
-    price: 12000,
-    category: 'Canlı Hayvanlar',
-    subCategory: 'Küçükbaş',
-    mode: 'Satılık',
-    location: 'Bandırma / Balıkesir',
-    city: 'Balıkesir',
-    amount: '15 Baş',
-    description: 'Veteriner kontrolleri tam, aşılı ve sağlıklı damızlık koyunlar.',
-    seller: 'Mehmet Aksoy',
-    phone: '0542 333 4455',
-    verified: true,
-    featured: false,
-    image: 'https://images.unsplash.com/photo-1484557077804-29774de7fc76?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-  {
-    id: 6,
-    title: 'Atak-S Yumurta Tavuğu (Yarka)',
-    price: 250,
-    category: 'Canlı Hayvanlar',
-    subCategory: 'Kanatlı',
-    mode: 'Satılık',
-    location: 'Susurluk / Balıkesir',
-    city: 'Balıkesir',
-    amount: '50 Adet',
-    description: 'Aşılı, yumurtaya yeni başlamış verimli yarka tavuklar.',
-    seller: 'Hasan Tavukçu',
-    phone: '0532 111 0022',
-    verified: true,
-    featured: false,
-    image: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-
-  // 3. HAYVAN YEMLERİ VE EKİPMANLARI (2 ADET)
-  {
-    id: 7,
-    title: 'Besi Süt Yemi (Çuval 50 kg)',
-    price: 450,
-    category: 'Hayvan Yemleri ve Ekipmanları',
-    subCategory: 'Yem Çeşitleri',
-    mode: 'Satılık',
-    location: 'Gönen / Balıkesir',
-    city: 'Balıkesir',
-    amount: '100 Çuval',
-    description: 'Yüksek proteinli kaliteli fabrika yemi.',
-    seller: 'Yem Dünyası',
-    phone: '0532 444 3322',
-    verified: true,
-    featured: true,
-    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-  {
-    id: 8,
-    title: 'Otomatik Büyükbaş Suluk',
-    price: 650,
-    category: 'Hayvan Yemleri ve Ekipmanları',
-    subCategory: 'Suluk / Yemlik',
-    mode: 'Satılık',
-    location: 'Balıkesir Merkez',
-    city: 'Balıkesir',
-    amount: '10 Adet',
-    description: 'Pirinç siboplu paslanmaz döküm suluk.',
-    seller: 'Ziraat Ekipman',
-    phone: '0533 222 1100',
-    verified: true,
-    featured: false,
-    image: 'https://images.unsplash.com/photo-1589927986064-0deb33169d8f?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-
-  // 4. ARICILIK
-  {
-    id: 9,
-    title: 'Meşe Çiçeği Yayla Süzme Balı (1 Kg)',
-    price: 400,
-    category: 'Arıcılık',
-    subCategory: 'Bal',
-    mode: 'Satılık',
-    location: 'Gönen / Balıkesir',
-    city: 'Balıkesir',
-    amount: '50 Kavanoz',
-    description: 'Meşe ağaçlarıyla çevrili doğal florada üretilmiş saf bal.',
-    seller: 'Can İnce',
-    phone: '0535 768 1550',
-    verified: true,
-    featured: true,
-    image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-  {
-    id: 10,
-    title: 'Saf Çiçek Polenİ (250 gr)',
-    price: 300,
-    category: 'Arıcılık',
-    subCategory: 'Polen',
-    mode: 'Satılık',
-    location: 'Balıkesir',
-    city: 'Balıkesir',
-    amount: '30 Adet',
-    description: 'Yüksek vitamin deposu doğal taze polen.',
-    seller: 'Arıcı Hasan',
-    phone: '0532 333 2211',
-    verified: true,
-    featured: false,
-    image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-  {
-    id: 11,
-    title: '10 Çerçeveli Boyalı Arı Kovanı',
-    price: 1200,
-    category: 'Arıcılık',
-    subCategory: 'Kovan ve Ekipmanları',
-    mode: 'Satılık',
-    location: 'Gönen / Balıkesir',
-    city: 'Balıkesir',
-    amount: '15 Adet',
-    description: 'Fırınlanmış çam keresteden arı kovanı.',
-    seller: 'Ahmet Arıcı',
-    phone: '0532 444 5566',
-    verified: true,
-    featured: true,
-    image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-
-  // 5. TRAKTÖR (1 ADET)
-  {
-    id: 13,
-    title: 'John Deere 6130M - Düşük saat, tek elden',
-    price: 2450000,
-    category: 'Traktör',
-    subCategory: 'İkinci El Traktör',
-    mode: 'Satılık',
-    location: 'Gönen / Balıkesir',
-    city: 'Balıkesir',
-    amount: '1200 Saat / 130 HP',
-    description: 'Kapalı garaj traktörüdür. Tüm bakımları yetkili serviste yapılmıştır.',
-    seller: 'Ahmet Yılmaz',
-    phone: '0532 555 0192',
-    verified: true,
-    featured: true,
-    image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-
-  // 6. BİÇERDÖVER (1 ADET)
-  {
-    id: 14,
-    title: 'New Holland TC 5070 Biçerdöver',
-    price: 3200000,
-    category: 'Biçerdöver',
-    subCategory: 'Biçerdöver',
-    mode: 'Satılık',
-    location: 'Karacabey / Bursa',
-    city: 'Bursa',
-    amount: 'Sezona Hazır',
-    description: 'Bütün bakımları yapılmış aktif çalışan biçerdöver.',
-    seller: 'Biçerdöverci Ali',
-    phone: '0532 888 9900',
-    verified: true,
-    featured: true,
-    image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-
-  // 7. TARIM EKİPMANLARI (1 ADET)
-  {
-    id: 15,
-    title: 'Tarım Römorku 5 Tonluk',
-    price: 180000,
-    category: 'Tarım Ekipmanları',
-    subCategory: 'Römork',
-    mode: 'Satılık',
-    location: 'Gönen / Balıkesir',
-    city: 'Balıkesir',
-    amount: '1 Adet',
-    description: 'İlavelik hidrolik frenli sağlam römork.',
-    seller: 'Demir Doğrama',
-    phone: '0535 444 3322',
-    verified: true,
-    featured: true,
-    image: 'https://images.unsplash.com/photo-1592417817098-8f3d69204052?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-
-  // 8. TARIM İŞÇİLERİ (1 ADET)
-  {
-    id: 16,
-    title: 'Hasat ve Toplama Ekibi (10 Kişilik)',
-    price: 1500,
-    category: 'Tarım İşçileri',
-    subCategory: 'Hasat Ekibi',
-    mode: 'Hizmet',
-    location: 'Gönen / Balıkesir',
-    city: 'Balıkesir',
-    amount: 'Günlük Yevmiye',
-    description: 'Meyve ve sebze hasatında deneyimli tecrübeli ekip.',
-    seller: 'Dayıbaşı Hasan',
-    phone: '0532 999 1122',
-    verified: true,
-    featured: true,
-    image: 'https://images.unsplash.com/photo-1595855759920-86582396756a?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-
-  // 9. UZMANLAR (VETERİNERLER, ZİRAATÇİLER)
-  {
-    id: 17,
-    title: 'Saha Veteriner Hekimi - Büyükbaş & Küçükbaş Sağlık Danışmanlığı',
-    price: 1000,
-    category: 'Uzmanlar',
-    subCategory: 'Veterinerler',
-    mode: 'Hizmet',
-    location: 'Gönen / Balıkesir',
-    city: 'Balıkesir',
-    amount: '',
-    description: 'Aşılama, suni tohumlama, doğum ve sürü sağlığı takibi.',
-    seller: 'Vet. Hekim Murat Arslan',
-    phone: '0532 666 7788',
-    verified: true,
-    featured: true,
-    image: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
-  },
-  {
-    id: 18,
-    title: 'Ziraat Mühendisi - Toprak Analizi ve Gübreleme Planı',
-    price: 1500,
-    category: 'Uzmanlar',
-    subCategory: 'Ziraatçiler',
-    mode: 'Hizmet',
-    location: 'Balıkesir / Bursa',
-    city: 'Balıkesir',
-    amount: '',
-    description: 'Ceviz ve meyve bahçeleri için budama, gübreleme ve hastalıklarla mücadele danışmanlığı.',
-    seller: 'Ziraat Müh. Selim Akar',
-    phone: '0535 222 3344',
-    verified: true,
-    featured: true,
-    image: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&q=80&w=800',
-    date: 'Bugün'
   }
 ];
 
@@ -345,16 +59,26 @@ const INITIAL_CATEGORIES = {
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home'); 
-  const [listings, setListings] = useState(INITIAL_LISTINGS);
-  const [categoriesWithSubs, setCategoriesWithSubs] = useState(INITIAL_CATEGORIES);
-  const [selectedListing, setSelectedListing] = useState(null);
   
+  // 🔒 GÜVENLİ BAŞLANGIÇ: Önce localStorage kontrol edilir, varsa eski veriler yüklenir!
+  const [listings, setListings] = useState(() => {
+    const saved = localStorage.getItem('pazartarla_listings');
+    return saved ? JSON.parse(saved) : INITIAL_LISTINGS;
+  });
+
+  const [categoriesWithSubs, setCategoriesWithSubs] = useState(() => {
+    const saved = localStorage.getItem('pazartarla_categories');
+    return saved ? JSON.parse(saved) : INITIAL_CATEGORIES;
+  });
+
+  const [selectedListing, setSelectedListing] = useState(null);
+   
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
 
   const [selectedCategory, setSelectedCategory] = useState('Tüm kategoriler');
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
-  
+   
   const [openCategory, setOpenCategory] = useState('');
 
   const [showViewModal, setShowViewModal] = useState(false);
@@ -391,7 +115,7 @@ export default function App() {
     // 🌐 Gerçek Zamanlı Ziyaretçi ve Cihaz Kaydı
     const isMobile = /Mobi|Android/i.test(navigator.userAgent);
     const savedData = localStorage.getItem('pazartarla_live_analytics');
-    
+     
     let currentStats = savedData ? JSON.parse(savedData) : {
       totalVisits: 120,
       mobileVisits: 75,
@@ -400,7 +124,6 @@ export default function App() {
       recentActions: []
     };
 
-    // Her sayfa yenilemede veya girişte sayaçları artır
     currentStats.totalVisits += 1;
     if (isMobile) {
       currentStats.mobileVisits += 1;
@@ -413,28 +136,6 @@ export default function App() {
 
     setAnalytics(currentStats);
     localStorage.setItem('pazartarla_live_analytics', JSON.stringify(currentStats));
-
-    const savedListings = localStorage.getItem('pazartarla_listings');
-    if (savedListings) {
-      try {
-        setListings(JSON.parse(savedListings));
-      } catch (e) {
-        setListings(INITIAL_LISTINGS);
-      }
-    } else {
-      setListings(INITIAL_LISTINGS);
-    }
-
-    const savedCats = localStorage.getItem('pazartarla_categories');
-    if (savedCats) {
-      try {
-        setCategoriesWithSubs(JSON.parse(savedCats));
-      } catch (e) {
-        setCategoriesWithSubs(INITIAL_CATEGORIES);
-      }
-    } else {
-      setCategoriesWithSubs(INITIAL_CATEGORIES);
-    }
 
     window.history.replaceState({ tab: 'home' }, '');
 
@@ -533,7 +234,7 @@ export default function App() {
       return;
     }
     const subs = newSubCategoryName.trim() ? newSubCategoryName.split(',').map(s => s.trim()).filter(Boolean) : ['Genel'];
-    
+     
     const updatedCats = { ...categoriesWithSubs, [catName]: subs };
     saveCategories(updatedCats);
     setNewCategoryName('');
@@ -562,6 +263,7 @@ export default function App() {
     alert('Admin Paneli Şifreniz: 1234');
   };
 
+  // Sosyal Medya Paylaşım Fonksiyonları
   const shareOnWhatsApp = (item) => {
     const text = encodeURIComponent(`🌾 PazarTarla İlanı:\n*${item.title}*\nFiyat: ${item.price.toLocaleString('tr-TR')} TL\nKonum: ${item.location}\nİletişim: ${item.phone}`);
     window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
@@ -570,6 +272,11 @@ export default function App() {
   const shareOnTwitter = (item) => {
     const text = encodeURIComponent(`PazarTarla'da tarım ilanı: ${item.title} - ${item.price.toLocaleString('tr-TR')} TL (${item.location})`);
     window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
+  };
+
+  const shareOnFacebook = () => {
+    const pageUrl = window.location.href;
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}`, '_blank');
   };
 
   const copyListingLink = (item) => {
@@ -586,7 +293,7 @@ export default function App() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f4f6f8', color: '#1e293b', fontFamily: 'system-ui, -apple-system, sans-serif', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', overflowX: 'hidden', boxSizing: 'border-box', position: 'relative' }}>
-      
+       
       {/* ÜST HEADER */}
       <header style={{ backgroundColor: '#1b3a2b', color: '#ffffff', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', position: 'sticky', top: 0, zIndex: 100, width: '100%', boxSizing: 'border-box' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => { changeTab('home'); setSelectedCategory('Tüm kategoriler'); setSelectedSubCategory('Tümü'); }}>
@@ -611,7 +318,7 @@ export default function App() {
 
       {/* ANA İÇERİK */}
       <main style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '12px', flex: 1, boxSizing: 'border-box' }}>
-        
+         
         {/* 1. EKRAN: KATEGORİ SEÇİMİ */}
         {activeTab === 'home' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflow: 'hidden', border: '1px solid #e2e8f0', width: '100%', boxSizing: 'border-box' }}>
@@ -687,7 +394,7 @@ export default function App() {
               >
                 <ArrowLeft size={16} /> Kategoriler
               </button>
-              
+               
               <div style={{ display: 'flex', gap: '12px', fontSize: '12px', fontWeight: '600' }}>
                 <span onClick={() => alert('Filtreleme aktif')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}>
                   <Filter size={13} /> Filtrele
@@ -788,28 +495,39 @@ export default function App() {
               <button onClick={() => changeTab('results')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <ArrowLeft size={16} /> Listeye Dön
               </button>
+            </div>
 
-              <div style={{ display: 'flex', gap: '6px' }}>
+            {/* Şık Sosyal Medya Paylaşım Butonları Alanı */}
+            <div style={{ marginBottom: '14px', backgroundColor: '#f8fafc', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+              <span style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>Bu İlanı Sosyal Medyada Paylaş:</span>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                 <button 
                   onClick={() => shareOnWhatsApp(selectedListing)} 
                   title="WhatsApp ile Paylaş"
-                  style={{ backgroundColor: '#25D366', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                  style={{ backgroundColor: '#25D366', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                 >
                   <Send size={13} /> WhatsApp
                 </button>
                 <button 
                   onClick={() => shareOnTwitter(selectedListing)} 
                   title="X (Twitter) ile Paylaş"
-                  style={{ backgroundColor: '#0f172a', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
+                  style={{ backgroundColor: '#0f172a', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                 >
                   X
                 </button>
                 <button 
-                  onClick={() => copyListingLink(selectedListing)} 
-                  title="İlanı Kopyala"
-                  style={{ backgroundColor: '#e2e8f0', color: '#334155', border: 'none', padding: '6px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
+                  onClick={shareOnFacebook} 
+                  title="Facebook'ta Paylaş"
+                  style={{ backgroundColor: '#1877F2', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                 >
-                  <Copy size={13} />
+                  Facebook
+                </button>
+                <button 
+                  onClick={() => copyListingLink(selectedListing)} 
+                  title="Bağlantıyı Kopyala"
+                  style={{ backgroundColor: '#64748b', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                >
+                  <Copy size={13} /> Kopyala
                 </button>
               </div>
             </div>
