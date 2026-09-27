@@ -218,11 +218,9 @@ export default function App() {
     }
   };
 
-  // 🛠️ DÜZELTİLEN İLAN EKLEME FONKSİYONU
   const handleDirectAdd = (e) => {
     e.preventDefault();
     
-    // Güvenli kontrol: Boşlukları temizleyerek kontrol et
     if (!form.title.trim() || !form.price || !form.phone.trim() || !form.seller.trim()) {
       alert('Lütfen başlık, fiyat, satıcı adı ve telefon numarası alanlarını eksiksiz doldurun.');
       return;
@@ -244,7 +242,6 @@ export default function App() {
     const updated = [newEntry, ...listings];
     saveListings(updated);
     
-    // Formu sıfırla
     setForm({
       title: '',
       price: '',
@@ -275,6 +272,7 @@ export default function App() {
     }
   };
 
+  // 🛠️ DÜZELTİLEN KATEGORİ VE ALT KATEGORİ EKLEME FONKSİYONU
   const handleAddCategory = (e) => {
     e.preventDefault();
     if (!newCategoryName.trim()) {
@@ -286,13 +284,17 @@ export default function App() {
       alert('Bu kategori zaten mevcut!');
       return;
     }
-    const subs = newSubCategoryName.trim() ? newSubCategoryName.split(',').map(s => s.trim()).filter(Boolean) : ['Genel'];
+    
+    // Alt kategorileri virgülle ayırıp güvenli bir dizi (array) haline getiriyoruz
+    const subs = newSubCategoryName.trim() 
+      ? newSubCategoryName.split(',').map(s => s.trim()).filter(Boolean) 
+      : ['Genel'];
      
     const updatedCats = { ...categoriesWithSubs, [catName]: subs };
     saveCategories(updatedCats);
     setNewCategoryName('');
     setNewSubCategoryName('');
-    alert(`"${catName}" kategorisi başarıyla eklendi!`);
+    alert(`"${catName}" kategorisi ve alt dalları başarıyla eklendi!`);
   };
 
   const handleDeleteCategory = (catKey) => {
