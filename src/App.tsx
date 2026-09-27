@@ -312,7 +312,7 @@ const INITIAL_LISTINGS = [
     date: 'Bugün'
   },
 
-  // 10. UZMANLAR (VETERİNERLER, ZİRAATÇİLER) - Miktar alanları kaldırıldı
+  // 10. UZMANLAR (VETERİNERLER, ZİRAATÇİLER)
   {
     id: 17,
     title: 'Saha Veteriner Hekimi - Büyükbaş & Küçükbaş Sağlık Danışmanlığı',
@@ -448,6 +448,7 @@ export default function App() {
       ...form,
       id: Date.now(),
       price: Number(form.price),
+      amount: form.category === 'Uzmanlar' ? '' : form.amount,
       verified: true,
       featured: false,
       date: 'Bugün'
@@ -801,10 +802,12 @@ export default function App() {
                   <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Alt Ürün</label>
                   <input type="text" name="subCategory" placeholder="Ceviz" value={form.subCategory} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
                 </div>
-                <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Miktar / Kapasite</label>
-                  <input type="text" name="amount" placeholder="5 Ton" value={form.amount} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
-                </div>
+                {form.category !== 'Uzmanlar' && (
+                  <div>
+                    <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Miktar / Kapasite</label>
+                    <input type="text" name="amount" placeholder="5 Ton" value={form.amount} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '13px' }} />
+                  </div>
+                )}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div>
