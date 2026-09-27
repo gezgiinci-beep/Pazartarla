@@ -7,7 +7,7 @@ import {
 
 // 🔥 FIREBASE BAĞLANTISI VE FIRESTORE MODÜLLERİ
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, setDoc } from "firebase/firestore";
+import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC-jMs4FRACwwm2ZXSkL8Kd3htIAib2bng",
@@ -385,7 +385,7 @@ export default function App() {
     image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800'
   });
 
-  // 🔄 FIRESTORE'DAN VERİLERİ ÇEKME VE ANALİTİK BAŞLANGICI
+  // 🔄 FIRESTORE'DAN VERİLERİ ÇEKME
   useEffect(() => {
     const fetchFirestoreData = async () => {
       try {
