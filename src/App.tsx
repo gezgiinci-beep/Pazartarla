@@ -360,7 +360,6 @@ export default function App() {
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewMode, setViewMode] = useState('Liste');
 
-  // Yeni kategori ekleme state'leri
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
 
@@ -551,9 +550,9 @@ export default function App() {
   });
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f4f6f8', color: '#1e293b', fontFamily: 'system-ui, -apple-system, sans-serif', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', overflowX: 'hidden', boxSizing: 'border-box' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f4f6f8', color: '#1e293b', fontFamily: 'system-ui, -apple-system, sans-serif', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', overflowX: 'hidden', boxSizing: 'border-box', position: 'relative' }}>
       
-      {/* ÜST HEADER */}
+      {/* ÜST HEADER (Admin Butonu Kaldırıldı) */}
       <header style={{ backgroundColor: '#1b3a2b', color: '#ffffff', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', position: 'sticky', top: 0, zIndex: 100, width: '100%', boxSizing: 'border-box' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => { changeTab('home'); setSelectedCategory('Tüm kategoriler'); setSelectedSubCategory('Tümü'); }}>
           <div style={{ backgroundColor: '#22c55e', padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -566,13 +565,6 @@ export default function App() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <button 
-            onClick={() => changeTab('admin-page')}
-            title="Yönetim Paneli"
-            style={{ backgroundColor: '#0f172a', color: '#86efac', border: '1px solid rgba(255,255,255,0.2)', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', fontWeight: '700', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px' }}
-          >
-            <ShieldAlert size={16} /> Admin
-          </button>
           <button 
             onClick={() => changeTab('add')}
             style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: '700', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '0 2px 8px rgba(34, 197, 94, 0.3)' }}
@@ -647,12 +639,6 @@ export default function App() {
                 </div>
               );
             })}
-
-            <div style={{ padding: '16px', textAlign: 'center', backgroundColor: '#f8fafc' }}>
-              <button onClick={() => changeTab('admin-page')} style={{ background: 'none', border: 'none', color: '#1b3a2b', fontSize: '13px', cursor: 'pointer', fontWeight: '700', textDecoration: 'underline' }}>
-                Yönetim Paneline Git (Admin Sayfası)
-              </button>
-            </div>
           </div>
         )}
 
@@ -893,7 +879,7 @@ export default function App() {
           </div>
         )}
 
-        {/* AYRI ADMIN SAYFASI VE KATEGORİ YÖNETİMİ */}
+        {/* ADMIN SAYFASI VE KATEGORİ YÖNETİMİ */}
         {activeTab === 'admin-page' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', boxSizing: 'border-box', width: '100%' }}>
             {!isAdminLoggedIn ? (
@@ -999,13 +985,38 @@ export default function App() {
           <span>•</span>
           <span style={{ cursor: 'pointer' }} onClick={() => alert('PazarTarla Tarım Pazaryeri Platformu')}>Hakkımızda</span>
           <span>•</span>
-          <span style={{ cursor: 'pointer' }} onClick={() => changeTab('admin-page')} style={{ cursor: 'pointer', color: '#86efac' }}>Yönetim Paneli</span>
+          <span style={{ cursor: 'pointer' }} onClick={() => alert('Tüm hakları saklıdır.')}>Güvenli Alışveriş</span>
         </div>
         <div style={{ fontSize: '11px', color: '#86efac', fontWeight: '500' }}>
           E-posta: gezginci@gmail.com | Tel: 0535 768 1550
         </div>
         <span>© 2026 PazarTarla • Gönen / Balıkesir</span>
       </footer>
+
+      {/* SAYFANIN EN ALT SAĞ KÖŞESİNDE KÜÇÜK SABİT ADMIN SİMGESİ */}
+      <button
+        onClick={() => changeTab('admin-page')}
+        title="Yönetim Paneli"
+        style={{
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          backgroundColor: '#1b3a2b',
+          color: '#86efac',
+          border: '2px solid #22c55e',
+          borderRadius: '50%',
+          width: '44px',
+          height: '44px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+          zIndex: 999
+        }}
+      >
+        ⚙️
+      </button>
 
     </div>
   );
