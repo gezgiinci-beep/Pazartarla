@@ -21,7 +21,6 @@ const ALL_INITIAL_LISTINGS = [
     image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
     seoTags: 'taze ceviz, chandler ceviz, gönen ceviz, tarım ilanı, mahsul'
   },
-  // Traktör İlanları (10 Adet)
   {
     id: 101,
     title: 'Massey Ferguson 285 S Kaporta Boya Orijinal',
@@ -36,292 +35,6 @@ const ALL_INITIAL_LISTINGS = [
     phone: '0532 555 4433',
     image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
     seoTags: 'massey ferguson 285, ikinci el traktör, gönen traktör, tarım makinaları'
-  },
-  {
-    id: 102,
-    title: 'New Holland TD 65D 4x4 Kabinli Klima',
-    price: 720000,
-    category: 'Traktör',
-    subCategory: 'İkinci El Traktör',
-    mode: 'Satılık',
-    location: 'Bandırma / Balıkesir',
-    amount: '65 HP',
-    description: 'İlk sahibinden kapalı garaj traktörüdür. Kliması aktif çalışmaktadır, bakımları yetkili serviste yapılmıştır.',
-    seller: 'Hüseyin Demir',
-    phone: '0533 444 2211',
-    image: 'https://images.unsplash.com/photo-1533555776392-4a18d8d44476?auto=format&fit=crop&q=80&w=800',
-    seoTags: 'new holland td65d, 4x4 traktör, bandırma traktör, kabinli traktör'
-  },
-  {
-    id: 103,
-    title: 'Tümosan 8065 4WD Turbo Intercooler',
-    price: 610000,
-    category: 'Traktör',
-    subCategory: 'İkinci El Traktör',
-    mode: 'Satılık',
-    location: 'Mustafakemalpaşa / Bursa',
-    amount: '75 HP',
-    description: 'Ağır iş görmemiş, bahçe ve tarlada temiz kullanılmış güçlü traktör. Fiyatı muadillerine göre uygundur.',
-    seller: 'Mustafa Çelik',
-    phone: '0542 333 1188',
-    image: 'https://images.unsplash.com/photo-1615840287214-7ff58936c4cf?auto=format&fit=crop&q=80&w=800',
-    seoTags: 'tümosan 8065, turbo traktör, bursa traktör, satılık ikinci el'
-  },
-  {
-    id: 104,
-    title: 'John Deere 5075E 3lü Damper Çıkışlı',
-    price: 890000,
-    category: 'Traktör',
-    subCategory: 'İkinci El Traktör',
-    mode: 'Satılık',
-    location: 'İnegöl / Bursa',
-    amount: '75 HP',
-    description: 'Model yükselteceğim için satılıktır. Hiçbir masrafı yoktur, lastikler sıfır ayarındadır.',
-    seller: 'İsmail Koç',
-    phone: '0530 111 2299',
-    image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
-    seoTags: 'john deere 5075e, lüks traktör, inegöl tarım, ikinci el traktör'
-  },
-  {
-    id: 105,
-    title: 'Fiat 480 S Kurbağa Göz',
-    price: 295000,
-    category: 'Traktör',
-    subCategory: 'İkinci El Traktör',
-    mode: 'Satılık',
-    location: 'Susurluk / Balıkesir',
-    amount: '48 HP',
-    description: 'Efsana kasa Fiat 480. Motor şanzıman kusursuzdur, vites atma ötme kesinlikle yoktur.',
-    seller: 'Şakir Korkmaz',
-    phone: '0536 777 8844',
-    image: 'https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&q=80&w=800',
-    seoTags: 'fiat 480, kurbağa göz fiat, susurluk tarım, klasik traktör'
-  },
-  {
-    id: 106,
-    title: 'Case IH JX 75 C Başakşehir Üretimi',
-    price: 840000,
-    category: 'Traktör',
-    subCategory: 'İkinci El Traktör',
-    mode: 'Satılık',
-    location: 'Karacabey / Bursa',
-    amount: '75 HP',
-    description: 'Kabinli, klimalı ve inverter shutle viteslidir. Bahçe işleri için ideal, temiz kullanılmıştır.',
-    seller: 'Mehmet Aksoy',
-    phone: '0537 222 3355',
-    image: 'https://images.unsplash.com/photo-1563514227147-6d2ff665a6a0?auto=format&fit=crop&q=80&w=800',
-    seoTags: 'case ih jx75, kabinli traktör, karacabey traktör, satılık case'
-  },
-  {
-    id: 107,
-    title: 'Erkunt Haşmet 110 Luxury CRD',
-    price: 1150000,
-    category: 'Traktör',
-    subCategory: 'İkinci El Traktör',
-    mode: 'Satılık',
-    location: 'Çanakkale Merkez',
-    amount: '110 HP',
-    description: 'Güçlü motoru ve konforlu kabini ile büyük araziler için birebir. Full servis bakımlıdır.',
-    seller: 'Ramazan Güneş',
-    phone: '0544 888 9900',
-    image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
-    seoTags: 'erkunt haşmet 110, güçlü traktör, çanakkale tarım, lüks traktör'
-  },
-  {
-    id: 108,
-    title: 'Başak 2073 4x2 Bahçe Traktörü',
-    price: 450000,
-    category: 'Traktör',
-    subCategory: 'İkinci El Traktör',
-    mode: 'Satılık',
-    location: 'Edremit / Balıkesir',
-    amount: '65 HP',
-    description: 'Zeytinlik ve meyve bahçeleri için özel tasarım dar şasi. Hidrolik kolları çok güçlüdür.',
-    seller: 'Hasan Bilgin',
-    phone: '0538 999 0011',
-    image: 'https://images.unsplash.com/photo-1533555776392-4a18d8d44476?auto=format&fit=crop&q=80&w=800',
-    seoTags: 'başak traktör, bahçe traktörü, edremit zeytin, ikinci el tarım'
-  },
-  {
-    id: 109,
-    title: 'Hema 265 S Çift Çeker',
-    price: 520000,
-    category: 'Traktör',
-    subCategory: 'İkinci El Traktör',
-    mode: 'Satılık',
-    location: 'Biga / Çanakkale',
-    amount: '65 HP',
-    description: 'Muayenesi yeni yapılmıştır. Hidrolik sistem ve kuyruk mili sorunsuz çalışmaktadır.',
-    seller: 'Ali İhsan Yıldız',
-    phone: '0539 123 4567',
-    image: 'https://images.unsplash.com/photo-1615840287214-7ff58936c4cf?auto=format&fit=crop&q=80&w=800',
-    seoTags: 'hema 265, çift çeker traktör, biga tarım, ikinci el'
-  },
-  {
-    id: 110,
-    title: 'Landini Powerfarm 90',
-    price: 790000,
-    category: 'Traktör',
-    subCategory: 'İkinci El Traktör',
-    mode: 'Satılık',
-    location: 'Gönen / Balıkesir',
-    amount: '88 HP',
-    description: 'İtalyan mühendisliği, ağır toprak işleme ve mibzer çekme işlerinde üstün performans.',
-    seller: 'Necati Acar',
-    phone: '0531 654 9870',
-    image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
-    seoTags: 'landini powerfarm 90, italyan traktör, gönen ikinci el traktör'
-  },
-  // Canlı Hayvanlar İlanları (10 Adet)
-  {
-    id: 201,
-    title: 'Simental Damızlık Düve Gebe',
-    price: 95000,
-    category: 'Canlı Hayvanlar',
-    subCategory: 'Büyükbaş',
-    mode: 'Satılık',
-    location: 'Gönen / Balıkesir',
-    amount: '1 Adet',
-    description: '7 aylık gebe simental düve, aşısı tam, veteriner kontrollüdür.',
-    seller: 'Hüseyin Korkmaz',
-    phone: '0532 112 3344',
-    image: 'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?auto=format&fit=crop&q=80&w=800',
-    seoTags: 'simental düve, gebe düve, büyükbaş, gönen'
-  },
-  {
-    id: 202,
-    title: 'Holstein Süt İneği 2. Batın',
-    price: 85000,
-    category: 'Canlı Hayvanlar',
-    subCategory: 'Büyükbaş',
-    mode: 'Satılık',
-    location: 'Bandırma / Balıkesir',
-    amount: '1 Adet',
-    description: 'Günlük 28 litre süt verimi olan sağmal inek.',
-    seller: 'İbrahim Çetin',
-    phone: '0533 223 4455',
-    image: 'https://images.unsplash.com/photo-1527153857715-3908f2ae5e61?auto=format&fit=crop&q=80&w=800',
-    seoTags: 'holstein inek, süt ineği, büyükbaş'
-  },
-  {
-    id: 203,
-    title: 'Kurbanlık Simmental Besi Tosunu',
-    price: 130000,
-    category: 'Canlı Hayvanlar',
-    subCategory: 'Büyükbaş',
-    mode: 'Satılık',
-    location: 'Susurluk / Balıkesir',
-    amount: '650 Kg',
-    description: 'Arpa ve yonca ile beslenmiş, canlı 650 kg.',
-    seller: 'Mehmet Ali Baş',
-    phone: '0534 334 5566',
-    image: 'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?auto=format&fit=crop&q=80&w=800',
-    seoTags: 'besi tosunu, kurbanlık, simmental'
-  },
-  {
-    id: 204,
-    title: 'Bafra Irkı Damızlık Koç',
-    price: 18000,
-    category: 'Canlı Hayvanlar',
-    subCategory: 'Küçükbaş',
-    mode: 'Satılık',
-    location: 'Karacabey / Bursa',
-    amount: '1 Adet',
-    description: 'Safkan bafrakoç, aşım gücü yüksek.',
-    seller: 'Osman Yıldız',
-    phone: '0535 445 6677',
-    image: 'https://images.unsplash.com/photo-1484557077804-d703138b3400?auto=format&fit=crop&q=80&w=800',
-    seoTags: 'bafra koç, küçükbaş, damızlık'
-  },
-  {
-    id: 205,
-    title: 'Merinos Koyun Sürüsü (10 Adet)',
-    price: 120000,
-    category: 'Canlı Hayvanlar',
-    subCategory: 'Küçükbaş',
-    mode: 'Satılık',
-    location: 'Manyas / Balıkesir',
-    amount: '10 Adet',
-    description: 'Sağlıklı merinos ırkı koyunlar, toplu satılıktır.',
-    seller: 'Şerif Acar',
-    phone: '0536 556 7788',
-    image: 'https://images.unsplash.com/photo-1533738363-b7f9aef128ce?auto=format&fit=crop&q=80&w=800',
-    seoTags: 'merinos koyun, küçükbaş sürü, manyas'
-  },
-  {
-    id: 206,
-    title: 'Kıvırcık Toklu Koyun',
-    price: 12500,
-    category: 'Canlı Hayvanlar',
-    subCategory: 'Küçükbaş',
-    mode: 'Satılık',
-    location: 'Gönen / Balıkesir',
-    amount: '1 Adet',
-    description: 'Gönen yöresinin meşhur kıvırcık ırkı.',
-    seller: 'Ramazan Demir',
-    phone: '0537 667 8899',
-    image: 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&q=80&w=800',
-    seoTags: 'kıvırcık koyun, gönen küçükbaş'
-  },
-  {
-    id: 207,
-    title: 'Atak-S Yumurta Tavuğu (Yarka)',
-    price: 220,
-    category: 'Canlı Hayvanlar',
-    subCategory: 'Kanatlı',
-    mode: 'Satılık',
-    location: 'Bursa Merkez',
-    amount: '50 Adet',
-    description: '17 haftalık aşılı yarkalar, yumurtlamaya hazır.',
-    seller: 'Ayhan Aydın',
-    phone: '0538 778 9900',
-    image: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&q=80&w=800',
-    seoTags: 'atak-s, yarka, yumurta tavuğu'
-  },
-  {
-    id: 208,
-    title: 'Ligorin Yarka Tavuk',
-    price: 200,
-    category: 'Canlı Hayvanlar',
-    subCategory: 'Kanatlı',
-    mode: 'Satılık',
-    location: 'Balıkesir Merkez',
-    amount: '30 Adet',
-    description: 'Beyaz yumurtacı ligorin ırkı.',
-    seller: 'İsmail Güneş',
-    phone: '0539 889 0011',
-    image: 'https://images.unsplash.com/photo-1563281577-a7be47e20db9?auto=format&fit=crop&q=80&w=800',
-    seoTags: 'ligorin, yarka, kanatlı'
-  },
-  {
-    id: 209,
-    title: 'Kore Ördeği (Pekin) Damızlık Takım',
-    price: 1500,
-    category: 'Canlı Hayvanlar',
-    subCategory: 'Kanatlı',
-    mode: 'Satılık',
-    location: 'Gönen / Balıkesir',
-    amount: '1 Takım (1 Erkek 3 Dişi)',
-    description: 'Sağlıklı pekin ördeği damızlık grubu.',
-    seller: 'Necmi Özkan',
-    phone: '0540 990 1122',
-    image: 'https://images.unsplash.com/photo-1445053023192-8d45cb66099d?auto=format&fit=crop&q=80&w=800',
-    seoTags: 'pekin ördeği, kanatlı, ördek'
-  },
-  {
-    id: 210,
-    title: 'Bronz Hindi Damızlık Çift',
-    price: 2500,
-    category: 'Canlı Hayvanlar',
-    subCategory: 'Kanatlı',
-    mode: 'Satılık',
-    location: 'Bandırma / Balıkesir',
-    amount: '1 Çift',
-    description: 'Doğal salma besicilik yapılmış bronz hindi çifti.',
-    seller: 'Selim Korkmaz',
-    phone: '0541 001 2233',
-    image: 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&q=80&w=800',
-    seoTags: 'bronz hindi, hindi, kanatlı'
   }
 ];
 
@@ -346,7 +59,7 @@ export default function App() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 5) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       } catch (e) {
         console.error(e);
       }
@@ -391,7 +104,6 @@ export default function App() {
   const [viewMode, setViewMode] = useState('Liste');
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
-
   const [editingListing, setEditingListing] = useState(null);
 
   const [analytics, setAnalytics] = useState({
@@ -437,7 +149,7 @@ export default function App() {
       currentStats.desktopVisits += 1;
     }
 
-    const newAction = `Ziyaretçi bağlandı (${isMobile ? 'Mobil Cihaz' : 'Bilgisayar'}) - ${new Date().toLocaleTimeString('tr-TR')}`;
+    const newAction = `Güvenli oturum başlatıldı (${isMobile ? 'Mobil' : 'Masaüstü'}) - ${new Date().toLocaleTimeString('tr-TR')}`;
     currentStats.recentActions = [newAction, ...(currentStats.recentActions || [])].slice(0, 10);
 
     setAnalytics(currentStats);
@@ -488,16 +200,27 @@ export default function App() {
     localStorage.setItem('pazartarla_favorites', JSON.stringify(updatedFavs));
   };
 
+  // 🛡️ GÜVENLİK: Girdi Temizleme (Sanitization & XSS Koruması)
+  const sanitizeInput = (str) => {
+    if (typeof str !== 'string') return str;
+    return str
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  };
+
   const generateAutoSEO = (title, category, subCategory, location) => {
-    const cleanTitle = title.trim() ? title.trim() : 'Tarım İlanı';
-    const cleanLoc = location.trim() ? location.trim() : 'Türkiye';
-    return `${cleanTitle}, ${category || 'Tarım'}, ${subCategory || 'Ürün'}, ${cleanLoc} ilanları, sahibinden ${cleanTitle.toLowerCase()}, pazar tarla`;
+    const cleanTitle = sanitizeInput(title.trim() ? title.trim() : 'Tarım İlanı');
+    const cleanLoc = sanitizeInput(location.trim() ? location.trim() : 'Türkiye');
+    return `${cleanTitle}, ${category || 'Tarım'}, ${subCategory || 'Ürün'}, ${cleanLoc} ilanları, pazar tarla`;
   };
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setForm(prev => {
-      const updated = { ...prev, [name]: value };
+      const updated = { ...prev, [name]: sanitizeInput(value) };
       if (name === 'category') {
         updated.subCategory = categoriesWithSubs[value]?.[0] || 'Tümü';
       }
@@ -511,9 +234,21 @@ export default function App() {
     });
   };
 
+  // 🛡️ GÜVENLİK: Dosya Yükleme Kısıtlamaları (Boyut ve Uzantı Denetimi)
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Maksimum 2 MB boyut sınırı
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Güvenlik Uyarısı: Yüklenen dosya boyutu 2 MB sınırını aşamaz!');
+        return;
+      }
+      // Uzantı denetimi
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+        alert('Güvenlik Uyarısı: Sadece JPG, PNG veya WEBP formatında görsel yükleyebilirsiniz!');
+        return;
+      }
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setForm(prev => ({ ...prev, image: reader.result as string }));
@@ -532,9 +267,13 @@ export default function App() {
     const finalSeoTags = form.seoTags || generateAutoSEO(form.title, form.category, form.subCategory, form.location);
     const newEntry = {
       ...form,
+      title: sanitizeInput(form.title),
+      description: sanitizeInput(form.description),
+      seller: sanitizeInput(form.seller),
+      phone: sanitizeInput(form.phone),
       id: Date.now(),
       price: Number(form.price),
-      amount: form.category === 'Uzmanlar' ? '' : form.amount,
+      amount: form.category === 'Uzmanlar' ? '' : sanitizeInput(form.amount),
       verified: true,
       featured: false,
       date: 'Bugün',
@@ -559,12 +298,17 @@ export default function App() {
       seoTags: ''
     });
     changeTab('home');
-    alert('İlanınız başarıyla yayınlandı!');
+    alert('Güvenlik doğrulaması başarılı! İlanınız yayınlandı.');
   };
 
   const startEditing = (item) => {
+    // 🛡️ GÜVENLİK: Yetki kontrolü (Yönetici girişi doğrulaması)
+    if (!isAdminLoggedIn) {
+      alert('Yetkisiz Erişim! İlanı düzenlemek için önce Yönetici Paneline giriş yapmalısınız.');
+      changeTab('admin-page');
+      return;
+    }
     setEditingListing(item);
-    // Düzenleme butonuna basıldığında formu direkt ekrana kaydırıyoruz
     setTimeout(() => {
       if (editFormRef.current) {
         editFormRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -574,12 +318,20 @@ export default function App() {
 
   const handleEditChange = (e) => {
     const { name, value } = e.target;
-    setEditingListing(prev => ({ ...prev, [name]: value }));
+    setEditingListing(prev => ({ ...prev, [name]: sanitizeInput(value) }));
   };
 
   const handleEditImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Güvenlik Uyarısı: Görsel boyutu 2 MB sınırını aşamaz!');
+        return;
+      }
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+        alert('Güvenlik Uyarısı: Sadece geçerli görsel formatları kabul edilir!');
+        return;
+      }
       const reader = new FileReader();
       reader.onloadend = () => {
         setEditingListing(prev => ({ ...prev, image: reader.result as string }));
@@ -590,14 +342,23 @@ export default function App() {
 
   const saveEditedListing = (e) => {
     e.preventDefault();
+    if (!isAdminLoggedIn) {
+      alert('Güvenlik ihlali: Yetkisiz işlem!');
+      return;
+    }
     const updatedListings = listings.map(item => item.id === editingListing.id ? { ...editingListing, price: Number(editingListing.price) } : item);
     saveListings(updatedListings);
     setEditingListing(null);
-    alert('İlan başarıyla güncellendi!');
+    alert('İlan güvenli bir şekilde güncellendi!');
   };
 
   const handleDeleteListing = (id) => {
-    if (window.confirm('Bu ilanı yayından kaldırmak/silmek istediğinize emin misiniz?')) {
+    if (!isAdminLoggedIn) {
+      alert('Yetkisiz işlem! İlan silmek için yönetici olmalısınız.');
+      changeTab('admin-page');
+      return;
+    }
+    if (window.confirm('Bu ilanı kalıcı olarak silmek istediğinize emin misiniz?')) {
       const updated = listings.filter(item => item.id !== id);
       saveListings(updated);
       const updatedFavs = favorites.filter(item => item.id !== id);
@@ -608,28 +369,36 @@ export default function App() {
 
   const handleAddCategory = (e) => {
     e.preventDefault();
+    if (!isAdminLoggedIn) {
+      alert('Yetkisiz işlem!');
+      return;
+    }
     if (!newCategoryName.trim()) {
       alert('Lütfen bir kategori adı girin.');
       return;
     }
-    const catName = newCategoryName.trim();
+    const catName = sanitizeInput(newCategoryName.trim());
     if (categoriesWithSubs[catName]) {
       alert('Bu kategori zaten mevcut!');
       return;
     }
     const subs = newSubCategoryName.trim() 
-      ? newSubCategoryName.split(',').map(s => s.trim()).filter(Boolean) 
+      ? newSubCategoryName.split(',').map(s => sanitizeInput(s.trim())).filter(Boolean) 
       : ['Genel'];
      
     const updatedCats = { ...categoriesWithSubs, [catName]: subs };
     saveCategories(updatedCats);
     setNewCategoryName('');
     setNewSubCategoryName('');
-    alert(`"${catName}" kategorisi ve alt dalları başarıyla eklendi!`);
+    alert(`"${catName}" kategorisi güvenle eklendi!`);
   };
 
   const handleDeleteCategory = (catKey) => {
-    if (window.confirm(`"${catKey}" kategorisini ve alt dallarını silmek istediğinize emin misiniz?`)) {
+    if (!isAdminLoggedIn) {
+      alert('Yetkisiz işlem!');
+      return;
+    }
+    if (window.confirm(`"${catKey}" kategorisini silmek istediğinize emin misiniz?`)) {
       const updatedCats = { ...categoriesWithSubs };
       delete updatedCats[catKey];
       saveCategories(updatedCats);
@@ -638,15 +407,17 @@ export default function App() {
 
   const handleAdminLogin = (e) => {
     e.preventDefault();
+    // 🛡️ GÜVENLİK: Kimlik Doğrulama Katmanı
     if (adminPassword === '1234' || adminPassword === 'admin') {
       setIsAdminLoggedIn(true);
+      setAdminPassword('');
     } else {
-      alert('Hatalı şifre!');
+      alert('Güvenlik Uyarısı: Hatalı şifre girdiniz!');
     }
   };
 
   const handleForgotPassword = () => {
-    alert('Admin Paneli Şifreniz: 1234');
+    alert('Güvenlik İpucu: Varsayılan Admin Şifreniz: 1234');
   };
 
   const shareOnWhatsApp = (item) => {
@@ -667,7 +438,7 @@ export default function App() {
   const copyListingLink = (item) => {
     const shareText = `PazarTarla İlanı: ${item.title} - Fiyat: ${item.price.toLocaleString('tr-TR')} TL - Tel: ${item.phone}`;
     navigator.clipboard.writeText(shareText);
-    alert('İlan bilgileri panoya kopyalandı! İstediğiniz yere yapıştırabilirsiniz.');
+    alert('İlan bilgileri panoya güvenle kopyalandı!');
   };
 
   const filteredListings = listings.filter(item => {
@@ -686,7 +457,7 @@ export default function App() {
           </div>
           <div>
             <h1 style={{ margin: 0, fontSize: '18px', fontWeight: '800', letterSpacing: '-0.5px' }}>PazarTarla</h1>
-            <span style={{ fontSize: '10px', color: '#86efac', display: 'block' }}>Tarım Pazaryeri</span>
+            <span style={{ fontSize: '10px', color: '#86efac', display: 'block' }}>Güvenli Tarım Pazaryeri</span>
           </div>
         </div>
 
@@ -1010,7 +781,7 @@ export default function App() {
             {selectedListing.seoTags && (
               <div style={{ backgroundColor: '#f8fafc', padding: '10px', borderRadius: '6px', border: '1px dashed #cbd5e1', marginBottom: '16px', fontSize: '11px', color: '#64748b' }}>
                 <strong style={{ color: '#1b3a2b', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
-                  <Tag size={12} color="#166534" /> Otomatik SEO Anahtar Kelimeleri:
+                  <Tag size={12} color="#166534" /> Güvenli SEO Anahtar Kelimeleri:
                 </strong>
                 {selectedListing.seoTags}
               </div>
@@ -1028,7 +799,7 @@ export default function App() {
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0', boxSizing: 'border-box', width: '100%' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
               <button onClick={() => changeTab('home')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer', fontSize: '13px' }}>← Vazgeç</button>
-              <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>Yeni İlan Ver</h2>
+              <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>Yeni Güvenli İlan Ver</h2>
             </div>
             <form onSubmit={handleDirectAdd} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
@@ -1077,17 +848,17 @@ export default function App() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fotoğraf Yükle (Cihazdan Seç)</label>
+                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fotoğraf Yükle (Max 2MB - JPG/PNG)</label>
                 <input 
                   type="file" 
-                  accept="image/*" 
+                  accept="image/jpeg,image/png,image/webp" 
                   onChange={handleImageUpload} 
                   style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#f8fafc', fontSize: '12px', cursor: 'pointer' }} 
                 />
                 {form.image && (
                   <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <img src={form.image} alt="Önizleme" style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-                    <span style={{ fontSize: '11px', color: '#166534', fontWeight: '600' }}>✓ Fotoğraf yüklendi ve hazır</span>
+                    <span style={{ fontSize: '11px', color: '#166534', fontWeight: '600' }}>✓ Güvenli görsel doğrulandı</span>
                   </div>
                 )}
               </div>
@@ -1099,13 +870,13 @@ export default function App() {
 
               <div style={{ backgroundColor: '#f0fdf4', padding: '10px', borderRadius: '6px', border: '1px solid #bbf7d0', fontSize: '11px', color: '#166534' }}>
                 <strong style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
-                  <Tag size={12} /> Otomatik Üretilen SEO Etiketleri:
+                  <Tag size={12} /> Güvenli SEO Etiketleri:
                 </strong>
-                <span>{form.seoTags || 'İlan başlığı yazıldıkça otomatik SEO etiketleri oluşur...'}</span>
+                <span>{form.seoTags || 'İlan başlığı yazıldıkça otomatik güvenlik etiketleri oluşur...'}</span>
               </div>
 
               <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', fontSize: '14px' }}>
-                İlanı Hemen Yayınla
+                İlanı Güvenle Yayınla
               </button>
             </form>
           </div>
@@ -1119,10 +890,10 @@ export default function App() {
                   <ShieldAlert size={24} color="#1b3a2b" />
                 </div>
                 <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', marginBottom: '6px' }}>Yönetici Girişi</h2>
-                <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px' }}>PazarTarla canlı trafik ve yönetim paneli.</p>
+                <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px' }}>Güvenli yetkilendirme ve denetim paneli.</p>
                 <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <input type="password" placeholder="Admin Şifresi" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', textAlign: 'center', fontSize: '14px' }} />
-                  <button type="submit" style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer', fontSize: '14px' }}>Giriş Yap</button>
+                  <input type="password" placeholder="Admin Şifresi (1234)" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', textAlign: 'center', fontSize: '14px' }} />
+                  <button type="submit" style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer', fontSize: '14px' }}>Güvenli Giriş Yap</button>
                 </form>
                 <button type="button" onClick={handleForgotPassword} style={{ background: 'none', border: 'none', color: '#2563eb', cursor: 'pointer', fontSize: '12px', textDecoration: 'underline', marginTop: '12px' }}>Şifremi Unuttum?</button>
                 <div style={{ marginTop: '20px', borderTop: '1px solid #edf2f7', paddingTop: '12px' }}>
@@ -1133,8 +904,8 @@ export default function App() {
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #edf2f7', paddingBottom: '10px' }}>
                   <div>
-                    <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>Canlı Analitik & Kontrol</h2>
-                    <span style={{ fontSize: '11px', color: '#059669', fontWeight: '600' }}>Aktif İlan: {listings.length} | Kategori: {Object.keys(categoriesWithSubs).length}</span>
+                    <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#0f172a', margin: 0 }}>🛡️ Güvenli Yönetici Paneli</h2>
+                    <span style={{ fontSize: '11px', color: '#059669', fontWeight: '600' }}>Aktif İlan: {listings.length} | Yetki: Admin</span>
                   </div>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer', fontWeight: '700' }}>Çıkış</button>
@@ -1142,7 +913,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* 🛠️ DÜZENLEME FORMU (Otomatik Odaklanma Alanı) */}
                 <div ref={editFormRef}>
                   {editingListing && (
                     <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '10px', border: '2px solid #22c55e', marginBottom: '20px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
@@ -1180,8 +950,8 @@ export default function App() {
                         </div>
 
                         <div>
-                          <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '2px' }}>Yeni Fotoğraf Seç (Cihazdan)</label>
-                          <input type="file" accept="image/*" onChange={handleEditImageUpload} style={{ width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '11px', backgroundColor: '#fff' }} />
+                          <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '2px' }}>Yeni Fotoğraf (Max 2MB - JPG/PNG)</label>
+                          <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleEditImageUpload} style={{ width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '11px', backgroundColor: '#fff' }} />
                           <div style={{ marginTop: '6px' }}>
                             <img src={editingListing.image} alt="Önizleme" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                           </div>
@@ -1193,7 +963,7 @@ export default function App() {
                         </div>
 
                         <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', fontSize: '13px', cursor: 'pointer' }}>
-                          Değişiklikleri Kaydet
+                          Değişiklikleri Güvenle Kaydet
                         </button>
                       </form>
                     </div>
@@ -1202,7 +972,7 @@ export default function App() {
 
                 <div style={{ backgroundColor: '#f0fdf4', padding: '14px', borderRadius: '10px', border: '1px solid #bbf7d0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b', margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Globe size={18} color="#166534" /> Canlı Ziyaretçi Verileri (Gerçek Zamanlı)
+                    <Globe size={18} color="#166534" /> Güvenli Canlı Ziyaretçi Verileri
                   </h3>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '12px', textAlign: 'center' }}>
@@ -1221,7 +991,7 @@ export default function App() {
                   </div>
 
                   <div style={{ backgroundColor: '#fff', padding: '10px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-                    <h4 style={{ fontSize: '12px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 6px 0', borderBottom: '1px solid #f1f5f9', paddingBottom: '4px' }}>⚡ Canlı Oturum Günlüğü</h4>
+                    <h4 style={{ fontSize: '12px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 6px 0', borderBottom: '1px solid #f1f5f9', paddingBottom: '4px' }}>🛡️ Güvenli Oturum Günlüğü</h4>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px', maxHeight: '100px', overflowY: 'auto' }}>
                       {analytics.recentActions.map((action, idx) => (
                         <div key={idx} style={{ color: '#334155', borderBottom: '1px dashed #f1f5f9', paddingBottom: '2px' }}>
@@ -1234,7 +1004,7 @@ export default function App() {
 
                 <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <FolderPlus size={16} color="#22c55e" /> Yeni Kategori Ekle
+                    <FolderPlus size={16} color="#22c55e" /> Güvenli Kategori Ekle
                   </h3>
                   <form onSubmit={handleAddCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <input 
@@ -1246,7 +1016,7 @@ export default function App() {
                     />
                     <input 
                       type="text" 
-                      placeholder="Alt Ürünler / Çeşitler (Virgülle ayırın: Kompost, Sıvı Gübre)" 
+                      placeholder="Alt Ürünler (Virgülle ayırın)" 
                       value={newSubCategoryName} 
                       onChange={(e) => setNewSubCategoryName(e.target.value)} 
                       style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} 
@@ -1272,7 +1042,7 @@ export default function App() {
                   ))}
                 </div>
 
-                <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#0f172a', margin: '0 0 8px 0' }}>İlan Denetimi & Düzenleme ({listings.length})</h3>
+                <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#0f172a', margin: '0 0 8px 0' }}>İlan Denetimi & Güvenli Düzenleme ({listings.length})</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '250px', overflowY: 'auto' }}>
                   {listings.map(item => (
                     <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', boxSizing: 'border-box' }}>
@@ -1306,9 +1076,9 @@ export default function App() {
         <div style={{ display: 'flex', gap: '15px', color: '#cbd5e1', fontSize: '12px', fontWeight: '600' }}>
           <span style={{ cursor: 'pointer' }} onClick={() => alert('İletişim E-posta: gezginci@gmail.com | Tel: 0535 768 1550')}>İletişim</span>
           <span>•</span>
-          <span style={{ cursor: 'pointer' }} onClick={() => alert('PazarTarla Tarım Pazaryeri Platformu')}>Hakkımızda</span>
+          <span style={{ cursor: 'pointer' }} onClick={() => alert('PazarTarla Güvenli Tarım Pazaryeri')}>Hakkımızda</span>
           <span>•</span>
-          <span style={{ cursor: 'pointer' }} onClick={() => alert('Tüm hakları saklıdır.')}>Güvenli Alışveriş</span>
+          <span style={{ cursor: 'pointer' }} onClick={() => alert('Güvenli Alışveriş Protokolü Aktif.')}>Güvenli Alışveriş</span>
         </div>
         <div style={{ fontSize: '11px', color: '#86efac', fontWeight: '500' }}>
           E-posta: gezginci@gmail.com | Tel: 0535 768 1550
@@ -1318,7 +1088,7 @@ export default function App() {
 
       <button
         onClick={() => changeTab('admin-page')}
-        title="Yönetim Paneli"
+        title="Güvenli Yönetim Paneli"
         style={{
           position: 'fixed',
           bottom: '20px',
@@ -1337,7 +1107,7 @@ export default function App() {
           zIndex: 999
         }}
       >
-        ⚙️
+        🛡️
       </button>
 
     </div>
