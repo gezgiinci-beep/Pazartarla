@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Heart, Search, Plus, LogOut, FolderPlus, Package, MapPin, Phone, Mail } from 'lucide-react';
+import { Heart, Search, Plus, LogOut, Package } from 'lucide-react';
 
 export default function App() {
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(() => {
@@ -8,29 +8,26 @@ export default function App() {
   const [adminPasswordInput, setAdminPasswordInput] = useState('');
   const [showAdminLoginModal, setShowAdminLoginModal] = useState(false);
 
+  // Başlangıç Kategorileri
   const initialCategories = [
-    { id: 1, name: "Tarım Makineleri", subCategories: ["Traktör", "Biçerdöver", "Pulluk", "Mibzer", "İlaçlama Makinesi"] },
-    { id: 2, name: "Konteyner ve Yaşam Alanı", subCategories: ["2x3 Konteyner", "3x7 Prefabrik", "Sandviç Panel Konteyner", "Yük Container", "Wc Konteyner"] },
-    { id: 3, name: "Bahçe ve Sulama", subCategories: ["Damlama Sulama", "Su Tankı", "Çapa Makinesi", "Budama Aletleri"] },
-    { id: 4, name: "Tarım Girdileri", subCategories: ["Tohum", "Gübre", "Fide", "Zirai İlaç"] },
-    { id: 5, name: "Hayvancılık Ekipmanları", subCategories: ["Süt Sağım Makinesi", "Yem Karma", "Suluk ve Yemlik"] }
+    { id: 1, name: "Tarım Makineleri", subCategories: ["Traktör", "Biçerdöver", "Pulluk"] },
+    { id: 2, name: "Konteyner ve Yaşam Alanı", subCategories: ["2x3 Konteyner", "3x7 Prefabrik"] },
+    { id: 3, name: "Bahçe ve Sulama", subCategories: ["Damlama Sulama", "Su Tankı"] }
   ];
 
+  // Başlangıç İlanları
   const initialListings = [
     {
       id: 1,
       title: "Tarladan Doğrudan Taze Chandler Ceviz",
       category: "Tarım Makineleri",
-      subCategory: "Traktör",
       price: 140,
       city: "Gönen / Balıkesir",
-      description: "Kendi bahçemizin ürünü, ilaçsız ve dolgun Chandler ceviz.",
-      image: "https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800",
-      phone: "0535 768 1550",
-      email: "gezgiinci@gmail.com"
+      image: "https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800"
     }
   ];
 
+  // State'ler (LocalStorage Korumalı)
   const [listings, setListings] = useState(() => {
     const saved = localStorage.getItem('pazartarla_listings');
     return saved ? JSON.parse(saved) : initialListings;
@@ -41,11 +38,7 @@ export default function App() {
     return saved ? JSON.parse(saved) : initialCategories;
   });
 
-  const [favorites, setFavorites] = useState(() => {
-    const saved = localStorage.getItem('pazartarla_favorites');
-    return saved ? JSON.parse(saved) : [];
-  });
-
+  // Değiştikçe kaydet
   useEffect(() => {
     localStorage.setItem('pazartarla_listings', JSON.stringify(listings));
   }, [listings]);
@@ -54,18 +47,14 @@ export default function App() {
     localStorage.setItem('pazartarla_categories', JSON.stringify(categories));
   }, [categories]);
 
-  useEffect(() => {
-    localStorage.setItem('pazartarla_favorites', JSON.stringify(favorites));
-  }, [favorites]);
-
   const [currentView, setCurrentView] = useState('home');
-  const [searchTerm, setSearchTerm] = useState('');
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
 
+  // Admin Giriş
   const handleAdminLogin = (e) => {
     e.preventDefault();
-    if (adminPasswordInput === '123456' || adminPasswordInput === 'admin' || adminPasswordInput === 'pazartarla2026') {
+    if (adminPasswordInput === '123456' || adminPasswordInput === 'admin') {
       setIsAdminLoggedIn(true);
       localStorage.setItem('pazartarla_admin_logged', 'true');
       setShowAdminLoginModal(false);
@@ -82,6 +71,7 @@ export default function App() {
     setCurrentView('home');
   };
 
+  // Yeni Kategori Ekleme
   const handleAddCategory = (e) => {
     e.preventDefault();
     if (!newCategoryName.trim()) return;
@@ -97,9 +87,10 @@ export default function App() {
     alert('Kategori başarıyla eklendi!');
   };
 
+  // İŞTE EKLEDİĞİN KATEGORİYİ ANINDA SİLEN FONKSİYON:
   const handleDeleteCategory = (catId) => {
     if (window.confirm('Bu kategoriyi silmek istediğinize emin misiniz?')) {
-      setCategories(categories.filter(c => c.id !== catId));
+      setCategories(categories.filter(cat => cat.id !== catId));
     }
   };
 
@@ -143,7 +134,7 @@ export default function App() {
             <h3 style={{ marginTop: 0, color: '#134e4a' }}>Yönetici Girişi</h3>
             <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <input 
-                type="password" placeholder="Şifre (örn: 123456)" 
+                type="password" placeholder="Şifre (123456)" 
                 value={adminPasswordInput} onChange={(e) => setAdminPasswordInput(e.target.value)}
                 style={{ padding: '10px', borderRadius: '6px', border: '1px solid #d1d5db' }}
                 autoFocus
@@ -166,7 +157,7 @@ export default function App() {
               <h2>Aktif İlanlar ({listings.length})</h2>
               {!isAdminLoggedIn && (
                 <button onClick={() => setShowAdminLoginModal(true)} style={{ backgroundColor: '#134e4a', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
-                  Kategorileri Yönetmek İçin Giriş Yap
+                  Yönetim Paneli Girişi
                 </button>
               )}
             </div>
@@ -190,19 +181,23 @@ export default function App() {
               <button onClick={() => setCurrentView('home')} style={{ background: '#374151', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: '6px', cursor: 'pointer' }}>Siteye Dön</button>
             </div>
 
-            {/* KATEGORİ LİSTESİ VE SİLME */}
+            {/* KATEGORİ LİSTESİ VE SİLME BUTONLARI */}
             <div style={{ backgroundColor: '#f0fdf4', padding: '20px', borderRadius: '8px', marginBottom: '25px', border: '1px solid #bbf7d0' }}>
-              <h3 style={{ fontSize: '18px', color: '#166534', margin: '0 0 15px 0' }}>📁 Kategori Listesi ve Yönetimi ({categories.length})</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '250px', overflowY: 'auto' }}>
+              <h3 style={{ fontSize: '18px', color: '#166534', margin: '0 0 15px 0' }}>📁 Kategori Listesi ve Silme ({categories.length})</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '300px', overflowY: 'auto' }}>
                 {categories.map(cat => (
                   <div key={cat.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 15px', backgroundColor: '#fff', borderRadius: '6px', border: '1px solid #d1d5db' }}>
                     <div>
                       <strong style={{ color: '#134e4a' }}>{cat.name}</strong> 
                       <span style={{ fontSize: '12px', color: '#6b7280', marginLeft: '10px' }}>
-                        ({cat.subCategories ? cat.subCategories.join(', ') : ''})
+                        ({cat.subCategories ? cat.subCategories.join(', ') : 'Alt kategori yok'})
                       </span>
                     </div>
-                    <button onClick={() => handleDeleteCategory(cat.id)} style={{ backgroundColor: '#dc2626', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
+                    {/* KATEGORİ SİL BUTONU */}
+                    <button 
+                      onClick={() => handleDeleteCategory(cat.id)} 
+                      style={{ backgroundColor: '#dc2626', color: '#fff', border: 'none', padding: '6px 14px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
+                    >
                       Sil
                     </button>
                   </div>
