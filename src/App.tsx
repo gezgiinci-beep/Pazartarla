@@ -5,7 +5,7 @@ import {
   Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag 
 } from 'lucide-react';
 
-const FALLBACK_LISTINGS = [
+const INITIAL_TRACTOR_LISTINGS = [
   {
     id: 1,
     title: 'Tarladan Doğrudan Taze Chandler Ceviz',
@@ -21,7 +21,6 @@ const FALLBACK_LISTINGS = [
     image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
     seoTags: 'taze ceviz, chandler ceviz, gönen ceviz, tarım ilanı, mahsul'
   },
-  // 🚜 İkinci El Traktör Kategorisi İçin 10 Özenle Hazırlanmış İlan
   {
     id: 101,
     title: 'Massey Ferguson 285 S Kaporta Boya Orijinal',
@@ -194,12 +193,14 @@ export default function App() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 5) return parsed; // Eğer az kayıt varsa başlangıç listesini bas
       } catch (e) {
         console.error(e);
       }
     }
-    return FALLBACK_LISTINGS;
+    // İlk kez yükleniyorsa veya az ilan varsa traktörleri doğrudan kaydedip yükle
+    localStorage.setItem('pazartarla_listings', JSON.stringify(INITIAL_TRACTOR_LISTINGS));
+    return INITIAL_TRACTOR_LISTINGS;
   });
 
   const [categoriesWithSubs, setCategoriesWithSubs] = useState(() => {
