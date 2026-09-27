@@ -5,7 +5,7 @@ import {
   Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag 
 } from 'lucide-react';
 
-const INITIAL_TRACTOR_LISTINGS = [
+const ALL_NEW_TRACTOR_LISTINGS = [
   {
     id: 1,
     title: 'Tarladan Doğrudan Taze Chandler Ceviz',
@@ -188,19 +188,9 @@ const FALLBACK_CATEGORIES = {
 export default function App() {
   const [activeTab, setActiveTab] = useState('home'); 
   
+  // ZORLA GÜNCELLEME: Traktör ilanlarını doğrudan yüklüyoruz
   const [listings, setListings] = useState(() => {
-    const saved = localStorage.getItem('pazartarla_listings');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 5) return parsed; // Eğer az kayıt varsa başlangıç listesini bas
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    // İlk kez yükleniyorsa veya az ilan varsa traktörleri doğrudan kaydedip yükle
-    localStorage.setItem('pazartarla_listings', JSON.stringify(INITIAL_TRACTOR_LISTINGS));
-    return INITIAL_TRACTOR_LISTINGS;
+    return ALL_NEW_TRACTOR_LISTINGS;
   });
 
   const [categoriesWithSubs, setCategoriesWithSubs] = useState(() => {
@@ -265,6 +255,8 @@ export default function App() {
   });
 
   useEffect(() => {
+    localStorage.setItem('pazartarla_listings', JSON.stringify(ALL_NEW_TRACTOR_LISTINGS));
+    
     const isMobile = /Mobi|Android/i.test(navigator.userAgent);
     const savedData = localStorage.getItem('pazartarla_live_analytics');
      
