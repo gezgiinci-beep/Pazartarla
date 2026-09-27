@@ -5,14 +5,12 @@ import {
 } from 'lucide-react';
 
 export default function App() {
-  // Admin ve Kimlik Doğrulama State'leri
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(() => {
     return localStorage.getItem('pazartarla_admin_logged') === 'true';
   });
   const [adminPasswordInput, setAdminPasswordInput] = useState('');
   const [showAdminLoginModal, setShowAdminLoginModal] = useState(false);
 
-  // Başlangıç Kategorileri
   const initialCategories = [
     { id: 1, name: "Tarım Makineleri", subCategories: ["Traktör", "Biçerdöver", "Pulluk", "Mibzer", "İlaçlama Makinesi"] },
     { id: 2, name: "Konteyner ve Yaşam Alanı", subCategories: ["2x3 Konteyner", "3x7 Prefabrik", "Sandviç Panel Konteyner", "Yük Container", "Wc Konteyner"] },
@@ -21,7 +19,6 @@ export default function App() {
     { id: 5, name: "Hayvancılık Ekipmanları", subCategories: ["Süt Sağım Makinesi", "Yem Karma", "Suluk ve Yemlik"] }
   ];
 
-  // Başlangıç İlanları (Konteyner ilanları dahil)
   const initialListings = [
     {
       id: 1,
@@ -36,20 +33,6 @@ export default function App() {
       phone: "0535 768 1550",
       email: "gezgiinci@gmail.com",
       date: "2026-09-01"
-    },
-    {
-      id: 101,
-      title: "Massey Ferguson 285 S Kaporta Boya Orijinal",
-      category: "Traktör",
-      subCategory: "İkinci El Traktör",
-      price: 485000,
-      city: "Gönen / Balıkesir",
-      district: "Gönen",
-      description: "Temiz kullanılmış, motoru şanzımanı kusursuz.",
-      image: "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&q=80&w=800",
-      phone: "0535 768 1550",
-      email: "gezgiinci@gmail.com",
-      date: "2026-09-02"
     },
     {
       id: 3,
@@ -67,7 +50,6 @@ export default function App() {
     }
   ];
 
-  // State Tanımları (LocalStorage Koruma Mantığı ile)
   const [listings, setListings] = useState(() => {
     const saved = localStorage.getItem('pazartarla_listings');
     return saved ? JSON.parse(saved) : initialListings;
@@ -83,7 +65,6 @@ export default function App() {
     return saved ? JSON.parse(saved) : [];
   });
 
-  // Veriler değiştikçe localStorage'a güvenli kaydetme
   useEffect(() => {
     localStorage.setItem('pazartarla_listings', JSON.stringify(listings));
   }, [listings]);
@@ -96,23 +77,19 @@ export default function App() {
     localStorage.setItem('pazartarla_favorites', JSON.stringify(favorites));
   }, [favorites]);
 
-  // Arayüz State'leri
-  const [currentView, setCurrentView] = useState('home'); // 'home', 'detail', 'add', 'admin', 'favorites'
+  const [currentView, setCurrentView] = useState('home'); 
   const [selectedListing, setSelectedListing] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Tümü');
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
 
-  // Yeni İlan Formu State'i
   const [newListing, setNewListing] = useState({
     title: '', category: categories[0]?.name || '', subCategory: '', price: '', city: '', district: '', description: '', image: '', phone: '', email: ''
   });
 
-  // Kategori Yönetim State'leri
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
 
-  // Admin Giriş Kontrolü
   const handleAdminLogin = (e) => {
     e.preventDefault();
     if (adminPasswordInput === '123456' || adminPasswordInput === 'admin') {
@@ -132,7 +109,6 @@ export default function App() {
     setCurrentView('home');
   };
 
-  // İlan Ekleme
   const handleAddListingSubmit = (e) => {
     e.preventDefault();
     const listingToAdd = {
@@ -148,14 +124,12 @@ export default function App() {
     setCurrentView('home');
   };
 
-  // İlan Silme
   const handleDeleteListing = (id) => {
     if (window.confirm('Bu ilanı silmek istediğinize emin misiniz?')) {
       setListings(listings.filter(item => item.id !== id));
     }
   };
 
-  // Kategori Ekleme
   const handleAddCategory = (e) => {
     e.preventDefault();
     if (!newCategoryName.trim()) return;
@@ -171,14 +145,12 @@ export default function App() {
     alert('Kategori başarıyla eklendi!');
   };
 
-  // Kategori Silme
   const handleDeleteCategory = (catId) => {
     if (window.confirm('Bu kategoriyi silmek istediğinize emin misiniz?')) {
       setCategories(categories.filter(c => c.id !== catId));
     }
   };
 
-  // Favori Toggle
   const toggleFavorite = (id) => {
     if (favorites.includes(id)) {
       setFavorites(favorites.filter(favId => favId !== id));
@@ -187,7 +159,6 @@ export default function App() {
     }
   };
 
-  // Filtreleme Mantığı
   const filteredListings = listings.filter(item => {
     const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -202,7 +173,6 @@ export default function App() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f4f6f8', fontFamily: 'sans-serif', color: '#333', display: 'flex', flexDirection: 'column' }}>
       
-      {/* ÜST BİLGİ & NAVİGASYON */}
       <header style={{ backgroundColor: '#134e4a', color: '#fff', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div onClick={() => setCurrentView('home')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -238,7 +208,6 @@ export default function App() {
         </div>
       </header>
 
-      {/* ADMIN GİRİŞ MODALI */}
       {showAdminLoginModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
           <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '10px', width: '350px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
@@ -261,13 +230,10 @@ export default function App() {
         </div>
       )}
 
-      {/* ANA İÇERİK */}
       <main style={{ flex: 1, maxWidth: '1200px', width: '100%', margin: '0 auto', padding: '20px', boxSizing: 'border-box' }}>
         
-        {/* 1. ANA SAYFA */}
         {currentView === 'home' && (
           <div>
-            {/* Arama Alanı */}
             <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '10px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', marginBottom: '20px', display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', border: '1px solid #d1d5db', borderRadius: '6px', padding: '0 12px', backgroundColor: '#f9fafb' }}>
                 <Search size={20} color="#6b7280" />
@@ -281,7 +247,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Kategori Barı */}
             <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '10px', marginBottom: '20px' }}>
               <button 
                 onClick={() => { setSelectedCategory('Tümü'); setSelectedSubCategory('Tümü'); }}
@@ -300,7 +265,6 @@ export default function App() {
               ))}
             </div>
 
-            {/* Alt Kategori Barı */}
             {activeCategoryObj && activeCategoryObj.subCategories && activeCategoryObj.subCategories.length > 0 && (
               <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '10px', marginBottom: '25px' }}>
                 <button 
@@ -321,7 +285,6 @@ export default function App() {
               </div>
             )}
 
-            {/* İlan Listesi Grid */}
             <h2 style={{ fontSize: '20px', marginBottom: '15px', color: '#1f2937' }}>Aktif İlanlar ({filteredListings.length})</h2>
             
             {filteredListings.length === 0 ? (
@@ -357,7 +320,6 @@ export default function App() {
           </div>
         )}
 
-        {/* 2. İLAN DETAY SAYFASI */}
         {currentView === 'detail' && selectedListing && (
           <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '10px', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
             <button onClick={() => setCurrentView('home')} style={{ background: 'none', border: 'none', color: '#059669', cursor: 'pointer', fontWeight: 'bold', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '5px' }}>
@@ -388,7 +350,6 @@ export default function App() {
           </div>
         )}
 
-        {/* 3. İLAN VER SAYFASI */}
         {currentView === 'add' && (
           <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '10px', maxWidth: '700px', margin: '0 auto', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
             <h2 style={{ marginTop: 0, color: '#134e4a' }}>Yeni İlan Oluştur</h2>
@@ -469,7 +430,6 @@ export default function App() {
           </div>
         )}
 
-        {/* 4. FAVORİLER SAYFASI */}
         {currentView === 'favorites' && (
           <div>
             <h2 style={{ color: '#134e4a', marginBottom: '20px' }}>Favori İlanlarım</h2>
@@ -498,7 +458,6 @@ export default function App() {
           </div>
         )}
 
-        {/* 5. YÖNETİM PANELİ */}
         {currentView === 'admin' && isAdminLoggedIn && (
           <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '10px', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', borderBottom: '1px solid #e5e7eb', paddingBottom: '15px' }}>
@@ -506,7 +465,27 @@ export default function App() {
               <button onClick={() => setCurrentView('home')} style={{ background: '#374151', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: '6px', cursor: 'pointer' }}>Siteye Dön</button>
             </div>
 
-            {/* Yeni Kategori Ekleme Alanı */}
+            {/* 1. KATEGORİ LİSTESİ VE YÖNETİMİ (EN ÜSTTE) */}
+            <div style={{ backgroundColor: '#f0fdf4', padding: '20px', borderRadius: '8px', marginBottom: '25px', border: '1px solid #bbf7d0' }}>
+              <h3 style={{ fontSize: '18px', color: '#166534', margin: '0 0 15px 0' }}>📁 Kategori Listesi ve Yönetimi ({categories.length})</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '250px', overflowY: 'auto' }}>
+                {categories.map(cat => (
+                  <div key={cat.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 15px', backgroundColor: '#fff', borderRadius: '6px', border: '1px solid #d1d5db' }}>
+                    <div>
+                      <strong style={{ color: '#134e4a' }}>{cat.name}</strong> 
+                      <span style={{ fontSize: '12px', color: '#6b7280', marginLeft: '10px' }}>
+                        ({cat.subCategories && cat.subCategories.length > 0 ? cat.subCategories.join(', ') : 'Alt ürün yok'})
+                      </span>
+                    </div>
+                    <button onClick={() => handleDeleteCategory(cat.id)} style={{ backgroundColor: '#dc2626', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
+                      Sil
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 2. YENİ KATEGORİ EKLEME */}
             <div style={{ backgroundColor: '#f8fafc', padding: '20px', borderRadius: '8px', marginBottom: '30px', border: '1px solid #e2e8f0' }}>
               <h3 style={{ fontSize: '16px', color: '#1b3a2b', margin: '0 0 15px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <FolderPlus size={18} color="#059669" /> Yeni Kategori ve Alt Ürün Ekle
@@ -528,27 +507,9 @@ export default function App() {
               </form>
             </div>
 
-            {/* MEVCUT KATEGORİLERİ LİSTELEME VE SİLME */}
-            <h3 style={{ fontSize: '18px', color: '#1f2937', marginBottom: '15px' }}>Kategori Listesi ve Yönetimi ({categories.length})</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '30px' }}>
-              {categories.map(cat => (
-                <div key={cat.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 15px', backgroundColor: '#f9fafb', borderRadius: '6px', border: '1px solid #e5e7eb' }}>
-                  <div>
-                    <strong style={{ color: '#134e4a' }}>{cat.name}</strong> 
-                    <span style={{ fontSize: '12px', color: '#6b7280', marginLeft: '10px' }}>
-                      ({cat.subCategories && cat.subCategories.length > 0 ? cat.subCategories.join(', ') : 'Alt ürün yok'})
-                    </span>
-                  </div>
-                  <button onClick={() => handleDeleteCategory(cat.id)} style={{ backgroundColor: '#dc2626', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
-                    Kategoriyi Sil
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            {/* İlan Yönetimi */}
+            {/* 3. İLAN YÖNETİMİ */}
             <h3 style={{ fontSize: '18px', color: '#1f2937', marginBottom: '15px' }}>İlan Yönetimi ({listings.length})</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '300px', overflowY: 'auto' }}>
               {listings.map(item => (
                 <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 15px', backgroundColor: '#f9fafb', borderRadius: '6px', border: '1px solid #e5e7eb' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
@@ -569,7 +530,6 @@ export default function App() {
 
       </main>
 
-      {/* ALT BİLGİ */}
       <footer style={{ backgroundColor: '#134e4a', color: '#fff', textAlign: 'center', padding: '20px', marginTop: 'auto', fontSize: '13px' }}>
         <p style={{ margin: 0 }}>E-posta: gezgiinci@gmail.com | Tel: 0535 768 1550</p>
       </footer>
