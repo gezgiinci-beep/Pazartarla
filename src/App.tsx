@@ -902,7 +902,7 @@ export default function App() {
                   </div>
                 )}
 
-                {/* KATEGORİ SEÇİMİ (DROPDOWN) VE MEVCUT ALT SEÇENEKLER ALANI */}
+                {/* KATEGORİ SEÇİMİ VE MEVCUT ALT SEÇENEKLERİ GÖSTEREN AÇILIR KUTU (DROPDOWN) */}
                 <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <FolderPlus size={16} color="#22c55e" /> Kategoriye Yeni Alt Seçenek Ekle
@@ -919,11 +919,20 @@ export default function App() {
                       ))}
                     </select>
 
-                    {/* SEÇİLEN KATEGORİNİN MEVCUT ALT SEÇENEKLERİNİ GÖSTEREN ALAN */}
-                    <div style={{ backgroundColor: '#f0fdf4', padding: '8px 10px', borderRadius: '6px', border: '1px solid #bbf7d0', fontSize: '12px', color: '#166534' }}>
-                      <span style={{ fontWeight: '700', display: 'block', marginBottom: '2px' }}>📌 Bu Kategorideki Mevcut Alt Seçenekler:</span>
-                      {(categoriesWithSubs[newCategoryName] || []).join(', ')}
-                    </div>
+                    <label style={{ fontSize: '12px', fontWeight: '600', color: '#475569', marginTop: '4px' }}>Mevcut Alt Seçenekler (Tıklayınca listelenir):</label>
+                    <select 
+                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #22c55e', fontSize: '13px', backgroundColor: '#f0fdf4', color: '#166534', fontWeight: '600', boxSizing: 'border-box' }}
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          setNewSubCategoryName(prev => prev ? `${prev}, ${e.target.value}` : e.target.value);
+                        }
+                      }}
+                    >
+                      <option value="">📌 Bu kategorideki alt seçenekleri görmek için tıklayın...</option>
+                      {(categoriesWithSubs[newCategoryName] || []).map(sub => (
+                        <option key={sub} value={sub}>{sub}</option>
+                      ))}
+                    </select>
 
                     <label style={{ fontSize: '12px', fontWeight: '600', color: '#475569', marginTop: '4px' }}>Yeni Eklenecek Alt Seçenekler (Virgülle ayırın):</label>
                     <input 
