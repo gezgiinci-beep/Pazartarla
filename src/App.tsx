@@ -721,7 +721,7 @@ export default function App() {
               <div style={{ fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '6px' }}>📲 İlanı Sosyal Medyada Paylaş:</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
                 <a 
-                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`🌾 PazarTarla İlanı: ${selectedListing.title} -${selectedListing.price} TL\nİncelemek için: ${window.location.href}`)}`}
+                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`🌾 PazarTarla İlanı: ${selectedListing.title} - ${selectedListing.price} TL\nİncelemek için: ${window.location.href}`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ backgroundColor: '#22c55e', color: '#fff', padding: '8px 4px', borderRadius: '6px', textAlign: 'center', fontSize: '11px', fontWeight: '700', textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}
@@ -739,7 +739,7 @@ export default function App() {
                 </a>
 
                 <a 
-                  href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`🌾 PazarTarla İlanı: ${selectedListing.title} -${selectedListing.price} TL`)}&url=${encodeURIComponent(window.location.href)}`}
+                  href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`🌾 PazarTarla İlanı: ${selectedListing.title} - ${selectedListing.price} TL`)}&url=${encodeURIComponent(window.location.href)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ backgroundColor: '#0f172a', color: '#fff', padding: '8px 4px', borderRadius: '6px', textAlign: 'center', fontSize: '11px', fontWeight: '700', textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}
@@ -900,6 +900,152 @@ export default function App() {
                       Duyuruyu Güncelle
                     </button>
                   </form>
+                </div>
+
+                {editingListing && (
+                  <div style={{ backgroundColor: '#f0fdf4', padding: '14px', borderRadius: '8px', border: '2px solid #22c55e', marginBottom: '20px' }}>
+                    <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 10px 0' }}>✏️ İlanı Düzenle: {editingListing.title}</h3>
+                    <form onSubmit={saveEditedListing} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>İlan Başlığı</label>
+                      <input type="text" name="title" value={editingListing.title} onChange={handleEditFormChange} placeholder="İlan Başlığı" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }} />
+                      
+                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>Fiyat (TL)</label>
+                      <input type="number" name="price" value={editingListing.price} onChange={handleEditFormChange} placeholder="Fiyat (TL)" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }} />
+                      
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                        <div>
+                          <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>Ana Kategori</label>
+                          <select name="category" value={editingListing.category} onChange={handleEditFormChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px', backgroundColor: '#fff' }}>
+                            {Object.keys(categoriesWithSubs).map(cat => (
+                              <option key={cat} value={cat}>{cat}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>Alt Kategori</label>
+                          <select name="subCategory" value={editingListing.subCategory} onChange={handleEditFormChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px', backgroundColor: '#fff' }}>
+                            {(categoriesWithSubs[editingListing.category] || ['Genel']).map(sub => (
+                              <option key={sub} value={sub}>{sub}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '11px', color: '#166534' }}>İlan Fotoğrafını Değiştir (Max 2MB)</label>
+                        <input type="file" accept="image/*" onChange={handleEditImageUpload} style={{ width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff', fontSize: '12px' }} />
+                      </div>
+
+                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>Açıklama</label>
+                      <textarea name="description" value={editingListing.description} onChange={handleEditFormChange} placeholder="Açıklama" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', height: '60px' }} />
+                      
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                        <button type="submit" style={{ flex: 1, backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Değişiklikleri Kaydet</button>
+                        <button type="button" onClick={() => setEditingListing(null)} style={{ background: '#e2e8f0', border: 'none', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer' }}>İptal</button>
+                      </div>
+                    </form>
+                  </div>
+                )}
+
+                <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
+                  <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <FolderPlus size={16} color="#22c55e" /> Kategoriye Yeni Alt Seçenek Ekle
+                  </h3>
+                  <form onSubmit={handleAddCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <label style={{ fontSize: '12px', fontWeight: '600', color: '#475569' }}>Ana Kategori Seç:</label>
+                    <select 
+                      value={newCategoryName} 
+                      onChange={(e) => setNewCategoryName(e.target.value)} 
+                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', backgroundColor: '#fff', boxSizing: 'border-box' }}
+                    >
+                      {Object.keys(categoriesWithSubs).map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
+
+                    <label style={{ fontSize: '12px', fontWeight: '600', color: '#475569', marginTop: '4px' }}>Mevcut Alt Seçenekler:</label>
+                    <select 
+                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #22c55e', fontSize: '13px', backgroundColor: '#f0fdf4', color: '#166534', fontWeight: '600', boxSizing: 'border-box' }}
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          setNewSubCategoryName(prev => {
+                            const currentList = prev ? prev.split(',').map(s => s.trim()) : [];
+                            if (!currentList.includes(e.target.value)) {
+                              return prev ? `${prev}, ${e.target.value}` : e.target.value;
+                            }
+                            return prev;
+                          });
+                        }
+                      }}
+                    >
+                      <option value="">📌 Bu kategorideki alt seçenekleri görmek için tıklayın...</option>
+                      {(categoriesWithSubs[newCategoryName] || []).map(sub => (
+                        <option key={sub} value={sub}>{sub}</option>
+                      ))}
+                    </select>
+
+                    <label style={{ fontSize: '12px', fontWeight: '600', color: '#475569', marginTop: '4px' }}>Yeni Eklenecek Alt Seçenekler (Virgülle ayırın):</label>
+                    <input 
+                      type="text" 
+                      placeholder="Örn: Antep Fıstığı, Badem" 
+                      value={newSubCategoryName} 
+                      onChange={(e) => setNewSubCategoryName(e.target.value)} 
+                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} 
+                    />
+                    <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', fontSize: '13px', cursor: 'pointer', marginTop: '4px' }}>
+                      Seçenekleri Ekle
+                    </button>
+                  </form>
+                </div>
+
+                <h3 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '10px' }}>📁 Kategoriler ({Object.keys(categoriesWithSubs).length})</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
+                  {Object.keys(categoriesWithSubs).map(catKey => {
+                    const isOpenAdmin = adminOpenCategory === catKey;
+                    return (
+                      <div key={catKey} style={{ backgroundColor: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+                        <div onClick={() => setAdminOpenCategory(isOpenAdmin ? '' : catKey)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', cursor: 'pointer', backgroundColor: isOpenAdmin ? '#f0fdf4' : '#f8fafc' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            {isOpenAdmin ? <ChevronDown size={16} color="#22c55e" /> : <ChevronRight size={16} color="#64748b" />}
+                            <span style={{ fontWeight: '600', fontSize: '13px', color: '#1b3a2b' }}>{catKey}</span>
+                          </div>
+                          <button onClick={(e) => { e.stopPropagation(); handleDeleteCategory(catKey); }} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Kategoriyi Sil</button>
+                        </div>
+                        {isOpenAdmin && (
+                          <div style={{ padding: '8px 12px 12px 28px', backgroundColor: '#fff', borderTop: '1px solid #e2e8f0', fontSize: '12px', color: '#475569' }}>
+                            <span style={{ fontWeight: '700', display: 'block', marginBottom: '4px', color: '#166534' }}>Alt Ürünler / Seçenekler:</span>
+                            {(categoriesWithSubs[catKey] || []).map(sub => (
+                              <div key={sub} style={{ padding: '4px 0', borderBottom: '1px dashed #f1f5f9' }}>• {sub}</div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <h3 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '10px' }}>İlan Yönetimi & Vitrin ({listings.length})</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {listings.map(item => (
+                    <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                      <div>
+                        <span style={{ fontSize: '12px', fontWeight: '600', display: 'block' }}>{item.title}</span>
+                        <span style={{ fontSize: '10px', color: item.isFeatured ? '#eab308' : '#64748b', fontWeight: '700' }}>
+                          {item.isFeatured ? '⭐ Vitrinde' : 'Normal İlan'}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <button onClick={() => toggleFeaturedListing(item.id)} style={{ backgroundColor: item.isFeatured ? '#fef08a' : '#f1f5f9', color: '#854d0e', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>
+                          {item.isFeatured ? 'Vitrin Kaldır' : '⭐ Vitrin Yap'}
+                        </button>
+                        <button onClick={() => { 
+                          setEditingListing(item); 
+                          if (editFormRef.current) editFormRef.current.scrollIntoView({ behavior: 'smooth' });
+                        }} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Düzenle</button>
+                        <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Sil</button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
