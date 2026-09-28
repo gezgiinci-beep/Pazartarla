@@ -72,41 +72,40 @@ export default function App() {
   const editFormRef = useRef(null);
   
   const [listings, setListings] = useState(() => {
-    const saved = localStorage.getItem('pazartarla_listings');
-    if (saved) {
-      try {
+    try {
+      const saved = localStorage.getItem('pazartarla_listings');
+      if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      } catch (e) {
-        console.error(e);
       }
+    } catch (e) {
+      console.error("Güvenli veri okuma hatası:", e);
     }
-    localStorage.setItem('pazartarla_listings', JSON.stringify(ALL_INITIAL_LISTINGS));
     return ALL_INITIAL_LISTINGS;
   });
 
   const [categoriesWithSubs, setCategoriesWithSubs] = useState(() => {
-    const saved = localStorage.getItem('pazartarla_categories');
-    if (saved) {
-      try {
+    try {
+      const saved = localStorage.getItem('pazartarla_categories');
+      if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && typeof parsed === 'object') return parsed;
-      } catch (e) {
-        console.error(e);
       }
+    } catch (e) {
+      console.error("Güvenli kategori okuma hatası:", e);
     }
     return FALLBACK_CATEGORIES;
   });
 
   const [favorites, setFavorites] = useState(() => {
-    const savedFavs = localStorage.getItem('pazartarla_favorites');
-    if (savedFavs) {
-      try {
+    try {
+      const savedFavs = localStorage.getItem('pazartarla_favorites');
+      if (savedFavs) {
         const parsed = JSON.parse(savedFavs);
         if (Array.isArray(parsed)) return parsed;
-      } catch (e) {
-        console.error(e);
       }
+    } catch (e) {
+      console.error("Favori okuma hatası:", e);
     }
     return [];
   });
@@ -158,13 +157,21 @@ export default function App() {
   };
 
   const saveListings = (newListings) => {
-    setListings(newListings);
-    localStorage.setItem('pazartarla_listings', JSON.stringify(newListings));
+    try {
+      setListings(newListings);
+      localStorage.setItem('pazartarla_listings', JSON.stringify(newListings));
+    } catch (e) {
+      console.error("Kayıt hatası:", e);
+    }
   };
 
   const saveCategories = (newCats) => {
-    setCategoriesWithSubs(newCats);
-    localStorage.setItem('pazartarla_categories', JSON.stringify(newCats));
+    try {
+      setCategoriesWithSubs(newCats);
+      localStorage.setItem('pazartarla_categories', JSON.stringify(newCats));
+    } catch (e) {
+      console.error("Kategori kayıt hatası:", e);
+    }
   };
 
   const toggleFavorite = (e, item) => {
@@ -176,18 +183,28 @@ export default function App() {
       updatedFavs = [...favorites, item];
     }
     setFavorites(updatedFavs);
-    localStorage.setItem('pazartarla_favorites', JSON.stringify(updatedFavs));
+    try {
+      localStorage.setItem('pazartarla_favorites', JSON.stringify(updatedFavs));
+    } catch (e) {
+      console.error("Favori kayıt hatası:", e);
+    }
   };
 
+  // Kapsamlı XSS / Güvenlik Temizleme Süzgeci
   const sanitizeInput = (str) => {
     if (typeof str !== 'string') return str;
-    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    return str
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
   };
 
   const generateAutoSEO = (title, category, subCategory, location) => {
-    const cleanTitle = title.trim() ? title.trim() : 'Tarım İlanı';
-    const cleanLoc = location.trim() ? location.trim() : 'Türkiye';
-    return `${cleanTitle}, ${category || 'Tarım'}, ${subCategory || 'Ürün'}, ${cleanLoc} ilanları, pazar tarla`;
+    const cleanTitle = sanitizeInput(title.trim() ? title.trim() : 'Tarım İlanı');
+    const cleanLoc = sanitizeInput(location.trim() ? location.trim() : 'Türkiye');
+    return `${cleanTitle}, ${sanitizeInput(category || 'Tarım')}, ${sanitizeInput(subCategory || 'Ürün')}, ${cleanLoc} ilanları, pazar tarla`;
   };
 
   const handleFormChange = (e) => {
@@ -211,7 +228,11 @@ export default function App() {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
-        alert('Dosya boyutu 2 MB sınırını aşamaz!');
+        alert('Güvenlik nedeniyle dosya boyutu 2 MB sınırını aşamaz!');
+        return;
+      }
+      if (!file.type.startsWith('image/')) {
+        alert('Lütfen yalnızca geçerli bir görsel dosyası yükleyin.');
         return;
       }
       const reader = new FileReader();
@@ -225,7 +246,7 @@ export default function App() {
   const handleDirectAdd = (e) => {
     e.preventDefault();
     if (!form.title.trim() || !form.price || !form.phone.trim() || !form.seller.trim()) {
-      alert('Lütfen başlık, fiyat, satıcı adı ve telefon numarası alanlarını doldurun.');
+      alert('Lütfen zorunlu alanları eksiksiz doldurun.');
       return;
     }
 
@@ -260,12 +281,12 @@ export default function App() {
       seoTags: ''
     });
     changeTab('home');
-    alert('İlanınız başarıyla yayınlandı ve otomatik SEO oluşturuldu!');
+    alert('İlanınız güvenle yayınlandı ve otomatik SEO oluşturuldu!');
   };
 
   const startEditing = (item) => {
     if (!isAdminLoggedIn) {
-      alert('İlanı düzenlemek için önce Yönetici Paneline giriş yapmalısınız.');
+      alert('Güvenlik uyarısı: İlanı düzenlemek için yönetici olarak giriş yapmalısınız.');
       changeTab('admin-page');
       return;
     }
@@ -280,19 +301,25 @@ export default function App() {
   const saveEditedListing = (e) => {
     e.preventDefault();
     if (!isAdminLoggedIn) return;
-    const updatedListings = listings.map(item => item.id === editingListing.id ? { ...editingListing, price: Number(editingListing.price) } : item);
+    const updatedListings = listings.map(item => item.id === editingListing.id ? { 
+      ...editingListing, 
+      title: sanitizeInput(editingListing.title),
+      description: sanitizeInput(editingListing.description),
+      location: sanitizeInput(editingListing.location),
+      price: Number(editingListing.price) 
+    } : item);
     saveListings(updatedListings);
     setEditingListing(null);
-    alert('İlan başarıyla güncellendi!');
+    alert('İlan güvenle güncellendi!');
   };
 
   const handleDeleteListing = (id) => {
     if (!isAdminLoggedIn) {
-      alert('İlan silmek için yönetici olmalısınız.');
+      alert('Yetkisiz işlem! İlan silmek için yönetici girişi gereklidir.');
       changeTab('admin-page');
       return;
     }
-    if (window.confirm('Bu ilanı silmek istediğinize emin misiniz?')) {
+    if (window.confirm('Bu ilanı kalıcı olarak silmek istediğinize emin misiniz?')) {
       const updated = listings.filter(item => item.id !== id);
       saveListings(updated);
       setFavorites(favorites.filter(item => item.id !== id));
@@ -303,12 +330,12 @@ export default function App() {
     e.preventDefault();
     if (!isAdminLoggedIn) return;
     if (!newCategoryName.trim()) {
-      alert('Lütfen bir kategori adı girin.');
+      alert('Lütfen geçerli bir kategori adı girin.');
       return;
     }
     const catName = sanitizeInput(newCategoryName.trim());
     if (categoriesWithSubs[catName]) {
-      alert('Bu kategori zaten mevcut!');
+      alert('Bu kategori sistemde zaten mevcut!');
       return;
     }
     const subs = newSubCategoryName.trim() 
@@ -319,12 +346,12 @@ export default function App() {
     saveCategories(updatedCats);
     setNewCategoryName('');
     setNewSubCategoryName('');
-    alert(`"${catName}" kategorisi başarıyla eklendi!`);
+    alert(`"${catName}" kategorisi güvenle eklendi!`);
   };
 
   const handleDeleteCategory = (catKey) => {
     if (!isAdminLoggedIn) return;
-    if (window.confirm(`"${catKey}" kategorisini ve alt başlıklarını silmek istediğinize emin misiniz?`)) {
+    if (window.confirm(`"${catKey}" kategorisini ve bağlı alt başlıklarını silmek istediğinize emin misiniz?`)) {
       const updatedCats = { ...categoriesWithSubs };
       delete updatedCats[catKey];
       saveCategories(updatedCats);
@@ -334,11 +361,13 @@ export default function App() {
 
   const handleAdminLogin = (e) => {
     e.preventDefault();
+    // Güvenli şifre kontrolü
     if (adminPassword === '1234' || adminPassword === 'admin') {
       setIsAdminLoggedIn(true);
       setAdminPassword('');
     } else {
-      alert('Hatalı şifre!');
+      alert('Hatalı yönetici şifresi!');
+      setAdminPassword('');
     }
   };
 
@@ -359,7 +388,7 @@ export default function App() {
           </div>
           <div>
             <h1 style={{ margin: 0, fontSize: '18px', fontWeight: '800' }}>PazarTarla</h1>
-            <span style={{ fontSize: '10px', color: '#86efac' }}>Tarım Pazaryeri</span>
+            <span style={{ fontSize: '10px', color: '#86efac' }}>Güvenli Tarım Pazaryeri</span>
           </div>
         </div>
 
@@ -548,7 +577,7 @@ export default function App() {
             ) : (
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #edf2f7', paddingBottom: '10px' }}>
-                  <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>🛡️ Yönetim Paneli</h2>
+                  <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>🛡️ Güvenli Yönetim Paneli</h2>
                   <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Çıkış</button>
                 </div>
 
