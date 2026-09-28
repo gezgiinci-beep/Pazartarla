@@ -412,6 +412,17 @@ export default function App() {
     }
   };
 
+  const handleDeleteSubCategory = (catKey, subToDel) => {
+    if (!isAdminLoggedIn) return;
+    if (window.confirm(`"${catKey}" kategorisinden "${subToDel}" seçeneğini silmek istediğinize emin misiniz?`)) {
+      const currentSubs = categoriesWithSubs[catKey] || [];
+      const updatedSubs = currentSubs.filter(sub => sub !== subToDel);
+      if (updatedSubs.length === 0) updatedSubs.push('Genel');
+      const updatedCats = { ...categoriesWithSubs, [catKey]: updatedSubs };
+      saveCategories(updatedCats);
+    }
+  };
+
   const handleAdminLogin = (e) => {
     e.preventDefault();
     if (adminPassword === '5538') {
@@ -998,7 +1009,7 @@ export default function App() {
                   </form>
                 </div>
 
-                <h3 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '10px' }}>📁 Kategoriler ({Object.keys(categoriesWithSubs).length})</h3>
+                <h3 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '10px' }}>📁 Kategoriler ve Alt Seçenekler ({Object.keys(categoriesWithSubs).length})</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
                   {Object.keys(categoriesWithSubs).map(catKey => {
                     const isOpenAdmin = adminOpenCategory === catKey;
@@ -1013,9 +1024,17 @@ export default function App() {
                         </div>
                         {isOpenAdmin && (
                           <div style={{ padding: '8px 12px 12px 28px', backgroundColor: '#fff', borderTop: '1px solid #e2e8f0', fontSize: '12px', color: '#475569' }}>
-                            <span style={{ fontWeight: '700', display: 'block', marginBottom: '4px', color: '#166534' }}>Alt Ürünler / Seçenekler:</span>
+                            <span style={{ fontWeight: '700', display: 'block', marginBottom: '6px', color: '#166534' }}>Alt Ürünler / Seçenekler (Yanındaki butonla silebilirsiniz):</span>
                             {(categoriesWithSubs[catKey] || []).map(sub => (
-                              <div key={sub} style={{ padding: '4px 0', borderBottom: '1px dashed #f1f5f9' }}>• {sub}</div>
+                              <div key={sub} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px dashed #f1f5f9' }}>
+                                <span>• {sub}</span>
+                                <button 
+                                  onClick={() => handleDeleteSubCategory(catKey, sub)} 
+                                  style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}
+                                >
+                                  <Trash2 size={10} /> Sil
+                                </button>
+                              </div>
                             ))}
                           </div>
                         )}
