@@ -310,6 +310,14 @@ export default function App() {
     alert('İlan onaylandı ve canlıya alındı!');
   };
 
+  // TÜMÜNÜ ONAYLA FONKSİYONU
+  const approveAllListings = () => {
+    if (!isAdminLoggedIn) return;
+    const updated = listings.map(item => ({ ...item, status: 'approved' }));
+    saveListings(updated);
+    alert('Bekleyen tüm ilanlar onaylandı ve yayına alındı!');
+  };
+
   const toggleFeaturedListing = (id) => {
     if (!isAdminLoggedIn) return;
     const updated = listings.map(item => item.id === id ? { ...item, isFeatured: !item.isFeatured } : item);
@@ -406,7 +414,6 @@ export default function App() {
 
   const approvedListings = listings.filter(item => item.status === 'approved');
 
-  // Öne çıkanlar ve normal ilanları ayırıp öne çıkanları başa koyuyoruz
   const featuredListings = approvedListings.filter(item => item.isFeatured);
   const regularApprovedListings = approvedListings.filter(item => !item.isFeatured);
 
@@ -814,7 +821,15 @@ export default function App() {
                   <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Çıkış</button>
                 </div>
 
-                <h3 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '10px', color: '#d97706' }}>⏳ Onay Bekleyen İlanlar ({listings.filter(i => i.status === 'pending').length})</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#d97706', margin: 0 }}>⏳ Onay Bekleyen İlanlar ({listings.filter(i => i.status === 'pending').length})</h3>
+                  {listings.filter(i => i.status === 'pending').length > 0 && (
+                    <button onClick={approveAllListings} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
+                      ✓ Tümünü Onayla
+                    </button>
+                  )}
+                </div>
+
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
                   {listings.filter(i => i.status === 'pending').length === 0 ? (
                     <div style={{ fontSize: '12px', color: '#64748b', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '6px' }}>Onay bekleyen yeni ilan bulunmuyor.</div>
