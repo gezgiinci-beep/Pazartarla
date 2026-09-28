@@ -745,7 +745,7 @@ export default function App() {
           </div>
         )}
 
-        {/* İLAN VER EKRANI (OTOMATİK KATEGORİ & ALT SEÇENEKLER DROPDOWN) */}
+        {/* İLAN VER EKRANI */}
         {activeTab === 'add' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
@@ -785,7 +785,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* OTOMATİK GELEN ALT KATEGORİ SEÇİMİ */}
               <div>
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Alt Ürün / Seçenek (Otomatik)</label>
                 <select name="subCategory" value={form.subCategory} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff' }}>
@@ -903,7 +902,7 @@ export default function App() {
                   </div>
                 )}
 
-                {/* YENİ KATEGORİ SEÇENEĞİ EKLEME & MEVCUTLARI GÖSTERME */}
+                {/* KATEGORİ SEÇİMİ (DROPDOWN) VE MEVCUT ALT SEÇENEKLER ALANI */}
                 <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <FolderPlus size={16} color="#22c55e" /> Kategoriye Yeni Alt Seçenek Ekle
@@ -913,7 +912,7 @@ export default function App() {
                     <select 
                       value={newCategoryName} 
                       onChange={(e) => setNewCategoryName(e.target.value)} 
-                      style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', backgroundColor: '#fff', boxSizing: 'border-box' }}
+                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', backgroundColor: '#fff', boxSizing: 'border-box' }}
                     >
                       {Object.keys(categoriesWithSubs).map(cat => (
                         <option key={cat} value={cat}>{cat}</option>
@@ -932,9 +931,9 @@ export default function App() {
                       placeholder="Örn: Antep Fıstığı, Badem" 
                       value={newSubCategoryName} 
                       onChange={(e) => setNewSubCategoryName(e.target.value)} 
-                      style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} 
+                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} 
                     />
-                    <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', fontSize: '13px', cursor: 'pointer', marginTop: '4px' }}>
+                    <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', fontSize: '13px', cursor: 'pointer', marginTop: '4px' }}>
                       Seçenekleri Ekle
                     </button>
                   </form>
