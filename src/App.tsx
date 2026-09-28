@@ -254,7 +254,6 @@ export default function App() {
     alert('İlanınız başarıyla yayınlandı ve otomatik SEO oluşturuldu!');
   };
 
-  // İlan Düzenleme Fonksiyonları
   const startEditingFromDetail = (item) => {
     if (!isAdminLoggedIn) {
       alert('İlanı düzenlemek için önce Yönetici Paneline giriş yapmalısınız.');
@@ -263,6 +262,11 @@ export default function App() {
     }
     setEditingListing(item);
     changeTab('admin-page');
+    setTimeout(() => {
+      if (editFormRef.current) {
+        editFormRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
   };
 
   const handleEditChange = (e) => {
@@ -282,7 +286,6 @@ export default function App() {
     saveListings(updatedListings);
     setEditingListing(null);
     alert('İlan başarıyla güncellendi!');
-    changeTab('home');
   };
 
   const handleDeleteListing = (id) => {
@@ -591,7 +594,7 @@ export default function App() {
         )}
 
         {activeTab === 'admin-page' && (
-          <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
+          <div ref={editFormRef} style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
             {!isAdminLoggedIn ? (
               <div style={{ maxWidth: '320px', margin: '30px auto', textAlign: 'center' }}>
                 <h2 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '10px' }}>Yönetici Girişi</h2>
@@ -615,7 +618,7 @@ export default function App() {
                       <input type="number" name="price" value={editingListing.price} onChange={handleEditChange} placeholder="Fiyat (TL)" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }} />
                       <textarea name="description" value={editingListing.description} onChange={handleEditChange} placeholder="Açıklama" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', height: '60px' }} />
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <button type="submit" style={{ flex: 1, backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Kaydet</button>
+                        <button type="submit" style={{ flex: 1, backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Değişiklikleri Kaydet</button>
                         <button type="button" onClick={() => setEditingListing(null)} style={{ background: '#e2e8f0', border: 'none', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer' }}>İptal</button>
                       </div>
                     </form>
@@ -649,7 +652,10 @@ export default function App() {
                     <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
                       <span style={{ fontSize: '12px', fontWeight: '600' }}>{item.title}</span>
                       <div style={{ display: 'flex', gap: '4px' }}>
-                        <button onClick={() => { setEditingListing(item); }} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Düzenle</button>
+                        <button onClick={() => { 
+                          setEditingListing(item); 
+                          if (editFormRef.current) editFormRef.current.scrollIntoView({ behavior: 'smooth' });
+                        }} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Düzenle</button>
                         <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Sil</button>
                       </div>
                     </div>
