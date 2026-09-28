@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus, 
   Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, ChevronDown, X, 
-  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag, Edit3, Sparkles, Megaphone, CheckCircle, Bot, DownloadCloud, Upload 
+  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag, Edit3, Sparkles, Megaphone, CheckCircle 
 } from 'lucide-react';
 
 const ALL_INITIAL_LISTINGS = [
@@ -320,38 +320,6 @@ export default function App() {
     });
   };
 
-  // 🤖 PYTHON BOTUNUN ÜRETTİĞİ JSON DOSYASINI YÖNETİM PANELİNE AKTARMA KÖPRÜSÜ
-  const handleScraperJSONUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const importedData = JSON.parse(event.target.result);
-        if (Array.isArray(importedData) && importedData.length > 0) {
-          // Gelen ilanların statüsünü pending yapıp mevcut listeye ekleyelim
-          const preparedListings = importedData.map(item => ({
-            ...item,
-            id: item.id || Date.now() + Math.random(),
-            status: 'pending',
-            isFeatured: false
-          }));
-
-          const updated = [...preparedListings, ...listings];
-          saveListings(updated);
-          alert(`🎉 Başarılı! Python botunun çektiği ${preparedListings.length} adet gerçek ilan "Onay Bekleyenler" paneline eklendi.`);
-        } else {
-          alert('Dosya boş veya uygun formatta değil!');
-        }
-      } catch (err) {
-        alert('JSON dosyası okunamadı. Lütfen geçerli bir JSON yükleyin.');
-        console.error(err);
-      }
-    };
-    reader.readAsText(file);
-  };
-
   const approveListing = (id) => {
     if (!isAdminLoggedIn) return;
     const updated = listings.map(item => item.id === id ? { ...item, status: 'approved' } : item);
@@ -474,7 +442,6 @@ export default function App() {
   };
 
   const approvedListings = listings.filter(item => item.status === 'approved');
-
   const featuredListings = approvedListings.filter(item => item.isFeatured);
   const regularApprovedListings = approvedListings.filter(item => !item.isFeatured);
 
@@ -902,20 +869,6 @@ export default function App() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #edf2f7', paddingBottom: '10px' }}>
                   <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>🛡️ Güvenli Yönetim Paneli</h2>
                   <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Çıkış</button>
-                </div>
-
-                {/* 🤖 PYTHON BOTU JSON YÜKLEME KÖPRÜSÜ */}
-                <div style={{ backgroundColor: '#ecfdf5', padding: '14px', borderRadius: '8px', border: '1px solid #a7f3d0', marginBottom: '20px' }}>
-                  <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#065f46', margin: '0 0 6px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Bot size={18} color="#059669" /> Python Botu Verilerini İçe Aktar (JSON Yükle)
-                  </h3>
-                  <p style={{ fontSize: '12px', color: '#047857', margin: '0 0 10px 0', lineHeight: '1.4' }}>
-                    Bilgisayarınızda çalışan Python botunun oluşturduğu <code style={{ backgroundColor: '#d1fae5', padding: '2px 4px', borderRadius: '4px' }}>cekilen_ilanlar.json</code> dosyasını seçerek ilanları onay kuyruğuna aktarın.
-                  </p>
-                  <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#059669', color: '#fff', padding: '10px', borderRadius: '6px', fontWeight: '700', fontSize: '13px', cursor: 'pointer', boxShadow: '0 2px 6px rgba(5,150,105,0.2)' }}>
-                    <Upload size={16} /> Python JSON Dosyasını Seç ve Yükle
-                    <input type="file" accept=".json" onChange={handleScraperJSONUpload} style={{ display: 'none' }} />
-                  </label>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
