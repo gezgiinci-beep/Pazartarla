@@ -45,6 +45,11 @@ export function AdminPanel() {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
 
+  // Otomatik SEO özellikli yeni ilan state'i
+  const [newListing, setNewListing] = useState({
+    title: '', category: categories[0]?.name || '', price: '', city: 'Gönen / Balıkesir', description: '', seoDescription: '', seoKeywords: ''
+  });
+
   const handleLogin = (e) => {
     e.preventDefault();
     if (password === '123456' || password === 'admin' || password === 'pazartarla2026') {
@@ -75,6 +80,7 @@ export function AdminPanel() {
     alert('Kategori başarıyla eklendi!');
   };
 
+  // Kategori Silme Fonksiyonu
   const handleDeleteCategory = (catId) => {
     if (window.confirm('Bu kategoriyi silmek istediğinize emin misiniz?')) {
       setCategories(categories.filter(cat => cat.id !== catId));
@@ -85,6 +91,33 @@ export function AdminPanel() {
     if (window.confirm('Bu ilanı silmek istediğinize emin misiniz?')) {
       setListings(listings.filter(item => item.id !== id));
     }
+  };
+
+  // Açıklama yazıldığında otomatik SEO üreten fonksiyon
+  const handleDescriptionChange = (e) => {
+    const text = e.target.value;
+    const autoSeoDesc = text.substring(0, 150) + (text.length > 150 ? '...' : '');
+    const autoKeywords = text.split(' ').filter(w => w.length > 3).slice(0, 8).join(', ');
+
+    setNewListing({
+      ...newListing,
+      description: text,
+      seoDescription: autoSeoDesc,
+      seoKeywords: autoKeywords
+    });
+  };
+
+  const handleAddListingSubmit = (e) => {
+    e.preventDefault();
+    const listingToAdd = {
+      ...newListing,
+      id: Date.now(),
+      price: Number(newListing.price),
+      image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800'
+    };
+    setListings([listingToAdd, ...listings]);
+    alert('İlan başarıyla eklendi!');
+    setNewListing({ title: '', category: categories[0]?.name || '', price: '', city: 'Gönen / Balıkesir', description: '', seoDescription: '', seoKeywords: '' });
   };
 
   if (!isAuthenticated) {
@@ -120,7 +153,7 @@ export function AdminPanel() {
         </button>
       </div>
 
-      {/* KATEGORİ LİSTESİ VE SİLME BUTONLARI */}
+      {/* KATEGORİ LİSTESİ VE SİLME */}
       <div style={{ backgroundColor: '#f0fdf4', padding: '20px', borderRadius: '8px', marginBottom: '25px', border: '1px solid #bbf7d0' }}>
         <h3 style={{ fontSize: '18px', color: '#166534', margin: '0 0 15px 0' }}>📁 Kategori Listesi ve Silme ({categories.length})</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '250px', overflowY: 'auto' }}>
@@ -165,9 +198,58 @@ export function AdminPanel() {
         </form>
       </div>
 
-      {/* İLANLAR */}
+      {/* İLAN EKLEME VE OTOMATİK SEO */}
+      <div style={{ backgroundColor: '#fffbeb', padding: '20px', borderRadius: '8px', marginBottom: '30px', border: '1px solid #fde68a' }}>
+        <h3 style={{ fontSize: '16px', color: '#92400e', margin: '0 0 15px 0' }}>✨ Yeni İlan Ekle (Otomatik SEO)</h3>
+        <form onSubmit={handleAddListingSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <input 
+            type="text" placeholder="İlan Başlığı" required
+            value={newListing.title} onChange={e => setNewListing({...newListing, title: e.target.value})}
+            style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+          />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+            <select 
+              value={newListing.category} onChange={e => setNewListing({...newListing, category: e.target.value})}
+              style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+            >
+              {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+            </select>
+            <input 
+              type="number" placeholder="Fiyat (TL)" required
+              value={newListing.price} onChange={e => setNewListing({...newListing, price: e.target.value})}
+              style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+            />
+          </div>
+
+          <textarea 
+            rows="3" placeholder="İlan Açıklaması yazın..." required
+            value={newListing.description} onChange={handleDescriptionChange}
+            style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+          ></textarea>
+
+          <div style={{ backgroundColor: '#fff', padding: '12px', borderRadius: '6px', border: '1px dashed #d97706', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#b45309' }}>🔍 Otomatik Üretilen SEO Alanları:</span>
+            <input 
+              type="text" placeholder="SEO Meta Açıklaması" 
+              value={newListing.seoDescription} onChange={e => setNewListing({...newListing, seoDescription: e.target.value})}
+              style={{ padding: '8px', fontSize: '12px', borderRadius: '4px', border: '1px solid #e5e7eb', backgroundColor: '#f9fafb' }}
+            />
+            <input 
+              type="text" placeholder="SEO Anahtar Kelimeler" 
+              value={newListing.seoKeywords} onChange={e => setNewListing({...newListing, seoKeywords: e.target.value})}
+              style={{ padding: '8px', fontSize: '12px', borderRadius: '4px', border: '1px solid #e5e7eb', backgroundColor: '#f9fafb' }}
+            />
+          </div>
+
+          <button type="submit" style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
+            İlanı Yayınla
+          </button>
+        </form>
+      </div>
+
+      {/* İLAN YÖNETİMİ */}
       <h3 style={{ fontSize: '18px', color: '#1f2937', marginBottom: '15px' }}>İlan Yönetimi ({listings.length})</h3>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '300px', overflowY: 'auto' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '250px', overflowY: 'auto' }}>
         {listings.map(item => (
           <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 15px', backgroundColor: '#f9fafb', borderRadius: '6px', border: '1px solid #e5e7eb' }}>
             <span>{item.title}</span>
