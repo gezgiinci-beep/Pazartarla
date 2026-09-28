@@ -716,21 +716,52 @@ export default function App() {
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '14px' }}>{selectedListing.price.toLocaleString('tr-TR')} TL</div>
             <p style={{ color: '#475569', fontSize: '13px', marginBottom: '16px' }}>{selectedListing.description}</p>
             
-            {/* SOSYAL MEDYADA PAYLAŞ BUTONU */}
-            <button 
-              onClick={() => {
-                const shareText = `🌾 PazarTarla İlanı: ${selectedListing.title} - ${selectedListing.price} TL\nİletişim: ${selectedListing.phone}`;
-                if (navigator.share) {
-                  navigator.share({ title: selectedListing.title, text: shareText, url: window.location.href }).catch(() => {});
-                } else {
-                  navigator.clipboard.writeText(window.location.href);
-                  alert('İlan bağlantısı panoya kopyalandı!');
-                }
-              }}
-              style={{ width: '100%', backgroundColor: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1', padding: '10px', borderRadius: '8px', fontWeight: '700', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '10px' }}
-            >
-              <Share2 size={16} /> Sosyal Medyada / WhatsApp'ta Paylaş
-            </button>
+            {/* SOSYAL MEDYA VE PAYLAŞIM BUTONLARI (WHATSAPP, FACEBOOK, TWITTER/X, KOPYALA) */}
+            <div style={{ marginBottom: '14px' }}>
+              <div style={{ fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '6px' }}>📲 İlanı Sosyal Medyada Paylaş:</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
+                {/* WhatsApp */}
+                <a 
+                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`🌾 PazarTarla İlanı: ${selectedListing.title} - ${selectedListing.price} TL\nİncelemek için: ${window.location.href}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ backgroundColor: '#22c55e', color: '#fff', padding: '8px 4px', borderRadius: '6px', textAlign: 'center', fontSize: '11px', fontWeight: '700', textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}
+                >
+                  <MessageCircle size={14} /> WhatsApp
+                </a>
+
+                {/* Facebook */}
+                <a 
+                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ backgroundColor: '#1877f2', color: '#fff', padding: '8px 4px', borderRadius: '6px', textAlign: 'center', fontSize: '11px', fontWeight: '700', textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}
+                >
+                  <Share2 size={14} /> Facebook
+                </a>
+
+                {/* Twitter / X */}
+                <a 
+                  href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`🌾 PazarTarla İlanı: ${selectedListing.title} - ${selectedListing.price} TL`)}&url=${encodeURIComponent(window.location.href)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ backgroundColor: '#0f172a', color: '#fff', padding: '8px 4px', borderRadius: '6px', textAlign: 'center', fontSize: '11px', fontWeight: '700', textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}
+                >
+                  <Globe size={14} /> X (Twitter)
+                </a>
+
+                {/* Bağlantıyı Kopyala */}
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(window.location.href);
+                    alert('İlan linki panoya kopyalandı!');
+                  }}
+                  style={{ backgroundColor: '#64748b', color: '#fff', border: 'none', padding: '8px 4px', borderRadius: '6px', textAlign: 'center', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}
+                >
+                  <Copy size={14} /> Kopyala
+                </button>
+              </div>
+            </div>
 
             <a href={`tel:${selectedListing.phone}`} style={{ width: '100%', backgroundColor: '#1b3a2b', color: '#fff', padding: '12px', borderRadius: '8px', textAlign: 'center', fontWeight: '700', textDecoration: 'none', display: 'block' }}>
               📞 {selectedListing.phone} ({selectedListing.seller})
