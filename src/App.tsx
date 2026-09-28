@@ -362,11 +362,13 @@ export default function App() {
       ...editingListing, 
       title: sanitizeInput(editingListing.title),
       description: sanitizeInput(editingListing.description),
-      price: Number(editingListing.price) 
+      price: Number(editingListing.price),
+      status: 'approved' 
     } : item);
     saveListings(updatedListings);
     setEditingListing(null);
-    alert('İlan başarıyla güncellendi!');
+    alert('İlan başarıyla güncellendi ve ana sayfada yayına alındı!');
+    changeTab('home');
   };
 
   const handleDeleteListing = (id) => {
