@@ -68,7 +68,6 @@ const FALLBACK_CATEGORIES = {
 };
 
 export default function App() {
-  // Giriş sunum ekranı durumu (ilk açılışta true gelir)
   const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState('home'); 
   const editFormRef = useRef(null);
@@ -137,11 +136,10 @@ export default function App() {
     seoTags: ''
   });
 
-  // Sunum ekranı için otomatik geçiş zamanlayıcısı (4 saniye sonra ana ekrana geçer)
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowSplash(false);
-    }, 4000);
+    }, 5000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -329,26 +327,82 @@ export default function App() {
     return matchesCategory && matchesSubCategory;
   });
 
-  // EĞER SUNUM EKRANI AKTİFSE
+  // HAREKETLİ ANİMASYONLU SUNUM EKRANI
   if (showSplash) {
     return (
-      <div style={{ position: 'fixed', inset: 0, backgroundColor: '#1b3a2b', color: '#ffffff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px', textAlign: 'center', boxSizing: 'border-box' }}>
-        <div style={{ backgroundColor: '#22c55e', padding: '16px', borderRadius: '50%', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px rgba(34,197,94,0.5)' }}>
-          <Tractor size={48} color="#fff" />
+      <div style={{ position: 'fixed', inset: 0, backgroundColor: '#e2e8f0', color: '#1e293b', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px', textAlign: 'center', boxSizing: 'border-box', overflow: 'hidden' }}>
+        
+        {/* CSS ANİMASYONLARI */}
+        <style>{`
+          @keyframes driveTractor {
+            0% { transform: translateX(-120vw); }
+            100% { transform: translateX(120vw); }
+          }
+          @keyframes flyBee {
+            0% { transform: translate(-100vw, -50px) rotate(0deg); }
+            25% { transform: translate(-30vw, -120px) rotate(15deg); }
+            50% { transform: translate(10vw, 40px) rotate(-10deg); }
+            75% { transform: translate(50vw, -80px) rotate(10deg); }
+            100% { transform: translate(120vw, 0deg) rotate(0deg); }
+          }
+          @keyframes walkFarmer {
+            0% { transform: translateX(100vw); }
+            100% { transform: translateX(-100vw); }
+          }
+          .tractor-anim {
+            position: absolute;
+            bottom: 60px;
+            animation: driveTractor 7s linear infinite;
+          }
+          .bee-anim {
+            position: absolute;
+            top: 25%;
+            animation: flyBee 5s ease-in-out infinite;
+          }
+          .farmer-anim {
+            position: absolute;
+            bottom: 120px;
+            animation: walkFarmer 9s linear infinite;
+          }
+        `}</style>
+
+        {/* UÇAN BAL ARISI */}
+        <div className="bee-anim" style={{ fontSize: '32px', zIndex: 10 }}>
+          🐝
         </div>
-        <h1 style={{ fontSize: '32px', fontWeight: '900', margin: '0 0 10px 0', letterSpacing: '1px' }}>PazarTarla</h1>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: 'rgba(34,197,94,0.2)', color: '#86efac', padding: '6px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: '700', marginBottom: '24px', border: '1px solid rgba(34,197,94,0.4)' }}>
-          <Sparkles size={16} /> Türkiye'nin En Kapsamlı Tarım Platformu
+
+        {/* HAREKETLİ ÇİFTÇİ */}
+        <div className="farmer-anim" style={{ fontSize: '28px', zIndex: 5, color: '#1b3a2b', fontWeight: 'bold' }}>
+          👨‍🌾 🌾
         </div>
-        <p style={{ color: '#cbd5e1', fontSize: '14px', maxWidth: '400px', lineHeight: '1.6', margin: '0 0 30px 0' }}>
-          Tarladan sofraya, traktörden modern yaşam konteynerlerine kadar aradığınız tüm tarım ihtiyaçları burada buluşuyor.
-        </p>
-        <button 
-          onClick={() => setShowSplash(false)}
-          style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px 28px', borderRadius: '30px', fontWeight: '800', fontSize: '15px', cursor: 'pointer', boxShadow: '0 4px 14px rgba(34,197,94,0.4)', transition: 'transform 0.2s' }}
-        >
-          Hemen Keşfet →
-        </button>
+
+        {/* HAREKETLİ TRAKTÖR */}
+        <div className="tractor-anim" style={{ zIndex: 5 }}>
+          <div style={{ backgroundColor: '#22c55e', padding: '10px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+            <span style={{ fontSize: '20px' }}>🚜💨</span>
+            <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff' }}>PazarTarla Sahada</span>
+          </div>
+        </div>
+
+        {/* ANA SUNUM İÇERİĞİ */}
+        <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', padding: '30px', borderRadius: '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', backdropFilter: 'blur(5px)', maxWidth: '440px', width: '100%', zIndex: 20, border: '1px solid #cbd5e1' }}>
+          <div style={{ backgroundColor: '#1b3a2b', padding: '16px', borderRadius: '50%', width: '60px', height: '60px', margin: '0 auto 16px auto', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(27,58,43,0.3)' }}>
+            <Tractor size={32} color="#fff" />
+          </div>
+          <h1 style={{ fontSize: '28px', fontWeight: '900', margin: '0 0 8px 0', color: '#1b3a2b' }}>PazarTarla</h1>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: '#dcfce7', color: '#166534', padding: '6px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: '700', marginBottom: '16px', border: '1px solid #bbf7d0' }}>
+            <Sparkles size={14} /> Türkiye'nin En Kapsamlı Tarım Platformu
+          </div>
+          <p style={{ color: '#475569', fontSize: '13px', lineHeight: '1.5', margin: '0 0 24px 0' }}>
+            Tarladan mahsullere, traktörlerden arıcılık ekipmanlarına kadar aradığınız her şey burada.
+          </p>
+          <button 
+            onClick={() => setShowSplash(false)}
+            style={{ width: '100%', backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '10px', fontWeight: '800', fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 14px rgba(34,197,94,0.3)', transition: 'background 0.2s' }}
+          >
+            Hemen Giriş Yap →
+          </button>
+        </div>
       </div>
     );
   }
