@@ -5,14 +5,12 @@ import {
 } from 'lucide-react';
 
 export default function App() {
-  // Admin ve Kimlik Doğrulama State'leri
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(() => {
     return localStorage.getItem('pazartarla_admin_logged') === 'true';
   });
   const [adminPasswordInput, setAdminPasswordInput] = useState('');
   const [showAdminLoginModal, setShowAdminLoginModal] = useState(false);
 
-  // Başlangıç Kategorileri
   const initialCategories = [
     { id: 1, name: "Tarım Makineleri", subCategories: ["Traktör", "Biçerdöver", "Pulluk", "Mibzer", "İlaçlama Makinesi"] },
     { id: 2, name: "Konteyner ve Yaşam Alanı", subCategories: ["2x3 Konteyner", "3x7 Prefabrik", "Sandviç Panel Konteyner", "Yük Container", "Wc Konteyner"] },
@@ -21,7 +19,6 @@ export default function App() {
     { id: 5, name: "Hayvancılık Ekipmanları", subCategories: ["Süt Sağım Makinesi", "Yem Karma", "Suluk ve Yemlik"] }
   ];
 
-  // Başlangıç İlanları
   const initialListings = [
     {
       id: 1,
@@ -30,50 +27,15 @@ export default function App() {
       subCategory: "Ceviz",
       price: 140,
       city: "Gönen / Balıkesir",
-      district: "Gönen",
       description: "Kendi bahçemizin ürünü, ilaçsız ve dolgun Chandler ceviz.",
       seoDescription: "Kendi bahçemizin ürünü, ilaçsız ve dolgun Chandler ceviz.",
       seoKeywords: "ceviz, taze, tarım, gönen",
       image: "https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800",
       phone: "0535 768 1550",
-      email: "gezgiinci@gmail.com",
-      date: "2026-09-01"
-    },
-    {
-      id: 101,
-      title: "Massey Ferguson 285 S Kaporta Boya Orijinal",
-      category: "Traktör",
-      subCategory: "İkinci El Traktör",
-      price: 485000,
-      city: "Gönen / Balıkesir",
-      district: "Gönen",
-      description: "Temiz kullanılmış, motoru şanzımanı kusursuz.",
-      seoDescription: "Temiz kullanılmış, motoru şanzımanı kusursuz.",
-      seoKeywords: "traktör, massey ferguson, tarım",
-      image: "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&q=80&w=800",
-      phone: "0535 768 1550",
-      email: "gezgiinci@gmail.com",
-      date: "2026-09-02"
-    },
-    {
-      id: 3,
-      title: "3x7 Sandviç Panel Lüks Yaşam Konteyneri",
-      category: "Konteyner ve Yaşam Alanı",
-      subCategory: "3x7 Prefabrik",
-      price: 165000,
-      city: "Balıkesir",
-      district: "Gönen",
-      description: "Isı yalıtımlı sandviç panel, içinde mutfak tezgâhı ve duş-WC bulunmaktadır.",
-      seoDescription: "Isı yalıtımlı sandviç panel, içinde mutfak tezgâhı ve duş-WC bulunmaktadır.",
-      seoKeywords: "konteyner, prefabrik, yaşam alanı",
-      image: "https://images.unsplash.com/photo-1541888946425-d0fbb18f248e?auto=format&fit=crop&q=80&w=800",
-      phone: "0535 768 1550",
-      email: "gezgiinci@gmail.com",
-      date: "2026-09-25"
+      sellerName: "Can İnce"
     }
   ];
 
-  // State Tanımları
   const [listings, setListings] = useState(() => {
     const saved = localStorage.getItem('pazartarla_listings');
     return saved ? JSON.parse(saved) : initialListings;
@@ -107,16 +69,17 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState('Tümü');
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
 
-  // Yeni İlan Formu State'i (Otomatik SEO alanları dahil)
+  // Orijinal Detaylı İlan Formu State'i (Otomatik SEO alanları eklendi)
   const [newListing, setNewListing] = useState({
-    title: '', category: categories[0]?.name || '', subCategory: '', price: '', city: '', district: '', description: '', seoDescription: '', seoKeywords: '', image: '', phone: '0535 768 1550', email: 'gezgiinci@gmail.com'
+    title: '', category: categories[0]?.name || '', subCategory: categories[0]?.subCategories[0] || '', price: '', 
+    capacity: '21 m²', sellerName: 'Can İnce', phone: '0535 768 1550', 
+    image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800', 
+    description: '', seoDescription: '', seoKeywords: '', city: 'Gönen / Balıkesir'
   });
 
-  // Kategori Yönetim State'leri
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
 
-  // Admin Giriş Kontrolü
   const handleAdminLogin = (e) => {
     e.preventDefault();
     if (adminPasswordInput === '123456' || adminPasswordInput === 'admin') {
@@ -150,30 +113,25 @@ export default function App() {
     });
   };
 
-  // İlan Ekleme
   const handleAddListingSubmit = (e) => {
     e.preventDefault();
     const listingToAdd = {
       ...newListing,
       id: Date.now(),
       price: Number(newListing.price),
-      date: new Date().toISOString().split('T')[0],
-      image: newListing.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800'
+      date: new Date().toISOString().split('T')[0]
     };
     setListings([listingToAdd, ...listings]);
-    alert('İlanınız başarıyla eklendi ve otomatik SEO oluşturuldu!');
-    setNewListing({ title: '', category: categories[0]?.name || '', subCategory: '', price: '', city: '', district: '', description: '', seoDescription: '', seoKeywords: '', image: '', phone: '0535 768 1550', email: 'gezgiinci@gmail.com' });
+    alert('İlanınız başarıyla yayınlandı ve otomatik SEO oluşturuldu!');
     setCurrentView('home');
   };
 
-  // İlan Silme
   const handleDeleteListing = (id) => {
     if (window.confirm('Bu ilanı silmek istediğinize emin misiniz?')) {
       setListings(listings.filter(item => item.id !== id));
     }
   };
 
-  // Kategori Ekleme
   const handleAddCategory = (e) => {
     e.preventDefault();
     if (!newCategoryName.trim()) return;
@@ -189,14 +147,12 @@ export default function App() {
     alert('Kategori başarıyla eklendi!');
   };
 
-  // Kategori Silme (Yönetim Paneli)
   const handleDeleteCategory = (catId) => {
     if (window.confirm('Bu kategoriyi silmek istediğinize emin misiniz?')) {
       setCategories(categories.filter(c => c.id !== catId));
     }
   };
 
-  // Favori Toggle
   const toggleFavorite = (id) => {
     if (favorites.includes(id)) {
       setFavorites(favorites.filter(favId => favId !== id));
@@ -205,10 +161,9 @@ export default function App() {
     }
   };
 
-  // Filtreleme Mantığı
   const filteredListings = listings.filter(item => {
     const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
                           item.city.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'Tümü' || item.category === selectedCategory;
     const matchesSubCategory = selectedSubCategory === 'Tümü' || item.subCategory === selectedSubCategory;
@@ -360,7 +315,7 @@ export default function App() {
                         {item.title}
                       </h3>
                       <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#134e4a', marginBottom: '12px' }}>
-                        {item.price.toLocaleString('tr-TR')} TL
+                        {item.price ? item.price.toLocaleString('tr-TR') : 0} TL
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: '#6b7280', marginTop: 'auto', paddingTop: '10px', borderTop: '1px solid #f3f4f6' }}>
                         <MapPin size={14} /> {item.city}
@@ -386,14 +341,14 @@ export default function App() {
               <div>
                 <span style={{ fontSize: '12px', color: '#059669', fontWeight: 'bold', textTransform: 'uppercase' }}>{selectedListing.category}</span>
                 <h2 style={{ fontSize: '24px', margin: '10px 0', color: '#111827' }}>{selectedListing.title}</h2>
-                <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#134e4a', marginBottom: '20px' }}>{selectedListing.price.toLocaleString('tr-TR')} TL</div>
+                <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#134e4a', marginBottom: '20px' }}>{selectedListing.price ? selectedListing.price.toLocaleString('tr-TR') : 0} TL</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#4b5563', marginBottom: '20px' }}>
                   <MapPin size={18} /> {selectedListing.city}
                 </div>
                 <div style={{ backgroundColor: '#f9fafb', padding: '15px', borderRadius: '8px', marginBottom: '20px', border: '1px solid #e5e7eb' }}>
                   <h4 style={{ margin: '0 0 10px 0', color: '#374151' }}>İletişim Bilgileri</h4>
-                  <p style={{ margin: '5px 0', display: 'flex', alignItems: 'center', gap: '8px' }}><Phone size={16} color="#059669" /> {selectedListing.phone}</p>
-                  <p style={{ margin: '5px 0', display: 'flex', alignItems: 'center', gap: '8px' }}><Mail size={16} color="#059669" /> {selectedListing.email}</p>
+                  <p style={{ margin: '5px 0', display: 'flex', alignItems: 'center', gap: '8px' }}><Phone size={16} color="#059669" /> {selectedListing.phone || '0535 768 1550'}</p>
+                  <p style={{ margin: '5px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>Satıcı: {selectedListing.sellerName || 'Can İnce'}</p>
                 </div>
               </div>
             </div>
@@ -404,76 +359,116 @@ export default function App() {
           </div>
         )}
 
-        {/* 3. İLAN VER SAYFASI (OTOMATİK SEO DESTEKLİ) */}
+        {/* 3. İLAN VER SAYFASI (ORİJİNAL DETAYLI FORM + OTOMATİK SEO) */}
         {currentView === 'add' && (
           <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '10px', maxWidth: '700px', margin: '0 auto', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
-            <h2 style={{ marginTop: 0, color: '#134e4a' }}>Yeni İlan Oluştur</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <button onClick={() => setCurrentView('home')} style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontWeight: 'bold' }}>
+                ← Vazgeç
+              </button>
+              <h2 style={{ margin: 0, color: '#111827' }}>İlan Ver</h2>
+            </div>
+
             <form onSubmit={handleAddListingSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '5px' }}>İlan Başlığı</label>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '5px' }}>İlan Başlığı *</label>
                 <input 
-                  type="text" required placeholder="Örn: 3x7 Sandviç Panel Konteyner"
+                  type="text" required placeholder="Örn: Konteyner"
                   value={newListing.title} onChange={e => setNewListing({...newListing, title: e.target.value})}
                   style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #d1d5db', boxSizing: 'border-box' }}
                 />
               </div>
+
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '5px' }}>Fiyat (TL) *</label>
+                  <input 
+                    type="number" required placeholder="90"
+                    value={newListing.price} onChange={e => setNewListing({...newListing, price: e.target.value})}
+                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #d1d5db', boxSizing: 'border-box' }}
+                  />
+                </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '5px' }}>Kategori</label>
                   <select 
-                    value={newListing.category} onChange={e => setNewListing({...newListing, category: e.target.value})}
+                    value={newListing.category} 
+                    onChange={e => {
+                      const catName = e.target.value;
+                      const foundCat = categories.find(c => c.name === catName);
+                      setNewListing({
+                        ...newListing, 
+                        category: catName, 
+                        subCategory: foundCat?.subCategories?.[0] || ''
+                      });
+                    }}
                     style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #d1d5db', boxSizing: 'border-box' }}
                   >
                     {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                   </select>
                 </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '5px' }}>Fiyat (TL)</label>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '5px' }}>Alt Ürün / Çeşit</label>
+                  <select 
+                    value={newListing.subCategory} 
+                    onChange={e => setNewListing({...newListing, subCategory: e.target.value})}
+                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #d1d5db', boxSizing: 'border-box' }}
+                  >
+                    {categories.find(c => c.name === newListing.category)?.subCategories?.map((sub, idx) => (
+                      <option key={idx} value={sub}>{sub}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '5px' }}>Miktar / Kapasite</label>
                   <input 
-                    type="number" required placeholder="Örn: 150000"
-                    value={newListing.price} onChange={e => setNewListing({...newListing, price: e.target.value})}
+                    type="text" placeholder="21 m²"
+                    value={newListing.capacity} onChange={e => setNewListing({...newListing, capacity: e.target.value})}
                     style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #d1d5db', boxSizing: 'border-box' }}
                   />
                 </div>
               </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '5px' }}>Şehir / Bölge</label>
-                <input 
-                  type="text" required placeholder="Örn: Gönen / Balıkesir"
-                  value={newListing.city} onChange={e => setNewListing({...newListing, city: e.target.value})}
-                  style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #d1d5db', boxSizing: 'border-box' }}
-                />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '5px' }}>Fotoğraf URL (İsteğe bağlı)</label>
-                <input 
-                  type="text" placeholder="https://..."
-                  value={newListing.image} onChange={e => setNewListing({...newListing, image: e.target.value})}
-                  style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #d1d5db', boxSizing: 'border-box' }}
-                />
-              </div>
+
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '5px' }}>Telefon</label>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '5px' }}>Satıcı Adı *</label>
                   <input 
-                    type="text" required placeholder="0535..."
+                    type="text" required placeholder="Can İnce"
+                    value={newListing.sellerName} onChange={e => setNewListing({...newListing, sellerName: e.target.value})}
+                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #d1d5db', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '5px' }}>Telefon *</label>
+                  <input 
+                    type="text" required placeholder="0535 768 1550"
                     value={newListing.phone} onChange={e => setNewListing({...newListing, phone: e.target.value})}
                     style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #d1d5db', boxSizing: 'border-box' }}
                   />
                 </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '5px' }}>E-posta</label>
-                  <input 
-                    type="email" required placeholder="ornek@mail.com"
-                    value={newListing.email} onChange={e => setNewListing({...newListing, email: e.target.value})}
-                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #d1d5db', boxSizing: 'border-box' }}
-                  />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '5px' }}>Fotoğraf Yükle (Max 2MB)</label>
+                <input 
+                  type="file" onChange={(e) => {
+                    if(e.target.files && e.target.files[0]) {
+                      setNewListing({...newListing, image: URL.createObjectURL(e.target.files[0])});
+                    }
+                  }}
+                  style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #d1d5db', boxSizing: 'border-box', backgroundColor: '#f9fafb' }}
+                />
+                <div style={{ fontSize: '12px', color: '#059669', marginTop: '5px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  ✓ Fotoğraf yüklendi
                 </div>
               </div>
+
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '5px' }}>Açıklama (Otomatik SEO üretir)</label>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '5px' }}>Açıklama</label>
                 <textarea 
-                  rows="4" required placeholder="Ürün detaylarını açıklayın..."
+                  rows="4" required placeholder="İlan detaylarını yazın..."
                   value={newListing.description} onChange={handleDescriptionChange}
                   style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #d1d5db', boxSizing: 'border-box' }}
                 ></textarea>
@@ -521,7 +516,7 @@ export default function App() {
                     </div>
                     <div style={{ padding: '15px' }}>
                       <h3 style={{ fontSize: '16px', fontWeight: 'bold', margin: '0 0 10px 0' }}>{item.title}</h3>
-                      <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#134e4a' }}>{item.price.toLocaleString('tr-TR')} TL</div>
+                      <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#134e4a' }}>{item.price ? item.price.toLocaleString('tr-TR') : 0} TL</div>
                     </div>
                   </div>
                 ))}
@@ -560,7 +555,7 @@ export default function App() {
               </form>
             </div>
 
-            {/* MEVCUT KATEGORİLERİ LİSTELEME VE SİLME */}
+            {/* KATEGORİ LİSTESİ VE SİLME */}
             <h3 style={{ fontSize: '18px', color: '#1f2937', marginBottom: '15px' }}>📁 Kategori Listesi ve Silme ({categories.length})</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '30px' }}>
               {categories.map(cat => (
@@ -587,7 +582,7 @@ export default function App() {
                     <img src={item.image} alt="" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
                     <div>
                       <div style={{ fontWeight: 'bold', fontSize: '14px' }}>{item.title}</div>
-                      <div style={{ fontSize: '12px', color: '#059669' }}>{item.price.toLocaleString('tr-TR')} TL - {item.city}</div>
+                      <div style={{ fontSize: '12px', color: '#059669' }}>{item.price ? item.price.toLocaleString('tr-TR') : 0} TL - {item.city}</div>
                     </div>
                   </div>
                   <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#dc2626', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
