@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus, 
   Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, ChevronDown, X, 
-  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag, Edit3 
+  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag, Edit3, Sparkles 
 } from 'lucide-react';
 
 const ALL_INITIAL_LISTINGS = [
@@ -68,6 +68,8 @@ const FALLBACK_CATEGORIES = {
 };
 
 export default function App() {
+  // Giriş sunum ekranı durumu (ilk açılışta true gelir)
+  const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState('home'); 
   const editFormRef = useRef(null);
   
@@ -116,11 +118,8 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState('Tüm kategoriler');
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
   const [openCategory, setOpenCategory] = useState('');
-  const [showViewModal, setShowViewModal] = useState(false);
-  const [viewMode, setViewMode] = useState('Liste');
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
-  const [editingListing, setEditingListing] = useState(null);
 
   const [form, setForm] = useState({
     title: '',
@@ -137,6 +136,14 @@ export default function App() {
     image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
     seoTags: ''
   });
+
+  // Sunum ekranı için otomatik geçiş zamanlayıcısı (4 saniye sonra ana ekrana geçer)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     window.history.replaceState({ tab: 'home' }, '');
@@ -264,10 +271,7 @@ export default function App() {
   };
 
   const handleDeleteListing = (id) => {
-    if (!isAdminLoggedIn) {
-      alert('Yetkisiz işlem!');
-      return;
-    }
+    if (!isAdminLoggedIn) return;
     if (window.confirm('Bu ilanı silmek istediğinize emin misiniz?')) {
       const updated = listings.filter(item => item.id !== id);
       saveListings(updated);
@@ -324,6 +328,30 @@ export default function App() {
     const matchesSubCategory = selectedSubCategory === 'Tümü' || item.subCategory === selectedSubCategory;
     return matchesCategory && matchesSubCategory;
   });
+
+  // EĞER SUNUM EKRANI AKTİFSE
+  if (showSplash) {
+    return (
+      <div style={{ position: 'fixed', inset: 0, backgroundColor: '#1b3a2b', color: '#ffffff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px', textAlign: 'center', boxSizing: 'border-box' }}>
+        <div style={{ backgroundColor: '#22c55e', padding: '16px', borderRadius: '50%', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 20px rgba(34,197,94,0.5)' }}>
+          <Tractor size={48} color="#fff" />
+        </div>
+        <h1 style={{ fontSize: '32px', fontWeight: '900', margin: '0 0 10px 0', letterSpacing: '1px' }}>PazarTarla</h1>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: 'rgba(34,197,94,0.2)', color: '#86efac', padding: '6px 14px', borderRadius: '20px', fontSize: '13px', fontWeight: '700', marginBottom: '24px', border: '1px solid rgba(34,197,94,0.4)' }}>
+          <Sparkles size={16} /> Türkiye'nin En Kapsamlı Tarım Platformu
+        </div>
+        <p style={{ color: '#cbd5e1', fontSize: '14px', maxWidth: '400px', lineHeight: '1.6', margin: '0 0 30px 0' }}>
+          Tarladan sofraya, traktörden modern yaşam konteynerlerine kadar aradığınız tüm tarım ihtiyaçları burada buluşuyor.
+        </p>
+        <button 
+          onClick={() => setShowSplash(false)}
+          style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px 28px', borderRadius: '30px', fontWeight: '800', fontSize: '15px', cursor: 'pointer', boxShadow: '0 4px 14px rgba(34,197,94,0.4)', transition: 'transform 0.2s' }}
+        >
+          Hemen Keşfet →
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f4f6f8', color: '#1e293b', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', boxSizing: 'border-box' }}>
@@ -529,7 +557,6 @@ export default function App() {
                   <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Çıkış</button>
                 </div>
 
-                {/* YENİ KATEGORİ EKLEME FORMU */}
                 <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <FolderPlus size={16} color="#22c55e" /> Yeni Kategori Ekle
