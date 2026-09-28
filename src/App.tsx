@@ -230,6 +230,18 @@ export default function App() {
     });
   };
 
+  const handleEditFormChange = (e) => {
+    const { name, value } = e.target;
+    setEditingListing(prev => {
+      const updated = { ...prev, [name]: value };
+      if (name === 'category') {
+        const subList = categoriesWithSubs[value] || ['Genel'];
+        updated.subCategory = subList[0];
+      }
+      return updated;
+    });
+  };
+
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -341,11 +353,6 @@ export default function App() {
         editFormRef.current.scrollIntoView({ behavior: 'smooth' });
       }
     }, 100);
-  };
-
-  const handleEditChange = (e) => {
-    const { name, value } = e.target;
-    setEditingListing(prev => ({ ...prev, [name]: value }));
   };
 
   const saveEditedListing = (e) => {
@@ -745,7 +752,7 @@ export default function App() {
           </div>
         )}
 
-        {/* İLAN VER EKRANI (ALT KATEGORİ TIKLANINCA AÇILAN SEÇENEK İLE) */}
+        {/* İLAN VER EKRANI */}
         {activeTab === 'add' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
@@ -785,7 +792,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* İLAN VERİRKEN TIKLANINCA ALT SEÇENEKLERİN AÇILDIĞI LİSTE */}
               <div>
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Alt Ürün / Seçenek (Tıklayınca açılır)</label>
                 <select 
@@ -888,20 +894,45 @@ export default function App() {
                   </form>
                 </div>
 
+                {/* İLANI DÜZENLE FORMUNA KATEGORİ VE ALT KATEGORİ SEÇİMİ EKLENDİ */}
                 {editingListing && (
                   <div style={{ backgroundColor: '#f0fdf4', padding: '14px', borderRadius: '8px', border: '2px solid #22c55e', marginBottom: '20px' }}>
                     <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 10px 0' }}>✏️ İlanı Düzenle: {editingListing.title}</h3>
                     <form onSubmit={saveEditedListing} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <input type="text" name="title" value={editingListing.title} onChange={handleEditChange} placeholder="İlan Başlığı" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }} />
-                      <input type="number" name="price" value={editingListing.price} onChange={handleEditChange} placeholder="Fiyat (TL)" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }} />
+                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>İlan Başlığı</label>
+                      <input type="text" name="title" value={editingListing.title} onChange={handleEditFormChange} placeholder="İlan Başlığı" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }} />
                       
+                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>Fiyat (TL)</label>
+                      <input type="number" name="price" value={editingListing.price} onChange={handleEditFormChange} placeholder="Fiyat (TL)" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }} />
+                      
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                        <div>
+                          <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>Ana Kategori</label>
+                          <select name="category" value={editingListing.category} onChange={handleEditFormChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px', backgroundColor: '#fff' }}>
+                            {Object.keys(categoriesWithSubs).map(cat => (
+                              <option key={cat} value={cat}>{cat}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>Alt Kategori</label>
+                          <select name="subCategory" value={editingListing.subCategory} onChange={handleEditFormChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px', backgroundColor: '#fff' }}>
+                            {(categoriesWithSubs[editingListing.category] || ['Genel']).map(sub => (
+                              <option key={sub} value={sub}>{sub}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
                       <div>
                         <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '11px', color: '#166534' }}>İlan Fotoğrafını Değiştir (Max 2MB)</label>
                         <input type="file" accept="image/*" onChange={handleEditImageUpload} style={{ width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff', fontSize: '12px' }} />
                       </div>
 
-                      <textarea name="description" value={editingListing.description} onChange={handleEditChange} placeholder="Açıklama" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', height: '60px' }} />
-                      <div style={{ display: 'flex', gap: '8px' }}>
+                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>Açıklama</label>
+                      <textarea name="description" value={editingListing.description} onChange={handleEditFormChange} placeholder="Açıklama" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', height: '60px' }} />
+                      
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
                         <button type="submit" style={{ flex: 1, backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Değişiklikleri Kaydet</button>
                         <button type="button" onClick={() => setEditingListing(null)} style={{ background: '#e2e8f0', border: 'none', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer' }}>İptal</button>
                       </div>
@@ -909,7 +940,6 @@ export default function App() {
                   </div>
                 )}
 
-                {/* YÖNETİM PANELİNDE KATEGORİYE YENİ SEÇENEK EKLEME VE TIKLANINCA AÇILAN LİSTE */}
                 <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <FolderPlus size={16} color="#22c55e" /> Kategoriye Yeni Alt Seçenek Ekle
