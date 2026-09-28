@@ -117,7 +117,6 @@ export default function App() {
   const [openCategory, setOpenCategory] = useState('');
   const [adminOpenCategory, setAdminOpenCategory] = useState('');
   
-  // Yeni Kategori Ekleme Alanı İçin State (Varsayılan olarak mevcut ilk kategori seçili)
   const [newCategoryName, setNewCategoryName] = useState(() => Object.keys(FALLBACK_CATEGORIES)[0] || 'Mahsuller');
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
   const [editingListing, setEditingListing] = useState(null);
@@ -376,7 +375,7 @@ export default function App() {
     e.preventDefault();
     if (!isAdminLoggedIn) return;
     if (!newCategoryName.trim()) {
-      alert('Lütfen kategori seçin veya girin.');
+      alert('Lütfen kategori seçin.');
       return;
     }
     const catName = sanitizeInput(newCategoryName.trim());
@@ -385,7 +384,6 @@ export default function App() {
       ? newSubCategoryName.split(',').map(s => sanitizeInput(s.trim())).filter(Boolean) 
       : [];
      
-    // Mevcut alt kategorilerin üzerine yenilerini ekliyoruz (tekrar edenleri engellemek için Set kullanabiliriz)
     const combinedSubs = Array.from(new Set([...existingSubs, ...newSubsInput]));
     if (combinedSubs.length === 0) combinedSubs.push('Genel');
 
@@ -905,10 +903,10 @@ export default function App() {
                   </div>
                 )}
 
-                {/* YENİ KATEGORİ / ALT SEÇENEK EKLEME (AÇILIR KUTU İLE) */}
+                {/* YENİ KATEGORİ SEÇENEĞİ EKLEME & MEVCUTLARI GÖSTERME */}
                 <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <FolderPlus size={16} color="#22c55e" /> Kategoriye Yeni Seçenek Ekle
+                    <FolderPlus size={16} color="#22c55e" /> Kategoriye Yeni Alt Seçenek Ekle
                   </h3>
                   <form onSubmit={handleAddCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <label style={{ fontSize: '12px', fontWeight: '600', color: '#475569' }}>Ana Kategori Seç:</label>
@@ -922,7 +920,13 @@ export default function App() {
                       ))}
                     </select>
 
-                    <label style={{ fontSize: '12px', fontWeight: '600', color: '#475569', marginTop: '4px' }}>Yeni Alt Seçenekler (Virgülle ayırın):</label>
+                    {/* SEÇİLEN KATEGORİNİN MEVCUT ALT SEÇENEKLERİNİ GÖSTEREN ALAN */}
+                    <div style={{ backgroundColor: '#f0fdf4', padding: '8px 10px', borderRadius: '6px', border: '1px solid #bbf7d0', fontSize: '12px', color: '#166534' }}>
+                      <span style={{ fontWeight: '700', display: 'block', marginBottom: '2px' }}>📌 Bu Kategorideki Mevcut Alt Seçenekler:</span>
+                      {(categoriesWithSubs[newCategoryName] || []).join(', ')}
+                    </div>
+
+                    <label style={{ fontSize: '12px', fontWeight: '600', color: '#475569', marginTop: '4px' }}>Yeni Eklenecek Alt Seçenekler (Virgülle ayırın):</label>
                     <input 
                       type="text" 
                       placeholder="Örn: Antep Fıstığı, Badem" 
