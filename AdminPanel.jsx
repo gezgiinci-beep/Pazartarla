@@ -75,7 +75,6 @@ export function AdminPanel() {
     alert('Kategori başarıyla eklendi!');
   };
 
-  // KATEGORİYİ ANINDA SİLEN FONKSİYON
   const handleDeleteCategory = (catId) => {
     if (window.confirm('Bu kategoriyi silmek istediğinize emin misiniz?')) {
       setCategories(categories.filter(cat => cat.id !== catId));
