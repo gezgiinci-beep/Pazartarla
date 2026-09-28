@@ -141,7 +141,6 @@ export default function App() {
     isFeatured: false
   });
 
-  // Kendi kendine 3.5 saniye sonra ana sayfaya geçiş
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowSplash(false);
@@ -716,6 +715,23 @@ export default function App() {
             <h2 style={{ fontSize: '18px', fontWeight: '800', margin: '8px 0' }}>{selectedListing.title}</h2>
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '14px' }}>{selectedListing.price.toLocaleString('tr-TR')} TL</div>
             <p style={{ color: '#475569', fontSize: '13px', marginBottom: '16px' }}>{selectedListing.description}</p>
+            
+            {/* SOSYAL MEDYADA PAYLAŞ BUTONU */}
+            <button 
+              onClick={() => {
+                const shareText = `🌾 PazarTarla İlanı: ${selectedListing.title} - ${selectedListing.price} TL\nİletişim: ${selectedListing.phone}`;
+                if (navigator.share) {
+                  navigator.share({ title: selectedListing.title, text: shareText, url: window.location.href }).catch(() => {});
+                } else {
+                  navigator.clipboard.writeText(window.location.href);
+                  alert('İlan bağlantısı panoya kopyalandı!');
+                }
+              }}
+              style={{ width: '100%', backgroundColor: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1', padding: '10px', borderRadius: '8px', fontWeight: '700', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '10px' }}
+            >
+              <Share2 size={16} /> Sosyal Medyada / WhatsApp'ta Paylaş
+            </button>
+
             <a href={`tel:${selectedListing.phone}`} style={{ width: '100%', backgroundColor: '#1b3a2b', color: '#fff', padding: '12px', borderRadius: '8px', textAlign: 'center', fontWeight: '700', textDecoration: 'none', display: 'block' }}>
               📞 {selectedListing.phone} ({selectedListing.seller})
             </a>
@@ -1016,8 +1032,14 @@ export default function App() {
 
       </main>
 
-      <footer style={{ backgroundColor: '#1b3a2b', color: '#94a3b8', padding: '16px', textAlign: 'center', fontSize: '11px', marginTop: 'auto' }}>
-        <span>© 2026 PazarTarla • Gönen / Balıkesir</span>
+      {/* İLETİŞİM BİLGİLERİ FOOTER ALANI */}
+      <footer style={{ backgroundColor: '#1b3a2b', color: '#94a3b8', padding: '20px 16px', textAlign: 'center', fontSize: '12px', marginTop: 'auto', borderTop: '1px solid #2d5a43' }}>
+        <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ color: '#fff', fontWeight: '700', fontSize: '14px' }}>PazarTarla İletişim & Destek</div>
+          <div>📞 WhatsApp / Tel: 0535 768 1550</div>
+          <div>📍 Konum: Gönen / Balıkesir</div>
+          <div style={{ color: '#86efac', marginTop: '4px' }}>© 2026 PazarTarla • Türkiye'nin İlk ve Tek Tarım Platformu</div>
+        </div>
       </footer>
 
       <button onClick={() => changeTab('admin-page')} title="Yönetim Paneli" style={{ position: 'fixed', bottom: '20px', right: '20px', backgroundColor: '#1b3a2b', color: '#86efac', border: '2px solid #22c55e', borderRadius: '50%', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 999 }}>
