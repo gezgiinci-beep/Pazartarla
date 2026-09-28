@@ -23,33 +23,18 @@ const ALL_INITIAL_LISTINGS = [
   },
   {
     id: 101,
-    title: 'Massey Ferguson 285 S Kaporta Boya Orijinal',
-    price: 485000,
+    title: 'Fiat 480 S Kurbağa Göz',
+    price: 295000,
     category: 'Traktör',
     subCategory: 'İkinci El Traktör',
     mode: 'Satılık',
     location: 'Gönen / Balıkesir',
-    amount: '85 HP',
-    description: 'Motoru ve yürüyeni sorunsuz, traktörümüz çiftlik işlerinde kullanılmıştır. Lastikleri %80 durumdadır.',
-    seller: 'Ahmet Yılmaz',
-    phone: '0532 555 4433',
+    amount: '48 HP',
+    description: 'Efsane kasa Fiat 480. Motor şanzıman kusursuzdur, vites atma ötme kesinlikle yoktur.',
+    seller: 'Şakir Korkmaz',
+    phone: '0536 777 8844',
     image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
-    seoTags: 'massey ferguson 285, ikinci el traktör, gönen traktör, tarım makinaları'
-  },
-  {
-    id: 301,
-    title: '3x7 Metre Sandviç Panel Lüks Yaşam Konteyneri',
-    price: 135000,
-    category: 'geçici konutlar',
-    subCategory: 'konteyner',
-    mode: 'Satılık',
-    location: 'Gönen / Balıkesir',
-    amount: '21 m²',
-    description: 'Tarla ve bağ evleri için ideal, mutfak tezgahı ve duş-wc dahil sandviç panel lüks konteyner.',
-    seller: 'Can İnce',
-    phone: '0535 768 1550',
-    image: 'https://images.unsplash.com/photo-1541888946425-d0fbb18f06f7?auto=format&fit=crop&q=80&w=800',
-    seoTags: 'konteyner, yaşam konteyneri, tarla evi, gönen konteyner'
+    seoTags: 'fiat 480, traktör, gönen traktör, ikinci el traktör'
   }
 ];
 
@@ -119,6 +104,7 @@ export default function App() {
   const [openCategory, setOpenCategory] = useState('');
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
+  const [editingListing, setEditingListing] = useState(null);
 
   const [form, setForm] = useState({
     title: '',
@@ -139,7 +125,7 @@ export default function App() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowSplash(false);
-    }, 5000);
+    }, 4000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -268,6 +254,37 @@ export default function App() {
     alert('İlanınız başarıyla yayınlandı ve otomatik SEO oluşturuldu!');
   };
 
+  // İlan Düzenleme Fonksiyonları
+  const startEditingFromDetail = (item) => {
+    if (!isAdminLoggedIn) {
+      alert('İlanı düzenlemek için önce Yönetici Paneline giriş yapmalısınız.');
+      changeTab('admin-page');
+      return;
+    }
+    setEditingListing(item);
+    changeTab('admin-page');
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditingListing(prev => ({ ...prev, [name]: value }));
+  };
+
+  const saveEditedListing = (e) => {
+    e.preventDefault();
+    if (!isAdminLoggedIn) return;
+    const updatedListings = listings.map(item => item.id === editingListing.id ? { 
+      ...editingListing, 
+      title: sanitizeInput(editingListing.title),
+      description: sanitizeInput(editingListing.description),
+      price: Number(editingListing.price) 
+    } : item);
+    saveListings(updatedListings);
+    setEditingListing(null);
+    alert('İlan başarıyla güncellendi!');
+    changeTab('home');
+  };
+
   const handleDeleteListing = (id) => {
     if (!isAdminLoggedIn) return;
     if (window.confirm('Bu ilanı silmek istediğinize emin misiniz?')) {
@@ -327,12 +344,9 @@ export default function App() {
     return matchesCategory && matchesSubCategory;
   });
 
-  // HAREKETLİ ANİMASYONLU SUNUM EKRANI
   if (showSplash) {
     return (
       <div style={{ position: 'fixed', inset: 0, backgroundColor: '#e2e8f0', color: '#1e293b', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px', textAlign: 'center', boxSizing: 'border-box', overflow: 'hidden' }}>
-        
-        {/* CSS ANİMASYONLARI */}
         <style>{`
           @keyframes driveTractor {
             0% { transform: translateX(-120vw); }
@@ -349,42 +363,18 @@ export default function App() {
             0% { transform: translateX(100vw); }
             100% { transform: translateX(-100vw); }
           }
-          .tractor-anim {
-            position: absolute;
-            bottom: 60px;
-            animation: driveTractor 7s linear infinite;
-          }
-          .bee-anim {
-            position: absolute;
-            top: 25%;
-            animation: flyBee 5s ease-in-out infinite;
-          }
-          .farmer-anim {
-            position: absolute;
-            bottom: 120px;
-            animation: walkFarmer 9s linear infinite;
-          }
+          .tractor-anim { position: absolute; bottom: 60px; animation: driveTractor 7s linear infinite; }
+          .bee-anim { position: absolute; top: 25%; animation: flyBee 5s ease-in-out infinite; }
+          .farmer-anim { position: absolute; bottom: 120px; animation: walkFarmer 9s linear infinite; }
         `}</style>
-
-        {/* UÇAN BAL ARISI */}
-        <div className="bee-anim" style={{ fontSize: '32px', zIndex: 10 }}>
-          🐝
-        </div>
-
-        {/* HAREKETLİ ÇİFTÇİ */}
-        <div className="farmer-anim" style={{ fontSize: '28px', zIndex: 5, color: '#1b3a2b', fontWeight: 'bold' }}>
-          👨‍🌾 🌾
-        </div>
-
-        {/* HAREKETLİ TRAKTÖR */}
+        <div className="bee-anim" style={{ fontSize: '32px', zIndex: 10 }}>🐝</div>
+        <div className="farmer-anim" style={{ fontSize: '28px', zIndex: 5, color: '#1b3a2b', fontWeight: 'bold' }}>👨‍🌾 🌾</div>
         <div className="tractor-anim" style={{ zIndex: 5 }}>
           <div style={{ backgroundColor: '#22c55e', padding: '10px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
             <span style={{ fontSize: '20px' }}>🚜💨</span>
             <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#fff' }}>PazarTarla Sahada</span>
           </div>
         </div>
-
-        {/* ANA SUNUM İÇERİĞİ */}
         <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', padding: '30px', borderRadius: '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', backdropFilter: 'blur(5px)', maxWidth: '440px', width: '100%', zIndex: 20, border: '1px solid #cbd5e1' }}>
           <div style={{ backgroundColor: '#1b3a2b', padding: '16px', borderRadius: '50%', width: '60px', height: '60px', margin: '0 auto 16px auto', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(27,58,43,0.3)' }}>
             <Tractor size={32} color="#fff" />
@@ -398,7 +388,7 @@ export default function App() {
           </p>
           <button 
             onClick={() => setShowSplash(false)}
-            style={{ width: '100%', backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '10px', fontWeight: '800', fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 14px rgba(34,197,94,0.3)', transition: 'background 0.2s' }}
+            style={{ width: '100%', backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '10px', fontWeight: '800', fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 14px rgba(34,197,94,0.3)' }}
           >
             Hemen Giriş Yap →
           </button>
@@ -534,7 +524,14 @@ export default function App() {
 
         {activeTab === 'detail' && selectedListing && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
-            <button onClick={() => changeTab('results')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer', marginBottom: '10px' }}>← Listeye Dön</button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <button onClick={() => changeTab('results')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer' }}>← Listeye Dön</button>
+              {isAdminLoggedIn && (
+                <button onClick={() => startEditingFromDetail(selectedListing)} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: '700', fontSize: '12px', cursor: 'pointer' }}>
+                  ✏️ Bu İlanı Düzenle
+                </button>
+              )}
+            </div>
             <img src={selectedListing.image} alt={selectedListing.title} style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '8px', marginBottom: '10px' }} />
             <h2 style={{ fontSize: '18px', fontWeight: '800', margin: '8px 0' }}>{selectedListing.title}</h2>
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '14px' }}>{selectedListing.price.toLocaleString('tr-TR')} TL</div>
@@ -581,7 +578,6 @@ export default function App() {
                 <textarea name="description" placeholder="Detaylar..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px', boxSizing: 'border-box' }} />
               </div>
 
-              {/* OTOMATİK SEO ALANI */}
               <div style={{ backgroundColor: '#fffbeb', padding: '12px', borderRadius: '8px', border: '1px dashed #d97706', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#b45309' }}>🔍 Otomatik Üretilen SEO Anahtar Kelimeleri:</span>
                 <input type="text" value={form.seoTags} onChange={(e) => setForm({...form, seoTags: e.target.value})} style={{ width: '100%', padding: '8px', fontSize: '12px', borderRadius: '4px', border: '1px solid #cbd5e1', backgroundColor: '#fff', boxSizing: 'border-box' }} />
@@ -611,28 +607,29 @@ export default function App() {
                   <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Çıkış</button>
                 </div>
 
+                {editingListing && (
+                  <div style={{ backgroundColor: '#f0fdf4', padding: '14px', borderRadius: '8px', border: '2px solid #22c55e', marginBottom: '20px' }}>
+                    <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 10px 0' }}>✏️ İlanı Düzenle: {editingListing.title}</h3>
+                    <form onSubmit={saveEditedListing} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <input type="text" name="title" value={editingListing.title} onChange={handleEditChange} placeholder="İlan Başlığı" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }} />
+                      <input type="number" name="price" value={editingListing.price} onChange={handleEditChange} placeholder="Fiyat (TL)" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }} />
+                      <textarea name="description" value={editingListing.description} onChange={handleEditChange} placeholder="Açıklama" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', height: '60px' }} />
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button type="submit" style={{ flex: 1, backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Kaydet</button>
+                        <button type="button" onClick={() => setEditingListing(null)} style={{ background: '#e2e8f0', border: 'none', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer' }}>İptal</button>
+                      </div>
+                    </form>
+                  </div>
+                )}
+
                 <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <FolderPlus size={16} color="#22c55e" /> Yeni Kategori Ekle
                   </h3>
                   <form onSubmit={handleAddCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <input 
-                      type="text" 
-                      placeholder="Ana Kategori Adı" 
-                      value={newCategoryName} 
-                      onChange={(e) => setNewCategoryName(e.target.value)} 
-                      style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} 
-                    />
-                    <input 
-                      type="text" 
-                      placeholder="Alt Ürünler (Virgülle ayırın)" 
-                      value={newSubCategoryName} 
-                      onChange={(e) => setNewSubCategoryName(e.target.value)} 
-                      style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} 
-                    />
-                    <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', fontSize: '13px', cursor: 'pointer' }}>
-                      Kategoriyi Ekle
-                    </button>
+                    <input type="text" placeholder="Ana Kategori Adı" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} />
+                    <input type="text" placeholder="Alt Ürünler (Virgülle ayırın)" value={newSubCategoryName} onChange={(e) => setNewSubCategoryName(e.target.value)} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} />
+                    <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', fontSize: '13px', cursor: 'pointer' }}>Kategoriyi Ekle</button>
                   </form>
                 </div>
 
@@ -641,9 +638,7 @@ export default function App() {
                   {Object.keys(categoriesWithSubs).map(catKey => (
                     <div key={catKey} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', backgroundColor: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
                       <span style={{ fontWeight: '600', fontSize: '13px' }}>{catKey}</span>
-                      <button onClick={() => handleDeleteCategory(catKey)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>
-                        Kategoriyi Sil
-                      </button>
+                      <button onClick={() => handleDeleteCategory(catKey)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Kategoriyi Sil</button>
                     </div>
                   ))}
                 </div>
@@ -653,7 +648,10 @@ export default function App() {
                   {listings.map(item => (
                     <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
                       <span style={{ fontSize: '12px', fontWeight: '600' }}>{item.title}</span>
-                      <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Sil</button>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <button onClick={() => { setEditingListing(item); }} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Düzenle</button>
+                        <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Sil</button>
+                      </div>
                     </div>
                   ))}
                 </div>
