@@ -184,7 +184,6 @@ export default function App() {
     return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   };
 
-  // Açıklama değiştikçe otomatik SEO üretimi
   const generateAutoSEO = (title, category, subCategory, location) => {
     const cleanTitle = title.trim() ? title.trim() : 'Tarım İlanı';
     const cleanLoc = location.trim() ? location.trim() : 'Türkiye';
@@ -323,7 +322,6 @@ export default function App() {
     alert(`"${catName}" kategorisi başarıyla eklendi!`);
   };
 
-  // KATEGORİ SİLME ÖZELLİĞİ
   const handleDeleteCategory = (catKey) => {
     if (!isAdminLoggedIn) return;
     if (window.confirm(`"${catKey}" kategorisini ve alt başlıklarını silmek istediğinize emin misiniz?`)) {
@@ -344,16 +342,6 @@ export default function App() {
     }
   };
 
-  const shareOnWhatsApp = (item) => {
-    const text = encodeURIComponent(`🌾 PazarTarla İlanı:\n*${item.title}*\nFiyat: ${item.price.toLocaleString('tr-TR')} TL\nKonum: ${item.location}`);
-    window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
-  };
-
-  const copyListingLink = (item) => {
-    navigator.clipboard.writeText(`PazarTarla İlanı: ${item.title} - ${item.price.toLocaleString('tr-TR')} TL - Tel: ${item.phone}`);
-    alert('İlan bilgileri kopyalandı!');
-  };
-
   const filteredListings = listings.filter(item => {
     const matchesCategory = selectedCategory === 'Tüm kategoriler' || item.category === selectedCategory;
     const matchesSubCategory = selectedSubCategory === 'Tümü' || item.subCategory === selectedSubCategory;
@@ -365,8 +353,9 @@ export default function App() {
        
       <header style={{ backgroundColor: '#1b3a2b', color: '#ffffff', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => { changeTab('home'); setSelectedCategory('Tüm kategoriler'); }}>
-          <div style={{ backgroundColor: '#22c55e', padding: '6px', borderRadius: '8px', display: 'flex' }}>
-            <Tractor size={20} color="#fff" />
+          <div style={{ backgroundColor: '#22c55e', padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ fontSize: '14px' }}>🌾</span>
+            <Tractor size={18} color="#fff" />
           </div>
           <div>
             <h1 style={{ margin: 0, fontSize: '18px', fontWeight: '800' }}>PazarTarla</h1>
@@ -563,7 +552,6 @@ export default function App() {
                   <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Çıkış</button>
                 </div>
 
-                {/* KATEGORİ YÖNETİMİ VE SİLME */}
                 <h3 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '10px' }}>📁 Kategoriler ({Object.keys(categoriesWithSubs).length})</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
                   {Object.keys(categoriesWithSubs).map(catKey => (
