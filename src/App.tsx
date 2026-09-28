@@ -115,7 +115,7 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState('Tüm kategoriler');
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
   const [openCategory, setOpenCategory] = useState('');
-  const [adminOpenCategory, setAdminOpenCategory] = useState(''); // Yönetim panelindeki akordiyon için
+  const [adminOpenCategory, setAdminOpenCategory] = useState('');
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
   const [editingListing, setEditingListing] = useState(null);
@@ -126,7 +126,7 @@ export default function App() {
     title: '',
     price: '',
     category: Object.keys(categoriesWithSubs)[0] || 'Mahsuller',
-    subCategory: 'Kiraz',
+    subCategory: categoriesWithSubs[Object.keys(categoriesWithSubs)[0]]?.[0] || 'Genel',
     mode: 'Satılık',
     location: 'Gönen / Balıkesir',
     city: 'Balıkesir',
@@ -216,7 +216,8 @@ export default function App() {
     setForm(prev => {
       const updated = { ...prev, [name]: value };
       if (name === 'category') {
-        updated.subCategory = categoriesWithSubs[value]?.[0] || 'Tümü';
+        const subList = categoriesWithSubs[value] || ['Genel'];
+        updated.subCategory = subList[0];
       }
       updated.seoTags = generateAutoSEO(
         name === 'title' ? value : updated.title,
@@ -285,11 +286,12 @@ export default function App() {
     setLastAddedListing(newEntry);
     changeTab('success-wa');
 
+    const defaultCat = Object.keys(categoriesWithSubs)[0] || 'Mahsuller';
     setForm({
       title: '',
       price: '',
-      category: Object.keys(categoriesWithSubs)[0] || 'Mahsuller',
-      subCategory: 'Kiraz',
+      category: defaultCat,
+      subCategory: categoriesWithSubs[defaultCat]?.[0] || 'Genel',
       mode: 'Satılık',
       location: 'Gönen / Balıkesir',
       city: 'Balıkesir',
@@ -540,7 +542,7 @@ export default function App() {
 
             {lastAddedListing && (
               <a 
-                href={`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(`🔔 *Yeni İlan Onay Bekliyor!*\n\n*Başlık:* ${lastAddedListing.title}\n*Fiyat:* ${lastAddedListing.price} TL\n*Kategori:* ${lastAddedListing.category}\n*Satıcı:* ${lastAddedListing.seller} (${lastAddedListing.phone})`)}`}
+                href={`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(`🔔 *Yeni İlan Onay Bekliyor!*\n\n*Başlık:* ${lastAddedListing.title}\n*Fiyat:* ${lastAddedListing.price} TL\n*Kategori:* ${lastAddedListing.category} / ${lastAddedListing.subCategory}\n*Satıcı:* ${lastAddedListing.seller} (${lastAddedListing.phone})`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#22c55e', color: '#fff', padding: '14px', borderRadius: '10px', fontWeight: '800', textDecoration: 'none', fontSize: '15px', marginBottom: '12px', boxShadow: '0 4px 12px rgba(34,197,94,0.3)' }}
@@ -743,6 +745,7 @@ export default function App() {
           </div>
         )}
 
+        {/* İLAN VER EKRANI (OTOMATİK KATEGORİ & ALT SEÇENEKLER DROPDOWN) */}
         {activeTab === 'add' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
@@ -773,13 +776,23 @@ export default function App() {
                   <input type="number" name="price" placeholder="150000" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Kategori</label>
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Ana Kategori</label>
                   <select name="category" value={form.category} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff' }}>
                     {Object.keys(categoriesWithSubs).map(cat => (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </select>
                 </div>
+              </div>
+
+              {/* OTOMATİK GELEN ALT KATEGORİ SEÇİMİ */}
+              <div>
+                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Alt Ürün / Seçenek (Otomatik)</label>
+                <select name="subCategory" value={form.subCategory} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff' }}>
+                  {(categoriesWithSubs[form.category] || ['Genel']).map(sub => (
+                    <option key={sub} value={sub}>{sub}</option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -901,7 +914,6 @@ export default function App() {
                   </form>
                 </div>
 
-                {/* YÖNETİM PANELİ KATEGORİLER LİSTESİ (Tıklayınca Açılır Kapanır) */}
                 <h3 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '10px' }}>📁 Kategoriler ({Object.keys(categoriesWithSubs).length})</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
                   {Object.keys(categoriesWithSubs).map(catKey => {
