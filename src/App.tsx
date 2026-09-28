@@ -117,6 +117,8 @@ export default function App() {
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
   const [editingListing, setEditingListing] = useState(null);
 
+  const [lastAddedListing, setLastAddedListing] = useState(null);
+
   const [form, setForm] = useState({
     title: '',
     price: '',
@@ -275,20 +277,8 @@ export default function App() {
 
     const updated = [newEntry, ...listings];
     saveListings(updated);
-
-    // Kullanıcıya şık bir bildirim kutusu gösterip WhatsApp yönlendirmesini isteğe bağlı yapıyoruz
-    const waMessage = encodeURIComponent(`🔔 *Yeni İlan Onay Bekliyor!*\n\n*Başlık:* ${newEntry.title}\n*Fiyat:* ${newEntry.price} TL\n*Kategori:* ${newEntry.category}\n*Satıcı:* ${newEntry.seller} (${newEntry.phone})`);
-    const waUrl = `https://api.whatsapp.com/send?phone=905357681550&text=${waMessage}`;
-
-    if (window.confirm('İlanınız başarıyla alındı! Yöneticiye (Can İnce) WhatsApp ile haber verilsin mi?')) {
-      const a = document.createElement('a');
-      a.href = waUrl;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    }
+    setLastAddedListing(newEntry);
+    changeTab('success-wa');
 
     setForm({
       title: '',
@@ -306,8 +296,6 @@ export default function App() {
       seoTags: '',
       status: 'pending'
     });
-    changeTab('home');
-    alert('İlanınız başarıyla eklendi ve yönetici onayına gönderildi!');
   };
 
   const approveListing = (id) => {
@@ -511,6 +499,37 @@ export default function App() {
                 {announcement}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* BAŞARILI İLAN & WHATSAPP ONAY EKRANI */}
+        {activeTab === 'success-wa' && (
+          <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '24px', textAlign: 'center', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+            <div style={{ backgroundColor: '#dcfce7', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto' }}>
+              <CheckCircle size={36} color="#166534" />
+            </div>
+            <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#1b3a2b', margin: '0 0 8px 0' }}>İlanınız Başarıyla Alındı!</h2>
+            <p style={{ color: '#64748b', fontSize: '13px', lineHeight: '1.5', margin: '0 0 20px 0' }}>
+              İlanınız yönetici onayına gönderildi. PazarTarla Ekibi'ne WhatsApp üzerinden anında bilgi vermek için aşağıdaki butona tıklayabilirsiniz:
+            </p>
+
+            {lastAddedListing && (
+              <a 
+                href={`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(`🔔 *Yeni İlan Onay Bekliyor!*\n\n*Başlık:* ${lastAddedListing.title}\n*Fiyat:* ${lastAddedListing.price} TL\n*Kategori:*${lastAddedListing.category}\n*Satıcı:* ${lastAddedListing.seller} (${lastAddedListing.phone})`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#22c55e', color: '#fff', padding: '14px', borderRadius: '10px', fontWeight: '800', textDecoration: 'none', fontSize: '15px', marginBottom: '12px', boxShadow: '0 4px 12px rgba(34,197,94,0.3)' }}
+              >
+                <MessageCircle size={20} /> WhatsApp ile PazarTarla Ekibi'ne Bildir
+              </a>
+            )}
+
+            <button 
+              onClick={() => changeTab('home')}
+              style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '700', fontSize: '13px', cursor: 'pointer', padding: '8px' }}
+            >
+              ← Ana Sayfaya Dön
+            </button>
           </div>
         )}
 
