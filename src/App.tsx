@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus, 
   Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, ChevronDown, X, 
-  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag, Edit3, Sparkles 
+  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag, Edit3, Sparkles, Megaphone 
 } from 'lucide-react';
 
 const ALL_INITIAL_LISTINGS = [
@@ -82,6 +82,16 @@ export default function App() {
     }
     return FALLBACK_CATEGORIES;
   });
+
+  // Duyuru Banner Yönetimi için State
+  const [announcement, setAnnouncement] = useState(() => {
+    try {
+      return localStorage.getItem('pazartarla_announcement') || '🌾 Gönen bölgesi yeni sezon ceviz hasadı ve duyuruları başlamıştır!';
+    } catch (e) {
+      return '🌾 Türkiye’nin en kapsamlı tarım platformuna hoş geldiniz.';
+    }
+  });
+  const [tempAnnouncement, setTempAnnouncement] = useState(announcement);
 
   const [favorites, setFavorites] = useState(() => {
     try {
@@ -165,6 +175,18 @@ export default function App() {
     }
   };
 
+  const saveAnnouncement = (e) => {
+    e.preventDefault();
+    if (!isAdminLoggedIn) return;
+    setAnnouncement(tempAnnouncement);
+    try {
+      localStorage.setItem('pazartarla_announcement', tempAnnouncement);
+      alert('Duyuru başarıyla güncellendi!');
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const sanitizeInput = (str) => {
     if (typeof str !== 'string') return str;
     return str
@@ -213,7 +235,6 @@ export default function App() {
     }
   };
 
-  // Düzenleme ekranında fotoğraf değiştirme fonksiyonu
   const handleEditImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -444,6 +465,14 @@ export default function App() {
 
       <main style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '12px', flex: 1, boxSizing: 'border-box' }}>
          
+        {/* DUYURU BANNER'I */}
+        {announcement && (
+          <div style={{ backgroundColor: '#fef08a', color: '#713f12', padding: '10px 14px', borderRadius: '10px', marginBottom: '12px', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #facc15', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+            <Megaphone size={16} color="#854d0e" style={{ flexShrink: 0 }} />
+            <span>{announcement}</span>
+          </div>
+        )}
+
         {activeTab === 'home' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflow: 'hidden', border: '1px solid #e2e8f0', width: '100%' }}>
             <div style={{ backgroundColor: '#1b3a2b', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -626,6 +655,25 @@ export default function App() {
                   <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Çıkış</button>
                 </div>
 
+                {/* DUYURU YÖNETİMİ ALANI */}
+                <div style={{ backgroundColor: '#fef9c3', padding: '12px', borderRadius: '8px', border: '1px solid #fde047', marginBottom: '20px' }}>
+                  <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#854d0e', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Megaphone size={16} /> Site İçi Duyuru Banner Yönetimi
+                  </h3>
+                  <form onSubmit={saveAnnouncement} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <input 
+                      type="text" 
+                      value={tempAnnouncement} 
+                      onChange={(e) => setTempAnnouncement(e.target.value)} 
+                      placeholder="Anasayfa duyuru metnini yazın..." 
+                      style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #facc15', fontSize: '13px', boxSizing: 'border-box', backgroundColor: '#fff' }} 
+                    />
+                    <button type="submit" style={{ backgroundColor: '#ca8a04', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', fontSize: '13px', cursor: 'pointer' }}>
+                      Duyuruyu Güncelle
+                    </button>
+                  </form>
+                </div>
+
                 {editingListing && (
                   <div style={{ backgroundColor: '#f0fdf4', padding: '14px', borderRadius: '8px', border: '2px solid #22c55e', marginBottom: '20px' }}>
                     <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 10px 0' }}>✏️ İlanı Düzenle: {editingListing.title}</h3>
@@ -633,7 +681,6 @@ export default function App() {
                       <input type="text" name="title" value={editingListing.title} onChange={handleEditChange} placeholder="İlan Başlığı" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }} />
                       <input type="number" name="price" value={editingListing.price} onChange={handleEditChange} placeholder="Fiyat (TL)" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }} />
                       
-                      {/* FOTOĞRAF DEĞİŞTİRME ALANI */}
                       <div>
                         <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '11px', color: '#166534' }}>İlan Fotoğrafını Değiştir (Max 2MB)</label>
                         <input type="file" accept="image/*" onChange={handleEditImageUpload} style={{ width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff', fontSize: '12px' }} />
