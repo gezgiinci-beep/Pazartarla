@@ -745,7 +745,7 @@ export default function App() {
           </div>
         )}
 
-        {/* İLAN VER EKRANI */}
+        {/* İLAN VER EKRANI (ALT KATEGORİ TIKLANINCA AÇILAN SEÇENEK İLE) */}
         {activeTab === 'add' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
@@ -785,9 +785,16 @@ export default function App() {
                 </div>
               </div>
 
+              {/* İLAN VERİRKEN TIKLANINCA ALT SEÇENEKLERİN AÇILDIĞI LİSTE */}
               <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Alt Ürün / Seçenek (Otomatik)</label>
-                <select name="subCategory" value={form.subCategory} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff' }}>
+                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Alt Ürün / Seçenek (Tıklayınca açılır)</label>
+                <select 
+                  name="subCategory" 
+                  value={form.subCategory} 
+                  onChange={handleFormChange} 
+                  style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #22c55e', backgroundColor: '#f0fdf4', fontWeight: '600', color: '#166534' }}
+                >
+                  <option value="">📌 Seçenekleri görmek için tıklayın...</option>
                   {(categoriesWithSubs[form.category] || ['Genel']).map(sub => (
                     <option key={sub} value={sub}>{sub}</option>
                   ))}
@@ -902,7 +909,7 @@ export default function App() {
                   </div>
                 )}
 
-                {/* KATEGORİ SEÇİMİ VE MEVCUT ALT SEÇENEKLERİ GÖSTEREN AÇILIR KUTU (DROPDOWN) */}
+                {/* YÖNETİM PANELİNDE KATEGORİYE YENİ SEÇENEK EKLEME VE TIKLANINCA AÇILAN LİSTE */}
                 <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <FolderPlus size={16} color="#22c55e" /> Kategoriye Yeni Alt Seçenek Ekle
@@ -919,7 +926,7 @@ export default function App() {
                       ))}
                     </select>
 
-                    <label style={{ fontSize: '12px', fontWeight: '600', color: '#475569', marginTop: '4px' }}>Mevcut Alt Seçenekler (Tıklayınca listelenir):</label>
+                    <label style={{ fontSize: '12px', fontWeight: '600', color: '#475569', marginTop: '4px' }}>Mevcut Alt Seçenekler (Tıklayınca açılır):</label>
                     <select 
                       style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #22c55e', fontSize: '13px', backgroundColor: '#f0fdf4', color: '#166534', fontWeight: '600', boxSizing: 'border-box' }}
                       onChange={(e) => {
