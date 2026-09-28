@@ -119,6 +119,7 @@ export default function App() {
   
   const [newCategoryName, setNewCategoryName] = useState(() => Object.keys(FALLBACK_CATEGORIES)[0] || 'Mahsuller');
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
+  const [selectedSubToRemove, setSelectedSubToRemove] = useState('');
   const [editingListing, setEditingListing] = useState(null);
 
   const [lastAddedListing, setLastAddedListing] = useState(null);
@@ -414,12 +415,18 @@ export default function App() {
 
   const handleDeleteSubCategory = (catKey, subToDel) => {
     if (!isAdminLoggedIn) return;
+    if (!subToDel) {
+      alert('Lütfen silmek istediğiniz alt seçeneği seçin.');
+      return;
+    }
     if (window.confirm(`"${catKey}" kategorisinden "${subToDel}" seçeneğini silmek istediğinize emin misiniz?`)) {
       const currentSubs = categoriesWithSubs[catKey] || [];
       const updatedSubs = currentSubs.filter(sub => sub !== subToDel);
       if (updatedSubs.length === 0) updatedSubs.push('Genel');
       const updatedCats = { ...categoriesWithSubs, [catKey]: updatedSubs };
       saveCategories(updatedCats);
+      setSelectedSubToRemove('');
+      alert(`"${subToDel}" seçeneği başarıyla silindi!`);
     }
   };
 
@@ -960,7 +967,7 @@ export default function App() {
 
                 <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <FolderPlus size={16} color="#22c55e" /> Kategoriye Yeni Alt Seçenek Ekle
+                    <FolderPlus size={16} color="#22c55e" /> Kategoriye Yeni Alt Seçenek Ekle / Seçenek Sil
                   </h3>
                   <form onSubmit={handleAddCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <label style={{ fontSize: '12px', fontWeight: '600', color: '#475569' }}>Ana Kategori Seç:</label>
@@ -974,28 +981,30 @@ export default function App() {
                       ))}
                     </select>
 
-                    <label style={{ fontSize: '12px', fontWeight: '600', color: '#475569', marginTop: '4px' }}>Mevcut Alt Seçenekler:</label>
-                    <select 
-                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #22c55e', fontSize: '13px', backgroundColor: '#f0fdf4', color: '#166534', fontWeight: '600', boxSizing: 'border-box' }}
-                      onChange={(e) => {
-                        if (e.target.value) {
-                          setNewSubCategoryName(prev => {
-                            const currentList = prev ? prev.split(',').map(s => s.trim()) : [];
-                            if (!currentList.includes(e.target.value)) {
-                              return prev ? `${prev}, ${e.target.value}` : e.target.value;
-                            }
-                            return prev;
-                          });
-                        }
-                      }}
-                    >
-                      <option value="">📌 Bu kategorideki alt seçenekleri görmek için tıklayın...</option>
-                      {(categoriesWithSubs[newCategoryName] || []).map(sub => (
-                        <option key={sub} value={sub}>{sub}</option>
-                      ))}
-                    </select>
+                    <label style={{ fontSize: '12px', fontWeight: '600', color: '#475569', marginTop: '4px' }}>Mevcut Alt Seçenekler (Yanlış yazılanı buradan seçip silebilirsin):</label>
+                    
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <select 
+                        value={selectedSubToRemove}
+                        onChange={(e) => setSelectedSubToRemove(e.target.value)}
+                        style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #ef4444', fontSize: '13px', backgroundColor: '#fef2f2', color: '#991b1b', fontWeight: '600', boxSizing: 'border-box' }}
+                      >
+                        <option value="">🗑️ Silmek istediğin seçeneği seç...</option>
+                        {(categoriesWithSubs[newCategoryName] || []).map(sub => (
+                          <option key={sub} value={sub}>{sub}</option>
+                        ))}
+                      </select>
 
-                    <label style={{ fontSize: '12px', fontWeight: '600', color: '#475569', marginTop: '4px' }}>Yeni Eklenecek Alt Seçenekler (Virgülle ayırın):</label>
+                      <button 
+                        type="button" 
+                        onClick={() => handleDeleteSubCategory(newCategoryName, selectedSubToRemove)}
+                        style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '0 14px', borderRadius: '6px', fontWeight: '700', fontSize: '12px', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                      >
+                        Seçeneği Sil
+                      </button>
+                    </div>
+
+                    <label style={{ fontSize: '12px', fontWeight: '600', color: '#475569', marginTop: '6px' }}>Yeni Eklenecek Alt Seçenekler (Virgülle ayırın):</label>
                     <input 
                       type="text" 
                       placeholder="Örn: Antep Fıstığı, Badem" 
@@ -1024,7 +1033,7 @@ export default function App() {
                         </div>
                         {isOpenAdmin && (
                           <div style={{ padding: '8px 12px 12px 28px', backgroundColor: '#fff', borderTop: '1px solid #e2e8f0', fontSize: '12px', color: '#475569' }}>
-                            <span style={{ fontWeight: '700', display: 'block', marginBottom: '6px', color: '#166534' }}>Alt Ürünler / Seçenekler (Yanındaki butonla silebilirsiniz):</span>
+                            <span style={{ fontWeight: '700', display: 'block', marginBottom: '6px', color: '#166534' }}>Alt Ürünler / Seçenekler:</span>
                             {(categoriesWithSubs[catKey] || []).map(sub => (
                               <div key={sub} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px dashed #f1f5f9' }}>
                                 <span>• {sub}</span>
