@@ -116,7 +116,9 @@ export default function App() {
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
   const [openCategory, setOpenCategory] = useState('');
   const [adminOpenCategory, setAdminOpenCategory] = useState('');
-  const [newCategoryName, setNewCategoryName] = useState('');
+  
+  // Yeni Kategori Ekleme Alanı İçin State (Varsayılan olarak mevcut ilk kategori seçili)
+  const [newCategoryName, setNewCategoryName] = useState(() => Object.keys(FALLBACK_CATEGORIES)[0] || 'Mahsuller');
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
   const [editingListing, setEditingListing] = useState(null);
 
@@ -374,23 +376,23 @@ export default function App() {
     e.preventDefault();
     if (!isAdminLoggedIn) return;
     if (!newCategoryName.trim()) {
-      alert('Lütfen kategori adı girin.');
+      alert('Lütfen kategori seçin veya girin.');
       return;
     }
     const catName = sanitizeInput(newCategoryName.trim());
-    if (categoriesWithSubs[catName]) {
-      alert('Bu kategori zaten mevcut!');
-      return;
-    }
-    const subs = newSubCategoryName.trim() 
+    const existingSubs = categoriesWithSubs[catName] || [];
+    const newSubsInput = newSubCategoryName.trim() 
       ? newSubCategoryName.split(',').map(s => sanitizeInput(s.trim())).filter(Boolean) 
-      : ['Genel'];
+      : [];
      
-    const updatedCats = { ...categoriesWithSubs, [catName]: subs };
+    // Mevcut alt kategorilerin üzerine yenilerini ekliyoruz (tekrar edenleri engellemek için Set kullanabiliriz)
+    const combinedSubs = Array.from(new Set([...existingSubs, ...newSubsInput]));
+    if (combinedSubs.length === 0) combinedSubs.push('Genel');
+
+    const updatedCats = { ...categoriesWithSubs, [catName]: combinedSubs };
     saveCategories(updatedCats);
-    setNewCategoryName('');
     setNewSubCategoryName('');
-    alert(`"${catName}" kategorisi başarıyla eklendi!`);
+    alert(`"${catName}" kategorisine alt seçenekler başarıyla eklendi!`);
   };
 
   const handleDeleteCategory = (catKey) => {
@@ -903,14 +905,34 @@ export default function App() {
                   </div>
                 )}
 
+                {/* YENİ KATEGORİ / ALT SEÇENEK EKLEME (AÇILIR KUTU İLE) */}
                 <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <FolderPlus size={16} color="#22c55e" /> Yeni Kategori Ekle
+                    <FolderPlus size={16} color="#22c55e" /> Kategoriye Yeni Seçenek Ekle
                   </h3>
                   <form onSubmit={handleAddCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <input type="text" placeholder="Ana Kategori Adı" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} />
-                    <input type="text" placeholder="Alt Ürünler (Virgülle ayırın)" value={newSubCategoryName} onChange={(e) => setNewSubCategoryName(e.target.value)} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} />
-                    <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', fontSize: '13px', cursor: 'pointer' }}>Kategoriyi Ekle</button>
+                    <label style={{ fontSize: '12px', fontWeight: '600', color: '#475569' }}>Ana Kategori Seç:</label>
+                    <select 
+                      value={newCategoryName} 
+                      onChange={(e) => setNewCategoryName(e.target.value)} 
+                      style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', backgroundColor: '#fff', boxSizing: 'border-box' }}
+                    >
+                      {Object.keys(categoriesWithSubs).map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
+
+                    <label style={{ fontSize: '12px', fontWeight: '600', color: '#475569', marginTop: '4px' }}>Yeni Alt Seçenekler (Virgülle ayırın):</label>
+                    <input 
+                      type="text" 
+                      placeholder="Örn: Antep Fıstığı, Badem" 
+                      value={newSubCategoryName} 
+                      onChange={(e) => setNewSubCategoryName(e.target.value)} 
+                      style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} 
+                    />
+                    <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', fontSize: '13px', cursor: 'pointer', marginTop: '4px' }}>
+                      Seçenekleri Ekle
+                    </button>
                   </form>
                 </div>
 
