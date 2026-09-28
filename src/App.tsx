@@ -83,7 +83,6 @@ export default function App() {
     return FALLBACK_CATEGORIES;
   });
 
-  // Duyuru Banner Yönetimi için State
   const [announcement, setAnnouncement] = useState(() => {
     try {
       return localStorage.getItem('pazartarla_announcement') || '🌾 Gönen bölgesi yeni sezon ceviz hasadı ve duyuruları başlamıştır!';
@@ -465,11 +464,25 @@ export default function App() {
 
       <main style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '12px', flex: 1, boxSizing: 'border-box' }}>
          
-        {/* DUYURU BANNER'I */}
+        {/* HAREKETLİ DUYURU BANNER'I */}
         {announcement && (
-          <div style={{ backgroundColor: '#fef08a', color: '#713f12', padding: '10px 14px', borderRadius: '10px', marginBottom: '12px', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #facc15', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+          <div style={{ backgroundColor: '#fef08a', color: '#713f12', padding: '10px 14px', borderRadius: '10px', marginBottom: '12px', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #facc15', overflow: 'hidden', whiteSpace: 'nowrap', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
             <Megaphone size={16} color="#854d0e" style={{ flexShrink: 0 }} />
-            <span>{announcement}</span>
+            <style>{`
+              @keyframes marquee {
+                0% { transform: translateX(100%); }
+                100% { transform: translateX(-100%); }
+              }
+              .marquee-text {
+                display: inline-block;
+                animation: marquee 15s linear infinite;
+              }
+            `}</style>
+            <div style={{ width: '100%', overflow: 'hidden' }}>
+              <div className="marquee-text">
+                {announcement}
+              </div>
+            </div>
           </div>
         )}
 
@@ -655,7 +668,6 @@ export default function App() {
                   <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Çıkış</button>
                 </div>
 
-                {/* DUYURU YÖNETİMİ ALANI */}
                 <div style={{ backgroundColor: '#fef9c3', padding: '12px', borderRadius: '8px', border: '1px solid #fde047', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#854d0e', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Megaphone size={16} /> Site İçi Duyuru Banner Yönetimi
