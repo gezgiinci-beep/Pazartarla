@@ -213,6 +213,22 @@ export default function App() {
     }
   };
 
+  // Düzenleme ekranında fotoğraf değiştirme fonksiyonu
+  const handleEditImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Dosya boyutu 2 MB sınırını aşamaz!');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditingListing(prev => ({ ...prev, image: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleDirectAdd = (e) => {
     e.preventDefault();
     if (!form.title.trim() || !form.price || !form.phone.trim() || !form.seller.trim()) {
@@ -616,6 +632,13 @@ export default function App() {
                     <form onSubmit={saveEditedListing} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <input type="text" name="title" value={editingListing.title} onChange={handleEditChange} placeholder="İlan Başlığı" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }} />
                       <input type="number" name="price" value={editingListing.price} onChange={handleEditChange} placeholder="Fiyat (TL)" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }} />
+                      
+                      {/* FOTOĞRAF DEĞİŞTİRME ALANI */}
+                      <div>
+                        <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '11px', color: '#166534' }}>İlan Fotoğrafını Değiştir (Max 2MB)</label>
+                        <input type="file" accept="image/*" onChange={handleEditImageUpload} style={{ width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff', fontSize: '12px' }} />
+                      </div>
+
                       <textarea name="description" value={editingListing.description} onChange={handleEditChange} placeholder="Açıklama" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', height: '60px' }} />
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <button type="submit" style={{ flex: 1, backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Değişiklikleri Kaydet</button>
