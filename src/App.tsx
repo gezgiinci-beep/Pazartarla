@@ -894,7 +894,6 @@ export default function App() {
                   </form>
                 </div>
 
-                {/* İLANI DÜZENLE FORMUNA KATEGORİ VE ALT KATEGORİ SEÇİMİ EKLENDİ */}
                 {editingListing && (
                   <div style={{ backgroundColor: '#f0fdf4', padding: '14px', borderRadius: '8px', border: '2px solid #22c55e', marginBottom: '20px' }}>
                     <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 10px 0' }}>✏️ İlanı Düzenle: {editingListing.title}</h3>
@@ -961,7 +960,13 @@ export default function App() {
                       style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #22c55e', fontSize: '13px', backgroundColor: '#f0fdf4', color: '#166534', fontWeight: '600', boxSizing: 'border-box' }}
                       onChange={(e) => {
                         if (e.target.value) {
-                          setNewSubCategoryName(prev => prev ? `${prev}, ${e.target.value}` : e.target.value);
+                          setNewSubCategoryName(prev => {
+                            const currentList = prev ? prev.split(',').map(s => s.trim()) : [];
+                            if (!currentList.includes(e.target.value)) {
+                              return prev ? `${prev}, ${e.target.value}` : e.target.value;
+                            }
+                            return prev;
+                          });
                         }
                       }}
                     >
