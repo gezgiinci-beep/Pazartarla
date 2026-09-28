@@ -20,7 +20,8 @@ const ALL_INITIAL_LISTINGS = [
     phone: '0535 768 1550',
     image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
     seoTags: 'taze ceviz, chandler ceviz, gönen ceviz, tarım ilanı, mahsul',
-    status: 'approved'
+    status: 'approved',
+    isFeatured: true
   },
   {
     id: 101,
@@ -36,7 +37,8 @@ const ALL_INITIAL_LISTINGS = [
     phone: '0536 777 8844',
     image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
     seoTags: 'fiat 480, traktör, gönen traktör, ikinci el traktör',
-    status: 'approved'
+    status: 'approved',
+    isFeatured: false
   }
 ];
 
@@ -133,7 +135,8 @@ export default function App() {
     phone: '',
     image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
     seoTags: '',
-    status: 'pending'
+    status: 'pending',
+    isFeatured: false
   });
 
   useEffect(() => {
@@ -272,7 +275,8 @@ export default function App() {
       price: Number(form.price),
       amount: form.category === 'Uzmanlar' ? '' : sanitizeInput(form.amount),
       seoTags: finalSeoTags,
-      status: 'pending'
+      status: 'pending',
+      isFeatured: false
     };
 
     const updated = [newEntry, ...listings];
@@ -294,7 +298,8 @@ export default function App() {
       phone: '',
       image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
       seoTags: '',
-      status: 'pending'
+      status: 'pending',
+      isFeatured: false
     });
   };
 
@@ -303,6 +308,13 @@ export default function App() {
     const updated = listings.map(item => item.id === id ? { ...item, status: 'approved' } : item);
     saveListings(updated);
     alert('İlan onaylandı ve canlıya alındı!');
+  };
+
+  const toggleFeaturedListing = (id) => {
+    if (!isAdminLoggedIn) return;
+    const updated = listings.map(item => item.id === id ? { ...item, isFeatured: !item.isFeatured } : item);
+    saveListings(updated);
+    alert('İlanın vitrin (öne çıkan) durumu güncellendi!');
   };
 
   const startEditingFromDetail = (item) => {
@@ -394,11 +406,17 @@ export default function App() {
 
   const approvedListings = listings.filter(item => item.status === 'approved');
 
-  const filteredListings = approvedListings.filter(item => {
-    const matchesCategory = selectedCategory === 'Tüm kategoriler' || item.category === selectedCategory;
-    const matchesSubCategory = selectedSubCategory === 'Tümü' || item.subCategory === selectedSubCategory;
-    return matchesCategory && matchesSubCategory;
-  });
+  // Öne çıkanlar ve normal ilanları ayırıp öne çıkanları başa koyuyoruz
+  const featuredListings = approvedListings.filter(item => item.isFeatured);
+  const regularApprovedListings = approvedListings.filter(item => !item.isFeatured);
+
+  const filteredListings = (selectedCategory === 'Tüm kategoriler' && selectedSubCategory === 'Tümü')
+    ? [...featuredListings, ...regularApprovedListings]
+    : approvedListings.filter(item => {
+        const matchesCategory = selectedCategory === 'Tüm kategoriler' || item.category === selectedCategory;
+        const matchesSubCategory = selectedSubCategory === 'Tümü' || item.subCategory === selectedSubCategory;
+        return matchesCategory && matchesSubCategory;
+      });
 
   if (showSplash) {
     return (
@@ -515,7 +533,7 @@ export default function App() {
 
             {lastAddedListing && (
               <a 
-                href={`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(`🔔 *Yeni İlan Onay Bekliyor!*\n\n*Başlık:* ${lastAddedListing.title}\n*Fiyat:* ${lastAddedListing.price} TL\n*Kategori:*${lastAddedListing.category}\n*Satıcı:* ${lastAddedListing.seller} (${lastAddedListing.phone})`)}`}
+                href={`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(`🔔 *Yeni İlan Onay Bekliyor!*\n\n*Başlık:* ${lastAddedListing.title}\n*Fiyat:* ${lastAddedListing.price} TL\n*Kategori:* ${lastAddedListing.category}\n*Satıcı:* ${lastAddedListing.seller} (${lastAddedListing.phone})`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#22c55e', color: '#fff', padding: '14px', borderRadius: '10px', fontWeight: '800', textDecoration: 'none', fontSize: '15px', marginBottom: '12px', boxShadow: '0 4px 12px rgba(34,197,94,0.3)' }}
@@ -527,6 +545,52 @@ export default function App() {
             <button 
               onClick={() => changeTab('home')}
               style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '700', fontSize: '13px', cursor: 'pointer', padding: '8px' }}
+            >
+              ← Ana Sayfaya Dön
+            </button>
+          </div>
+        )}
+
+        {/* İLANI ÖNE ÇIKAR (VITRIN) BİLGİ VE WHATSAPP İLE ÖDEME BİLDİRİM EKRANI */}
+        {activeTab === 'promote-listing' && (
+          <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+              <div style={{ backgroundColor: '#fef08a', padding: '10px', borderRadius: '10px' }}>
+                <Star size={24} color="#ca8a04" fill="#ca8a04" />
+              </div>
+              <div>
+                <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#1b3a2b', margin: 0 }}>İlanı Öne Çıkar (Vitrin Dopingi)</h2>
+                <span style={{ fontSize: '12px', color: '#64748b' }}>İlanınız anasayfada en üstte ve özel rozetle gösterilsin!</span>
+              </div>
+            </div>
+
+            <div style={{ backgroundColor: '#f8fafc', padding: '14px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px', fontSize: '13px', lineHeight: '1.6', color: '#334155' }}>
+              <p style={{ margin: '0 0 8px 0', fontWeight: '700', color: '#1b3a2b' }}>✨ Öne Çıkan İlan Avantajları:</p>
+              <ul style={{ margin: 0, paddingLeft: '18px' }}>
+                <li>Anasayfanın en başında ve dikkat çekici vitrin alanında yer alır.</li>
+                <li>Alıcılar tarafından çok daha hızlı görüntülenir ve satışı hızlanır.</li>
+              </ul>
+              <div style={{ marginTop: '12px', padding: '10px', backgroundColor: '#fefce8', borderRadius: '6px', border: '1px solid #fde047', fontWeight: '700', color: '#854d0e', textAlign: 'center' }}>
+                Vitrin İlan Ücreti: 150 TL / Hafta
+              </div>
+            </div>
+
+            <p style={{ fontSize: '13px', color: '#475569', marginBottom: '16px' }}>
+              Ödemeyi gerçekleştirdikten sonra aşağıdaki butona basarak dekontunuzu ve ilan bilgilerinizi PazarTarla Ekibi'ne iletebilirsiniz. Ekibimiz ödemenizi onayladıktan hemen sonra ilanınızı vitrine taşıyacaktır.
+            </p>
+
+            <a 
+              href={`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(`⭐ *Vitrin İlan (Öne Çıkar) Talebi*\n\nMerhaba PazarTarla Ekibi, ilanımı öne çıkarmak (vitrine taşımak) istiyorum. Ödemeyi gerçekleştirdim.`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#22c55e', color: '#fff', padding: '12px', borderRadius: '8px', fontWeight: '800', textDecoration: 'none', fontSize: '14px', marginBottom: '10px' }}
+            >
+              <MessageCircle size={18} /> WhatsApp ile Ödeme Bildir
+            </a>
+
+            <button 
+              onClick={() => changeTab('home')}
+              style={{ width: '100%', background: 'none', border: 'none', color: '#64748b', fontWeight: '700', fontSize: '13px', cursor: 'pointer', padding: '8px' }}
             >
               ← Ana Sayfaya Dön
             </button>
@@ -619,7 +683,12 @@ export default function App() {
             </div>
 
             {filteredListings.map(item => (
-              <div key={item.id} onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ backgroundColor: '#fff', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer', display: 'flex', gap: '10px', padding: '10px', marginBottom: '10px' }}>
+              <div key={item.id} onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ backgroundColor: item.isFeatured ? '#fefce8' : '#fff', borderRadius: '10px', overflow: 'hidden', border: item.isFeatured ? '2px solid #eab308' : '1px solid #e2e8f0', cursor: 'pointer', display: 'flex', gap: '10px', padding: '10px', marginBottom: '10px', position: 'relative' }}>
+                {item.isFeatured && (
+                  <div style={{ position: 'absolute', top: '8px', right: '8px', backgroundColor: '#eab308', color: '#fff', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                    <Star size={10} fill="#fff" /> VİTRİN
+                  </div>
+                )}
                 <img src={item.image} alt={item.title} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '8px' }} />
                 <div style={{ flex: 1 }}>
                   <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: '700' }}>{item.title}</h4>
@@ -640,6 +709,23 @@ export default function App() {
                 </button>
               )}
             </div>
+            
+            {/* İLANI ÖNE ÇIKAR BUTONU */}
+            <div style={{ backgroundColor: '#fef9c3', border: '1px solid #facc15', borderRadius: '8px', padding: '12px', marginBottom: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <span style={{ fontSize: '13px', fontWeight: '700', color: '#854d0e', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Star size={14} color="#ca8a04" fill="#ca8a04" /> Bu İlanı Vitrine Taşıyın
+                </span>
+                <span style={{ fontSize: '11px', color: '#a16207' }}>Daha hızlı satış için öne çıkarın.</span>
+              </div>
+              <button 
+                onClick={() => changeTab('promote-listing')} 
+                style={{ backgroundColor: '#ca8a04', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '6px', fontWeight: '700', fontSize: '12px', cursor: 'pointer', whiteSpace: 'nowrap' }}
+              >
+                ⭐ Öne Çıkar
+              </button>
+            </div>
+
             <img src={selectedListing.image} alt={selectedListing.title} style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '8px', marginBottom: '10px' }} />
             <h2 style={{ fontSize: '18px', fontWeight: '800', margin: '8px 0' }}>{selectedListing.title}</h2>
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '14px' }}>{selectedListing.price.toLocaleString('tr-TR')} TL</div>
@@ -810,17 +896,20 @@ export default function App() {
                   ))}
                 </div>
 
-                <h3 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '10px' }}>İlan Yönetimi ({listings.length})</h3>
+                <h3 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '10px' }}>İlan Yönetimi & Vitrin (Öne Çıkar) ({listings.length})</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {listings.map(item => (
                     <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
                       <div>
                         <span style={{ fontSize: '12px', fontWeight: '600', display: 'block' }}>{item.title}</span>
-                        <span style={{ fontSize: '10px', color: item.status === 'approved' ? '#166534' : '#ca8a04' }}>
-                          {item.status === 'approved' ? '● Yayında' : '● Onay Bekliyor'}
+                        <span style={{ fontSize: '10px', color: item.isFeatured ? '#eab308' : '#64748b', fontWeight: '700' }}>
+                          {item.isFeatured ? '⭐ Vitrinde' : 'Normal İlan'}
                         </span>
                       </div>
                       <div style={{ display: 'flex', gap: '4px' }}>
+                        <button onClick={() => toggleFeaturedListing(item.id)} style={{ backgroundColor: item.isFeatured ? '#fef08a' : '#f1f5f9', color: '#854d0e', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>
+                          {item.isFeatured ? 'Vitrin Kaldır' : '⭐ Vitrin Yap'}
+                        </button>
                         <button onClick={() => { 
                           setEditingListing(item); 
                           if (editFormRef.current) editFormRef.current.scrollIntoView({ behavior: 'smooth' });
