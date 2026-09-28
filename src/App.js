@@ -69,7 +69,6 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState('Tümü');
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
 
-  // Detaylı Form + Otomatik SEO State'i
   const [newListing, setNewListing] = useState({
     title: '', category: categories[0]?.name || '', subCategory: categories[0]?.subCategories[0] || '', price: '', 
     capacity: '21 m²', sellerName: 'Can İnce', phone: '0535 768 1550', 
@@ -99,7 +98,6 @@ export default function App() {
     setCurrentView('home');
   };
 
-  // Açıklama yazıldıkça anında SEO üreten fonksiyon
   const handleDescriptionChange = (e) => {
     const text = e.target.value;
     const autoSeoDesc = text.substring(0, 150) + (text.length > 150 ? '...' : '');
@@ -175,11 +173,16 @@ export default function App() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f4f6f8', fontFamily: 'sans-serif', color: '#333', display: 'flex', flexDirection: 'column' }}>
       
-      {/* ÜST BİLGİ & NAVİGASYON */}
+      {/* ÜST BİLGİ & NAVİGASYON (BAŞAK GÖRSELİ TESTİ EKLENDİ) */}
       <header style={{ backgroundColor: '#134e4a', color: '#fff', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div onClick={() => setCurrentView('home')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Package size={28} color="#34d399" />
+            {/* BAŞAK TEST GÖRSELİ */}
+            <img 
+              src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=100" 
+              alt="Başak" 
+              style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #34d399' }} 
+            />
             <h1 style={{ fontSize: '24px', fontWeight: 'bold', margin: 0, letterSpacing: '0.5px' }}>PazarTarla</h1>
           </div>
           
@@ -359,7 +362,7 @@ export default function App() {
           </div>
         )}
 
-        {/* 3. İLAN VER SAYFASI (DETAYLI FORM + OTOMATİK SEO ALANI) */}
+        {/* 3. İLAN VER SAYFASI (DETAYLI FORM + SEO) */}
         {currentView === 'add' && (
           <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '10px', maxWidth: '700px', margin: '0 auto', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -474,19 +477,25 @@ export default function App() {
                 ></textarea>
               </div>
 
-              {/* OTOMATİK SEO ALANLARI (Açıklamanın hemen altında aktifleşir) */}
-              <div style={{ backgroundColor: '#fffbeb', padding: '12px', borderRadius: '6px', border: '1px dashed #d97706', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#b45309' }}>🔍 Otomatik Üretilen SEO Alanları:</span>
-                <input 
-                  type="text" placeholder="SEO Meta Açıklaması" 
-                  value={newListing.seoDescription} onChange={e => setNewListing({...newListing, seoDescription: e.target.value})}
-                  style={{ padding: '8px', fontSize: '12px', borderRadius: '4px', border: '1px solid #e5e7eb', backgroundColor: '#fff' }}
-                />
-                <input 
-                  type="text" placeholder="SEO Anahtar Kelimeler" 
-                  value={newListing.seoKeywords} onChange={e => setNewListing({...newListing, seoKeywords: e.target.value})}
-                  style={{ padding: '8px', fontSize: '12px', borderRadius: '4px', border: '1px solid #e5e7eb', backgroundColor: '#fff' }}
-                />
+              {/* OTOMATİK SEO ALANI */}
+              <div style={{ backgroundColor: '#fffbeb', padding: '14px', borderRadius: '8px', border: '2px dashed #d97706', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#b45309' }}>🔍 Otomatik Üretilen SEO Alanları (Açıklamadan Üretilir):</span>
+                <div>
+                  <label style={{ fontSize: '11px', color: '#78350f', display: 'block', marginBottom: '3px' }}>SEO Meta Açıklaması</label>
+                  <input 
+                    type="text" placeholder="Açıklama yazdıkça otomatik dolar..." 
+                    value={newListing.seoDescription} onChange={e => setNewListing({...newListing, seoDescription: e.target.value})}
+                    style={{ width: '100%', padding: '8px', fontSize: '12px', borderRadius: '4px', border: '1px solid #cbd5e1', backgroundColor: '#fff', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '11px', color: '#78350f', display: 'block', marginBottom: '3px' }}>SEO Anahtar Kelimeler</label>
+                  <input 
+                    type="text" placeholder="Açıklamadan anahtar kelimeler..." 
+                    value={newListing.seoKeywords} onChange={e => setNewListing({...newListing, seoKeywords: e.target.value})}
+                    style={{ width: '100%', padding: '8px', fontSize: '12px', borderRadius: '4px', border: '1px solid #cbd5e1', backgroundColor: '#fff', boxSizing: 'border-box' }}
+                  />
+                </div>
               </div>
 
               <button type="submit" style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '12px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '16px' }}>
@@ -525,7 +534,7 @@ export default function App() {
           </div>
         )}
 
-        {/* 5. YÖNETİM PANELİ (Kategori silme ve ilan yönetimi) */}
+        {/* 5. YÖNETİM PANELİ */}
         {currentView === 'admin' && isAdminLoggedIn && (
           <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '10px', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', borderBottom: '1px solid #e5e7eb', paddingBottom: '15px' }}>
