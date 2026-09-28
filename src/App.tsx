@@ -276,11 +276,18 @@ export default function App() {
     const updated = [newEntry, ...listings];
     saveListings(updated);
 
-    const waMessage = encodeURIComponent(`🔔 *Yeni İlan Onay Bekliyor!*\n\n*Başlık:* ${newEntry.title}\n*Fiyat:* ${newEntry.price} TL\n*Kategori:* ${newEntry.category}\n*Satıcı:* ${newEntry.seller} (${newEntry.phone})\n\nOnaylamak için yönetim paneline gidebilirsiniz.`);
-    const waUrl = `https://wa.me/905357681550?text=${waMessage}`;
+    // Kullanıcıya şık bir bildirim kutusu gösterip WhatsApp yönlendirmesini isteğe bağlı yapıyoruz
+    const waMessage = encodeURIComponent(`🔔 *Yeni İlan Onay Bekliyor!*\n\n*Başlık:* ${newEntry.title}\n*Fiyat:* ${newEntry.price} TL\n*Kategori:* ${newEntry.category}\n*Satıcı:* ${newEntry.seller} (${newEntry.phone})`);
+    const waUrl = `https://api.whatsapp.com/send?phone=905357681550&text=${waMessage}`;
 
-    if (window.confirm('İlanınız başarıyla alındı! Yönetici onayı için WhatsApp üzerinden bildirim gönderilsin mi?')) {
-      window.open(waUrl, '_blank');
+    if (window.confirm('İlanınız başarıyla alındı! Yöneticiye (Can İnce) WhatsApp ile haber verilsin mi?')) {
+      const a = document.createElement('a');
+      a.href = waUrl;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
 
     setForm({
