@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus, 
   Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, ChevronDown, X, 
-  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag, Edit3, Sparkles, Megaphone, CheckCircle, Bot, DownloadCloud 
+  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag, Edit3, Sparkles, Megaphone, CheckCircle, Bot, DownloadCloud, Upload 
 } from 'lucide-react';
 
 const ALL_INITIAL_LISTINGS = [
@@ -320,73 +320,36 @@ export default function App() {
     });
   };
 
-  // 🤖 AKILLI BOT (SCRAPER AGENT) SİMÜLATÖRÜ & KATEGORİ DOĞRULAMA MOTORU
-  const runExternalScraperBot = () => {
-    if (!isAdminLoggedIn) return;
-    
-    // Dış sitelerden çekildiği simüle edilen örnek akıllı ilan havuzu
-    const externalSamplePool = [
-      {
-        title: 'John Deere 5075E 4WD Kabinli Traktör',
-        price: 850000,
-        description: 'Tarla ve bahçe işleri için kusursuz temizlikte, 75 beygir gücünde.',
-        seller: 'Tarım Makinaları A.Ş.',
-        phone: '0532 555 4433',
-        image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800'
-      },
-      {
-        title: 'Doğal Kafkas Arı Kolonisi ve Bal Kovanı',
-        price: 4500,
-        description: 'Meşe ormanı çıkışlı, genç analı güçlü arı kovanları.',
-        seller: 'Hasan Balcı',
-        phone: '0533 111 2299',
-        image: 'https://images.unsplash.com/photo-1473081556163-2a17de81fc97?auto=format&fit=crop&q=80&w=800'
-      },
-      {
-        title: 'Aşılı Sertifikalı Frigo Ceviz Fidanı',
-        price: 120,
-        description: 'Chandler ve Fernor cins sertifikalı taze fidanlar.',
-        seller: 'Gönen Fidancılık',
-        phone: '0535 999 8877',
-        image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800'
+  // 🤖 PYTHON BOTUNUN ÜRETTİĞİ JSON DOSYASINI YÖNETİM PANELİNE AKTARMA KÖPRÜSÜ
+  const handleScraperJSONUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const importedData = JSON.parse(event.target.result);
+        if (Array.isArray(importedData) && importedData.length > 0) {
+          // Gelen ilanların statüsünü pending yapıp mevcut listeye ekleyelim
+          const preparedListings = importedData.map(item => ({
+            ...item,
+            id: item.id || Date.now() + Math.random(),
+            status: 'pending',
+            isFeatured: false
+          }));
+
+          const updated = [...preparedListings, ...listings];
+          saveListings(updated);
+          alert(`🎉 Başarılı! Python botunun çektiği ${preparedListings.length} adet gerçek ilan "Onay Bekleyenler" paneline eklendi.`);
+        } else {
+          alert('Dosya boş veya uygun formatta değil!');
+        }
+      } catch (err) {
+        alert('JSON dosyası okunamadı. Lütfen geçerli bir JSON yükleyin.');
+        console.error(err);
       }
-    ];
-
-    // Rastgele bir dış ilan seç
-    const randomExternal = externalSamplePool[Math.floor(Math.random() * externalSamplePool.length)];
-
-    // 🛡️ AKILLI KATEGORİ KORUMA FİLTRESİ (Yanlış kategoriye gitmeyi önler)
-    let assignedCategory = 'Mahsuller';
-    let assignedSub = 'Ceviz';
-    const textLower = (randomExternal.title + ' ' + randomExternal.description).toLowerCase();
-
-    if (textLower.includes('traktör') || textLower.includes('motor') || textLower.includes('deere')) {
-      assignedCategory = 'Traktör';
-      assignedSub = 'İkinci El Traktör';
-    } else if (textLower.includes('arı') || textLower.includes('kovan') || textLower.includes('bal')) {
-      assignedCategory = 'Arıcılık';
-      assignedSub = 'Kovan ve Ekipmanları';
-    } else if (textLower.includes('fidan') || textLower.includes('ceviz')) {
-      assignedCategory = 'Mahsuller';
-      assignedSub = 'Ceviz';
-    }
-
-    const botImportedEntry = {
-      ...randomExternal,
-      id: Date.now(),
-      category: assignedCategory,
-      subCategory: assignedSub,
-      mode: 'Satılık',
-      location: 'Gönen / Balıkesir',
-      amount: '1 Adet',
-      seoTags: generateAutoSEO(randomExternal.title, assignedCategory, assignedSub, 'Gönen / Balıkesir'),
-      status: 'pending', // Onay bekleyenlere düşer
-      isFeatured: false
     };
-
-    const updatedListings = [botImportedEntry, ...listings];
-    saveListings(updatedListings);
-    alert(`🤖 Bot Baş Çalıştı!\n\n"${botImportedEntry.title}" ilanı dış kaynaktan başarıyla çekildi.\nDoğru Kategori Eşlendi: ${assignedCategory} / ${assignedSub}\n\nKontrol etmeniz için "Onay Bekleyen İlanlar" paneline eklendi!`);
+    reader.readAsText(file);
   };
 
   const approveListing = (id) => {
@@ -941,21 +904,18 @@ export default function App() {
                   <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Çıkış</button>
                 </div>
 
-                {/* 🤖 AKILLI BOT (İLAN AKTARICI) KONTROL PANELİ */}
+                {/* 🤖 PYTHON BOTU JSON YÜKLEME KÖPRÜSÜ */}
                 <div style={{ backgroundColor: '#ecfdf5', padding: '14px', borderRadius: '8px', border: '1px solid #a7f3d0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#065f46', margin: '0 0 6px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Bot size={18} color="#059669" /> PazarTarla Akıllı İlan Botu (Scraper Agent)
+                    <Bot size={18} color="#059669" /> Python Botu Verilerini İçe Aktar (JSON Yükle)
                   </h3>
                   <p style={{ fontSize: '12px', color: '#047857', margin: '0 0 10px 0', lineHeight: '1.4' }}>
-                    Diğer tarım sitelerinden otomatik ilan çeker. Akıllı kategori eşleme motoru sayesinde traktör asla ceviz kategorisine gitmez; fotoğrafları ve açıklamalarıyla birlikte onay kuyruğuna eklenir.
+                    Bilgisayarınızda çalışan Python botunun oluşturduğu <code style={{ backgroundColor: '#d1fae5', padding: '2px 4px', borderRadius: '4px' }}>cekilen_ilanlar.json</code> dosyasını seçerek ilanları onay kuyruğuna aktarın.
                   </p>
-                  <button 
-                    type="button" 
-                    onClick={runExternalScraperBot}
-                    style={{ width: '100%', backgroundColor: '#059669', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', boxShadow: '0 2px 6px rgba(5,150,105,0.2)' }}
-                  >
-                    <DownloadCloud size={16} /> Dış Kaynaklardan İlan Botunu Çalıştır
-                  </button>
+                  <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#059669', color: '#fff', padding: '10px', borderRadius: '6px', fontWeight: '700', fontSize: '13px', cursor: 'pointer', boxShadow: '0 2px 6px rgba(5,150,105,0.2)' }}>
+                    <Upload size={16} /> Python JSON Dosyasını Seç ve Yükle
+                    <input type="file" accept=".json" onChange={handleScraperJSONUpload} style={{ display: 'none' }} />
+                  </label>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
