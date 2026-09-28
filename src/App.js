@@ -69,7 +69,7 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState('Tümü');
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
 
-  // Orijinal Detaylı İlan Formu State'i (Otomatik SEO alanları eklendi)
+  // Detaylı Form + Otomatik SEO State'i
   const [newListing, setNewListing] = useState({
     title: '', category: categories[0]?.name || '', subCategory: categories[0]?.subCategories[0] || '', price: '', 
     capacity: '21 m²', sellerName: 'Can İnce', phone: '0535 768 1550', 
@@ -99,7 +99,7 @@ export default function App() {
     setCurrentView('home');
   };
 
-  // Açıklama değiştikçe otomatik SEO üretimi
+  // Açıklama yazıldıkça anında SEO üreten fonksiyon
   const handleDescriptionChange = (e) => {
     const text = e.target.value;
     const autoSeoDesc = text.substring(0, 150) + (text.length > 150 ? '...' : '');
@@ -359,7 +359,7 @@ export default function App() {
           </div>
         )}
 
-        {/* 3. İLAN VER SAYFASI (ORİJİNAL DETAYLI FORM + OTOMATİK SEO) */}
+        {/* 3. İLAN VER SAYFASI (DETAYLI FORM + OTOMATİK SEO ALANI) */}
         {currentView === 'add' && (
           <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '10px', maxWidth: '700px', margin: '0 auto', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -468,13 +468,13 @@ export default function App() {
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '5px' }}>Açıklama</label>
                 <textarea 
-                  rows="4" required placeholder="İlan detaylarını yazın..."
+                  rows="4" required placeholder="Detaylar..."
                   value={newListing.description} onChange={handleDescriptionChange}
                   style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #d1d5db', boxSizing: 'border-box' }}
                 ></textarea>
               </div>
 
-              {/* OTOMATİK SEO ALANLARI */}
+              {/* OTOMATİK SEO ALANLARI (Açıklamanın hemen altında aktifleşir) */}
               <div style={{ backgroundColor: '#fffbeb', padding: '12px', borderRadius: '6px', border: '1px dashed #d97706', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#b45309' }}>🔍 Otomatik Üretilen SEO Alanları:</span>
                 <input 
@@ -525,7 +525,7 @@ export default function App() {
           </div>
         )}
 
-        {/* 5. YÖNETİM PANELİ */}
+        {/* 5. YÖNETİM PANELİ (Kategori silme ve ilan yönetimi) */}
         {currentView === 'admin' && isAdminLoggedIn && (
           <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '10px', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', borderBottom: '1px solid #e5e7eb', paddingBottom: '15px' }}>
