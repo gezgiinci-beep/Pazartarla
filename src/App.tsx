@@ -115,6 +115,7 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState('Tüm kategoriler');
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
   const [openCategory, setOpenCategory] = useState('');
+  const [adminOpenCategory, setAdminOpenCategory] = useState(''); // Yönetim panelindeki akordiyon için
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
   const [editingListing, setEditingListing] = useState(null);
@@ -310,7 +311,6 @@ export default function App() {
     alert('İlan onaylandı ve canlıya alındı!');
   };
 
-  // TÜMÜNÜ ONAYLA FONKSİYONU
   const approveAllListings = () => {
     if (!isAdminLoggedIn) return;
     const updated = listings.map(item => ({ ...item, status: 'approved' }));
@@ -901,14 +901,31 @@ export default function App() {
                   </form>
                 </div>
 
+                {/* YÖNETİM PANELİ KATEGORİLER LİSTESİ (Tıklayınca Açılır Kapanır) */}
                 <h3 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '10px' }}>📁 Kategoriler ({Object.keys(categoriesWithSubs).length})</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
-                  {Object.keys(categoriesWithSubs).map(catKey => (
-                    <div key={catKey} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', backgroundColor: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-                      <span style={{ fontWeight: '600', fontSize: '13px' }}>{catKey}</span>
-                      <button onClick={() => handleDeleteCategory(catKey)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Kategoriyi Sil</button>
-                    </div>
-                  ))}
+                  {Object.keys(categoriesWithSubs).map(catKey => {
+                    const isOpenAdmin = adminOpenCategory === catKey;
+                    return (
+                      <div key={catKey} style={{ backgroundColor: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+                        <div onClick={() => setAdminOpenCategory(isOpenAdmin ? '' : catKey)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', cursor: 'pointer', backgroundColor: isOpenAdmin ? '#f0fdf4' : '#f8fafc' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            {isOpenAdmin ? <ChevronDown size={16} color="#22c55e" /> : <ChevronRight size={16} color="#64748b" />}
+                            <span style={{ fontWeight: '600', fontSize: '13px', color: '#1b3a2b' }}>{catKey}</span>
+                          </div>
+                          <button onClick={(e) => { e.stopPropagation(); handleDeleteCategory(catKey); }} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Kategoriyi Sil</button>
+                        </div>
+                        {isOpenAdmin && (
+                          <div style={{ padding: '8px 12px 12px 28px', backgroundColor: '#fff', borderTop: '1px solid #e2e8f0', fontSize: '12px', color: '#475569' }}>
+                            <span style={{ fontWeight: '700', display: 'block', marginBottom: '4px', color: '#166534' }}>Alt Ürünler / Seçenekler:</span>
+                            {(categoriesWithSubs[catKey] || []).map(sub => (
+                              <div key={sub} style={{ padding: '4px 0', borderBottom: '1px dashed #f1f5f9' }}>• {sub}</div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <h3 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '10px' }}>İlan Yönetimi & Vitrin (Öne Çıkar) ({listings.length})</h3>
