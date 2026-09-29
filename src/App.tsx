@@ -325,7 +325,6 @@ export default function App() {
     });
   };
 
-  // 🤖 GENİŞLETİLMİŞ TARIM & TARIM ALETLERİ OTOMATİK İLAN ÇEKME SİHİRBAZI
   const handleAutoFetchListings = () => {
     if (!isAdminLoggedIn) return;
     
@@ -419,7 +418,7 @@ export default function App() {
 
     const updated = [...diverseListings, ...listings];
     saveListings(updated);
-    alert(`🎉 Harika! Çapa makinası, pulluk, veteriner, biçerdöver ve meyve/sebze dahil 5 yeni ilan otomatik olarak çekildi ve onay kuyruğuna eklendi.`);
+    alert('🎉 Harika! Çapa makinası, pulluk, veteriner, biçerdöver ve meyve/sebze dahil 5 yeni ilan otomatik olarak çekildi ve onay kuyruğuna eklendi.');
   };
 
   const approveListing = (id) => {
@@ -1207,7 +1206,7 @@ export default function App() {
                   {listings.map(item => (
                     <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
                       <div>
-                        <span style={{ fontSize: '12px', fontWeight: '600', display: 'block'}>{item.title}</span>
+                        <span style={{ fontSize: '12px', fontWeight: '600', display: 'block' }}>{item.title}</span>
                         <span style={{ fontSize: '10px', color: item.isFeatured ? '#eab308' : '#64748b', fontWeight: '700' }}>
                           {item.isFeatured ? '⭐ Vitrinde' : 'Normal İlan'}
                         </span>
