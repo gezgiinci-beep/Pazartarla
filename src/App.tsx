@@ -245,9 +245,6 @@ export default function App() {
         const subList = categoriesWithSubs[value] || ['Genel'];
         updated.subCategory = subList[0];
       }
-      if (name === 'title' && !updated.imageUserCustomized) {
-        updated.image = getSmartAutoImage(value, updated.category);
-      }
       updated.seoTags = generateAutoSEO(
         name === 'title' ? value : updated.title,
         name === 'category' ? value : updated.category,
@@ -274,6 +271,36 @@ export default function App() {
       );
       return updated;
     });
+  };
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Dosya boyutu 2 MB sınırını aşamaz!');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setForm(prev => ({ ...prev, image: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleEditImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Dosya boyutu 2 MB sınırını aşamaz!');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditingListing(prev => ({ ...prev, image: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleDirectAdd = (e) => {
@@ -369,7 +396,7 @@ export default function App() {
 
     const updated = [...dynamicPool, ...listings];
     saveListings(updated);
-    alert('🎉 Harika! Sistem başlıkları inceleyerek fotoğraflarını otomatik atadı ve yeni ilanlar kuyruğa eklendi.');
+    alert('🎉 Harika! Sistem otomatik ilanları ekledi.');
   };
 
   const approveListing = (id) => {
@@ -869,7 +896,7 @@ export default function App() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>İlan Başlığı (Fotoğraf otomatik eşleşir) *</label>
+                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>İlan Başlığı *</label>
                 <input type="text" name="title" placeholder="Örn: John Deere Traktör" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               </div>
 
@@ -909,8 +936,9 @@ export default function App() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fotoğraf Linki (İsteğe bağlı, boş bırakırsanız akıllı sistem kendisi seçer)</label>
-                <input type="text" name="image" placeholder="https://..." value={form.image} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '12px' }} />
+                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fotoğraf Yükle (Dosya Seç) veya Aşağıya Link Yapıştır</label>
+                <input type="file" accept="image/*" onChange={handleImageUpload} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#f8fafc', marginBottom: '6px' }} />
+                <input type="text" name="image" placeholder="Veya resim linki (URL) yapıştırın..." value={form.image} onChange={handleFormChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '12px' }} />
               </div>
 
               <div>
@@ -944,10 +972,10 @@ export default function App() {
 
                 <div style={{ backgroundColor: '#ecfdf5', padding: '14px', borderRadius: '8px', border: '1px solid #a7f3d0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#065f46', margin: '0 0 6px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Bot size={18} color="#059669" /> Akıllı Ototmatik İlan Çek
+                    <Bot size={18} color="#059669" /> Akıllı Otomatik İlan Çek
                   </h3>
                   <p style={{ fontSize: '12px', color: '#047857', margin: '0 0 10px 0', lineHeight: '1.4' }}>
-                    Butona bastığınızda ilanlar otomatik olarak eklenir.
+                    Butona bastığınızda ilanlar kuyruğa eklenir.
                   </p>
                   <button 
                     type="button" 
@@ -1038,8 +1066,9 @@ export default function App() {
                         </div>
                       </div>
 
-                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>Fotoğraf Linki (URL)</label>
-                      <input type="text" name="image" value={editingListing.image || ''} onChange={handleEditFormChange} placeholder="https://..." style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px' }} />
+                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>Fotoğraf Yükle (Dosya Seç) veya Aşağıya Link Yapıştır</label>
+                      <input type="file" accept="image/*" onChange={handleEditImageUpload} style={{ width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff', fontSize: '11px', marginBottom: '4px' }} />
+                      <input type="text" name="image" value={editingListing.image || ''} onChange={handleEditFormChange} placeholder="Veya resim linki (URL)..." style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px' }} />
 
                       <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>Açıklama</label>
                       <textarea name="description" value={editingListing.description} onChange={handleEditFormChange} placeholder="Açıklama" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', height: '60px' }} />
