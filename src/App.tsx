@@ -19,7 +19,24 @@ const DEFAULT_START_LISTINGS = [
     seller: 'Can İnce',
     phone: '0535 768 1550',
     image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
-    seoTags: 'taze ceviz, chandler ceviz, gönen ceviz',
+    seoTags: 'taze ceviz, chandler ceviz, gönen ceviz, tarım ilanı, mahsul',
+    status: 'approved',
+    isFeatured: true
+  },
+  {
+    id: 2,
+    title: 'Sahibinden Temiz John Deere 5075E Traktör',
+    price: 1250000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Tekirdağ / Süleymanpaşa',
+    amount: '75 HP',
+    description: 'Kapalı garajda muhafaza edilmiş, bakımlı ve masrafsız tarım traktörü.',
+    seller: 'Serkan Öztürk',
+    phone: '0531 333 4455',
+    image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'john deere, traktör, tekirdağ tarım',
     status: 'approved',
     isFeatured: true
   }
@@ -125,7 +142,7 @@ export default function App() {
   });
 
   useEffect(() => {
-    const timer = setTimeout => {
+    const timer = setTimeout(() => {
       setShowSplash(false);
     }, 3500);
     return () => clearTimeout(timer);
@@ -294,6 +311,19 @@ export default function App() {
         seller: 'Can İnce',
         phone: '0535 768 1550',
         seoTags: 'john deere, traktör, gönen tarım'
+      },
+      {
+        title: 'Organik Çiçek Yayla Balı',
+        price: 480,
+        category: 'Arıcılık',
+        subCategory: 'Bal',
+        mode: 'Satılık',
+        location: 'Muğla / Fethiye',
+        amount: '2 Kilo',
+        description: 'Çam ve çiçek nektarından üretilmiş saf arı balı.',
+        seller: 'Ahmet Arıcı',
+        phone: '0534 777 2211',
+        seoTags: 'organik bal, muğla balı, arıcılık'
       }
     ];
 
@@ -436,7 +466,7 @@ export default function App() {
   if (showSplash) {
     return (
       <div style={{ position: 'fixed', inset: 0, backgroundColor: '#0f172a', color: '#f8fafc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '24px', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '32px', fontWeight: '700' }}>Türkiye'nin İlk و Tek <br /><span style={{ color: '#2add9c' }}>Tarım Platformu</span></h1>
+        <h1 style={{ fontSize: '32px', fontWeight: '700' }}>Türkiye'nin İlk ve Tek <br /><span style={{ color: '#2add9c' }}>Tarım Platformu</span></h1>
       </div>
     );
   }
@@ -577,3 +607,6 @@ export default function App() {
     </div>
   );
 }
+
+// Vercel build hatasını çözen zorunlu dışa aktarma satırı:
+export default App;
