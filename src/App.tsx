@@ -174,7 +174,7 @@ export default function App() {
       title: sanitizeInput(form.title),
       price: Number(form.price),
       category: form.category,
-      subCategory: form.subCategory || 'Genel',
+
       mode: form.mode || 'Satılık',
       location: sanitizeInput(form.location || 'Türkiye Geneli'),
       amount: sanitizeInput(form.amount || ''),
