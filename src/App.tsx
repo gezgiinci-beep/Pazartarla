@@ -118,7 +118,6 @@ export default function App() {
     isFeatured: false
   });
 
-  // Supabase Verilerini Çekme (REST API)
   const fetchListings = async () => {
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/listings?select=*`, {
@@ -226,6 +225,19 @@ export default function App() {
     }
   };
 
+  const handleEditImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Dosya boyutu 2 MB sınırını aşamaz!');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => setEditingListing(prev => ({ ...prev, image: reader.result }));
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleDirectAdd = async (e) => {
     e.preventDefault();
     if (!form.title.trim() || !form.price || !form.phone.trim() || !form.seller.trim()) {
@@ -286,20 +298,25 @@ export default function App() {
       phone: '0535 768 1550',
       image: getSmartAutoImage('New Holland Traktör', 'Traktör'),
       seoTags: 'new holland, traktör, gönen tarım',
-      status: 'pending',
-      isFeatured: false
+      status: 'approved',
+      isFeatured: true
     };
 
     try {
-      await fetch(`${SUPABASE_URL}/rest/v1/listings`, {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/listings`, {
         method: 'POST',
         headers: { ...dbHeaders, 'Prefer': 'return=minimal' },
         body: JSON.stringify(dynamicPool)
       });
-      fetchListings();
-      alert('🎉 Otomatik test ilanı kuyruğa eklendi.');
+      if (res.ok) {
+        fetchListings();
+        alert('🎉 Otomatik test ilanı doğrudan yayına eklendi!');
+      } else {
+        alert('Test ilanı eklenirken sunucu reddetti.');
+      }
     } catch (e) {
       console.error(e);
+      alert('Bağlantı hatası oluştu.');
     }
   };
 
@@ -424,13 +441,6 @@ export default function App() {
     setCategoriesWithSubs({ ...categoriesWithSubs, [catKey]: updatedSubs.length ? updatedSubs : ['Genel'] });
     setSelectedSubToRemove('');
     alert('Seçenek silindi!');
-  };
-
-  const handleDeleteCategory = (catKey) => {
-    if (!isAdminLoggedIn) return;
-    const copy = { ...categoriesWithSubs };
-    delete copy[catKey];
-    setCategoriesWithSubs(copy);
   };
 
   const handleAdminLogin = (e) => {
@@ -635,7 +645,12 @@ export default function App() {
               </select>
 
               <input type="text" name="location" placeholder="Konum (Örn: Gönen / Balıkesir)" value={form.location} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
-              <input type="file" accept="image/*" onChange={handleImageUpload} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+              
+              <div style={{ backgroundColor: '#f8fafc', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
+                <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569', display: 'block', marginBottom: '4px' }}>📷 Fotoğraf Yükle (Cihazdan Seç)</label>
+                <input type="file" accept="image/*" onChange={handleImageUpload} style={{ width: '100%', fontSize: '12px' }} />
+              </div>
+
               <textarea name="description" placeholder="Açıklama..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px' }} />
 
               <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}>İlanı Gönder</button>
@@ -681,6 +696,12 @@ export default function App() {
                       <input type="text" name="title" value={editingListing.title} onChange={handleEditFormChange} placeholder="Başlık" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       <input type="number" name="price" value={editingListing.price} onChange={handleEditFormChange} placeholder="Fiyat" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       <input type="text" name="location" value={editingListing.location} onChange={handleEditFormChange} placeholder="Konum" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                      
+                      <div style={{ backgroundColor: '#fff', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
+                        <label style={{ fontSize: '11px', fontWeight: '700', color: '#475569', display: 'block', marginBottom: '2px' }}>📷 İlan Fotoğrafını Değiştir</label>
+                        <input type="file" accept="image/*" onChange={handleEditImageUpload} style={{ width: '100%', fontSize: '11px' }} />
+                      </div>
+
                       <textarea name="description" value={editingListing.description} onChange={handleEditFormChange} placeholder="Açıklama" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '60px' }} />
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <button type="submit" style={{ flex: 1, backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Kaydet</button>
