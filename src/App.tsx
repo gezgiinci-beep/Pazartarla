@@ -138,10 +138,7 @@ export default function App() {
   useEffect(() => {
     const timer = setTimeout(() => setShowSplash(false), 3500);
     fetchListings();
-
-    // Canlı ortak senkronizasyon (Her 5 saniyede bir güncellenir)
     const interval = setInterval(fetchListings, 5000);
-
     return () => {
       clearTimeout(timer);
       clearInterval(interval);
@@ -438,7 +435,6 @@ export default function App() {
 
   const handleAdminLogin = (e) => {
     e.preventDefault();
-    // Şifre kontrolü maskelenmiştir
     const correctCode = '5' + '5' + '3' + '8';
     if (adminPassword === correctCode) {
       setIsAdminLoggedIn(true);
@@ -495,9 +491,21 @@ export default function App() {
 
       <main style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '12px', flex: 1, boxSizing: 'border-box' }}>
         {announcement && (
-          <div style={{ backgroundColor: '#fef08a', color: '#713f12', padding: '10px 14px', borderRadius: '10px', marginBottom: '12px', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #facc15' }}>
-            <Megaphone size={16} color="#854d0e" />
-            <span>{announcement}</span>
+          <div style={{ backgroundColor: '#fef08a', color: '#713f12', padding: '10px 14px', borderRadius: '10px', marginBottom: '12px', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #facc15', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+            <Megaphone size={16} color="#854d0e" style={{ flexShrink: 0 }} />
+            <style>{`
+              @keyframes marquee {
+                0% { transform: translateX(100%); }
+                100% { transform: translateX(-100%); }
+              }
+              .marquee-text {
+                display: inline-block;
+                animation: marquee 15s linear infinite;
+              }
+            `}</style>
+            <div style={{ width: '100%', overflow: 'hidden' }}>
+              <div className="marquee-text">{announcement}</div>
+            </div>
           </div>
         )}
 
@@ -506,6 +514,18 @@ export default function App() {
             <CheckCircle size={36} color="#166534" style={{ margin: '0 auto 12px auto' }} />
             <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#1b3a2b', margin: '0 0 8px 0' }}>İlanınız Başarıyla Alındı!</h2>
             <p style={{ color: '#64748b', fontSize: '13px', marginBottom: '20px' }}>Yönetici onayından sonra tüm cihazlarda görünecektir.</p>
+            
+            {lastAddedListing && (
+              <a 
+                href={`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(`🔔 *Yeni İlan Onay Bekliyor!*\n\n*Başlık:* ${lastAddedListing.title}\n*Fiyat:*${lastAddedListing.price} TL\n*Kategori:* ${lastAddedListing.category} /${lastAddedListing.subCategory}\n*Satıcı:* ${lastAddedListing.seller} (${lastAddedListing.phone})`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#22c55e', color: '#fff', padding: '12px', borderRadius: '8px', fontWeight: '800', textDecoration: 'none', fontSize: '14px', marginBottom: '12px' }}
+              >
+                <MessageCircle size={18} /> WhatsApp ile Ekipten Onay İste
+              </a>
+            )}
+
             <button onClick={() => changeTab('home')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '700', cursor: 'pointer' }}>← Ana Sayfaya Dön</button>
           </div>
         )}
@@ -527,13 +547,16 @@ export default function App() {
                 const isOpen = openCategory === cat;
                 return (
                   <div key={cat}>
-                    <div onClick={() => setOpenCategory(isOpen ? '' : cat)} style={{ padding: '14px 16px', borderBottom: '1px solid #edf2f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
-                      <span style={{ fontWeight: '600', color: '#334155', fontSize: '14px' }}>{cat}</span>
-                      <span style={{ color: '#94a3b8', fontSize: '13px' }}>({approvedListings.filter(i => i.category === cat).length})</span>
+                    <div onClick={() => setOpenCategory(isOpen ? '' : cat)} style={{ padding: '14px 16px', borderBottom: '1px solid #edf2f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', backgroundColor: isOpen ? '#f0fdf4' : '#fff' }}>
+                      <span style={{ fontWeight: '600', color: isOpen ? '#1b3a2b' : '#334155', fontSize: '14px' }}>{cat}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#94a3b8', fontSize: '13px' }}>
+                        <span>({approvedListings.filter(i => i.category === cat).length})</span>
+                        {isOpen ? <ChevronDown size={16} color="#22c55e" /> : <ChevronRight size={16} />}
+                      </div>
                     </div>
                     {isOpen && (
                       <div style={{ backgroundColor: '#fafafa', borderBottom: '1px solid #edf2f7' }}>
-                        <div onClick={() => { setSelectedCategory(cat); setSelectedSubCategory('Tümü'); changeTab('results'); }} style={{ padding: '10px 16px 10px 28px', borderBottom: '1px solid #f1f5f9', cursor: 'pointer', fontSize: '13px', color: '#166534', fontWeight: '600' }}>
+                        <div onClick={(e) => { e.stopPropagation(); setSelectedCategory(cat); setSelectedSubCategory('Tümü'); changeTab('results'); }} style={{ padding: '10px 16px 10px 28px', borderBottom: '1px solid #f1f5f9', cursor: 'pointer', fontSize: '13px', color: '#166534', fontWeight: '600' }}>
                           → Tüm {cat} İlanları
                         </div>
                         {(categoriesWithSubs[cat] || []).map(sub => (
