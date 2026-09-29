@@ -607,6 +607,3 @@ export default function App() {
     </div>
   );
 }
-
-// Vercel build hatasını çözen zorunlu dışa aktarma satırı:
-export default App;
