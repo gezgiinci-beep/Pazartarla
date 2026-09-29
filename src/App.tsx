@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 
 const SUPABASE_URL = 'https://srbarfjzsfkmglsnmbtw.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyYmFyZmp6c2ZrbWdsc25tYnR3Iiwicm9sZSI6InFub24iLCJpYXQiOjE3OTA2ODAzMTQsImV4cCI6MjEwNjI1NjMxNH0.pTYlQxbTvVOHAarNW7ITckRJxffgDkZNO5li17F76xQ';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyYmFyZmp6c2ZrbWdsc25tYnR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2ODAzMTQsImV4cCI6MjEwNjI1NjMxNH0.pTYlQxbTvVOHAarNW7ITckRJxffgDkZNO5li17F76xQ';
 
 const dbHeaders = {
   'apikey': SUPABASE_ANON_KEY,
@@ -338,8 +338,11 @@ export default function App() {
                     </div>
                     {item.status !== 'approved' ? (
                       <button onClick={async () => {
-                        await `${SUPABASE_URL}/rest/v1/listings?id=eq.${item.id}`;
-                        // Onaylama işlemi
+                        await fetch(`${SUPABASE_URL}/rest/v1/listings?id=eq.${item.id}`, {
+                          method: 'PATCH',
+                          headers: dbHeaders,
+                          body: JSON.stringify({ status: 'approved' })
+                        });
                         fetchListings();
                       }} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Onayla</button>
                     ) : (
