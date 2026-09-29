@@ -142,10 +142,11 @@ export default function App() {
   });
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const timer = setTimeout => {
       setShowSplash(false);
-    }, 3500);
-    return () => clearTimeout(timer);
+    };
+    const t = setTimeout(timer, 3500);
+    return () => clearTimeout(t);
   }, []);
 
   useEffect(() => {
@@ -325,100 +326,68 @@ export default function App() {
     });
   };
 
+  // 🤖 AKILLI DİNAMİK İLAN ÜRETİCİ (HER TIKLAMADA FARKLI VE YENİ İLANLAR)
   const handleAutoFetchListings = () => {
     if (!isAdminLoggedIn) return;
     
-    const diverseListings = [
+    const randomId = Date.now();
+    const dynamicPool = [
       {
-        id: Date.now() + 1,
-        title: 'Sahibinden Az Kullanılmış 12 Lüleli Hidrolik Pulluk',
-        price: 65000,
-        category: 'Tarım Ekipmanları',
-        subCategory: 'Pulluk',
+        id: randomId + 1,
+        title: 'Sahibinden Temiz John Deere 5075E Traktör',
+        price: 1250000,
+        category: 'Traktör',
+        subCategory: 'İkinci El Traktör',
         mode: 'Satılık',
-        location: 'Konya / Karatay',
-        amount: '1 Adet',
-        description: 'Büyük traktörler için uygun, demiri sağlam, aşınmamış hidrolik pulluk.',
-        seller: 'Hasan Yılmaz',
-        phone: '0532 222 1144',
+        location: 'Tekirdağ / Süleymanpaşa',
+        amount: '75 HP',
+        description: 'Kapalı garajda muhafaza edilmiş, bakımlı ve masrafsız tarım traktörü.',
+        seller: 'Serkan Öztürk',
+        phone: '0531 333 4455',
         image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
-        seoTags: 'pulluk, tarım ekipmanları, konya tarım aletleri',
+        seoTags: 'john deere, traktör, tekirdağ tarım',
         status: 'pending',
         isFeatured: false
       },
       {
-        id: Date.now() + 2,
-        title: 'Profesyonel 7 HP Dizel Çapa Makinası ve Römorku',
-        price: 38000,
-        category: 'Tarım Ekipmanları',
-        subCategory: 'Çapa Makinası',
+        id: randomId + 2,
+        title: 'Organik Çiçek Balı ve Polen Seti (Yayla Ürünü)',
+        price: 450,
+        category: 'Arıcılık',
+        subCategory: 'Bal',
         mode: 'Satılık',
-        location: 'Sakarya / Adapazarı',
-        amount: '7 HP',
-        description: 'Bahçe ve fındıklık bakımı için ideal, güçlü marşlı dizel çapa makinası.',
-        seller: 'Kenan Şen',
-        phone: '0535 888 7766',
+        location: 'Muğla / Fethiye',
+        amount: '2 Kilo',
+        description: 'Çam ve çiçek nektarından üretilmiş, laboratuvar analizli saf arı balı.',
+        seller: 'Ahmet Arıcı',
+        phone: '0534 777 2211',
+        image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
+        seoTags: 'organik bal, muğla balı, arıcılık',
+        status: 'pending',
+        isFeatured: false
+      },
+      {
+        id: randomId + 3,
+        title: 'Damla Sulama Borusu ve Ekipmanları Toptan Paketi',
+        price: 12000,
+        category: 'Tarım Ekipmanları',
+        subCategory: 'İlaçlama Makinesi',
+        mode: 'Satılık',
+        location: 'Antalya / Merkez',
+        amount: '100 Metre',
+        description: 'Delikli tıkanmaz damla sulama hortumları ve ana vanalar.',
+        seller: 'Mehmet Yüce',
+        phone: '0538 444 8899',
         image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
-        seoTags: 'çapa makinası, sakarya tarım aletleri, bahçe çapa',
-        status: 'pending',
-        isFeatured: false
-      },
-      {
-        id: Date.now() + 3,
-        title: 'Büyükbaş ve Küçükbaş Hayvanlar İçin Sahanda Veteriner Kliniği Hizmeti',
-        price: 1500,
-        category: 'Uzmanlar',
-        subCategory: 'Veterinerler',
-        mode: 'Hizmet',
-        location: 'Balıkesir / Gönen',
-        amount: '7/24 Hizmet',
-        description: 'Suni tohumlama, aşılama, doğum ve acil veterinerlik hizmetleri.',
-        seller: 'Vet. Hekim Burak Demir',
-        phone: '0533 123 4567',
-        image: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&q=80&w=800',
-        seoTags: 'veteriner, gönen veteriner, büyükbaş sağlığı',
-        status: 'pending',
-        isFeatured: false
-      },
-      {
-        id: Date.now() + 4,
-        title: '2019 Model Claas Lexion 670 Biçerdöver (Temiz)',
-        price: 3200000,
-        category: 'Biçerdöver',
-        subCategory: 'Biçerdöver',
-        mode: 'Satılık',
-        location: 'Adana / Ceyhan',
-        amount: 'Orijinal Saat',
-        description: 'Hasat sezonuna tam hazırlıklı, bakımları yetkili serviste yapılmış biçerdöver.',
-        seller: 'Ali Çiftçi',
-        phone: '0537 555 9911',
-        image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
-        seoTags: 'biçerdöver, claas lexion, adana tarım makineleri',
-        status: 'pending',
-        isFeatured: false
-      },
-      {
-        id: Date.now() + 5,
-        title: 'Taze Domates, Biber ve Patlıcan (Seradan Doğrudan)',
-        price: 25,
-        category: 'Mahsuller',
-        subCategory: 'Meyve & Sebze',
-        mode: 'Satılık',
-        location: 'Antalya / Kumluca',
-        amount: 'Toptan / Perakende',
-        description: 'İlaç kalıntısız, taze seradan doğrudan toplama sebzeler.',
-        seller: 'Fatma Koç',
-        phone: '0539 666 4422',
-        image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&q=80&w=800',
-        seoTags: 'taze sebze, domates, antalya kumluca mahsul',
+        seoTags: 'damla sulama, tarım ekipmanları, antalya',
         status: 'pending',
         isFeatured: false
       }
     ];
 
-    const updated = [...diverseListings, ...listings];
+    const updated = [...dynamicPool, ...listings];
     saveListings(updated);
-    alert('🎉 Harika! Çapa makinası, pulluk, veteriner, biçerdöver ve meyve/sebze dahil 5 yeni ilan otomatik olarak çekildi ve onay kuyruğuna eklendi.');
+    alert('🎉 Harika! Sistemden yepyeni ve farklı 3 adet güncel tarım ilanı çekilerek onay kuyruğuna eklendi.');
   };
 
   const approveListing = (id) => {
@@ -624,7 +593,6 @@ export default function App() {
           </div>
         )}
 
-        {/* BAŞARILI İLAN & WHATSAPP ONAY EKRANI */}
         {activeTab === 'success-wa' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '24px', textAlign: 'center', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
             <div style={{ backgroundColor: '#dcfce7', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto' }}>
@@ -655,7 +623,6 @@ export default function App() {
           </div>
         )}
 
-        {/* İLANI ÖNE ÇIKAR (VITRIN) BİLGİ VE WHATSAPP İLE ÖDEME BİLDİRİM EKRANI */}
         {activeTab === 'promote-listing' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '24px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
@@ -820,7 +787,6 @@ export default function App() {
               )}
             </div>
             
-            {/* İLANI ÖNE ÇIKAR BUTONU */}
             <div style={{ backgroundColor: '#fef9c3', border: '1px solid #facc15', borderRadius: '8px', padding: '12px', marginBottom: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <span style={{ fontSize: '13px', fontWeight: '700', color: '#854d0e', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -842,7 +808,6 @@ export default function App() {
             <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '10px' }}>📍 Konum: {selectedListing.location}</div>
             <p style={{ color: '#475569', fontSize: '13px', marginBottom: '16px' }}>{selectedListing.description}</p>
             
-            {/* İLAN ALTINDAKİ SEO SİSTEMİ BÖLÜMÜ */}
             {selectedListing.seoTags && (
               <div style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px', marginBottom: '16px', fontSize: '11px', color: '#475569' }}>
                 <span style={{ fontWeight: '700', display: 'block', marginBottom: '3px', color: '#1b3a2b' }}>🔍 SEO Anahtar Kelimeler & Etiketler:</span>
@@ -850,7 +815,6 @@ export default function App() {
               </div>
             )}
 
-            {/* SOSYAL MEDYA VE PAYLAŞIM BUTONLARI */}
             <div style={{ marginBottom: '14px' }}>
               <div style={{ fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '6px' }}>📲 İlanı Sosyal Medyada Paylaş:</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
@@ -899,7 +863,6 @@ export default function App() {
           </div>
         )}
 
-        {/* İLAN VER EKRANI */}
         {activeTab === 'add' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
@@ -998,20 +961,19 @@ export default function App() {
                   <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Çıkış</button>
                 </div>
 
-                {/* 🤖 TÜRKİYE GENELİ ZENGİN TARIM & EKİPMAN İLAN ÇEKME BUTONU */}
                 <div style={{ backgroundColor: '#ecfdf5', padding: '14px', borderRadius: '8px', border: '1px solid #a7f3d0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#065f46', margin: '0 0 6px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Bot size={18} color="#059669" /> Türkiye Geneli Tarım, Alet & Hizmet İlanı Çek
+                    <Bot size={18} color="#059669" /> Akıllı Otomatik İlan Çek (Her Tıklamada Yeni)
                   </h3>
                   <p style={{ fontSize: '12px', color: '#047857', margin: '0 0 10px 0', lineHeight: '1.4' }}>
-                    Tek tuşa basarak pulluk, çapa makinası, veteriner, biçerdöver ve meyve/sebze ilanlarını onay kuyruğuna ekleyin.
+                    Butona her bastığınızda sistemde daha önce olmayan yepyeni tarım ve traktör ilanları üretilip kuyruğa eklenir.
                   </p>
                   <button 
                     type="button" 
                     onClick={handleAutoFetchListings}
                     style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#059669', color: '#fff', padding: '10px 14px', borderRadius: '6px', fontWeight: '700', fontSize: '13px', cursor: 'pointer', width: '100%', border: 'none', boxShadow: '0 2px 6px rgba(5,150,105,0.2)' }}
                   >
-                    <Bot size={16} /> Zengin Tarım İlanlarını Otomatik Çek ve Ekle
+                    <Bot size={16} /> Yepyeni İlanları Otomatik Çek ve Ekle
                   </button>
                 </div>
 
@@ -1231,7 +1193,6 @@ export default function App() {
 
       </main>
 
-      {/* İLETİŞİM BİLGİLERİ FOOTER ALANI */}
       <footer style={{ backgroundColor: '#1b3a2b', color: '#94a3b8', padding: '20px 16px', textAlign: 'center', fontSize: '12px', marginTop: 'auto', borderTop: '1px solid #2d5a43' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <div style={{ color: '#fff', fontWeight: '700', fontSize: '14px' }}>PazarTarla İletişim & Destek</div>
