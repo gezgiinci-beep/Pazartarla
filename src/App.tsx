@@ -24,7 +24,6 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('home'); 
   const editFormRef = useRef(null);
   
-  // VERİLERİNİ ASLA SİLMEYEN GÜVENLİ OKUMA (localStorage öncelikli)
   const [listings, setListings] = useState(() => {
     try {
       const saved = localStorage.getItem('pazartarla_listings');
@@ -74,7 +73,6 @@ export default function App() {
       return '🌾 Türkiye’nin ilk ve tek tarım platformuna hoş geldiniz.';
     }
   });
-  const [tempAnnouncement, setTempAnnouncement] = useState(announcement);
 
   const [favorites, setFavorites] = useState(() => {
     try {
@@ -95,11 +93,6 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState('Tüm kategoriler');
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
   
-  const [newCategoryName, setNewCategoryName] = useState(() => Object.keys(FALLBACK_CATEGORIES)[0] || 'Mahsuller');
-  const [newSubCategoryName, setNewSubCategoryName] = useState('');
-  const [editingListing, setEditingListing] = useState(null);
-  const [lastAddedListing, setLastAddedListing] = useState(null);
-
   const [form, setForm] = useState({
     title: '',
     price: '',
@@ -135,15 +128,6 @@ export default function App() {
       localStorage.setItem('pazartarla_listings', JSON.stringify(newListings));
     } catch (e) {
       console.error("Kayıt hatası:", e);
-    }
-  };
-
-  const saveCategories = (newCats) => {
-    try {
-      setCategoriesWithSubs(newCats);
-      localStorage.setItem('pazartarla_categories', JSON.stringify(newCats));
-    } catch (e) {
-      console.error("Kategori kayıt hatası:", e);
     }
   };
 
@@ -217,11 +201,9 @@ export default function App() {
 
     const updated = [newEntry, ...listings];
     saveListings(updated);
-    setLastAddedListing(newEntry);
     changeTab('success-wa');
   };
 
-  // HER TIKLANDIĞINDA FARKLI VE ZENGİN İLAN ÜRETEN AKILLI OTOMATİK ÇEKME FONKSİYONU
   const handleAutoFetchListings = () => {
     if (!isAdminLoggedIn) return;
     
@@ -483,5 +465,3 @@ export default function App() {
     </div>
   );
 }
-
-export default App;
