@@ -154,6 +154,9 @@ export default function App() {
     if (t.includes('zeytin') || t.includes('yağ')) {
       return 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&q=80&w=800';
     }
+    if (t.includes('koyun') || t.includes('kuzu') || t.includes('inek')) {
+      return 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&q=80&w=800';
+    }
     return 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800';
   };
 
@@ -204,68 +207,113 @@ export default function App() {
     changeTab('success-wa');
   };
 
+  // TAMAMEN ZENGİNLEŞTİRİLMİŞ VE ÇEŞİTLİ AKILLI İLAN HAVUZU
   const handleAutoFetchListings = () => {
     if (!isAdminLoggedIn) return;
     
-    const diversePool = [
+    const massivePool = [
       {
-        title: 'New Holland TD100D Tarım Traktörü',
-        price: 1450000,
+        title: 'Case IH JX110C 4WD Kabinli Tarla Traktörü',
+        price: 1650000,
         category: 'Traktör',
         subCategory: 'İkinci El Traktör',
         mode: 'Satılık',
-        location: 'Balıkesir / Gönen',
-        amount: '100 HP',
-        description: 'Tertemiz, bakımları yetkili serviste yapılmış tarla traktörü.',
-        seller: 'Can İnce',
-        phone: '0535 768 1550',
-        seoTags: 'new holland, traktör, gönen'
+        location: 'Konya / Selçuklu',
+        amount: '110 HP',
+        description: 'Ağır işlerde kullanılmış, bakımlı ve güçlü motor.',
+        seller: 'Mehmet Aksoy',
+        phone: '0532 111 2233',
+        seoTags: 'case ih, traktör, konya'
       },
       {
-        title: 'Saf Çam Balı ve Taze Arı Sütü Seti',
-        price: 520,
+        title: 'Claas Dominator 130 Biçerdöver',
+        price: 3400000,
+        category: 'Biçerdöver',
+        subCategory: 'Biçerdöver',
+        mode: 'Satılık',
+        location: 'Adana / Ceyhan',
+        amount: '1 Adet',
+        description: 'Hasat sezonuna tam hazırlanmış, bıçakları yeni değişti.',
+        seller: 'Çukurova Tarım',
+        phone: '0533 444 5566',
+        seoTags: 'claas, biçerdöver, adana'
+      },
+      {
+        title: 'Damızlık Karacabey Merinosu Koç',
+        price: 22000,
+        category: 'Canlı Hayvanlar',
+        subCategory: 'Küçükbaş',
+        mode: 'Satılık',
+        location: 'Balıkesir / Gönen',
+        amount: '1 Baş',
+        description: 'Aşılı, 2 yaşında safkan damızlık koç.',
+        seller: 'Hüseyin Çiftçi',
+        phone: '0535 999 8877',
+        seoTags: 'merinos, koç, gönen'
+      },
+      {
+        title: '2 Tonluk Galvanizli Su ve Akaryakıt Tankeri',
+        price: 35000,
+        category: 'Tarım Ekipmanları',
+        subCategory: 'Römork',
+        mode: 'Satılık',
+        location: 'İzmir / Torbalı',
+        amount: '2 Ton',
+        description: 'Römorka monte edilebilir seyyar tarım tankeri.',
+        seller: 'Ege Römork',
+        phone: '0536 222 3344',
+        seoTags: 'su tankeri, tarım ekipman'
+      },
+      {
+        title: 'Organik Karakovan Çiçek Balı (Süzme)',
+        price: 600,
         category: 'Arıcılık',
         subCategory: 'Bal',
         mode: 'Satılık',
-        location: 'Marmaris / Muğla',
-        amount: '1 Set',
-        description: 'Marmaris ormanlarından ham çam balı ve taze kovan arı sütü.',
-        seller: 'Ege Arıcılık',
-        phone: '0538 888 9900',
-        seoTags: 'çam balı, arı sütü, marmaris'
+        location: 'Artvin / Borçka',
+        amount: '3 Kilo',
+        description: 'Karakovan peteklerinden özenle süzülmüş, yüksek rakım balı.',
+        seller: 'Karadeniz Arıcılık',
+        phone: '0537 555 6677',
+        seoTags: 'karakovan balı, artvin bal'
       },
       {
-        title: 'Erken Hasat Soğuk Sıkım Ayvalık Zeytinyağı',
-        price: 280,
-        category: 'Mahsuller',
-        subCategory: 'Zeytin & Zeytinyağı',
-        mode: 'Satılık',
-        location: 'Ayvalık / Balıkesir',
-        amount: '5 Litre',
-        description: 'Filtrelenmemiş yüksek polifenollü gurme zeytinyağı.',
-        seller: 'Ayvalık Zeytin Evi',
-        phone: '0537 666 7788',
-        seoTags: 'ayvalık zeytinyağı, erken hasat'
-      },
-      {
-        title: '4 Dönerli Hidrolik Otomatik Pulluk',
-        price: 65000,
+        title: '6 Lü Ýeniköy Kulaklı Pulluk',
+        price: 85000,
         category: 'Tarım Ekipmanları',
         subCategory: 'Pulluk',
         mode: 'Satılık',
-        location: 'Eskişehir / Sivrihisar',
+        location: 'Tekirdağ / Malkara',
         amount: '1 Adet',
-        description: 'Pistonlu dönerli, ağır tip çizel ve pulluk takımı.',
-        seller: 'Sivrihisar Makine',
-        phone: '0551 333 4455',
-        seoTags: 'dönerli pulluk, eskişehir tarım'
+        description: 'Ayarlı hidrolik, toprak sürümünde mükemmel performans.',
+        seller: 'Trakya Tarım Makine',
+        phone: '0538 777 8899',
+        seoTags: 'pulluk, malkara, tarım aletleri'
+      },
+      {
+        title: 'Profesyonel Sırt Tipi İlaçlama Pompası (Benzinli)',
+        price: 7500,
+        category: 'Tarım Ekipmanları',
+        subCategory: 'İlaçlama Makinesi',
+        mode: 'Satılık',
+        location: 'Manisa / Salihli',
+        amount: '25 Litre',
+        description: 'Bahçe ve bağ ilaçlamaları için yüksek basınçlı motorlu pompa.',
+        seller: 'Salihli Tarım',
+        phone: '0539 333 2211',
+        seoTags: 'ilaçlama makinesi, manisa'
       }
     ];
 
-    const randomItem = diversePool[Math.floor(Math.random() * diversePool.length)];
+    // Mevcut başlıklardan hangilerinin daha önce eklendiğine bakıp henüz eklenmemiş olanı seçmeye çalışalım
+    const existingTitles = listings.map(l => l.title);
+    const unpickedPool = massivePool.filter(item => !existingTitles.includes(item.title));
+    const targetPool = unpickedPool.length > 0 ? unpickedPool : massivePool;
+
+    const randomItem = targetPool[Math.floor(Math.random() * targetPool.length)];
     const newEntry = {
       ...randomItem,
-      id: Date.now() + Math.floor(Math.random() * 1000),
+      id: Date.now() + Math.floor(Math.random() * 10000),
       image: getSmartAutoImage(randomItem.title, randomItem.category),
       status: 'pending',
       isFeatured: false
@@ -273,7 +321,7 @@ export default function App() {
 
     const updated = [newEntry, ...listings];
     saveListings(updated);
-    alert(`🎉 "${newEntry.title}" başarıyla onay kuyruğuna eklendi!`);
+    alert(`🎉 "${newEntry.title}" onay kuyruğuna eklendi!`);
   };
 
   const approveAllListings = () => {
