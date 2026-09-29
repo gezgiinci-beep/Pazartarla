@@ -206,7 +206,7 @@ export default function App() {
       .replace(/'/g, "&#039;");
   };
 
-  // 🤖 AKILLI OTOMATİK GÖRSEL BULUCU (Başlığa veya kategoriye göre en uygun fotoğrafı seçer)
+  // 🤖 AKILLI OTOMATİK GÖRSEL EŞLEŞTİRME MOTORU
   const getSmartAutoImage = (title, category) => {
     const t = (title || '').toLowerCase();
     const c = (category || '').toLowerCase();
@@ -214,7 +214,7 @@ export default function App() {
     if (t.includes('traktör') || c.includes('traktör')) {
       return 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800';
     }
-    if (t.includes('pulluk') || t.includes('çapa') || t.includes('ekipman') || t.includes('makina')) {
+    if (t.includes('pulluk') || t.includes('çapa') || t.includes('ekipman') || t.includes('makina') || c.includes('ekipman')) {
       return 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800';
     }
     if (t.includes('veteriner') || t.includes('danışman') || c.includes('uzman')) {
@@ -246,10 +246,9 @@ export default function App() {
         const subList = categoriesWithSubs[value] || ['Genel'];
         updated.subCategory = subList[0];
       }
-      // Başlık değiştikçe fotoğrafı otomatik güncelle
-      if (name === 'title') {
-        updated.image = getSmartAutoImage(value, updated.category);
-      }
+      // Başlık veya kategori değiştikçe fotoğrafı otomatik güncelle
+      updated.image = getSmartAutoImage(name === 'title' ? value : updated.title, name === 'category' ? value : updated.category);
+      
       updated.seoTags = generateAutoSEO(
         name === 'title' ? value : updated.title,
         name === 'category' ? value : updated.category,
@@ -268,9 +267,9 @@ export default function App() {
         const subList = categoriesWithSubs[value] || ['Genel'];
         updated.subCategory = subList[0];
       }
-      if (name === 'title') {
-        updated.image = getSmartAutoImage(value, updated.category);
-      }
+      // Düzenleme yaparken başlık değiştikçe fotoğrafı otomatik güncelle
+      updated.image = getSmartAutoImage(name === 'title' ? value : updated.title, name === 'category' ? value : updated.category);
+
       updated.seoTags = generateAutoSEO(
         updated.title,
         updated.category,
@@ -288,15 +287,16 @@ export default function App() {
       return;
     }
 
-    const finalImage = form.image || getSmartAutoImage(form.title, form.category);
+    const smartImage = getSmartAutoImage(form.title, form.category);
     const finalSeoTags = form.seoTags || generateAutoSEO(form.title, form.category, form.subCategory, form.location);
+    
     const newEntry = {
       ...form,
       title: sanitizeInput(form.title),
       description: sanitizeInput(form.description),
       seller: sanitizeInput(form.seller),
       phone: sanitizeInput(form.phone),
-      image: finalImage,
+      image: smartImage,
       id: Date.now(),
       price: Number(form.price),
       amount: form.category === 'Uzmanlar' ? '' : sanitizeInput(form.amount),
@@ -347,7 +347,7 @@ export default function App() {
         description: 'Kapalı garajda muhafaza edilmiş, bakımlı ve masrafsız tarım traktörü.',
         seller: 'Serkan Öztürk',
         phone: '0531 333 4455',
-        image: getSmartAutoImage('Traktör', 'Traktör'),
+        image: getSmartAutoImage('John Deere Traktör', 'Traktör'),
         seoTags: 'john deere, traktör, tekirdağ tarım',
         status: 'pending',
         isFeatured: false
@@ -364,7 +364,7 @@ export default function App() {
         description: 'Çam ve çiçek nektarından üretilmiş, laboratuvar analizli saf arı balı.',
         seller: 'Ahmet Arıcı',
         phone: '0534 777 2211',
-        image: getSmartAutoImage('Bal', 'Arıcılık'),
+        image: getSmartAutoImage('Organik Çiçek Balı', 'Arıcılık'),
         seoTags: 'organik bal, muğla balı, arıcılık',
         status: 'pending',
         isFeatured: false
@@ -381,7 +381,7 @@ export default function App() {
         description: 'Delikli tıkanmaz damla sulama hortumları ve ana vanalar.',
         seller: 'Mehmet Yüce',
         phone: '0538 444 8899',
-        image: getSmartAutoImage('Damla Sulama Ekipmanları', 'Tarım Ekipmanları'),
+        image: getSmartAutoImage('Damla Sulama Borusu', 'Tarım Ekipmanları'),
         seoTags: 'damla sulama, tarım ekipmanları, antalya',
         status: 'pending',
         isFeatured: false
@@ -390,7 +390,7 @@ export default function App() {
 
     const updated = [...dynamicPool, ...listings];
     saveListings(updated);
-    alert('🎉 Harika! Sistem başlıkları inceleyerek fotoğraflarını otomatik eşitledi ve 3 yeni ilan onay kuyruğuna eklendi.');
+    alert('🎉 Harika! Sistem başlıkları inceleyerek fotoğraflarını akıllıca atadı ve 3 yeni ilan onay kuyruğuna eklendi.');
   };
 
   const approveListing = (id) => {
@@ -432,18 +432,21 @@ export default function App() {
   const saveEditedListing = (e) => {
     e.preventDefault();
     if (!isAdminLoggedIn) return;
+    
+    const smartImage = getSmartAutoImage(editingListing.title, editingListing.category);
     const updatedListings = listings.map(item => item.id === editingListing.id ? { 
       ...editingListing, 
       title: sanitizeInput(editingListing.title),
       description: sanitizeInput(editingListing.description),
       price: Number(editingListing.price),
-      image: editingListing.image || getSmartAutoImage(editingListing.title, editingListing.category),
+      image: smartImage,
       seoTags: editingListing.seoTags || generateAutoSEO(editingListing.title, editingListing.category, editingListing.subCategory, editingListing.location),
       status: 'approved' 
     } : item);
+    
     saveListings(updatedListings);
     setEditingListing(null);
-    alert('İlan başarıyla güncellendi ve ana sayfada yayına alındı!');
+    alert('İlan başarıyla güncellendi, fotoğrafı akıllı sistem tarafından eşlendi ve yayına alındı!');
     changeTab('home');
   };
 
@@ -888,7 +891,7 @@ export default function App() {
 
               <div>
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>İlan Başlığı (Fotoğraf otomatik seçilir) *</label>
-                <input type="text" name="title" placeholder="Örn: John Deere Traktör veya Arı Balı" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+                <input type="text" name="title" placeholder="Örn: John Deere Traktör veya Çiçek Balı" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
@@ -927,7 +930,7 @@ export default function App() {
               </div>
 
               <div style={{ backgroundColor: '#f0fdf4', padding: '10px', borderRadius: '6px', border: '1px solid #bbf7d0', fontSize: '12px', color: '#166534' }}>
-                ✨ <b>Akıllı Fotoğraf:</b> İlan başlığınızı yazdığınızda, sistem kategoriye ve kelimeye uygun fotoğrafı otomatik olarak atayacaktır.
+                ✨ <b>Yapay Zeka Fotoğraf Sistemi:</b> İlan başlığına yazdığınız kelimeye (traktör, bal, ceviz vb.) göre uygun fotoğraf sitemiz tarafından otomatik olarak atanacaktır.
               </div>
 
               <div>
@@ -969,7 +972,7 @@ export default function App() {
                     <Bot size={18} color="#059669" /> Akıllı Otomatik İlan Çek (Otomatik Görselli)
                   </h3>
                   <p style={{ fontSize: '12px', color: '#047857', margin: '0 0 10px 0', lineHeight: '1.4' }}>
-                    Butona bastığınızda ilanlar başlıklarına uygun fotoğraflarla birlikte otomatik üretilir.
+                    Butona bastığınızda ilanlar başlıklarına uygun fotoğraflarla otomatik üretilir.
                   </p>
                   <button 
                     type="button" 
@@ -1032,7 +1035,7 @@ export default function App() {
                   <div style={{ backgroundColor: '#f0fdf4', padding: '14px', borderRadius: '8px', border: '2px solid #22c55e', marginBottom: '20px' }}>
                     <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 10px 0' }}>✏️ İlanı Düzenle: {editingListing.title}</h3>
                     <form onSubmit={saveEditedListing} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>İlan Başlığı</label>
+                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>İlan Başlığı (Fotoğraf otomatik eşleşir)</label>
                       <input type="text" name="title" value={editingListing.title} onChange={handleEditFormChange} placeholder="İlan Başlığı" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }} />
                       
                       <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>Fiyat (TL)</label>
@@ -1178,7 +1181,7 @@ export default function App() {
                         <button onClick={() => { 
                           setEditingListing(item); 
                           if (editFormRef.current) editFormRef.current.scrollIntoView({ behavior: 'smooth' });
-                        }} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Düzenleme Yap</button>
+                        }} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Düzenle</button>
                         <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Sil</button>
                       </div>
                     </div>
