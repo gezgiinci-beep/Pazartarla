@@ -5,7 +5,7 @@ import {
   Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag, Edit3, Sparkles, Megaphone, CheckCircle, Bot 
 } from 'lucide-react';
 
-const FALLBACK_CATEGORIES = {
+const DEFAULT_CATEGORIES = {
   'Mahsuller': ['Kiraz', 'Ceviz', 'Zeytin & Zeytinyağı', 'Buğday', 'Bakliyat', 'Meyve & Sebze'],
   'Canlı Hayvanlar': ['Büyükbaş', 'Küçükbaş', 'Kanatlı'],
   'Hayvan Yemleri ve Ekipmanları': ['Yem Çeşitleri', 'Suluk / Yemlik'],
@@ -53,17 +53,18 @@ export default function App() {
     }];
   });
 
+  // KATEGORİLERİ VE ÖZEL AYARLARI KORUYAN GÜVENLİ OKUMA
   const [categoriesWithSubs, setCategoriesWithSubs] = useState(() => {
     try {
       const saved = localStorage.getItem('pazartarla_categories');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed && typeof parsed === 'object') return parsed;
+        if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) return parsed;
       }
     } catch (e) {
       console.error("Kategori okuma hatası:", e);
     }
-    return FALLBACK_CATEGORIES;
+    return DEFAULT_CATEGORIES;
   });
 
   const [announcement, setAnnouncement] = useState(() => {
@@ -94,9 +95,8 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState('Tüm kategoriler');
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
   
-  const [newCategoryName, setNewCategoryName] = useState(() => Object.keys(FALLBACK_CATEGORIES)[0] || 'Mahsuller');
+  const [newCategoryName, setNewCategoryName] = useState(() => Object.keys(categoriesWithSubs)[0] || 'Mahsuller');
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
-  const [selectedSubToRemove, setSelectedSubToRemove] = useState('');
   const [editingListing, setEditingListing] = useState(null);
   const [poolIndex, setPoolIndex] = useState(0);
 
@@ -437,19 +437,6 @@ export default function App() {
       const updatedCats = { ...categoriesWithSubs };
       delete updatedCats[catKey];
       saveCategories(updatedCats);
-    }
-  };
-
-  const handleDeleteSubCategory = (catKey, subToDel) => {
-    if (!isAdminLoggedIn) return;
-    if (!subToDel) return;
-    if (window.confirm(`"${subToDel}" seçeneğini silmek istediğinize emin misiniz?`)) {
-      const currentSubs = categoriesWithSubs[catKey] || [];
-      const updatedSubs = currentSubs.filter(sub => sub !== subToDel);
-      if (updatedSubs.length === 0) updatedSubs.push('Genel');
-      const updatedCats = { ...categoriesWithSubs, [catKey]: updatedSubs };
-      saveCategories(updatedCats);
-      setSelectedSubToRemove('');
     }
   };
 
