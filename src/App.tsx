@@ -43,14 +43,14 @@ const ALL_INITIAL_LISTINGS = [
 ];
 
 const FALLBACK_CATEGORIES = {
-  'Mahsuller': ['Kiraz', 'Ceviz', 'Zeytin & Zeytinyağı'],
+  'Mahsuller': ['Kiraz', 'Ceviz', 'Zeytin & Zeytinyağı', 'Buğday', 'Bakliyat'],
   'Canlı Hayvanlar': ['Büyükbaş', 'Küçükbaş', 'Kanatlı'],
   'Hayvan Yemleri ve Ekipmanları': ['Yem Çeşitleri', 'Suluk / Yemlik'],
   'Arıcılık': ['Bal', 'Polen', 'Arı Ekmeği', 'Arı Sütü', 'Kovan ve Ekipmanları'],
-  'Traktör': ['İkinci El Traktör'],
+  'Traktör': ['İkinci El Traktör', 'Sıfır Traktör', 'Ekipmanlar'],
   'Biçerdöver': ['Biçerdöver'],
-  'Tarım Ekipmanları': ['Römork'],
-  'Tarım İşçileri': ['Hasat Ekibi'],
+  'Tarım Ekipmanları': ['Römork', 'İlaçlama Makinesi'],
+  'Tarım İşçileri': ['Hasat Ekibi', 'Budama Ekibi'],
   'Uzmanlar': ['Veterinerler', 'Ziraatçiler'],
   'endüstriyel çadırlar': ['Çadır Örtüsü', 'Depo Çadırı'],
   'geçici konutlar': ['konteyner', 'çadır', 'prefabrik']
@@ -209,8 +209,8 @@ export default function App() {
 
   const generateAutoSEO = (title, category, subCategory, location) => {
     const cleanTitle = sanitizeInput(title.trim() ? title.trim() : 'Tarım İlanı');
-    const cleanLoc = sanitizeInput(location.trim() ? location.trim() : 'Türkiye');
-    return `${cleanTitle}, ${sanitizeInput(category || 'Tarım')}, ${sanitizeInput(subCategory || 'Ürün')}, ${cleanLoc} ilanları, pazar tarla`;
+    const cleanLoc = sanitizeInput(location.trim() ? location.trim() : 'Gönen / Balıkesir');
+    return `${cleanTitle}, ${sanitizeInput(category || 'Tarım')}, ${sanitizeInput(subCategory || 'Ürün')}, ${cleanLoc} ilanları, pazar tarla, gönen tarım`;
   };
 
   const handleFormChange = (e) => {
@@ -239,6 +239,12 @@ export default function App() {
         const subList = categoriesWithSubs[value] || ['Genel'];
         updated.subCategory = subList[0];
       }
+      updated.seoTags = generateAutoSEO(
+        updated.title,
+        updated.category,
+        updated.subCategory,
+        updated.location
+      );
       return updated;
     });
   };
@@ -364,6 +370,7 @@ export default function App() {
       title: sanitizeInput(editingListing.title),
       description: sanitizeInput(editingListing.description),
       price: Number(editingListing.price),
+      seoTags: editingListing.seoTags || generateAutoSEO(editingListing.title, editingListing.category, editingListing.subCategory, editingListing.location),
       status: 'approved' 
     } : item);
     saveListings(updatedListings);
@@ -465,7 +472,7 @@ export default function App() {
         `}</style>
         <div className="splash-content" style={{ maxWidth: '500px', width: '100%', padding: '40px 20px' }}>
           <h1 style={{ fontSize: '32px', fontWeight: '700', lineHeight: '1.4', margin: 0, color: '#f8fafc', letterSpacing: '-0.5px' }}>
-            Türkiye'nin İlk ve Tek <br />
+            Türkiye'nin İlk و Tek <br />
             <span style={{ color: '#2add9c' }}>Tarım Platformu</span>
           </h1>
         </div>
@@ -695,6 +702,11 @@ export default function App() {
                 <div style={{ flex: 1 }}>
                   <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: '700' }}>{item.title}</h4>
                   <div style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b' }}>{item.price.toLocaleString('tr-TR')} TL</div>
+                  {item.seoTags && (
+                    <div style={{ fontSize: '10px', color: '#64748b', marginTop: '4px', background: '#f8fafc', padding: '2px 6px', borderRadius: '4px', display: 'inline-block' }}>
+                      🏷️ {item.seoTags}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -733,6 +745,14 @@ export default function App() {
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '14px' }}>{selectedListing.price.toLocaleString('tr-TR')} TL</div>
             <p style={{ color: '#475569', fontSize: '13px', marginBottom: '16px' }}>{selectedListing.description}</p>
             
+            {/* İLAN ALTINDAKİ SEO SİSTEMİ BÖLÜMÜ */}
+            {selectedListing.seoTags && (
+              <div style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px', marginBottom: '16px', fontSize: '11px', color: '#475569' }}>
+                <span style={{ fontWeight: '700', display: 'block', marginBottom: '3px', color: '#1b3a2b' }}>🔍 SEO Anahtar Kelimeler & Etiketler:</span>
+                <span>{selectedListing.seoTags}</span>
+              </div>
+            )}
+
             {/* SOSYAL MEDYA VE PAYLAŞIM BUTONLARI */}
             <div style={{ marginBottom: '14px' }}>
               <div style={{ fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '6px' }}>📲 İlanı Sosyal Medyada Paylaş:</div>
@@ -840,6 +860,11 @@ export default function App() {
               <div>
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fotoğraf Yükle (Max 2MB)</label>
                 <input type="file" accept="image/*" onChange={handleImageUpload} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#f8fafc' }} />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>SEO Etiketleri (Otomatik Oluşur)</label>
+                <input type="text" name="seoTags" value={form.seoTags} onChange={handleFormChange} placeholder="SEO etiketleri..." style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px', backgroundColor: '#f8fafc' }} />
               </div>
 
               <div>
@@ -952,6 +977,9 @@ export default function App() {
                         <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '11px', color: '#166534' }}>İlan Fotoğrafını Değiştir (Max 2MB)</label>
                         <input type="file" accept="image/*" onChange={handleEditImageUpload} style={{ width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff', fontSize: '12px' }} />
                       </div>
+
+                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>SEO Etiketleri</label>
+                      <input type="text" name="seoTags" value={editingListing.seoTags || ''} onChange={handleEditFormChange} placeholder="SEO etiketleri" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px' }} />
 
                       <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>Açıklama</label>
                       <textarea name="description" value={editingListing.description} onChange={handleEditFormChange} placeholder="Açıklama" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', height: '60px' }} />
