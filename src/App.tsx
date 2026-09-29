@@ -25,31 +25,31 @@ const ALL_INITIAL_LISTINGS = [
   },
   {
     id: 101,
-    title: 'Fiat 480 S Kurbağa Göz',
-    price: 295000,
-    category: 'Traktör',
-    subCategory: 'İkinci El Traktör',
-    mode: 'Satılık',
-    location: 'İnegöl / Bursa',
-    amount: '48 HP',
-    description: 'Efsane kasa Fiat 480. Motor şanzıman kusursuzdur, vites atma ötme kesinlikle yoktur.',
-    seller: 'Şakir Korkmaz',
-    phone: '0536 777 8844',
-    image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
-    seoTags: 'fiat 480, traktör, bursa traktör, ikinci el traktör',
+    title: 'Uzman Ziraat Mühendisinden Tarla Danışmanlığı ve Gübreleme Planı',
+    price: 5000,
+    category: 'Uzmanlar',
+    subCategory: 'Ziraatçiler',
+    mode: 'Hizmet',
+    location: 'Bursa / Osmangazi',
+    amount: '1 Sezon',
+    description: 'Toprak analizi, damla sulama otomasyonu ve gübreleme programı hazırlığı.',
+    seller: 'Dr. Ziraatçi Selim Kaya',
+    phone: '0532 444 3322',
+    image: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'ziraat mühendisi, tarım danışmanlığı, toprak analizi',
     status: 'approved',
     isFeatured: false
   }
 ];
 
 const FALLBACK_CATEGORIES = {
-  'Mahsuller': ['Kiraz', 'Ceviz', 'Zeytin & Zeytinyağı', 'Buğday', 'Bakliyat'],
+  'Mahsuller': ['Kiraz', 'Ceviz', 'Zeytin & Zeytinyağı', 'Buğday', 'Bakliyat', 'Meyve & Sebze'],
   'Canlı Hayvanlar': ['Büyükbaş', 'Küçükbaş', 'Kanatlı'],
   'Hayvan Yemleri ve Ekipmanları': ['Yem Çeşitleri', 'Suluk / Yemlik'],
   'Arıcılık': ['Bal', 'Polen', 'Arı Ekmeği', 'Arı Sütü', 'Kovan ve Ekipmanları'],
   'Traktör': ['İkinci El Traktör', 'Sıfır Traktör', 'Ekipmanlar'],
   'Biçerdöver': ['Biçerdöver'],
-  'Tarım Ekipmanları': ['Römork', 'İlaçlama Makinesi'],
+  'Tarım Ekipmanları': ['Römork', 'İlaçlama Makinesi', 'Çapa Makinası', 'Pulluk', 'Kepçe & Yükleyici'],
   'Tarım İşçileri': ['Hasat Ekibi', 'Budama Ekibi'],
   'Uzmanlar': ['Veterinerler', 'Ziraatçiler'],
   'endüstriyel çadırlar': ['Çadır Örtüsü', 'Depo Çadırı'],
@@ -89,7 +89,7 @@ export default function App() {
 
   const [announcement, setAnnouncement] = useState(() => {
     try {
-      return localStorage.getItem('pazartarla_announcement') || '🌾 Türkiye genelinden en güncel tarım ve traktör ilanları PazarTarla’da!';
+      return localStorage.getItem('pazartarla_announcement') || '🌾 Türkiye genelinden tarım aletleri, veterinerler ve taze mahsul ilanları PazarTarla’da!';
     } catch (e) {
       return '🌾 Türkiye’nin ilk ve tek tarım platformuna hoş geldiniz.';
     }
@@ -121,7 +121,6 @@ export default function App() {
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
   const [selectedSubToRemove, setSelectedSubToRemove] = useState('');
   const [editingListing, setEditingListing] = useState(null);
-
   const [lastAddedListing, setLastAddedListing] = useState(null);
 
   const [form, setForm] = useState({
@@ -326,66 +325,101 @@ export default function App() {
     });
   };
 
+  // 🤖 GENİŞLETİLMİŞ TARIM & TARIM ALETLERİ OTOMATİK İLAN ÇEKME SİHİRBAZI
   const handleAutoFetchListings = () => {
     if (!isAdminLoggedIn) return;
     
-    const turkeyListings = [
+    const diverseListings = [
       {
         id: Date.now() + 1,
-        title: 'Sahibinden Satılık 2021 Model New Holland T5.115',
-        price: 1450000,
-        category: 'Traktör',
-        subCategory: 'İkinci El Traktör',
+        title: 'Sahibinden Az Kullanılmış 12 Lüleli Hidrolik Pulluk',
+        price: 65000,
+        category: 'Tarım Ekipmanları',
+        subCategory: 'Pulluk',
         mode: 'Satılık',
-        location: 'Konya / Merkez',
-        amount: '115 HP',
-        description: 'Sahibinden çok temiz, kabinli, klimalı ve orijinal New Holland traktör.',
-        seller: 'Mustafa Arslan',
-        phone: '0532 111 2233',
+        location: 'Konya / Karatay',
+        amount: '1 Adet',
+        description: 'Büyük traktörler için uygun, demiri sağlam, aşınmamış hidrolik pulluk.',
+        seller: 'Hasan Yılmaz',
+        phone: '0532 222 1144',
         image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
-        seoTags: 'new holland t5.115, traktör, konya traktör, sahibinden ilan',
+        seoTags: 'pulluk, tarım ekipmanları, konya tarım aletleri',
         status: 'pending',
         isFeatured: false
       },
       {
         id: Date.now() + 2,
-        title: 'Gemlik Tipi Yağlık Zeytin ve Soğuk Sıkım Zeytinyağı',
-        price: 280,
-        category: 'Mahsuller',
-        subCategory: 'Zeytin & Zeytinyağı',
+        title: 'Profesyonel 7 HP Dizel Çapa Makinası ve Römorku',
+        price: 38000,
+        category: 'Tarım Ekipmanları',
+        subCategory: 'Çapa Makinası',
         mode: 'Satılık',
-        location: 'Ayvalık / Balıkesir',
-        amount: '5 Litre',
-        description: 'Asit oranı düşük, erken hasat soğuk sıkım natürel sızma zeytinyağı.',
-        seller: 'Hüseyin Demir',
-        phone: '0534 999 8877',
-        image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&q=80&w=800',
-        seoTags: 'ayvalık zeytinyağı, zeytin, tarım ürünü, mahsul',
+        location: 'Sakarya / Adapazarı',
+        amount: '7 HP',
+        description: 'Bahçe ve fındıklık bakımı için ideal, güçlü marşlı dizel çapa makinası.',
+        seller: 'Kenan Şen',
+        phone: '0535 888 7766',
+        image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
+        seoTags: 'çapa makinası, sakarya tarım aletleri, bahçe çapa',
         status: 'pending',
         isFeatured: false
       },
       {
         id: Date.now() + 3,
-        title: '20 Tonluk Modüler Tarımsal Sulama Tankı ve Gübreleme Ünitesi',
-        price: 45000,
-        category: 'Tarım Ekipmanları',
-        subCategory: 'Römork',
+        title: 'Büyükbaş ve Küçükbaş Hayvanlar İçin Sahanda Veteriner Kliniği Hizmeti',
+        price: 1500,
+        category: 'Uzmanlar',
+        subCategory: 'Veterinerler',
+        mode: 'Hizmet',
+        location: 'Balıkesir / Gönen',
+        amount: '7/24 Hizmet',
+        description: 'Suni tohumlama, aşılama, doğum ve acil veterinerlik hizmetleri.',
+        seller: 'Vet. Hekim Burak Demir',
+        phone: '0533 123 4567',
+        image: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&q=80&w=800',
+        seoTags: 'veteriner, gönen veteriner, büyükbaş sağlığı',
+        status: 'pending',
+        isFeatured: false
+      },
+      {
+        id: Date.now() + 4,
+        title: '2019 Model Claas Lexion 670 Biçerdöver (Temiz)',
+        price: 3200000,
+        category: 'Biçerdöver',
+        subCategory: 'Biçerdöver',
         mode: 'Satılık',
-        location: 'İzmir / Torbalı',
-        amount: '20 Ton',
-        description: 'Bahçe sulama ve sıvı gübreleme için uygun, dayanıklı polyester depo.',
-        seller: 'Mehmet Aksoy',
-        phone: '0536 333 2211',
-        image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
-        seoTags: 'sulama tankı, tarım ekipmanları, izmir tarım',
+        location: 'Adana / Ceyhan',
+        amount: 'Orijinal Saat',
+        description: 'Hasat sezonuna tam hazırlıklı, bakımları yetkili serviste yapılmış biçerdöver.',
+        seller: 'Ali Çiftçi',
+        phone: '0537 555 9911',
+        image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
+        seoTags: 'biçerdöver, claas lexion, adana tarım makineleri',
+        status: 'pending',
+        isFeatured: false
+      },
+      {
+        id: Date.now() + 5,
+        title: 'Taze Domates, Biber ve Patlıcan (Seradan Doğrudan)',
+        price: 25,
+        category: 'Mahsuller',
+        subCategory: 'Meyve & Sebze',
+        mode: 'Satılık',
+        location: 'Antalya / Kumluca',
+        amount: 'Toptan / Perakende',
+        description: 'İlaç kalıntısız, taze seradan doğrudan toplama sebzeler.',
+        seller: 'Fatma Koç',
+        phone: '0539 666 4422',
+        image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&q=80&w=800',
+        seoTags: 'taze sebze, domates, antalya kumluca mahsul',
         status: 'pending',
         isFeatured: false
       }
     ];
 
-    const updated = [...turkeyListings, ...listings];
+    const updated = [...diverseListings, ...listings];
     saveListings(updated);
-    alert(`🎉 Harika! Türkiye genelinden 3 adet güncel traktör ve tarım ilanı otomatik olarak çekildi ve onay kuyruğuna eklendi.`);
+    alert(`🎉 Harika! Çapa makinası, pulluk, veteriner, biçerdöver ve meyve/sebze dahil 5 yeni ilan otomatik olarak çekildi ve onay kuyruğuna eklendi.`);
   };
 
   const approveListing = (id) => {
@@ -553,7 +587,7 @@ export default function App() {
           </div>
           <div>
             <h1 style={{ margin: 0, fontSize: '18px', fontWeight: '800' }}>PazarTarla</h1>
-            <span style={{ fontSize: '10px', color: '#86efac' }}>Türkiye Tarım Pazaryeri</span>
+            <span style={{ fontSize: '10px', color: '#86efac' }}>Türkiye Tarım & Ekipman Pazarı</span>
           </div>
         </div>
 
@@ -888,7 +922,7 @@ export default function App() {
 
               <div>
                 <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>İlan Başlığı *</label>
-                <input type="text" name="title" placeholder="Örn: 2018 Model Traktör" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+                <input type="text" name="title" placeholder="Örn: 12 Lüleli Pulluk" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
@@ -965,20 +999,20 @@ export default function App() {
                   <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Çıkış</button>
                 </div>
 
-                {/* 🤖 TÜRKİYE GENELİ OTOMATİK İLAN ÇEKME BUTONU */}
+                {/* 🤖 TÜRKİYE GENELİ ZENGİN TARIM & EKİPMAN İLAN ÇEKME BUTONU */}
                 <div style={{ backgroundColor: '#ecfdf5', padding: '14px', borderRadius: '8px', border: '1px solid #a7f3d0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#065f46', margin: '0 0 6px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Bot size={18} color="#059669" /> Türkiye Geneli Gerçek İlanları Otomatik Çek
+                    <Bot size={18} color="#059669" /> Türkiye Geneli Tarım, Alet & Hizmet İlanı Çek
                   </h3>
                   <p style={{ fontSize: '12px', color: '#047857', margin: '0 0 10px 0', lineHeight: '1.4' }}>
-                    Tek tuşa basarak Türkiye'nin dört bir yanından güncel traktör, zeytinyağı ve tarım ekipmanı ilanlarını otomatik olarak onay kuyruğuna aktarın.
+                    Tek tuşa basarak pulluk, çapa makinası, veteriner, biçerdöver ve meyve/sebze ilanlarını onay kuyruğuna ekleyin.
                   </p>
                   <button 
                     type="button" 
                     onClick={handleAutoFetchListings}
                     style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#059669', color: '#fff', padding: '10px 14px', borderRadius: '6px', fontWeight: '700', fontSize: '13px', cursor: 'pointer', width: '100%', border: 'none', boxShadow: '0 2px 6px rgba(5,150,105,0.2)' }}
                   >
-                    <Bot size={16} /> Türkiye Geneli İlanları Otomatik Çek ve Ekle
+                    <Bot size={16} /> Zengin Tarım İlanlarını Otomatik Çek ve Ekle
                   </button>
                 </div>
 
@@ -999,7 +1033,7 @@ export default function App() {
                       <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', backgroundColor: '#fefce8', borderRadius: '6px', border: '1px solid #fef08a' }}>
                         <div>
                           <span style={{ fontSize: '12px', fontWeight: '700', display: 'block' }}>{item.title}</span>
-                          <span style={{ fontSize: '11px', color: '#713f12' }}>Konum: {item.location} - {item.price} TL</span>
+                          <span style={{ fontSize: '11px', color: '#713f12' }}>Kategori: {item.category} / {item.subCategory} - {item.price} TL</span>
                         </div>
                         <div style={{ display: 'flex', gap: '4px' }}>
                           <button onClick={() => approveListing(item.id)} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}>
@@ -1123,7 +1157,7 @@ export default function App() {
                     <label style={{ fontSize: '12px', fontWeight: '600', color: '#475569', marginTop: '6px' }}>Yeni Eklenecek Alt Seçenekler (Virgülle ayırın):</label>
                     <input 
                       type="text" 
-                      placeholder="Örn: Antep Fıstığı, Badem" 
+                      placeholder="Örn: Süt Sağım Makinası, Römork" 
                       value={newSubCategoryName} 
                       onChange={(e) => setNewSubCategoryName(e.target.value)} 
                       style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} 
@@ -1173,7 +1207,7 @@ export default function App() {
                   {listings.map(item => (
                     <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
                       <div>
-                        <span style={{ fontSize: '12px', fontWeight: '600', display: 'block' }}>{item.title}</span>
+                        <span style={{ fontSize: '12px', fontWeight: '600', display: 'block'}>{item.title}</span>
                         <span style={{ fontSize: '10px', color: item.isFeatured ? '#eab308' : '#64748b', fontWeight: '700' }}>
                           {item.isFeatured ? '⭐ Vitrinde' : 'Normal İlan'}
                         </span>
