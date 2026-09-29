@@ -207,7 +207,7 @@ export default function App() {
     changeTab('success-wa');
   };
 
-  // TAMAMEN ZENGİNLEŞTİRİLMİŞ VE ÇEŞİTLİ AKILLI İLAN HAVUZU
+  // SIRALI VE ASLA ÜST ÜSTE ÇAKIŞMAYAN AKILLI İLAN ÇEKME MİMARİSİ
   const handleAutoFetchListings = () => {
     if (!isAdminLoggedIn) return;
     
@@ -278,7 +278,7 @@ export default function App() {
         seoTags: 'karakovan balı, artvin bal'
       },
       {
-        title: '6 Lü Ýeniköy Kulaklı Pulluk',
+        title: '6 Lü Yeniköy Kulaklı Pulluk',
         price: 85000,
         category: 'Tarım Ekipmanları',
         subCategory: 'Pulluk',
@@ -305,23 +305,27 @@ export default function App() {
       }
     ];
 
-    // Mevcut başlıklardan hangilerinin daha önce eklendiğine bakıp henüz eklenmemiş olanı seçmeye çalışalım
+    // Mevcut ilanlarda hiç geçmeyen veya en az tekrar eden öğeyi bulup sıradakini seçelim
     const existingTitles = listings.map(l => l.title);
-    const unpickedPool = massivePool.filter(item => !existingTitles.includes(item.title));
-    const targetPool = unpickedPool.length > 0 ? unpickedPool : massivePool;
+    let nextItem = massivePool.find(item => !existingTitles.includes(item.title));
+    
+    // Eğer havuzdaki tüm ilanlar en az bir kez eklendiyse, döngüyü baştan al
+    if (!nextItem) {
+      const randomIndex = Math.floor(Math.random() * massivePool.length);
+      nextItem = massivePool[randomIndex];
+    }
 
-    const randomItem = targetPool[Math.floor(Math.random() * targetPool.length)];
     const newEntry = {
-      ...randomItem,
+      ...nextItem,
       id: Date.now() + Math.floor(Math.random() * 10000),
-      image: getSmartAutoImage(randomItem.title, randomItem.category),
+      image: getSmartAutoImage(nextItem.title, nextItem.category),
       status: 'pending',
       isFeatured: false
     };
 
     const updated = [newEntry, ...listings];
     saveListings(updated);
-    alert(`🎉 "${newEntry.title}" onay kuyruğuna eklendi!`);
+    alert(`🎉 "${newEntry.title}" başarıyla onay kuyruğuna eklendi!`);
   };
 
   const approveAllListings = () => {
@@ -491,7 +495,7 @@ export default function App() {
             ) : (
               <div>
                 <h2 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '12px' }}>🛡️ Yönetim Paneli</h2>
-                <button type="button" onClick={handleAutoFetchListings} style={{ backgroundColor: '#059669', color: '#fff', padding: '10px', borderRadius: '6px', fontWeight: '700', width: '100%', border: 'none', marginBottom: '14px', cursor: 'pointer' }}>🤖 Otomatik / Farklı İlan Çek</button>
+                <button type="button" onClick={handleAutoFetchListings} style={{ backgroundColor: '#059669', color: '#fff', padding: '10px', borderRadius: '6px', fontWeight: '700', width: '100%', border: 'none', marginBottom: '14px', cursor: 'pointer' }}>🤖 Otomatik / Sıralı Farklı İlan Çek</button>
                 <button onClick={approveAllListings} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', width: '100%', fontWeight: '700', marginBottom: '14px', cursor: 'pointer' }}>✓ Tüm Bekleyenleri Onayla</button>
                 <h3 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '8px' }}>Mevcut İlanlar ({listings.length})</h3>
                 {listings.map(item => (
