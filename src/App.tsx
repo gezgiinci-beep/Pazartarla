@@ -534,7 +534,7 @@ export default function App() {
       const saved = localStorage.getItem('pazartarla_listings');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length >= 29) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
     } catch (e) {
       console.error("Güvenli veri okuma hatası:", e);
@@ -596,7 +596,6 @@ export default function App() {
   const [editingListing, setEditingListing] = useState(null);
   const [lastAddedListing, setLastAddedListing] = useState(null);
   
-  // OTOMATİK ÇEKME İÇİN SIRALI HAVUZ SAYAÇI
   const [poolIndex, setPoolIndex] = useState(0);
 
   const [form, setForm] = useState({
@@ -826,7 +825,6 @@ export default function App() {
     });
   };
 
-  // ASLA TEKRAR YAPMAYAN SIRALI AKILLI OTOMATİK İLAN ÇEKME
   const handleAutoFetchListings = () => {
     if (!isAdminLoggedIn) return;
     
@@ -869,58 +867,6 @@ export default function App() {
         seller: 'Hüseyin Çiftçi',
         phone: '0535 999 8877',
         seoTags: 'merinos, koç, gönen'
-      },
-      {
-        title: '2 Tonluk Galvanizli Su ve Akaryakıt Tankeri',
-        price: 35000,
-        category: 'Tarım Ekipmanları',
-        subCategory: 'Römork',
-        mode: 'Satılık',
-        location: 'İzmir / Torbalı',
-        amount: '2 Ton',
-        description: 'Römorka monte edilebilir seyyar tarım tankeri.',
-        seller: 'Ege Römork',
-        phone: '0536 222 3344',
-        seoTags: 'su tankeri, tarım ekipman'
-      },
-      {
-        title: 'Organik Karakovan Çiçek Balı (Süzme)',
-        price: 600,
-        category: 'Arıcılık',
-        subCategory: 'Bal',
-        mode: 'Satılık',
-        location: 'Artvin / Borçka',
-        amount: '3 Kilo',
-        description: 'Karakovan peteklerinden özenle süzülmüş, yüksek rakım balı.',
-        seller: 'Karadeniz Arıcılık',
-        phone: '0537 555 6677',
-        seoTags: 'karakovan balı, artvin bal'
-      },
-      {
-        title: '6 Lü Yeniköy Kulaklı Pulluk',
-        price: 85000,
-        category: 'Tarım Ekipmanları',
-        subCategory: 'Pulluk',
-        mode: 'Satılık',
-        location: 'Tekirdağ / Malkara',
-        amount: '1 Adet',
-        description: 'Ayarlı hidrolik, toprak sürümünde mükemmel performans.',
-        seller: 'Trakya Tarım Makine',
-        phone: '0538 777 8899',
-        seoTags: 'pulluk, malkara, tarım aletleri'
-      },
-      {
-        title: 'Profesyonel Sırt Tipi İlaçlama Pompası (Benzinli)',
-        price: 7500,
-        category: 'Tarım Ekipmanları',
-        subCategory: 'İlaçlama Makinesi',
-        mode: 'Satılık',
-        location: 'Manisa / Salihli',
-        amount: '25 Litre',
-        description: 'Bahçe ve bağ ilaçlamaları için yüksek basınçlı motorlu pompa.',
-        seller: 'Salihli Tarım',
-        phone: '0539 333 2211',
-        seoTags: 'ilaçlama makinesi, manisa'
       }
     ];
 
@@ -1100,7 +1046,6 @@ export default function App() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f4f6f8', color: '#1e293b', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', boxSizing: 'border-box' }}>
-       
       <header style={{ backgroundColor: '#1b3a2b', color: '#ffffff', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => { changeTab('home'); setSelectedCategory('Tüm kategoriler'); }}>
           <div style={{ backgroundColor: '#22c55e', padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -1125,7 +1070,6 @@ export default function App() {
       </header>
 
       <main style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '12px', flex: 1, boxSizing: 'border-box' }}>
-         
         {announcement && (
           <div style={{ backgroundColor: '#fef08a', color: '#713f12', padding: '10px 14px', borderRadius: '10px', marginBottom: '12px', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #facc15', overflow: 'hidden', whiteSpace: 'nowrap', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
             <Megaphone size={16} color="#854d0e" style={{ flexShrink: 0 }} />
@@ -1197,545 +1141,350 @@ export default function App() {
               </ul>
               <div style={{ marginTop: '12px', padding: '10px', backgroundColor: '#fefce8', borderRadius: '6px', border: '1px solid #fde047', fontWeight: '700', color: '#854d0e', textAlign: 'center' }}>
                 Vitrin İlan Ücreti: 150 TL / Hafta
-              </div>
             </div>
-
-            <p style={{ fontSize: '13px', color: '#475569', marginBottom: '16px' }}>
-              Ödemeyi gerçekleştirdikten sonra aşağıdaki butona basarak dekontunuzu ve ilan bilgilerinizi PazarTarla Ekibi'ne iletebilirsiniz. Ekibimiz ödemenizi onayladıktan hemen sonra ilanınızı vitrine taşıyacaktır.
-            </p>
-
-            <a 
-              href={`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(`⭐ *Vitrin İlan (Öne Çıkar) Talebi*\n\nMerhaba PazarTarla Ekibi, ilanımı öne çıkarmak (vitrine taşımak) istiyorum. Ödemeyi gerçekleştirdim.`)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#22c55e', color: '#fff', padding: '12px', borderRadius: '8px', fontWeight: '800', textDecoration: 'none', fontSize: '14px', marginBottom: '10px' }}
-            >
-              <MessageCircle size={18} /> WhatsApp ile Ödeme Bildir
-            </a>
-
-            <button 
-              onClick={() => changeTab('home')}
-              style={{ width: '100%', background: 'none', border: 'none', color: '#64748b', fontWeight: '700', fontSize: '13px', cursor: 'pointer', padding: '8px' }}
-            >
-              ← Ana Sayfaya Dön
-            </button>
           </div>
-        )}
 
-        {activeTab === 'home' && (
-          <div style={{ backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflow: 'hidden', border: '1px solid #e2e8f0', width: '100%' }}>
-            <div style={{ backgroundColor: '#1b3a2b', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Menu size={20} />
-              <span style={{ fontSize: '16px', fontWeight: '700' }}>Kategori Seçimi (Türkiye Geneli)</span>
+          <a 
+            href={`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(`⭐ *Vitrin İlan (Öne Çıkar) Talebi*\n\nMerhaba PazarTarla Ekibi, ilanımı öne çıkarmak istiyorum.`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#22c55e', color: '#fff', padding: '12px', borderRadius: '8px', fontWeight: '800', textDecoration: 'none', fontSize: '14px', marginBottom: '10px' }}
+          >
+            <MessageCircle size={18} /> WhatsApp ile Ödeme Bildir
+          </a>
+
+          <button 
+            onClick={() => changeTab('home')}
+            style={{ width: '100%', background: 'none', border: 'none', color: '#64748b', fontWeight: '700', fontSize: '13px', cursor: 'pointer', padding: '8px' }}
+          >
+            ← Ana Sayfaya Dön
+          </button>
+        </div>
+      )}
+
+      {activeTab === 'home' && (
+        <div style={{ backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflow: 'hidden', border: '1px solid #e2e8f0', width: '100%' }}>
+          <div style={{ backgroundColor: '#1b3a2b', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Menu size={20} />
+            <span style={{ fontSize: '16px', fontWeight: '700' }}>Kategori Seçimi (Türkiye Geneli)</span>
+          </div>
+
+          <div onClick={() => { setSelectedCategory('Tüm kategoriler'); setSelectedSubCategory('Tümü'); changeTab('results'); }} style={{ padding: '14px 16px', borderBottom: '1px solid #edf2f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', backgroundColor: '#f8fafc' }}>
+            <span style={{ fontWeight: '700', color: '#1b3a2b', fontSize: '15px' }}>Tüm Türkiye Tarım İlanları</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#22c55e', fontWeight: '700', fontSize: '14px' }}>
+              <span>({approvedListings.length})</span>
+              <ChevronRight size={18} />
             </div>
+          </div>
 
-            <div onClick={() => { setSelectedCategory('Tüm kategoriler'); setSelectedSubCategory('Tümü'); changeTab('results'); }} style={{ padding: '14px 16px', borderBottom: '1px solid #edf2f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', backgroundColor: '#f8fafc' }}>
-              <span style={{ fontWeight: '700', color: '#1b3a2b', fontSize: '15px' }}>Tüm Türkiye Tarım İlanları</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#22c55e', fontWeight: '700', fontSize: '14px' }}>
-                <span>({approvedListings.length})</span>
-                <ChevronRight size={18} />
-              </div>
-            </div>
-
-            {Object.keys(categoriesWithSubs).map(cat => {
-              const isOpen = openCategory === cat;
-              return (
-                <div key={cat}>
-                  <div onClick={() => setOpenCategory(isOpen ? '' : cat)} style={{ padding: '14px 16px', borderBottom: '1px solid #edf2f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', backgroundColor: isOpen ? '#f0fdf4' : '#fff' }}>
-                    <span style={{ fontWeight: '600', color: isOpen ? '#1b3a2b' : '#334155', fontSize: '14px' }}>{cat}</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#94a3b8', fontSize: '13px' }}>
-                      <span>({approvedListings.filter(i => i.category === cat).length})</span>
-                      {isOpen ? <ChevronDown size={16} color="#22c55e" /> : <ChevronRight size={16} />}
-                    </div>
+          {Object.keys(categoriesWithSubs).map(cat => {
+            const isOpen = openCategory === cat;
+            return (
+              <div key={cat}>
+                <div onClick={() => setOpenCategory(isOpen ? '' : cat)} style={{ padding: '14px 16px', borderBottom: '1px solid #edf2f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', backgroundColor: isOpen ? '#f0fdf4' : '#fff' }}>
+                  <span style={{ fontWeight: '600', color: isOpen ? '#1b3a2b' : '#334155', fontSize: '14px' }}>{cat}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#94a3b8', fontSize: '13px' }}>
+                    <span>({approvedListings.filter(i => i.category === cat).length})</span>
+                    {isOpen ? <ChevronDown size={16} color="#22c55e" /> : <ChevronRight size={16} />}
                   </div>
+                </div>
 
-                  {isOpen && (
-                    <div style={{ backgroundColor: '#fafafa', borderBottom: '1px solid #edf2f7' }}>
-                      <div onClick={() => { setSelectedCategory(cat); setSelectedSubCategory('Tümü'); changeTab('results'); }} style={{ padding: '10px 16px 10px 28px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', backgroundColor: '#f0fdf4' }}>
-                        <span style={{ fontSize: '13px', color: '#166534', fontWeight: '600' }}>→ Tüm {cat} İlanları</span>
-                        <ChevronRight size={14} color="#166534" />
-                      </div>
-                      {(categoriesWithSubs[cat] || []).map(sub => (
-                        <div key={sub} onClick={(e) => { e.stopPropagation(); setSelectedCategory(cat); setSelectedSubCategory(sub); changeTab('results'); }} style={{ padding: '10px 16px 10px 28px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
-                          <span style={{ fontSize: '13px', color: '#64748b' }}>• {sub}</span>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#94a3b8', fontSize: '12px' }}>
-                            <span>({approvedListings.filter(i => i.category === cat && i.subCategory === sub).length})</span>
-                            <ChevronRight size={14} color="#cbd5e1" />
-                          </div>
+                {isOpen && (
+                  <div style={{ backgroundColor: '#fafafa', borderBottom: '1px solid #edf2f7' }}>
+                    <div onClick={() => { setSelectedCategory(cat); setSelectedSubCategory('Tümü'); changeTab('results'); }} style={{ padding: '10px 16px 10px 28px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', backgroundColor: '#f0fdf4' }}>
+                      <span style={{ fontSize: '13px', color: '#166534', fontWeight: '600' }}>→ Tüm {cat} İlanları</span>
+                      <ChevronRight size={14} color="#166534" />
+                    </div>
+                    {(categoriesWithSubs[cat] || []).map(sub => (
+                      <div key={sub} onClick={(e) => { e.stopPropagation(); setSelectedCategory(cat); setSelectedSubCategory(sub); changeTab('results'); }} style={{ padding: '10px 16px 10px 28px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                        <span style={{ fontSize: '13px', color: '#64748b' }}>• {sub}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#94a3b8', fontSize: '12px' }}>
+                          <span>({approvedListings.filter(i => i.category === cat && i.subCategory === sub).length})</span>
+                          <ChevronRight size={14} color="#cbd5e1" />
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {activeTab === 'favorites' && (
-          <div>
-            <div style={{ backgroundColor: '#1b3a2b', color: '#fff', borderRadius: '10px', padding: '10px 14px', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <button onClick={() => changeTab('home')} style={{ background: 'none', border: 'none', color: '#86efac', fontWeight: '700', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <ArrowLeft size={16} /> Ana Sayfa
-              </button>
-              <span style={{ fontSize: '14px', fontWeight: '700' }}>Favori İlanlarım</span>
-            </div>
-            {favorites.length === 0 ? (
-              <div style={{ backgroundColor: '#fff', padding: '40px', borderRadius: '10px', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>
-                Henüz favorilere eklediğiniz bir ilan bulunmuyor.
-              </div>
-            ) : (
-              favorites.map(item => (
-                <div key={item.id} onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ backgroundColor: '#fff', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer', display: 'flex', gap: '10px', padding: '10px', marginBottom: '10px' }}>
-                  <img src={item.image} alt={item.title} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '8px' }} />
-                  <div style={{ flex: 1 }}>
-                    <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: '700' }}>{item.title}</h4>
-                    <div style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b' }}>{item.price.toLocaleString('tr-TR')} TL</div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-
-        {activeTab === 'results' && (
-          <div>
-            <div style={{ backgroundColor: '#1b3a2b', color: '#fff', borderRadius: '10px', padding: '10px 14px', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <button onClick={() => changeTab('home')} style={{ background: 'none', border: 'none', color: '#86efac', fontWeight: '700', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <ArrowLeft size={16} /> Kategoriler
-              </button>
-              <span style={{ fontSize: '13px' }}>{filteredListings.length} sonuç</span>
-            </div>
-
-            {filteredListings.map(item => (
-              <div key={item.id} onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ backgroundColor: item.isFeatured ? '#fefce8' : '#fff', borderRadius: '10px', overflow: 'hidden', border: item.isFeatured ? '2px solid #eab308' : '1px solid #e2e8f0', cursor: 'pointer', display: 'flex', gap: '10px', padding: '10px', marginBottom: '10px', position: 'relative' }}>
-                {item.isFeatured && (
-                  <div style={{ position: 'absolute', top: '8px', right: '8px', backgroundColor: '#eab308', color: '#fff', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '2px' }}>
-                    <Star size={10} fill="#fff" /> VİTRİN
+                      </div>
+                    ))}
                   </div>
                 )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {activeTab === 'favorites' && (
+        <div>
+          <div style={{ backgroundColor: '#1b3a2b', color: '#fff', borderRadius: '10px', padding: '10px 14px', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <button onClick={() => changeTab('home')} style={{ background: 'none', border: 'none', color: '#86efac', fontWeight: '700', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <ArrowLeft size={16} /> Ana Sayfa
+            </button>
+            <span style={{ fontSize: '14px', fontWeight: '700' }}>Favori İlanlarım</span>
+          </div>
+          {favorites.length === 0 ? (
+            <div style={{ backgroundColor: '#fff', padding: '40px', borderRadius: '10px', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>
+              Henüz favorilere eklediğiniz bir ilan bulunmuyor.
+            </div>
+          ) : (
+            favorites.map(item => (
+              <div key={item.id} onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ backgroundColor: '#fff', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer', display: 'flex', gap: '10px', padding: '10px', marginBottom: '10px' }}>
                 <img src={item.image} alt={item.title} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '8px' }} />
                 <div style={{ flex: 1 }}>
                   <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: '700' }}>{item.title}</h4>
                   <div style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b' }}>{item.price.toLocaleString('tr-TR')} TL</div>
-                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>📍 {item.location}</div>
-                  {item.seoTags && (
-                    <div style={{ fontSize: '10px', color: '#64748b', marginTop: '4px', background: '#f8fafc', padding: '2px 6px', borderRadius: '4px', display: 'inline-block' }}>
-                      🏷️ {item.seoTags}
-                    </div>
-                  )}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+            ))
+          )}
+        </div>
+      )}
 
-        {activeTab === 'detail' && selectedListing && (
-          <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <button onClick={() => changeTab('results')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer' }}>← Listeye Dön</button>
-              {isAdminLoggedIn && (
-                <button onClick={() => startEditingFromDetail(selectedListing)} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: '700', fontSize: '12px', cursor: 'pointer' }}>
-                  ✏️ Bu İlanı Düzenle
-                </button>
+      {activeTab === 'results' && (
+        <div>
+          <div style={{ backgroundColor: '#1b3a2b', color: '#fff', borderRadius: '10px', padding: '10px 14px', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <button onClick={() => changeTab('home')} style={{ background: 'none', border: 'none', color: '#86efac', fontWeight: '700', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <ArrowLeft size={16} /> Kategoriler
+            </button>
+            <span style={{ fontSize: '13px' }}>{filteredListings.length} sonuç</span>
+          </div>
+
+          {filteredListings.map(item => (
+            <div key={item.id} onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ backgroundColor: item.isFeatured ? '#fefce8' : '#fff', borderRadius: '10px', overflow: 'hidden', border: item.isFeatured ? '2px solid #eab308' : '1px solid #e2e8f0', cursor: 'pointer', display: 'flex', gap: '10px', padding: '10px', marginBottom: '10px', position: 'relative' }}>
+              {item.isFeatured && (
+                <div style={{ position: 'absolute', top: '8px', right: '8px', backgroundColor: '#eab308', color: '#fff', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                  <Star size={10} fill="#fff" /> VİTRİN
+                </div>
               )}
-            </div>
-            
-            <div style={{ backgroundColor: '#fef9c3', border: '1px solid #facc15', borderRadius: '8px', padding: '12px', marginBottom: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <span style={{ fontSize: '13px', fontWeight: '700', color: '#854d0e', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <Star size={14} color="#ca8a04" fill="#ca8a04" /> Bu İlanı Vitrine Taşıyın
-                </span>
-                <span style={{ fontSize: '11px', color: '#a16207' }}>Daha hızlı satış için öne çıkarın.</span>
+              <img src={item.image} alt={item.title} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '8px' }} />
+              <div style={{ flex: 1 }}>
+                <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: '700' }}>{item.title}</h4>
+                <div style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b' }}>{item.price.toLocaleString('tr-TR')} TL</div>
+                <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>📍 {item.location}</div>
+                {item.seoTags && (
+                  <div style={{ fontSize: '10px', color: '#64748b', marginTop: '4px', background: '#f8fafc', padding: '2px 6px', borderRadius: '4px', display: 'inline-block' }}>
+                    🏷️ {item.seoTags}
+                  </div>
+                )}
               </div>
-              <button 
-                onClick={() => changeTab('promote-listing')} 
-                style={{ backgroundColor: '#ca8a04', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '6px', fontWeight: '700', fontSize: '12px', cursor: 'pointer', whiteSpace: 'nowrap' }}
-              >
-                ⭐ Öne Çıkar
+            </div>
+          ))}
+        </div>
+      )}
+
+      {activeTab === 'detail' && selectedListing && (
+        <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <button onClick={() => changeTab('results')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer' }}>← Listeye Dön</button>
+            {isAdminLoggedIn && (
+              <button onClick={() => startEditingFromDetail(selectedListing)} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: '700', fontSize: '12px', cursor: 'pointer' }}>
+                ✏️ Bu İlanı Düzenle
               </button>
+            )}
+          </div>
+          
+          <div style={{ backgroundColor: '#fef9c3', border: '1px solid #facc15', borderRadius: '8px', padding: '12px', marginBottom: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <span style={{ fontSize: '13px', fontWeight: '700', color: '#854d0e', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Star size={14} color="#ca8a04" fill="#ca8a04" /> Bu İlanı Vitrine Taşıyın
+              </span>
+              <span style={{ fontSize: '11px', color: '#a16207' }}>Daha hızlı satış için öne çıkarın.</span>
+            </div>
+            <button 
+              onClick={() => changeTab('promote-listing')} 
+              style={{ backgroundColor: '#ca8a04', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '6px', fontWeight: '700', fontSize: '12px', cursor: 'pointer', whiteSpace: 'nowrap' }}
+            >
+              ⭐ Öne Çıkar
+            </button>
+          </div>
+
+          <img src={selectedListing.image} alt={selectedListing.title} style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '8px', marginBottom: '10px' }} />
+          <h2 style={{ fontSize: '18px', fontWeight: '800', margin: '8px 0' }}>{selectedListing.title}</h2>
+          <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '4px' }}>{selectedListing.price.toLocaleString('tr-TR')} TL</div>
+          <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '10px' }}>📍 Konum: {selectedListing.location}</div>
+          <p style={{ color: '#475569', fontSize: '13px', marginBottom: '16px' }}>{selectedListing.description}</p>
+          
+          {selectedListing.seoTags && (
+            <div style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px', marginBottom: '16px', fontSize: '11px', color: '#475569' }}>
+              <span style={{ fontWeight: '700', display: 'block', marginBottom: '3px', color: '#1b3a2b' }}>🔍 SEO Anahtar Kelimeler & Etiketler:</span>
+              <span>{selectedListing.seoTags}</span>
+            </div>
+          )}
+
+          <a href={`tel:${selectedListing.phone}`} style={{ width: '100%', backgroundColor: '#1b3a2b', color: '#fff', padding: '12px', borderRadius: '8px', textAlign: 'center', fontWeight: '700', textDecoration: 'none', display: 'block' }}>
+            📞 {selectedListing.phone} ({selectedListing.seller})
+          </a>
+        </div>
+      )}
+
+      {activeTab === 'add' && (
+        <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+            <button onClick={() => changeTab('home')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer' }}>← Vazgeç</button>
+            <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>İlan Ver</h2>
+          </div>
+          <form onSubmit={handleDirectAdd} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div>
+                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Adınız Soyadınız *</label>
+                <input type="text" name="seller" placeholder="Örn: Ahmet Yılmaz" value={form.seller} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Telefon Numaranız *</label>
+                <input type="text" name="phone" placeholder="0532..." value={form.phone} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+              </div>
             </div>
 
-            <img src={selectedListing.image} alt={selectedListing.title} style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '8px', marginBottom: '10px' }} />
-            <h2 style={{ fontSize: '18px', fontWeight: '800', margin: '8px 0' }}>{selectedListing.title}</h2>
-            <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '4px' }}>{selectedListing.price.toLocaleString('tr-TR')} TL</div>
-            <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '10px' }}>📍 Konum: {selectedListing.location}</div>
-            <p style={{ color: '#475569', fontSize: '13px', marginBottom: '16px' }}>{selectedListing.description}</p>
-            
-            {selectedListing.seoTags && (
-              <div style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px', marginBottom: '16px', fontSize: '11px', color: '#475569' }}>
-                <span style={{ fontWeight: '700', display: 'block', marginBottom: '3px', color: '#1b3a2b' }}>🔍 SEO Anahtar Kelimeler & Etiketler:</span>
-                <span>{selectedListing.seoTags}</span>
+            <div>
+              <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>İlan Başlığı *</label>
+              <input type="text" name="title" placeholder="Örn: John Deere Traktör" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div>
+                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fiyat (TL) *</label>
+                <input type="number" name="price" placeholder="150000" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               </div>
-            )}
+              <div>
+                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Ana Kategori</label>
+                <select name="category" value={form.category} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff' }}>
+                  {Object.keys(categoriesWithSubs).map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
 
-            <div style={{ marginBottom: '14px' }}>
-              <div style={{ fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '6px' }}>📲 İlanı Sosyal Medyada Paylaş:</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
-                <a 
-                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`🌾 PazarTarla İlanı: ${selectedListing.title} - ${selectedListing.price} TL\nİncelemek için: ${window.location.href}`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ backgroundColor: '#22c55e', color: '#fff', padding: '8px 4px', borderRadius: '6px', textAlign: 'center', fontSize: '11px', fontWeight: '700', textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}
-                >
-                  <MessageCircle size={14} /> WhatsApp
-                </a>
+            <div>
+              <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Alt Ürün / Seçenek</label>
+              <select 
+                name="subCategory" 
+                value={form.subCategory} 
+                onChange={handleFormChange} 
+                style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #22c55e', backgroundColor: '#f0fdf4', fontWeight: '600', color: '#166534' }}
+              >
+                <option value="">📌 Seçenekleri görmek için tıklayın...</option>
+                {(categoriesWithSubs[form.category] || ['Genel']).map(sub => (
+                  <option key={sub} value={sub}>{sub}</option>
+                ))}
+              </select>
+            </div>
 
-                <a 
-                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ backgroundColor: '#1877f2', color: '#fff', padding: '8px 4px', borderRadius: '6px', textAlign: 'center', fontSize: '11px', fontWeight: '700', textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}
-                >
-                  <Share2 size={14} /> Facebook
-                </a>
+            <div>
+              <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Konum (Şehir / İlçe)</label>
+              <input type="text" name="location" placeholder="Örn: Balıkesir / Gönen" value={form.location} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+            </div>
 
-                <a 
-                  href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`🌾 PazarTarla İlanı: ${selectedListing.title} - ${selectedListing.price} TL`)}&url=${encodeURIComponent(window.location.href)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ backgroundColor: '#0f172a', color: '#fff', padding: '8px 4px', borderRadius: '6px', textAlign: 'center', fontSize: '11px', fontWeight: '700', textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}
-                >
-                  <Globe size={14} /> X (Twitter)
-                </a>
+            <div>
+              <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fotoğraf Yükle (Dosya Seç) veya Link Yapıştır</label>
+              <input type="file" accept="image/*" onChange={handleImageUpload} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#f8fafc', marginBottom: '6px' }} />
+              <input type="text" name="image" placeholder="Veya resim linki (URL)..." value={form.image} onChange={handleFormChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '12px' }} />
+            </div>
 
+            <div>
+              <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Açıklama</label>
+              <textarea name="description" placeholder="Detaylar..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px', boxSizing: 'border-box' }} />
+            </div>
+
+            <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', fontSize: '14px' }}>
+              İlanı Gönder (Yönetici Onayına Sun)
+            </button>
+          </form>
+        </div>
+      )}
+
+      {activeTab === 'admin-page' && (
+        <div ref={editFormRef} style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
+          {!isAdminLoggedIn ? (
+            <div style={{ maxWidth: '320px', margin: '30px auto', textAlign: 'center' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '10px' }}>Yönetici Girişi</h2>
+              <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <input type="password" placeholder="Şifre" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', textAlign: 'center' }} />
+                <button type="submit" style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Giriş Yap</button>
+              </form>
+            </div>
+          ) : (
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #edf2f7', paddingBottom: '10px' }}>
+                <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>🛡️ Güvenli Yönetim Paneli</h2>
+                <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Çıkış</button>
+              </div>
+
+              <div style={{ backgroundColor: '#ecfdf5', padding: '14px', borderRadius: '8px', border: '1px solid #a7f3d0', marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#065f46', margin: '0 0 6px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Bot size={18} color="#059669" /> Akıllı Otomatik İlan Çek
+                </h3>
                 <button 
-                  onClick={() => {
-                    navigator.clipboard.writeText(window.location.href);
-                    alert('İlan linki panoya kopyalandı!');
-                  }}
-                  style={{ backgroundColor: '#64748b', color: '#fff', border: 'none', padding: '8px 4px', borderRadius: '6px', textAlign: 'center', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}
+                  type="button" 
+                  onClick={handleAutoFetchListings}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#059669', color: '#fff', padding: '10px 14px', borderRadius: '6px', fontWeight: '700', fontSize: '13px', cursor: 'pointer', width: '100%', border: 'none' }}
                 >
-                  <Copy size={14} /> Kopyala
+                  <Bot size={16} /> Otomatik İlanları Çek ve Ekle
                 </button>
               </div>
-            </div>
 
-            <a href={`tel:${selectedListing.phone}`} style={{ width: '100%', backgroundColor: '#1b3a2b', color: '#fff', padding: '12px', borderRadius: '8px', textAlign: 'center', fontWeight: '700', textDecoration: 'none', display: 'block' }}>
-              📞 {selectedListing.phone} ({selectedListing.seller})
-            </a>
-          </div>
-        )}
-
-        {activeTab === 'add' && (
-          <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-              <button onClick={() => changeTab('home')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer' }}>← Vazgeç</button>
-              <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>İlan Ver</h2>
-            </div>
-            <form onSubmit={handleDirectAdd} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Adınız Soyadınız *</label>
-                  <input type="text" name="seller" placeholder="Örn: Ahmet Yılmaz" value={form.seller} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Telefon Numaranız *</label>
-                  <input type="text" name="phone" placeholder="0532..." value={form.phone} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
-                </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#d97706', margin: 0 }}>⏳ Onay Bekleyen İlanlar ({listings.filter(i => i.status === 'pending').length})</h3>
+                {listings.filter(i => i.status === 'pending').length > 0 && (
+                  <button onClick={approveAllListings} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
+                    ✓ Tümünü Onayla
+                  </button>
+                )}
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>İlan Başlığı *</label>
-                <input type="text" name="title" placeholder="Örn: John Deere Traktör" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
+                {listings.filter(i => i.status === 'pending').length === 0 ? (
+                  <div style={{ fontSize: '12px', color: '#64748b', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '6px' }}>Onay bekleyen yeni ilan bulunmuyor.</div>
+                ) : (
+                  listings.filter(i => i.status === 'pending').map(item => (
+                    <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', backgroundColor: '#fefce8', borderRadius: '6px', border: '1px solid #fef08a' }}>
+                      <div>
+                        <span style={{ fontSize: '12px', fontWeight: '700', display: 'block' }}>{item.title}</span>
+                        <span style={{ fontSize: '11px', color: '#713f12' }}>{item.price} TL</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <button onClick={() => approveListing(item.id)} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Onayla</button>
+                        <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Reddet</button>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fiyat (TL) *</label>
-                  <input type="number" name="price" placeholder="150000" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+              <div style={{ backgroundColor: '#fef9c3', padding: '12px', borderRadius: '8px', border: '1px solid #fde047', marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#854d0e', margin: '0 0 8px 0' }}>📢 Duyuru Banner Yönetimi</h3>
+                <form onSubmit={saveAnnouncement} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <input type="text" value={tempAnnouncement} onChange={(e) => setTempAnnouncement(e.target.value)} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #facc15', fontSize: '13px', backgroundColor: '#fff' }} />
+                  <button type="submit" style={{ backgroundColor: '#ca8a04', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', fontSize: '13px', cursor: 'pointer' }}>Güncelle</button>
+                </form>
+              </div>
+
+              {editingListing && (
+                <div style={{ backgroundColor: '#f0fdf4', padding: '14px', borderRadius: '8px', border: '2px solid #22c55e', marginBottom: '20px' }}>
+                  <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 10px 0' }}>✏️ İlanı Düzenle</h3>
+                  <form onSubmit={saveEditedListing} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <input type="text" name="title" value={editingListing.title} onChange={handleEditFormChange} placeholder="İlan Başlığı" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }} />
+                    <input type="number" name="price" value={editingListing.price} onChange={handleEditFormChange} placeholder="Fiyat" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }} />
+                    <input type="text" name="location" value={editingListing.location} onChange={handleEditFormChange} placeholder="Konum" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }} />
+                    <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Değişiklikleri Kaydet</button>
+                  </form>
                 </div>
-                <div>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Ana Kategori</label>
-                  <select name="category" value={form.category} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff' }}>
+              )}
+
+              <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 10px 0' }}>📁 Kategoriye Yeni Alt Seçenek Ekle</h3>
+                <form onSubmit={handleAddCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <select value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff' }}>
                     {Object.keys(categoriesWithSubs).map(cat => (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </select>
-                </div>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Alt Ürün / Seçenek</label>
-                <select 
-                  name="subCategory" 
-                  value={form.subCategory} 
-                  onChange={handleFormChange} 
-                  style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #22c55e', backgroundColor: '#f0fdf4', fontWeight: '600', color: '#166534' }}
-                >
-                  <option value="">📌 Seçenekleri görmek için tıklayın...</option>
-                  {(categoriesWithSubs[form.category] || ['Genel']).map(sub => (
-                    <option key={sub} value={sub}>{sub}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Konum (Şehir / İlçe)</label>
-                <input type="text" name="location" placeholder="Örn: Balıkesir / Gönen" value={form.location} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fotoğraf Yükle (Dosya Seç) veya Link Yapıştır</label>
-                <input type="file" accept="image/*" onChange={handleImageUpload} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#f8fafc', marginBottom: '6px' }} />
-                <input type="text" name="image" placeholder="Veya resim linki (URL) yapıştırın..." value={form.image} onChange={handleFormChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '12px' }} />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Açıklama</label>
-                <textarea name="description" placeholder="Detaylar..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px', boxSizing: 'border-box' }} />
-              </div>
-
-              <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', fontSize: '14px' }}>
-                İlanı Gönder (Yönetici Onayına Sun)
-              </button>
-            </form>
-          </div>
-        )}
-
-        {activeTab === 'admin-page' && (
-          <div ref={editFormRef} style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
-            {!isAdminLoggedIn ? (
-              <div style={{ maxWidth: '320px', margin: '30px auto', textAlign: 'center' }}>
-                <h2 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '10px' }}>Yönetici Girişi</h2>
-                <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <input type="password" placeholder="Şifre" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', textAlign: 'center' }} />
-                  <button type="submit" style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Giriş Yap</button>
+                  <input type="text" placeholder="Yeni seçenekler (virgülle ayırın)" value={newSubCategoryName} onChange={(e) => setNewSubCategoryName(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+                  <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Seçenekleri Ekle</button>
                 </form>
               </div>
-            ) : (
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #edf2f7', paddingBottom: '10px' }}>
-                  <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>🛡️ Güvenli Yönetim Paneli</h2>
-                  <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Çıkış</button>
-                </div>
-
-                <div style={{ backgroundColor: '#ecfdf5', padding: '14px', borderRadius: '8px', border: '1px solid #a7f3d0', marginBottom: '20px' }}>
-                  <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#065f46', margin: '0 0 6px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Bot size={18} color="#059669" /> Akıllı Otomatik İlan Çek
-                  </h3>
-                  <p style={{ fontSize: '12px', color: '#047857', margin: '0 0 10px 0', lineHeight: '1.4' }}>
-                    Butona bastığınızda havuzdan sırayla farklı ilanlar onay kuyruğuna eklenir (asla tekrar etmez).
-                  </p>
-                  <button 
-                    type="button" 
-                    onClick={handleAutoFetchListings}
-                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#059669', color: '#fff', padding: '10px 14px', borderRadius: '6px', fontWeight: '700', fontSize: '13px', cursor: 'pointer', width: '100%', border: 'none', boxShadow: '0 2px 6px rgba(5,150,105,0.2)' }}
-                  >
-                    <Bot size={16} /> Otomatik İlanları Çek ve Ekle
-                  </button>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                  <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#d97706', margin: 0 }}>⏳ Onay Bekleyen İlanlar ({listings.filter(i => i.status === 'pending').length})</h3>
-                  {listings.filter(i => i.status === 'pending').length > 0 && (
-                    <button onClick={approveAllListings} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
-                      ✓ Tümünü Onayla
-                    </button>
-                  )}
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
-                  {listings.filter(i => i.status === 'pending').length === 0 ? (
-                    <div style={{ fontSize: '12px', color: '#64748b', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '6px' }}>Onay bekleyen yeni ilan bulunmuyor.</div>
-                  ) : (
-                    listings.filter(i => i.status === 'pending').map(item => (
-                      <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', backgroundColor: '#fefce8', borderRadius: '6px', border: '1px solid #fef08a' }}>
-                        <div>
-                          <span style={{ fontSize: '12px', fontWeight: '700', display: 'block' }}>{item.title}</span>
-                          <span style={{ fontSize: '11px', color: '#713f12' }}>Kategori: {item.category} / {item.subCategory} - {item.price} TL</span>
-                        </div>
-                        <div style={{ display: 'flex', gap: '4px' }}>
-                          <button onClick={() => approveListing(item.id)} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}>
-                            <CheckCircle size={12} /> Onayla
-                          </button>
-                          <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Reddet</button>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-
-                <div style={{ backgroundColor: '#fef9c3', padding: '12px', borderRadius: '8px', border: '1px solid #fde047', marginBottom: '20px' }}>
-                  <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#854d0e', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Megaphone size={16} /> Site İçi Duyuru Banner Yönetimi
-                  </h3>
-                  <form onSubmit={saveAnnouncement} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <input 
-                      type="text" 
-                      value={tempAnnouncement} 
-                      onChange={(e) => setTempAnnouncement(e.target.value)} 
-                      placeholder="Anasayfa duyuru metnini yazın..." 
-                      style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #facc15', fontSize: '13px', boxSizing: 'border-box', backgroundColor: '#fff' }} 
-                    />
-                    <button type="submit" style={{ backgroundColor: '#ca8a04', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', fontSize: '13px', cursor: 'pointer' }}>
-                      Duyuruyu Güncelle
-                    </button>
-                  </form>
-                </div>
-
-                {editingListing && (
-                  <div style={{ backgroundColor: '#f0fdf4', padding: '14px', borderRadius: '8px', border: '2px solid #22c55e', marginBottom: '20px' }}>
-                    <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 10px 0' }}>✏️ İlanı Düzenle: {editingListing.title}</h3>
-                    <form onSubmit={saveEditedListing} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>İlan Başlığı</label>
-                      <input type="text" name="title" value={editingListing.title} onChange={handleEditFormChange} placeholder="İlan Başlığı" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }} />
-                      
-                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>Fiyat (TL)</label>
-                      <input type="number" name="price" value={editingListing.price} onChange={handleEditFormChange} placeholder="Fiyat (TL)" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }} />
-
-                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>Konum (Şehir / İlçe)</label>
-                      <input type="text" name="location" value={editingListing.location} onChange={handleEditFormChange} placeholder="Konum" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }} />
-                      
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                        <div>
-                          <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>Ana Kategori</label>
-                          <select name="category" value={editingListing.category} onChange={handleEditFormChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px', backgroundColor: '#fff' }}>
-                            {Object.keys(categoriesWithSubs).map(cat => (
-                              <option key={cat} value={cat}>{cat}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>Alt Kategori</label>
-                          <select name="subCategory" value={editingListing.subCategory} onChange={handleEditFormChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px', backgroundColor: '#fff' }}>
-                            {(categoriesWithSubs[editingListing.category] || ['Genel']).map(sub => (
-                              <option key={sub} value={sub}>{sub}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-
-                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>Fotoğraf Yükle (Dosya Seç) veya Link Yapıştır</label>
-                      <input type="file" accept="image/*" onChange={handleEditImageUpload} style={{ width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff', fontSize: '11px', marginBottom: '4px' }} />
-                      <input type="text" name="image" value={editingListing.image || ''} onChange={handleEditFormChange} placeholder="Veya resim linki (URL)..." style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px' }} />
-
-                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>Açıklama</label>
-                      <textarea name="description" value={editingListing.description} onChange={handleEditFormChange} placeholder="Açıklama" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', height: '60px' }} />
-                      
-                      <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-                        <button type="submit" style={{ flex: 1, backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Değişiklikleri Kaydet</button>
-                        <button type="button" onClick={() => setEditingListing(null)} style={{ background: '#e2e8f0', border: 'none', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer' }}>İptal</button>
-                      </div>
-                    </form>
-                  </div>
-                )}
-
-                <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
-                  <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 10px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <FolderPlus size={16} color="#22c55e" /> Kategoriye Yeni Alt Seçenek Ekle / Seçenek Sil
-                  </h3>
-                  <form onSubmit={handleAddCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <label style={{ fontSize: '12px', fontWeight: '600', color: '#475569' }}>Ana Kategori Seç:</label>
-                    <select 
-                      value={newCategoryName} 
-                      onChange={(e) => setNewCategoryName(e.target.value)} 
-                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', backgroundColor: '#fff', boxSizing: 'border-box' }}
-                    >
-                      {Object.keys(categoriesWithSubs).map(cat => (
-                        <option key={cat} value={cat}>{cat}</option>
-                      ))}
-                    </select>
-
-                    <label style={{ fontSize: '12px', fontWeight: '600', color: '#475569', marginTop: '4px' }}>Mevcut Alt Seçenekler:</label>
-                    
-                    <div style={{ display: 'flex', gap: '6px' }}>
-                      <select 
-                        value={selectedSubToRemove}
-                        onChange={(e) => setSelectedSubToRemove(e.target.value)}
-                        style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #ef4444', fontSize: '13px', backgroundColor: '#fef2f2', color: '#991b1b', fontWeight: '600', boxSizing: 'border-box' }}
-                      >
-                        <option value="">🗑️ Silmek istediğin seçeneği seç...</option>
-                        {(categoriesWithSubs[newCategoryName] || []).map(sub => (
-                          <option key={sub} value={sub}>{sub}</option>
-                        ))}
-                      </select>
-
-                      <button 
-                        type="button" 
-                        onClick={() => handleDeleteSubCategory(newCategoryName, selectedSubToRemove)}
-                        style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '0 14px', borderRadius: '6px', fontWeight: '700', fontSize: '12px', cursor: 'pointer', whiteSpace: 'nowrap' }}
-                      >
-                        Seçeneği Sil
-                      </button>
-                    </div>
-
-                    <label style={{ fontSize: '12px', fontWeight: '600', color: '#475569', marginTop: '6px' }}>Yeni Eklenecek Alt Seçenekler (Virgülle ayırın):</label>
-                    <input 
-                      type="text" 
-                      placeholder="Örn: Süt Sağım Makinası, Römork" 
-                      value={newSubCategoryName} 
-                      onChange={(e) => setNewSubCategoryName(e.target.value)} 
-                      style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }} 
-                    />
-                    <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', fontSize: '13px', cursor: 'pointer', marginTop: '4px' }}>
-                      Seçenekleri Ekle
-                    </button>
-                  </form>
-                </div>
-
-                <h3 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '10px' }}>📁 Kategoriler ve Alt Seçenekler ({Object.keys(categoriesWithSubs).length})</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
-                  {Object.keys(categoriesWithSubs).map(catKey => {
-                    const isOpenAdmin = adminOpenCategory === catKey;
-                    return (
-                      <div key={catKey} style={{ backgroundColor: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-                        <div onClick={() => setAdminOpenCategory(isOpenAdmin ? '' : catKey)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', cursor: 'pointer', backgroundColor: isOpenAdmin ? '#f0fdf4' : '#f8fafc' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            {isOpenAdmin ? <ChevronDown size={16} color="#22c55e" /> : <ChevronRight size={16} color="#64748b" />}
-                            <span style={{ fontWeight: '600', fontSize: '13px', color: '#1b3a2b' }}>{catKey}</span>
-                          </div>
-                          <button onClick={(e) => { e.stopPropagation(); handleDeleteCategory(catKey); }} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Kategoriyi Sil</button>
-                        </div>
-                        {isOpenAdmin && (
-                          <div style={{ padding: '8px 12px 12px 28px', backgroundColor: '#fff', borderTop: '1px solid #e2e8f0', fontSize: '12px', color: '#475569' }}>
-                            <span style={{ fontWeight: '700', display: 'block', marginBottom: '6px', color: '#166534' }}>Alt Ürünler / Seçenekler:</span>
-                            {(categoriesWithSubs[catKey] || []).map(sub => (
-                              <div key={sub} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0', borderBottom: '1px dashed #f1f5f9' }}>
-                                <span>• {sub}</span>
-                                <button 
-                                  onClick={() => handleDeleteSubCategory(catKey, sub)} 
-                                  style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}
-                                >
-                                  <Trash2 size={10} /> Sil
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <h3 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '10px' }}>İlan Yönetimi & Vitrin ({listings.length})</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {listings.map(item => (
-                    <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-                      <div>
-                        <span style={{ fontSize: '12px', fontWeight: '600', display: 'block' }}>{item.title}</span>
-                        <span style={{ fontSize: '10px', color: item.isFeatured ? '#eab308' : '#64748b', fontWeight: '700' }}>
-                          {item.isFeatured ? '⭐ Vitrinde' : 'Normal İlan'}
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', gap: '4px' }}>
-                        <button onClick={() => toggleFeaturedListing(item.id)} style={{ backgroundColor: item.isFeatured ? '#fef08a' : '#f1f5f9', color: '#854d0e', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>
-                          {item.isFeatured ? 'Vitrin Kaldır' : '⭐ Vitrin Yap'}
-                        </button>
-                        <button onClick={() => { 
-                          setEditingListing(item); 
-                          if (editFormRef.current) editFormRef.current.scrollIntoView({ behavior: 'smooth' });
-                        }} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Düzenle</button>
-                        <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Sil</button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
+      )}
 
       </main>
 
