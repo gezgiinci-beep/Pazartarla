@@ -1,18 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import { 
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus, 
   Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, ChevronDown, X, 
   Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag, Edit3, Sparkles, Megaphone, CheckCircle, Bot 
 } from 'lucide-react';
-
-// ==========================================
-// SUPABASE BAĞLANTI AYARLARI (Canlı Ortak Veritabanı)
-// ==========================================
-const SUPABASE_URL = 'https://BURAYA_SUPABASE_URL_YAZIN.supabase.co';
-const SUPABASE_ANON_KEY = 'BURAYA_SUPABASE_ANON_KEY_YAZIN';
-
-const supabase = (SUPABASE_URL.includes('BURAYA')) ? null : createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const DEFAULT_START_LISTINGS = [
   {
@@ -33,7 +24,7 @@ const DEFAULT_START_LISTINGS = [
     isFeatured: true
   },
   {
-    id: 11,
+    id: 2,
     title: 'New Holland TD100D Tarım Traktörü',
     price: 1450000,
     category: 'Traktör',
@@ -68,7 +59,19 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('home'); 
   const editFormRef = useRef(null);
    
-  const [listings, setListings] = useState(DEFAULT_START_LISTINGS);
+  const [listings, setListings] = useState(() => {
+    try {
+      const saved = localStorage.getItem('pazartarla_listings');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return DEFAULT_START_LISTINGS;
+  });
+
   const [categoriesWithSubs, setCategoriesWithSubs] = useState(FALLBACK_CATEGORIES);
   const [announcement, setAnnouncement] = useState('🌾 Türkiye genelinden tarım aletleri, veterinerler ve taze mahsul ilanları PazarTarla’da!');
   const [tempAnnouncement, setTempAnnouncement] = useState(announcement);
@@ -114,29 +117,6 @@ export default function App() {
 
   useEffect(() => {
     const timer = setTimeout(() => setShowSplash(false), 3500);
-
-    if (supabase) {
-      supabase.from('listings').select('*').then(({ data, error }) => {
-        if (!error && data && data.length > 0) {
-          setListings(data);
-        }
-      });
-
-      const channel = supabase
-        .channel('public:listings')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'listings' }, () => {
-          supabase.from('listings').select('*').then(({ data }) => {
-            if (data) setListings(data);
-          });
-        })
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-        clearTimeout(timer);
-      };
-    }
-
     return () => clearTimeout(timer);
   }, []);
 
@@ -152,6 +132,15 @@ export default function App() {
   const changeTab = (tabName) => {
     window.history.pushState({ tab: tabName }, '');
     setActiveTab(tabName);
+  };
+
+  const saveListings = (newListings) => {
+    try {
+      setListings(newListings);
+      localStorage.setItem('pazartarla_listings', JSON.stringify(newListings));
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const sanitizeInput = (str) => {
@@ -192,7 +181,7 @@ export default function App() {
     }
   };
 
-  const handleDirectAdd = async (e) => {
+  const handleDirectAdd = (e) => {
     e.preventDefault();
     if (!form.title.trim() || !form.price || !form.phone.trim() || !form.seller.trim()) {
       alert('Lütfen zorunlu alanları eksiksiz doldurun.');
@@ -206,43 +195,30 @@ export default function App() {
       seller: sanitizeInput(form.seller),
       phone: sanitizeInput(form.phone),
       image: form.image || getSmartAutoImage(form.title, form.category),
+      id: Date.now(),
       price: Number(form.price),
       status: 'pending',
       isFeatured: false
     };
 
-    if (supabase) {
-      const { error } = await supabase.from('listings').insert([newEntry]);
-      if (error) {
-        alert('İlan eklenirken hata oluştu: ' + error.message);
-        return;
-      }
-    } else {
-      setListings([ { ...newEntry, id: Date.now() }, ...listings ]);
-    }
-
+    const updated = [newEntry, ...listings];
+    saveListings(updated);
     setLastAddedListing(newEntry);
     changeTab('success-wa');
   };
 
-  const approveListing = async (id) => {
+  const approveListing = (id) => {
     if (!isAdminLoggedIn) return;
-    if (supabase) {
-      await supabase.from('listings').update({ status: 'approved' }).eq('id', id);
-    } else {
-      setListings(listings.map(item => item.id === id ? { ...item, status: 'approved' } : item));
-    }
+    const updated = listings.map(item => item.id === id ? { ...item, status: 'approved' } : item);
+    saveListings(updated);
     alert('İlan onaylandı ve canlıya alındı!');
   };
 
-  const handleDeleteListing = async (id) => {
+  const handleDeleteListing = (id) => {
     if (!isAdminLoggedIn) return;
     if (window.confirm('Bu ilanı silmek istediğinize emin misiniz?')) {
-      if (supabase) {
-        await supabase.from('listings').delete().eq('id', id);
-      } else {
-        setListings(listings.filter(item => item.id !== id));
-      }
+      const updated = listings.filter(item => item.id !== id);
+      saveListings(updated);
     }
   };
 
@@ -287,7 +263,7 @@ export default function App() {
           </div>
           <div>
             <h1 style={{ margin: 0, fontSize: '18px', fontWeight: '800' }}>PazarTarla</h1>
-            <span style={{ fontSize: '10px', color: '#86efac' }}>Canlı Ortak Platform</span>
+            <span style={{ fontSize: '10px', color: '#86efac' }}>Türkiye Tarım & Ekipman Pazarı</span>
           </div>
         </div>
 
@@ -311,7 +287,7 @@ export default function App() {
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
             <div style={{ backgroundColor: '#1b3a2b', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <Menu size={20} />
-              <span style={{ fontSize: '16px', fontWeight: '700' }}>Kategoriler (Canlı)</span>
+              <span style={{ fontSize: '16px', fontWeight: '700' }}>Kategoriler</span>
             </div>
 
             <div onClick={() => { setSelectedCategory('Tüm kategoriler'); setSelectedSubCategory('Tümü'); changeTab('results'); }} style={{ padding: '14px 16px', borderBottom: '1px solid #edf2f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', backgroundColor: '#f8fafc' }}>
@@ -398,7 +374,7 @@ export default function App() {
               </div>
             ) : (
               <div>
-                <h2 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '16px' }}>🛡️ Canlı Yönetim Paneli</h2>
+                <h2 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '16px' }}>🛡️ Yönetim Paneli</h2>
                 <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#d97706' }}>⏳ Onay Bekleyen İlanlar ({listings.filter(i => i.status === 'pending').length})</h3>
                 {listings.filter(i => i.status === 'pending').map(item => (
                   <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', backgroundColor: '#fefce8', borderRadius: '6px', marginBottom: '8px' }}>
