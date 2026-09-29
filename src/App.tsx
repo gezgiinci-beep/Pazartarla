@@ -5,26 +5,6 @@ import {
   Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag, Edit3, Sparkles, Megaphone, CheckCircle, Bot 
 } from 'lucide-react';
 
-const DEFAULT_START_LISTINGS = [
-  {
-    id: 1,
-    title: 'Tarladan Doğrudan Taze Chandler Ceviz',
-    price: 140,
-    category: 'Mahsuller',
-    subCategory: 'Ceviz',
-    mode: 'Satılık',
-    location: 'Gönen / Balıkesir',
-    amount: '1 Ton',
-    description: 'Kendi bahçemizin ürünü, ilaçsız ve dolgun Chandler ceviz.',
-    seller: 'Can İnce',
-    phone: '0535 768 1550',
-    image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
-    seoTags: 'taze ceviz, chandler ceviz, gönen ceviz',
-    status: 'approved',
-    isFeatured: true
-  }
-];
-
 const FALLBACK_CATEGORIES = {
   'Mahsuller': ['Kiraz', 'Ceviz', 'Zeytin & Zeytinyağı', 'Buğday', 'Bakliyat', 'Meyve & Sebze'],
   'Canlı Hayvanlar': ['Büyükbaş', 'Küçükbaş', 'Kanatlı'],
@@ -44,6 +24,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('home'); 
   const editFormRef = useRef(null);
   
+  // VERİLERİNİ ASLA SİLMEYEN GÜVENLİ OKUMA (localStorage öncelikli)
   const [listings, setListings] = useState(() => {
     try {
       const saved = localStorage.getItem('pazartarla_listings');
@@ -54,7 +35,23 @@ export default function App() {
     } catch (e) {
       console.error("Veri okuma hatası:", e);
     }
-    return DEFAULT_START_LISTINGS;
+    return [{
+      id: 1,
+      title: 'Tarladan Doğrudan Taze Chandler Ceviz',
+      price: 140,
+      category: 'Mahsuller',
+      subCategory: 'Ceviz',
+      mode: 'Satılık',
+      location: 'Gönen / Balıkesir',
+      amount: '1 Ton',
+      description: 'Kendi bahçemizin ürünü, ilaçsız ve dolgun Chandler ceviz.',
+      seller: 'Can İnce',
+      phone: '0535 768 1550',
+      image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
+      seoTags: 'taze ceviz, chandler ceviz, gönen ceviz',
+      status: 'approved',
+      isFeatured: true
+    }];
   });
 
   const [categoriesWithSubs, setCategoriesWithSubs] = useState(() => {
@@ -97,12 +94,9 @@ export default function App() {
   const [adminPassword, setAdminPassword] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Tüm kategoriler');
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
-  const [openCategory, setOpenCategory] = useState('');
-  const [adminOpenCategory, setAdminOpenCategory] = useState('');
   
   const [newCategoryName, setNewCategoryName] = useState(() => Object.keys(FALLBACK_CATEGORIES)[0] || 'Mahsuller');
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
-  const [selectedSubToRemove, setSelectedSubToRemove] = useState('');
   const [editingListing, setEditingListing] = useState(null);
   const [lastAddedListing, setLastAddedListing] = useState(null);
 
@@ -125,7 +119,7 @@ export default function App() {
   });
 
   useEffect(() => {
-    const timer = setTimeout => {
+    const timer = setTimeout(() => {
       setShowSplash(false);
     }, 3500);
     return () => clearTimeout(timer);
@@ -153,18 +147,6 @@ export default function App() {
     }
   };
 
-  const saveAnnouncement = (e) => {
-    e.preventDefault();
-    if (!isAdminLoggedIn) return;
-    setAnnouncement(tempAnnouncement);
-    try {
-      localStorage.setItem('pazartarla_announcement', tempAnnouncement);
-      alert('Duyuru başarıyla güncellendi!');
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   const sanitizeInput = (str) => {
     if (typeof str !== 'string') return str;
     return str
@@ -185,6 +167,9 @@ export default function App() {
     if (t.includes('bal') || t.includes('arı') || c.includes('arıcılık')) {
       return 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800';
     }
+    if (t.includes('zeytin') || t.includes('yağ')) {
+      return 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&q=80&w=800';
+    }
     return 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800';
   };
 
@@ -204,48 +189,6 @@ export default function App() {
       }
       return updated;
     });
-  };
-
-  const handleEditFormChange = (e) => {
-    const { name, value } = e.target;
-    setEditingListing(prev => {
-      const updated = { ...prev, [name]: value };
-      if (name === 'category') {
-        const subList = categoriesWithSubs[value] || ['Genel'];
-        updated.subCategory = subList[0];
-      }
-      return updated;
-    });
-  };
-
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        alert('Dosya boyutu 2 MB sınırını aşamaz!');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setForm(prev => ({ ...prev, image: reader.result }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleEditImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        alert('Dosya boyutu 2 MB sınırını aşamaz!');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setEditingListing(prev => ({ ...prev, image: reader.result }));
-      };
-      reader.readAsDataURL(file);
-    }
   };
 
   const handleDirectAdd = (e) => {
@@ -278,29 +221,69 @@ export default function App() {
     changeTab('success-wa');
   };
 
+  // HER TIKLANDIĞINDA FARKLI VE ZENGİN İLAN ÜRETEN AKILLI OTOMATİK ÇEKME FONKSİYONU
   const handleAutoFetchListings = () => {
     if (!isAdminLoggedIn) return;
     
-    const randomPool = [
+    const diversePool = [
       {
-        title: 'John Deere 5075E 4WD Kabinli Traktör',
-        price: 1350000,
+        title: 'New Holland TD100D Tarım Traktörü',
+        price: 1450000,
         category: 'Traktör',
         subCategory: 'İkinci El Traktör',
         mode: 'Satılık',
         location: 'Balıkesir / Gönen',
-        amount: '75 HP',
-        description: 'Az kullanılmış, bakımlı ve masrafsız tarla traktörü.',
+        amount: '100 HP',
+        description: 'Tertemiz, bakımları yetkili serviste yapılmış tarla traktörü.',
         seller: 'Can İnce',
         phone: '0535 768 1550',
-        seoTags: 'john deere, traktör, gönen tarım'
+        seoTags: 'new holland, traktör, gönen'
+      },
+      {
+        title: 'Saf Çam Balı ve Taze Arı Sütü Seti',
+        price: 520,
+        category: 'Arıcılık',
+        subCategory: 'Bal',
+        mode: 'Satılık',
+        location: 'Marmaris / Muğla',
+        amount: '1 Set',
+        description: 'Marmaris ormanlarından ham çam balı ve taze kovan arı sütü.',
+        seller: 'Ege Arıcılık',
+        phone: '0538 888 9900',
+        seoTags: 'çam balı, arı sütü, marmaris'
+      },
+      {
+        title: 'Erken Hasat Soğuk Sıkım Ayvalık Zeytinyağı',
+        price: 280,
+        category: 'Mahsuller',
+        subCategory: 'Zeytin & Zeytinyağı',
+        mode: 'Satılık',
+        location: 'Ayvalık / Balıkesir',
+        amount: '5 Litre',
+        description: 'Filtrelenmemiş yüksek polifenollü gurme zeytinyağı.',
+        seller: 'Ayvalık Zeytin Evi',
+        phone: '0537 666 7788',
+        seoTags: 'ayvalık zeytinyağı, erken hasat'
+      },
+      {
+        title: '4 Dönerli Hidrolik Otomatik Pulluk',
+        price: 65000,
+        category: 'Tarım Ekipmanları',
+        subCategory: 'Pulluk',
+        mode: 'Satılık',
+        location: 'Eskişehir / Sivrihisar',
+        amount: '1 Adet',
+        description: 'Pistonlu dönerli, ağır tip çizel ve pulluk takımı.',
+        seller: 'Sivrihisar Makine',
+        phone: '0551 333 4455',
+        seoTags: 'dönerli pulluk, eskişehir tarım'
       }
     ];
 
-    const randomItem = randomPool[Math.floor(Math.random() * randomPool.length)];
+    const randomItem = diversePool[Math.floor(Math.random() * diversePool.length)];
     const newEntry = {
       ...randomItem,
-      id: Date.now(),
+      id: Date.now() + Math.floor(Math.random() * 1000),
       image: getSmartAutoImage(randomItem.title, randomItem.category),
       status: 'pending',
       isFeatured: false
@@ -308,13 +291,7 @@ export default function App() {
 
     const updated = [newEntry, ...listings];
     saveListings(updated);
-    alert(`🎉 "${newEntry.title}" otomatik olarak onay kuyruğuna eklendi.`);
-  };
-
-  const approveListing = (id) => {
-    if (!isAdminLoggedIn) return;
-    const updated = listings.map(item => item.id === id ? { ...item, status: 'approved' } : item);
-    saveListings(updated);
+    alert(`🎉 "${newEntry.title}" başarıyla onay kuyruğuna eklendi!`);
   };
 
   const approveAllListings = () => {
@@ -330,83 +307,12 @@ export default function App() {
     saveListings(updated);
   };
 
-  const startEditingFromDetail = (item) => {
-    if (!isAdminLoggedIn) {
-      alert('İlanı düzenlemek için önce Yönetici Paneline giriş yapmalısınız.');
-      changeTab('admin-page');
-      return;
-    }
-    setEditingListing(item);
-    changeTab('admin-page');
-  };
-
-  const saveEditedListing = (e) => {
-    e.preventDefault();
-    if (!isAdminLoggedIn) return;
-    
-    const finalImg = editingListing.image || getSmartAutoImage(editingListing.title, editingListing.category);
-    const updatedListings = listings.map(item => item.id === editingListing.id ? { 
-      ...editingListing, 
-      title: sanitizeInput(editingListing.title),
-      description: sanitizeInput(editingListing.description),
-      price: Number(editingListing.price),
-      image: finalImg,
-      status: 'approved' 
-    } : item);
-    
-    saveListings(updatedListings);
-    setEditingListing(null);
-    alert('İlan başarıyla güncellendi ve yayına alındı!');
-    changeTab('home');
-  };
-
   const handleDeleteListing = (id) => {
     if (!isAdminLoggedIn) return;
     if (window.confirm('Bu ilanı silmek istediğinize emin misiniz?')) {
       const updated = listings.filter(item => item.id !== id);
       saveListings(updated);
       setFavorites(favorites.filter(item => item.id !== id));
-    }
-  };
-
-  const handleAddCategory = (e) => {
-    e.preventDefault();
-    if (!isAdminLoggedIn) return;
-    if (!newCategoryName.trim()) return;
-    const catName = sanitizeInput(newCategoryName.trim());
-    const existingSubs = categoriesWithSubs[catName] || [];
-    const newSubsInput = newSubCategoryName.trim() 
-      ? newSubCategoryName.split(',').map(s => sanitizeInput(s.trim())).filter(Boolean) 
-      : [];
-     
-    const combinedSubs = Array.from(new Set([...existingSubs, ...newSubsInput]));
-    if (combinedSubs.length === 0) combinedSubs.push('Genel');
-
-    const updatedCats = { ...categoriesWithSubs, [catName]: combinedSubs };
-    saveCategories(updatedCats);
-    setNewSubCategoryName('');
-    alert(`"${catName}" kategorisi güncellendi!`);
-  };
-
-  const handleDeleteCategory = (catKey) => {
-    if (!isAdminLoggedIn) return;
-    if (window.confirm(`"${catKey}" kategorisini silmek istediğinize emin misiniz?`)) {
-      const updatedCats = { ...categoriesWithSubs };
-      delete updatedCats[catKey];
-      saveCategories(updatedCats);
-    }
-  };
-
-  const handleDeleteSubCategory = (catKey, subToDel) => {
-    if (!isAdminLoggedIn) return;
-    if (!subToDel) return;
-    if (window.confirm(`"${subToDel}" seçeneğini silmek istediğinize emin misiniz?`)) {
-      const currentSubs = categoriesWithSubs[catKey] || [];
-      const updatedSubs = currentSubs.filter(sub => sub !== subToDel);
-      if (updatedSubs.length === 0) updatedSubs.push('Genel');
-      const updatedCats = { ...categoriesWithSubs, [catKey]: updatedSubs };
-      saveCategories(updatedCats);
-      setSelectedSubToRemove('');
     }
   };
 
@@ -436,7 +342,7 @@ export default function App() {
   if (showSplash) {
     return (
       <div style={{ position: 'fixed', inset: 0, backgroundColor: '#0f172a', color: '#f8fafc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '24px', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '32px', fontWeight: '700' }}>Türkiye'nin İlk و Tek <br /><span style={{ color: '#2add9c' }}>Tarım Platformu</span></h1>
+        <h1 style={{ fontSize: '32px', fontWeight: '700' }}>Türkiye'nin İlk ve Tek <br /><span style={{ color: '#2add9c' }}>Tarım Platformu</span></h1>
       </div>
     );
   }
@@ -555,7 +461,7 @@ export default function App() {
             ) : (
               <div>
                 <h2 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '12px' }}>🛡️ Yönetim Paneli</h2>
-                <button type="button" onClick={handleAutoFetchListings} style={{ backgroundColor: '#059669', color: '#fff', padding: '10px', borderRadius: '6px', fontWeight: '700', width: '100%', border: 'none', marginBottom: '14px', cursor: 'pointer' }}>🤖 Otomatik İlan Çek</button>
+                <button type="button" onClick={handleAutoFetchListings} style={{ backgroundColor: '#059669', color: '#fff', padding: '10px', borderRadius: '6px', fontWeight: '700', width: '100%', border: 'none', marginBottom: '14px', cursor: 'pointer' }}>🤖 Otomatik / Farklı İlan Çek</button>
                 <button onClick={approveAllListings} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', width: '100%', fontWeight: '700', marginBottom: '14px', cursor: 'pointer' }}>✓ Tüm Bekleyenleri Onayla</button>
                 <h3 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '8px' }}>Mevcut İlanlar ({listings.length})</h3>
                 {listings.map(item => (
@@ -577,3 +483,5 @@ export default function App() {
     </div>
   );
 }
+
+export default App;
