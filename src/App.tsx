@@ -105,6 +105,12 @@ export default function App() {
     } catch (e) {
       console.error("Güvenli veri okuma hatası:", e);
     }
+    // Eğer hafıza boşsa, varsayılan listeyi hem döndür hem de hafızaya kaydet ki hep dolu gelsin!
+    try {
+      localStorage.setItem('pazartarla_listings', JSON.stringify(DEFAULT_START_LISTINGS));
+    } catch (err) {
+      console.error(err);
+    }
     return DEFAULT_START_LISTINGS;
   });
 
