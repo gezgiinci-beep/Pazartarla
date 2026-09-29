@@ -5,7 +5,27 @@ import {
   Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag, Edit3, Sparkles, Megaphone, CheckCircle, Bot 
 } from 'lucide-react';
 
-const DEFAULT_CATEGORIES = {
+const DEFAULT_START_LISTINGS = [
+  {
+    id: 1,
+    title: 'Tarladan Doğrudan Taze Chandler Ceviz',
+    price: 140,
+    category: 'Mahsuller',
+    subCategory: 'Ceviz',
+    mode: 'Satılık',
+    location: 'Gönen / Balıkesir',
+    amount: '1 Ton',
+    description: 'Kendi bahçemizin ürünü, ilaçsız ve dolgun Chandler ceviz.',
+    seller: 'Can İnce',
+    phone: '0535 768 1550',
+    image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'taze ceviz, chandler ceviz, gönen ceviz',
+    status: 'approved',
+    isFeatured: true
+  }
+];
+
+const FALLBACK_CATEGORIES = {
   'Mahsuller': ['Kiraz', 'Ceviz', 'Zeytin & Zeytinyağı', 'Buğday', 'Bakliyat', 'Meyve & Sebze'],
   'Canlı Hayvanlar': ['Büyükbaş', 'Küçükbaş', 'Kanatlı'],
   'Hayvan Yemleri ve Ekipmanları': ['Yem Çeşitleri', 'Suluk / Yemlik'],
@@ -34,37 +54,20 @@ export default function App() {
     } catch (e) {
       console.error("Veri okuma hatası:", e);
     }
-    return [{
-      id: 1,
-      title: 'Tarladan Doğrudan Taze Chandler Ceviz',
-      price: 140,
-      category: 'Mahsuller',
-      subCategory: 'Ceviz',
-      mode: 'Satılık',
-      location: 'Gönen / Balıkesir',
-      amount: '1 Ton',
-      description: 'Kendi bahçemizin ürünü, ilaçsız ve dolgun Chandler ceviz.',
-      seller: 'Can İnce',
-      phone: '0535 768 1550',
-      image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
-      seoTags: 'taze ceviz, chandler ceviz, gönen ceviz',
-      status: 'approved',
-      isFeatured: true
-    }];
+    return DEFAULT_START_LISTINGS;
   });
 
-  // KATEGORİLERİ VE ÖZEL AYARLARI KORUYAN GÜVENLİ OKUMA
   const [categoriesWithSubs, setCategoriesWithSubs] = useState(() => {
     try {
       const saved = localStorage.getItem('pazartarla_categories');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) return parsed;
+        if (parsed && typeof parsed === 'object') return parsed;
       }
     } catch (e) {
       console.error("Kategori okuma hatası:", e);
     }
-    return DEFAULT_CATEGORIES;
+    return FALLBACK_CATEGORIES;
   });
 
   const [announcement, setAnnouncement] = useState(() => {
@@ -94,11 +97,14 @@ export default function App() {
   const [adminPassword, setAdminPassword] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Tüm kategoriler');
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
+  const [openCategory, setOpenCategory] = useState('');
+  const [adminOpenCategory, setAdminOpenCategory] = useState('');
   
-  const [newCategoryName, setNewCategoryName] = useState(() => Object.keys(categoriesWithSubs)[0] || 'Mahsuller');
+  const [newCategoryName, setNewCategoryName] = useState(() => Object.keys(FALLBACK_CATEGORIES)[0] || 'Mahsuller');
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
+  const [selectedSubToRemove, setSelectedSubToRemove] = useState('');
   const [editingListing, setEditingListing] = useState(null);
-  const [poolIndex, setPoolIndex] = useState(0);
+  const [lastAddedListing, setLastAddedListing] = useState(null);
 
   const [form, setForm] = useState({
     title: '',
@@ -119,7 +125,7 @@ export default function App() {
   });
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const timer = setTimeout => {
       setShowSplash(false);
     }, 3500);
     return () => clearTimeout(timer);
@@ -179,12 +185,6 @@ export default function App() {
     if (t.includes('bal') || t.includes('arı') || c.includes('arıcılık')) {
       return 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800';
     }
-    if (t.includes('zeytin') || t.includes('yağ')) {
-      return 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&q=80&w=800';
-    }
-    if (t.includes('koyun') || t.includes('kuzu') || t.includes('inek')) {
-      return 'https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&q=80&w=800';
-    }
     return 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800';
   };
 
@@ -218,6 +218,36 @@ export default function App() {
     });
   };
 
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Dosya boyutu 2 MB sınırını aşamaz!');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setForm(prev => ({ ...prev, image: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleEditImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Dosya boyutu 2 MB sınırını aşamaz!');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditingListing(prev => ({ ...prev, image: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleDirectAdd = (e) => {
     e.preventDefault();
     if (!form.title.trim() || !form.price || !form.phone.trim() || !form.seller.trim()) {
@@ -244,120 +274,47 @@ export default function App() {
 
     const updated = [newEntry, ...listings];
     saveListings(updated);
+    setLastAddedListing(newEntry);
     changeTab('success-wa');
   };
 
   const handleAutoFetchListings = () => {
     if (!isAdminLoggedIn) return;
     
-    const massivePool = [
+    const randomPool = [
       {
-        title: 'Case IH JX110C 4WD Kabinli Tarla Traktörü',
-        price: 1650000,
+        title: 'John Deere 5075E 4WD Kabinli Traktör',
+        price: 1350000,
         category: 'Traktör',
         subCategory: 'İkinci El Traktör',
         mode: 'Satılık',
-        location: 'Konya / Selçuklu',
-        amount: '110 HP',
-        description: 'Ağır işlerde kullanılmış, bakımlı ve güçlü motor.',
-        seller: 'Mehmet Aksoy',
-        phone: '0532 111 2233',
-        seoTags: 'case ih, traktör, konya'
-      },
-      {
-        title: 'Claas Dominator 130 Biçerdöver',
-        price: 3400000,
-        category: 'Biçerdöver',
-        subCategory: 'Biçerdöver',
-        mode: 'Satılık',
-        location: 'Adana / Ceyhan',
-        amount: '1 Adet',
-        description: 'Hasat sezonuna tam hazırlanmış, bıçakları yeni değişti.',
-        seller: 'Çukurova Tarım',
-        phone: '0533 444 5566',
-        seoTags: 'claas, biçerdöver, adana'
-      },
-      {
-        title: 'Damızlık Karacabey Merinosu Koç',
-        price: 22000,
-        category: 'Canlı Hayvanlar',
-        subCategory: 'Küçükbaş',
-        mode: 'Satılık',
         location: 'Balıkesir / Gönen',
-        amount: '1 Baş',
-        description: 'Aşılı, 2 yaşında safkan damızlık koç.',
-        seller: 'Hüseyin Çiftçi',
-        phone: '0535 999 8877',
-        seoTags: 'merinos, koç, gönen'
-      },
-      {
-        title: '2 Tonluk Galvanizli Su ve Akaryakıt Tankeri',
-        price: 35000,
-        category: 'Tarım Ekipmanları',
-        subCategory: 'Römork',
-        mode: 'Satılık',
-        location: 'İzmir / Torbalı',
-        amount: '2 Ton',
-        description: 'Römorka monte edilebilir seyyar tarım tankeri.',
-        seller: 'Ege Römork',
-        phone: '0536 222 3344',
-        seoTags: 'su tankeri, tarım ekipman'
-      },
-      {
-        title: 'Organik Karakovan Çiçek Balı (Süzme)',
-        price: 600,
-        category: 'Arıcılık',
-        subCategory: 'Bal',
-        mode: 'Satılık',
-        location: 'Artvin / Borçka',
-        amount: '3 Kilo',
-        description: 'Karakovan peteklerinden özenle süzülmüş, yüksek rakım balı.',
-        seller: 'Karadeniz Arıcılık',
-        phone: '0537 555 6677',
-        seoTags: 'karakovan balı, artvin bal'
-      },
-      {
-        title: '6 Lü Yeniköy Kulaklı Pulluk',
-        price: 85000,
-        category: 'Tarım Ekipmanları',
-        subCategory: 'Pulluk',
-        mode: 'Satılık',
-        location: 'Tekirdağ / Malkara',
-        amount: '1 Adet',
-        description: 'Ayarlı hidrolik, toprak sürümünde mükemmel performans.',
-        seller: 'Trakya Tarım Makine',
-        phone: '0538 777 8899',
-        seoTags: 'pulluk, malkara, tarım aletleri'
-      },
-      {
-        title: 'Profesyonel Sırt Tipi İlaçlama Pompası (Benzinli)',
-        price: 7500,
-        category: 'Tarım Ekipmanları',
-        subCategory: 'İlaçlama Makinesi',
-        mode: 'Satılık',
-        location: 'Manisa / Salihli',
-        amount: '25 Litre',
-        description: 'Bahçe ve bağ ilaçlamaları için yüksek basınçlı motorlu pompa.',
-        seller: 'Salihli Tarım',
-        phone: '0539 333 2211',
-        seoTags: 'ilaçlama makinesi, manisa'
+        amount: '75 HP',
+        description: 'Az kullanılmış, bakımlı ve masrafsız tarla traktörü.',
+        seller: 'Can İnce',
+        phone: '0535 768 1550',
+        seoTags: 'john deere, traktör, gönen tarım'
       }
     ];
 
-    const nextItem = massivePool[poolIndex % massivePool.length];
-    setPoolIndex(prev => prev + 1);
-
+    const randomItem = randomPool[Math.floor(Math.random() * randomPool.length)];
     const newEntry = {
-      ...nextItem,
-      id: Date.now() + Math.floor(Math.random() * 10000),
-      image: getSmartAutoImage(nextItem.title, nextItem.category),
+      ...randomItem,
+      id: Date.now(),
+      image: getSmartAutoImage(randomItem.title, randomItem.category),
       status: 'pending',
       isFeatured: false
     };
 
     const updated = [newEntry, ...listings];
     saveListings(updated);
-    alert(`🎉 "${newEntry.title}" başarıyla onay kuyruğuna eklendi!`);
+    alert(`🎉 "${newEntry.title}" otomatik olarak onay kuyruğuna eklendi.`);
+  };
+
+  const approveListing = (id) => {
+    if (!isAdminLoggedIn) return;
+    const updated = listings.map(item => item.id === id ? { ...item, status: 'approved' } : item);
+    saveListings(updated);
   };
 
   const approveAllListings = () => {
@@ -440,6 +397,19 @@ export default function App() {
     }
   };
 
+  const handleDeleteSubCategory = (catKey, subToDel) => {
+    if (!isAdminLoggedIn) return;
+    if (!subToDel) return;
+    if (window.confirm(`"${subToDel}" seçeneğini silmek istediğinize emin misiniz?`)) {
+      const currentSubs = categoriesWithSubs[catKey] || [];
+      const updatedSubs = currentSubs.filter(sub => sub !== subToDel);
+      if (updatedSubs.length === 0) updatedSubs.push('Genel');
+      const updatedCats = { ...categoriesWithSubs, [catKey]: updatedSubs };
+      saveCategories(updatedCats);
+      setSelectedSubToRemove('');
+    }
+  };
+
   const handleAdminLogin = (e) => {
     e.preventDefault();
     if (adminPassword === '5538') {
@@ -466,7 +436,7 @@ export default function App() {
   if (showSplash) {
     return (
       <div style={{ position: 'fixed', inset: 0, backgroundColor: '#0f172a', color: '#f8fafc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '24px', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '32px', fontWeight: '700' }}>Türkiye'nin İlk ve Tek <br /><span style={{ color: '#2add9c' }}>Tarım Platformu</span></h1>
+        <h1 style={{ fontSize: '32px', fontWeight: '700' }}>Türkiye'nin İlk و Tek <br /><span style={{ color: '#2add9c' }}>Tarım Platformu</span></h1>
       </div>
     );
   }
@@ -537,12 +507,7 @@ export default function App() {
 
         {activeTab === 'detail' && selectedListing && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-              <button onClick={() => changeTab('results')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer' }}>← Listeye Dön</button>
-              {isAdminLoggedIn && (
-                <button onClick={() => startEditingFromDetail(selectedListing)} style={{ backgroundColor: '#0284c7', color: '#fff', border: 'none', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>✏️ Bu İlanı Düzenle</button>
-              )}
-            </div>
+            <button onClick={() => changeTab('results')} style={{ marginBottom: '10px', background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer' }}>← Listeye Dön</button>
             <img src={selectedListing.image} alt={selectedListing.title} style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '8px', marginBottom: '10px' }} />
             <h2 style={{ fontSize: '18px', fontWeight: '800', margin: '8px 0' }}>{selectedListing.title}</h2>
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '4px' }}>{selectedListing.price.toLocaleString('tr-TR')} TL</div>
@@ -587,52 +552,16 @@ export default function App() {
                   <button type="submit" style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Giriş Yap</button>
                 </form>
               </div>
-            ) : editingListing ? (
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#0284c7' }}>✏️ İlan Düzenleme</h3>
-                  <button onClick={() => setEditingListing(null)} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontWeight: '700' }}>Vazgeç</button>
-                </div>
-                <form onSubmit={saveEditedListing} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <input type="text" name="title" value={editingListing.title} onChange={handleEditFormChange} placeholder="İlan Başlığı" style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-                  <input type="number" name="price" value={editingListing.price} onChange={handleEditFormChange} placeholder="Fiyat" style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-                  <select name="category" value={editingListing.category} onChange={handleEditFormChange} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
-                    {Object.keys(categoriesWithSubs).map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                  </select>
-                  <input type="text" name="location" value={editingListing.location} onChange={handleEditFormChange} placeholder="Konum" style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-                  <textarea name="description" value={editingListing.description} onChange={handleEditFormChange} placeholder="Açıklama" style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px' }} />
-                  <button type="submit" style={{ backgroundColor: '#0284c7', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}>Değişiklikleri Kaydet</button>
-                </form>
-              </div>
             ) : (
               <div>
                 <h2 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '12px' }}>🛡️ Yönetim Paneli</h2>
-                <button type="button" onClick={handleAutoFetchListings} style={{ backgroundColor: '#059669', color: '#fff', padding: '10px', borderRadius: '6px', fontWeight: '700', width: '100%', border: 'none', marginBottom: '10px', cursor: 'pointer' }}>🤖 Otomatik / Sıralı Farklı İlan Çek</button>
+                <button type="button" onClick={handleAutoFetchListings} style={{ backgroundColor: '#059669', color: '#fff', padding: '10px', borderRadius: '6px', fontWeight: '700', width: '100%', border: 'none', marginBottom: '14px', cursor: 'pointer' }}>🤖 Otomatik İlan Çek</button>
                 <button onClick={approveAllListings} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', width: '100%', fontWeight: '700', marginBottom: '14px', cursor: 'pointer' }}>✓ Tüm Bekleyenleri Onayla</button>
-
-                <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', marginBottom: '14px', border: '1px solid #e2e8f0' }}>
-                  <h3 style={{ fontSize: '13px', fontWeight: '700', marginBottom: '8px' }}>📢 Duyuru Yönetimi</h3>
-                  <form onSubmit={saveAnnouncement} style={{ display: 'flex', gap: '6px' }}>
-                    <input type="text" value={tempAnnouncement} onChange={(e) => setTempAnnouncement(e.target.value)} style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px' }} />
-                    <button type="submit" style={{ backgroundColor: '#ca8a04', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>Güncelle</button>
-                  </form>
-                </div>
-
-                <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', marginBottom: '14px', border: '1px solid #e2e8f0' }}>
-                  <h3 style={{ fontSize: '13px', fontWeight: '700', marginBottom: '8px' }}>📂 Kategori / Alt Kategori Yönetimi</h3>
-                  <form onSubmit={handleAddCategory} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <input type="text" placeholder="Yeni Kategori Adı" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px' }} />
-                    <input type="text" placeholder="Alt Kategoriler (Virgülle ayırın)" value={newSubCategoryName} onChange={(e) => setNewSubCategoryName(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px' }} />
-                    <button type="submit" style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>Kategori Ekle / Güncelle</button>
-                  </form>
-                </div>
-
                 <h3 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '8px' }}>Mevcut İlanlar ({listings.length})</h3>
                 {listings.map(item => (
                   <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '6px', marginBottom: '6px', border: '1px solid #e2e8f0' }}>
-                    <span style={{ fontSize: '12px', fontWeight: '600', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</span>
+                    <span style={{ fontSize: '12px', fontWeight: '600' }}>{item.title}</span>
                     <div style={{ display: 'flex', gap: '4px' }}>
-                      <button onClick={() => { setEditingListing(item); }} style={{ backgroundColor: '#0284c7', color: '#fff', border: 'none', padding: '4px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: '700', cursor: 'pointer' }}>Düzenle</button>
                       <button onClick={() => toggleFeaturedListing(item.id)} style={{ backgroundColor: '#fef08a', border: 'none', padding: '4px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: '700', cursor: 'pointer' }}>⭐ Vitrin</button>
                       <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: '700', cursor: 'pointer' }}>Sil</button>
                     </div>
