@@ -588,7 +588,6 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState('Tüm kategoriler');
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
   const [openCategory, setOpenCategory] = useState('');
-  const [adminOpenCategory, setAdminOpenCategory] = useState('');
    
   const [newCategoryName, setNewCategoryName] = useState(() => Object.keys(FALLBACK_CATEGORIES)[0] || 'Mahsuller');
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
@@ -755,21 +754,6 @@ export default function App() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setForm(prev => ({ ...prev, image: reader.result }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleEditImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        alert('Dosya boyutu 2 MB sınırını aşamaz!');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setEditingListing(prev => ({ ...prev, image: reader.result }));
       };
       reader.readAsDataURL(file);
     }
@@ -1470,16 +1454,67 @@ export default function App() {
                 )}
 
                 <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
-                  <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 10px 0' }}>📁 Kategoriye Yeni Alt Seçenek Ekle</h3>
-                  <form onSubmit={handleAddCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 10px 0' }}>📁 Kategoriye Yeni Alt Seçenek Ekle / Seçenek Sil</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <select value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff' }}>
                       {Object.keys(categoriesWithSubs).map(cat => (
                         <option key={cat} value={cat}>{cat}</option>
                       ))}
                     </select>
-                    <input type="text" placeholder="Yeni seçenekler (virgülle ayırın)" value={newSubCategoryName} onChange={(e) => setNewSubCategoryName(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
-                    <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Seçenekleri Ekle</button>
-                  </form>
+
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <select 
+                        value={selectedSubToRemove}
+                        onChange={(e) => setSelectedSubToRemove(e.target.value)}
+                        style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #ef4444', fontSize: '13px', backgroundColor: '#fef2f2', color: '#991b1b', fontWeight: '600' }}
+                      >
+                        <option value="">🗑️ Silinecek seçeneği seç...</option>
+                        {(categoriesWithSubs[newCategoryName] || []).map(sub => (
+                          <option key={sub} value={sub}>{sub}</option>
+                        ))}
+                      </select>
+                      <button 
+                        type="button" 
+                        onClick={() => handleDeleteSubCategory(newCategoryName, selectedSubToRemove)}
+                        style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '0 12px', borderRadius: '6px', fontWeight: '700', fontSize: '12px', cursor: 'pointer' }}
+                      >
+                        Seçeneği Sil
+                      </button>
+                    </div>
+
+                    <input type="text" placeholder="Yeni alt seçenekler (virgülle ayırın)" value={newSubCategoryName} onChange={(e) => setNewSubCategoryName(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+                    <button type="button" onClick={handleAddCategory} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Seçenekleri Ekle</button>
+                  </div>
+                </div>
+
+                <h3 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '10px' }}>📁 Kategoriler ({Object.keys(categoriesWithSubs).length})</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
+                  {Object.keys(categoriesWithSubs).map(catKey => (
+                    <div key={catKey} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                      <span style={{ fontSize: '12px', fontWeight: '600' }}>{catKey}</span>
+                      <button onClick={() => handleDeleteCategory(catKey)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Kategoriyi Sil</button>
+                    </div>
+                  ))}
+                </div>
+
+                <h3 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '10px' }}>İlan Yönetimi & Vitrin ({listings.length})</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {listings.map(item => (
+                    <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                      <div>
+                        <span style={{ fontSize: '12px', fontWeight: '600', display: 'block' }}>{item.title}</span>
+                        <span style={{ fontSize: '10px', color: item.isFeatured ? '#eab308' : '#64748b', fontWeight: '700' }}>
+                          {item.isFeatured ? '⭐ Vitrinde' : 'Normal İlan'}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <button onClick={() => toggleFeaturedListing(item.id)} style={{ backgroundColor: item.isFeatured ? '#fef08a' : '#f1f5f9', color: '#854d0e', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>
+                          {item.isFeatured ? 'Vitrin Kaldır' : '⭐ Vitrin Yap'}
+                        </button>
+                        <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Sil</button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
