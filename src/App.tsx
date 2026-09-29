@@ -169,12 +169,11 @@ export default function App() {
       return;
     }
 
-    // Sadece temel veritabanı sütunlarıyla eşleşen güvenli paket
     const newEntry = {
       title: sanitizeInput(form.title),
       price: Number(form.price),
       category: form.category,
-
+      subCategory: form.subCategory,
       mode: form.mode || 'Satılık',
       location: sanitizeInput(form.location || 'Türkiye Geneli'),
       amount: sanitizeInput(form.amount || ''),
@@ -182,7 +181,6 @@ export default function App() {
       seller: sanitizeInput(form.seller),
       phone: sanitizeInput(form.phone),
       image: form.image || getSmartAutoImage(form.title, form.category),
-
       status: 'pending'
     };
 
@@ -359,6 +357,18 @@ export default function App() {
           </div>
         )}
       </main>
+
+      <footer style={{ backgroundColor: '#ffffff', borderTop: '1px solid #e5e7eb', padding: '24px 0', marginTop: '48px', textAlign: 'center' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+          <p style={{ color: '#4b5563', fontSize: '14px', margin: 0 }}>© 2026 PazarTarla - Tarım ve Ürün Pazarı</p>
+          <button 
+            onClick={() => changeTab('admin')} 
+            style={{ background: 'none', border: 'none', color: '#047857', fontWeight: '600', cursor: 'pointer', fontSize: '14px' }}
+          >
+            Admin Paneli
+          </button>
+        </div>
+      </footer>
     </div>
   );
 }
