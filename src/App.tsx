@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 
 const SUPABASE_URL = 'https://srbarfjzsfkmglsnmbtw.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyYmFyZmp6c2ZrbWdsc25tYnR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2ODAzMTQsImV4cCI6MjEwNjI1NjMxNH0.pTYlQxbTvVOHAarNW7ITckRJxffgDkZNO5li17F76xQ';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyYmFyZmp6c2ZrbWdsc25tYnR3Iiwicm9sZSI6InFub24iLCJpYXQiOjE3OTA2ODAzMTQsImV4cCI6MjEwNjI1NjMxNH0.pTYlQxbTvVOHAarNW7ITckRJxffgDkZNO5li17F76xQ';
 
 const dbHeaders = {
   'apikey': SUPABASE_ANON_KEY,
@@ -47,35 +47,18 @@ const FALLBACK_CATEGORIES = {
 };
 
 export default function App() {
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(false);
   const [activeTab, setActiveTab] = useState('home'); 
-  const editFormRef = useRef(null);
-   
+  
   const [listings, setListings] = useState(DEFAULT_START_LISTINGS);
   const [categoriesWithSubs, setCategoriesWithSubs] = useState(FALLBACK_CATEGORIES);
-  const [announcement, setAnnouncement] = useState('🌾 Türkiye genelinden tarım aletleri, veterinerler ve taze mahsul ilanları PazarTarla’da!');
-  const [tempAnnouncement, setTempAnnouncement] = useState(announcement);
-
-  const [favorites, setFavorites] = useState(() => {
-    try {
-      const savedFavs = localStorage.getItem('pazartarla_favorites');
-      return savedFavs ? JSON.parse(savedFavs) : [];
-    } catch (e) {
-      return [];
-    }
-  });
 
   const [selectedListing, setSelectedListing] = useState(null);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Tüm kategoriler');
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
-  const [openCategory, setOpenCategory] = useState('');
-   
-  const [newCategoryName, setNewCategoryName] = useState('Mahsuller');
-  const [newSubCategoryName, setNewSubCategoryName] = useState('');
-  const [selectedSubToRemove, setSelectedSubToRemove] = useState('');
-  const [editingListing, setEditingListing] = useState(null);
+  
   const [lastAddedListing, setLastAddedListing] = useState(null);
 
   const [form, setForm] = useState({
@@ -90,7 +73,6 @@ export default function App() {
     seller: '',
     phone: '',
     image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
-    seoTags: '',
     status: 'pending'
   });
 
@@ -111,30 +93,17 @@ export default function App() {
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowSplash(false), 3500);
     fetchListings();
-    const interval = setInterval(fetchListings, 5000);
-    return () => {
-      clearTimeout(timer);
-      clearInterval(interval);
-    };
   }, []);
 
   const changeTab = (tabName) => {
-    window.history.pushState({ tab: tabName }, '');
     setActiveTab(tabName);
+    window.scrollTo(0, 0);
   };
 
   const sanitizeInput = (str) => {
     if (typeof str !== 'string') return str;
     return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  };
-
-  const getSmartAutoImage = (title, category) => {
-    const t = (title || '').toLowerCase();
-    const c = (category || '').toLowerCase();
-    if (t.includes('traktör') || c.includes('traktör')) return 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800';
-    return 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800';
   };
 
   const handleFormChange = (e) => {
@@ -180,7 +149,7 @@ export default function App() {
       description: sanitizeInput(form.description || ''),
       seller: sanitizeInput(form.seller),
       phone: sanitizeInput(form.phone),
-      image: form.image || getSmartAutoImage(form.title, form.category),
+      image: form.image,
       status: 'pending'
     };
 
@@ -193,7 +162,6 @@ export default function App() {
 
       if (!res.ok) {
         const errDetail = await res.text();
-        console.error('Supabase Kayıt Hatası Detayı:', errDetail);
         alert(`Veritabanı reddetti: ${errDetail}`);
         return;
       }
@@ -202,7 +170,6 @@ export default function App() {
       setLastAddedListing(newEntry);
       changeTab('success-wa');
     } catch (err) {
-      console.error('Bağlantı Hatası:', err);
       alert('Bağlantı hatası oluştu.');
     }
   };
@@ -215,14 +182,6 @@ export default function App() {
         const matchesSubCategory = selectedSubCategory === 'Tümü' || item.subCategory === selectedSubCategory;
         return matchesCategory && matchesSubCategory;
       });
-
-  if (showSplash) {
-    return (
-      <div style={{ position: 'fixed', inset: 0, backgroundColor: '#0f172a', color: '#f8fafc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '24px', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '32px', fontWeight: '700', margin: 0 }}>Türkiye'nin İlk ve Tek <br /><span style={{ color: '#2add9c' }}>Tarım Platformu</span></h1>
-      </div>
-    );
-  }
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f4f6f8', color: '#1e293b', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', boxSizing: 'border-box' }}>
@@ -346,7 +305,7 @@ export default function App() {
               <input type="text" name="location" placeholder="Konum (Örn: Gönen / Balıkesir)" value={form.location} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
              
               <div style={{ backgroundColor: '#f8fafc', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>📷 Fotoğraf Yükle (Dosya Seç veya URL Yapıştır)</label>
+                <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>📷 Fotoğraf (Opsiyonel / Hazır Resim Kullanılır)</label>
                 <input type="file" accept="image/*" onChange={handleImageUpload} style={{ width: '100%', fontSize: '12px' }} />
               </div>
 
@@ -354,6 +313,42 @@ export default function App() {
 
               <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}>İlanı Gönder</button>
             </form>
+          </div>
+        )}
+
+        {activeTab === 'admin' && (
+          <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <button onClick={() => changeTab('home')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer' }}>← Ana Sayfaya Dön</button>
+              <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>Admin Paneli</h2>
+            </div>
+            {!isAdminLoggedIn ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <input type="password" placeholder="Admin Şifresi" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                <button onClick={() => { if (adminPassword === '1234') setIsAdminLoggedIn(true); else alert('Hatalı Şifre!'); }} style={{ backgroundColor: '#1b3a2b', color: '#fff', padding: '10px', borderRadius: '6px', border: 'none', fontWeight: '700', cursor: 'pointer' }}>Giriş Yap</button>
+              </div>
+            ) : (
+              <div>
+                <p style={{ color: '#166534', fontWeight: '700', marginBottom: '12px' }}>✓ Admin Girişi Başarılı (Bekleyen İlan Yönetimi)</p>
+                {listings.map(item => (
+                  <div key={item.id} style={{ border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ fontWeight: '700', fontSize: '13px' }}>{item.title}</div>
+                      <div style={{ fontSize: '11px', color: '#64748b' }}>Durum: {item.status}</div>
+                    </div>
+                    {item.status !== 'approved' ? (
+                      <button onClick={async () => {
+                        await `${SUPABASE_URL}/rest/v1/listings?id=eq.${item.id}`;
+                        // Onaylama işlemi
+                        fetchListings();
+                      }} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Onayla</button>
+                    ) : (
+                      <span style={{ color: '#166534', fontSize: '12px', fontWeight: '700' }}>Onaylı</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </main>
