@@ -5,7 +5,7 @@ import {
   Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag, Edit3, Sparkles, Megaphone, CheckCircle, Bot 
 } from 'lucide-react';
 
-const ALL_INITIAL_LISTINGS = [
+const DEFAULT_START_LISTINGS = [
   {
     id: 1,
     title: 'Tarladan Doğrudan Taze Chandler Ceviz',
@@ -24,7 +24,41 @@ const ALL_INITIAL_LISTINGS = [
     isFeatured: true
   },
   {
-    id: 101,
+    id: 2,
+    title: 'Sahibinden Temiz John Deere 5075E Traktör',
+    price: 1250000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Tekirdağ / Süleymanpaşa',
+    amount: '75 HP',
+    description: 'Kapalı garajda muhafaza edilmiş, bakımlı ve masrafsız tarım traktörü.',
+    seller: 'Serkan Öztürk',
+    phone: '0531 333 4455',
+    image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'john deere, traktör, tekirdağ tarım',
+    status: 'approved',
+    isFeatured: true
+  },
+  {
+    id: 3,
+    title: 'Organik Çiçek Balı ve Polen Seti (Yayla Ürünü)',
+    price: 450,
+    category: 'Arıcılık',
+    subCategory: 'Bal',
+    mode: 'Satılık',
+    location: 'Muğla / Fethiye',
+    amount: '2 Kilo',
+    description: 'Çam ve çiçek nektarından üretilmiş, laboratuvar analizli saf arı balı.',
+    seller: 'Ahmet Arıcı',
+    phone: '0534 777 2211',
+    image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'organik bal, muğla balı, arıcılık',
+    status: 'approved',
+    isFeatured: false
+  },
+  {
+    id: 4,
     title: 'Uzman Ziraat Mühendisinden Tarla Danışmanlığı ve Gübreleme Planı',
     price: 5000,
     category: 'Uzmanlar',
@@ -71,7 +105,7 @@ export default function App() {
     } catch (e) {
       console.error("Güvenli veri okuma hatası:", e);
     }
-    return ALL_INITIAL_LISTINGS;
+    return DEFAULT_START_LISTINGS;
   });
 
   const [categoriesWithSubs, setCategoriesWithSubs] = useState(() => {
@@ -225,9 +259,6 @@ export default function App() {
     if (t.includes('meyve') || t.includes('sebze') || t.includes('ceviz') || t.includes('domates') || c.includes('mahsul')) {
       return 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800';
     }
-    if (t.includes('biçerdöver') || c.includes('biçerdöver')) {
-      return 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800';
-    }
     return 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800';
   };
 
@@ -360,35 +391,18 @@ export default function App() {
     const dynamicPool = [
       {
         id: randomId + 1,
-        title: 'Sahibinden Temiz John Deere 5075E Traktör',
-        price: 1250000,
+        title: 'New Holland TD100D Tarım Traktörü',
+        price: 1450000,
         category: 'Traktör',
         subCategory: 'İkinci El Traktör',
         mode: 'Satılık',
-        location: 'Tekirdağ / Süleymanpaşa',
-        amount: '75 HP',
-        description: 'Kapalı garajda muhafaza edilmiş, bakımlı ve masrafsız tarım traktörü.',
-        seller: 'Serkan Öztürk',
-        phone: '0531 333 4455',
-        image: getSmartAutoImage('John Deere Traktör', 'Traktör'),
-        seoTags: 'john deere, traktör, tekirdağ tarım',
-        status: 'pending',
-        isFeatured: false
-      },
-      {
-        id: randomId + 2,
-        title: 'Organik Çiçek Balı ve Polen Seti (Yayla Ürünü)',
-        price: 450,
-        category: 'Arıcılık',
-        subCategory: 'Bal',
-        mode: 'Satılık',
-        location: 'Muğla / Fethiye',
-        amount: '2 Kilo',
-        description: 'Çam ve çiçek nektarından üretilmiş, laboratuvar analizli saf arı balı.',
-        seller: 'Ahmet Arıcı',
-        phone: '0534 777 2211',
-        image: getSmartAutoImage('Organik Çiçek Balı', 'Arıcılık'),
-        seoTags: 'organik bal, muğla balı, arıcılık',
+        location: 'Balıkesir / Gönen',
+        amount: '100 HP',
+        description: 'Tertemiz, bakımları tam tarla traktörü.',
+        seller: 'Can İnce',
+        phone: '0535 768 1550',
+        image: getSmartAutoImage('New Holland Traktör', 'Traktör'),
+        seoTags: 'new holland, traktör, gönen tarım',
         status: 'pending',
         isFeatured: false
       }
@@ -396,7 +410,7 @@ export default function App() {
 
     const updated = [...dynamicPool, ...listings];
     saveListings(updated);
-    alert('🎉 Harika! Sistem otomatik ilanları ekledi.');
+    alert('🎉 Yepyeni ilan başarıyla çekildi ve onay kuyruğuna eklendi.');
   };
 
   const approveListing = (id) => {
@@ -417,7 +431,7 @@ export default function App() {
     if (!isAdminLoggedIn) return;
     const updated = listings.map(item => item.id === id ? { ...item, isFeatured: !item.isFeatured } : item);
     saveListings(updated);
-    alert('İlanın vitrin (öne çıkan) durumu güncellendi!');
+    alert('İlanın vitrin durumu güncellendi!');
   };
 
   const startEditingFromDetail = (item) => {
@@ -936,7 +950,7 @@ export default function App() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fotoğraf Yükle (Dosya Seç) veya Aşağıya Link Yapıştır</label>
+                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fotoğraf Yükle (Dosya Seç) veya Link Yapıştır</label>
                 <input type="file" accept="image/*" onChange={handleImageUpload} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#f8fafc', marginBottom: '6px' }} />
                 <input type="text" name="image" placeholder="Veya resim linki (URL) yapıştırın..." value={form.image} onChange={handleFormChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '12px' }} />
               </div>
@@ -1066,7 +1080,7 @@ export default function App() {
                         </div>
                       </div>
 
-                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>Fotoğraf Yükle (Dosya Seç) veya Aşağıya Link Yapıştır</label>
+                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>Fotoğraf Yükle (Dosya Seç) veya Link Yapıştır</label>
                       <input type="file" accept="image/*" onChange={handleEditImageUpload} style={{ width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff', fontSize: '11px', marginBottom: '4px' }} />
                       <input type="text" name="image" value={editingListing.image || ''} onChange={handleEditFormChange} placeholder="Veya resim linki (URL)..." style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px' }} />
 
