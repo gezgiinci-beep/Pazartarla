@@ -206,7 +206,6 @@ export default function App() {
       .replace(/'/g, "&#039;");
   };
 
-  // 🤖 AKILLI OTOMATİK GÖRSEL EŞLEŞTİRME MOTORU
   const getSmartAutoImage = (title, category) => {
     const t = (title || '').toLowerCase();
     const c = (category || '').toLowerCase();
@@ -246,9 +245,9 @@ export default function App() {
         const subList = categoriesWithSubs[value] || ['Genel'];
         updated.subCategory = subList[0];
       }
-      // Başlık veya kategori değiştikçe fotoğrafı otomatik güncelle
-      updated.image = getSmartAutoImage(name === 'title' ? value : updated.title, name === 'category' ? value : updated.category);
-      
+      if (name === 'title' && !updated.imageUserCustomized) {
+        updated.image = getSmartAutoImage(value, updated.category);
+      }
       updated.seoTags = generateAutoSEO(
         name === 'title' ? value : updated.title,
         name === 'category' ? value : updated.category,
@@ -267,9 +266,6 @@ export default function App() {
         const subList = categoriesWithSubs[value] || ['Genel'];
         updated.subCategory = subList[0];
       }
-      // Düzenleme yaparken başlık değiştikçe fotoğrafı otomatik güncelle
-      updated.image = getSmartAutoImage(name === 'title' ? value : updated.title, name === 'category' ? value : updated.category);
-
       updated.seoTags = generateAutoSEO(
         updated.title,
         updated.category,
@@ -287,7 +283,7 @@ export default function App() {
       return;
     }
 
-    const smartImage = getSmartAutoImage(form.title, form.category);
+    const finalImage = form.image || getSmartAutoImage(form.title, form.category);
     const finalSeoTags = form.seoTags || generateAutoSEO(form.title, form.category, form.subCategory, form.location);
     
     const newEntry = {
@@ -296,7 +292,7 @@ export default function App() {
       description: sanitizeInput(form.description),
       seller: sanitizeInput(form.seller),
       phone: sanitizeInput(form.phone),
-      image: smartImage,
+      image: finalImage,
       id: Date.now(),
       price: Number(form.price),
       amount: form.category === 'Uzmanlar' ? '' : sanitizeInput(form.amount),
@@ -368,29 +364,12 @@ export default function App() {
         seoTags: 'organik bal, muğla balı, arıcılık',
         status: 'pending',
         isFeatured: false
-      },
-      {
-        id: randomId + 3,
-        title: 'Damla Sulama Borusu ve Ekipmanları Toptan Paketi',
-        price: 12000,
-        category: 'Tarım Ekipmanları',
-        subCategory: 'İlaçlama Makinesi',
-        mode: 'Satılık',
-        location: 'Antalya / Merkez',
-        amount: '100 Metre',
-        description: 'Delikli tıkanmaz damla sulama hortumları ve ana vanalar.',
-        seller: 'Mehmet Yüce',
-        phone: '0538 444 8899',
-        image: getSmartAutoImage('Damla Sulama Borusu', 'Tarım Ekipmanları'),
-        seoTags: 'damla sulama, tarım ekipmanları, antalya',
-        status: 'pending',
-        isFeatured: false
       }
     ];
 
     const updated = [...dynamicPool, ...listings];
     saveListings(updated);
-    alert('🎉 Harika! Sistem başlıkları inceleyerek fotoğraflarını akıllıca atadı ve 3 yeni ilan onay kuyruğuna eklendi.');
+    alert('🎉 Harika! Sistem başlıkları inceleyerek fotoğraflarını otomatik atadı ve yeni ilanlar kuyruğa eklendi.');
   };
 
   const approveListing = (id) => {
@@ -433,20 +412,20 @@ export default function App() {
     e.preventDefault();
     if (!isAdminLoggedIn) return;
     
-    const smartImage = getSmartAutoImage(editingListing.title, editingListing.category);
+    const finalImg = editingListing.image || getSmartAutoImage(editingListing.title, editingListing.category);
     const updatedListings = listings.map(item => item.id === editingListing.id ? { 
       ...editingListing, 
       title: sanitizeInput(editingListing.title),
       description: sanitizeInput(editingListing.description),
       price: Number(editingListing.price),
-      image: smartImage,
+      image: finalImg,
       seoTags: editingListing.seoTags || generateAutoSEO(editingListing.title, editingListing.category, editingListing.subCategory, editingListing.location),
       status: 'approved' 
     } : item);
     
     saveListings(updatedListings);
     setEditingListing(null);
-    alert('İlan başarıyla güncellendi, fotoğrafı akıllı sistem tarafından eşlendi ve yayına alındı!');
+    alert('İlan başarıyla güncellendi ve yayına alındı!');
     changeTab('home');
   };
 
@@ -890,8 +869,8 @@ export default function App() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>İlan Başlığı (Fotoğraf otomatik seçilir) *</label>
-                <input type="text" name="title" placeholder="Örn: John Deere Traktör veya Çiçek Balı" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>İlan Başlığı (Fotoğraf otomatik eşleşir) *</label>
+                <input type="text" name="title" placeholder="Örn: John Deere Traktör" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
@@ -910,7 +889,7 @@ export default function App() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Alt Ürün / Seçenek (Tıklayınca açılır)</label>
+                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Alt Ürün / Seçenek</label>
                 <select 
                   name="subCategory" 
                   value={form.subCategory} 
@@ -929,13 +908,9 @@ export default function App() {
                 <input type="text" name="location" placeholder="Örn: Balıkesir / Gönen" value={form.location} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               </div>
 
-              <div style={{ backgroundColor: '#f0fdf4', padding: '10px', borderRadius: '6px', border: '1px solid #bbf7d0', fontSize: '12px', color: '#166534' }}>
-                ✨ <b>Yapay Zeka Fotoğraf Sistemi:</b> İlan başlığına yazdığınız kelimeye (traktör, bal, ceviz vb.) göre uygun fotoğraf sitemiz tarafından otomatik olarak atanacaktır.
-              </div>
-
               <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>SEO Etiketleri (Otomatik Oluşur)</label>
-                <input type="text" name="seoTags" value={form.seoTags} onChange={handleFormChange} placeholder="SEO etiketleri..." style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px', backgroundColor: '#f8fafc' }} />
+                <label style={{ display: 'block', fontWeight: '600', marginBottom: '4px', fontSize: '12px' }}>Fotoğraf Linki (İsteğe bağlı, boş bırakırsanız akıllı sistem kendisi seçer)</label>
+                <input type="text" name="image" placeholder="https://..." value={form.image} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '12px' }} />
               </div>
 
               <div>
@@ -969,10 +944,10 @@ export default function App() {
 
                 <div style={{ backgroundColor: '#ecfdf5', padding: '14px', borderRadius: '8px', border: '1px solid #a7f3d0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#065f46', margin: '0 0 6px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Bot size={18} color="#059669" /> Akıllı Otomatik İlan Çek (Otomatik Görselli)
+                    <Bot size={18} color="#059669" /> Akıllı Ototmatik İlan Çek
                   </h3>
                   <p style={{ fontSize: '12px', color: '#047857', margin: '0 0 10px 0', lineHeight: '1.4' }}>
-                    Butona bastığınızda ilanlar başlıklarına uygun fotoğraflarla otomatik üretilir.
+                    Butona bastığınızda ilanlar otomatik olarak eklenir.
                   </p>
                   <button 
                     type="button" 
@@ -1035,7 +1010,7 @@ export default function App() {
                   <div style={{ backgroundColor: '#f0fdf4', padding: '14px', borderRadius: '8px', border: '2px solid #22c55e', marginBottom: '20px' }}>
                     <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 10px 0' }}>✏️ İlanı Düzenle: {editingListing.title}</h3>
                     <form onSubmit={saveEditedListing} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>İlan Başlığı (Fotoğraf otomatik eşleşir)</label>
+                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>İlan Başlığı</label>
                       <input type="text" name="title" value={editingListing.title} onChange={handleEditFormChange} placeholder="İlan Başlığı" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }} />
                       
                       <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>Fiyat (TL)</label>
@@ -1063,8 +1038,8 @@ export default function App() {
                         </div>
                       </div>
 
-                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>SEO Etiketleri</label>
-                      <input type="text" name="seoTags" value={editingListing.seoTags || ''} onChange={handleEditFormChange} placeholder="SEO etiketleri" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px' }} />
+                      <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>Fotoğraf Linki (URL)</label>
+                      <input type="text" name="image" value={editingListing.image || ''} onChange={handleEditFormChange} placeholder="https://..." style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px' }} />
 
                       <label style={{ fontSize: '11px', fontWeight: '600', color: '#166534' }}>Açıklama</label>
                       <textarea name="description" value={editingListing.description} onChange={handleEditFormChange} placeholder="Açıklama" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', height: '60px' }} />
@@ -1093,7 +1068,7 @@ export default function App() {
                       ))}
                     </select>
 
-                    <label style={{ fontSize: '12px', fontWeight: '600', color: '#475569', marginTop: '4px' }}>Mevcut Alt Seçenekler (Yanlış yazılanı buradan seçip silebilirsin):</label>
+                    <label style={{ fontSize: '12px', fontWeight: '600', color: '#475569', marginTop: '4px' }}>Mevcut Alt Seçenekler:</label>
                     
                     <div style={{ display: 'flex', gap: '6px' }}>
                       <select 
