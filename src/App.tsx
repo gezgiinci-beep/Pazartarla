@@ -182,7 +182,7 @@ export default function App() {
       seller: sanitizeInput(form.seller),
       phone: sanitizeInput(form.phone),
       image: form.image || getSmartAutoImage(form.title, form.category),
-      seoTags: sanitizeInput(form.seoTags || ''),
+
       status: 'pending'
     };
 
