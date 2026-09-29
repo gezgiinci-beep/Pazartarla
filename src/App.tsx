@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 
 const DEFAULT_START_LISTINGS = [
+  // --- MAHSULLER (7 Adet) ---
   {
     id: 1,
     title: 'Tarladan Doğrudan Taze Chandler Ceviz',
@@ -25,23 +26,110 @@ const DEFAULT_START_LISTINGS = [
   },
   {
     id: 2,
-    title: 'Sahibinden Temiz John Deere 5075E Traktör',
-    price: 1250000,
-    category: 'Traktör',
-    subCategory: 'İkinci El Traktör',
+    title: 'Organik Gemlik Tipi Zeytin ve Soğuk Sıkım Zeytinyağı',
+    price: 220,
+    category: 'Mahsuller',
+    subCategory: 'Zeytin & Zeytinyağı',
     mode: 'Satılık',
-    location: 'Tekirdağ / Süleymanpaşa',
-    amount: '75 HP',
-    description: 'Kapalı garajda muhafaza edilmiş, bakımlı ve masrafsız tarım traktörü.',
-    seller: 'Serkan Öztürk',
-    phone: '0531 333 4455',
-    image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
-    seoTags: 'john deere, traktör, tekirdağ tarım',
+    location: 'Edremit / Balıkesir',
+    amount: '100 Litre',
+    description: 'Edremit körfezinden asit oranı düşük, soğuk sıkım dizem zeytinyağı.',
+    seller: 'Körfez Tarım',
+    phone: '0532 111 2233',
+    image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'edremit zeytinyağı, organik zeytin, soğuk sıkım',
     status: 'approved',
-    isFeatured: true
+    isFeatured: false
   },
   {
     id: 3,
+    title: 'Satılık Sertifikalı Yerli Buğday Tohumu',
+    price: 18,
+    category: 'Mahsuller',
+    subCategory: 'Buğday',
+    mode: 'Satılık',
+    location: 'Konya / Karatay',
+    amount: '10 Ton',
+    description: 'Yüksek verimli, hastalıklara dayanıklı certified makarnalık buğday tohumu.',
+    seller: 'Ova Tohumculuk',
+    phone: '0533 222 3344',
+    image: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'buğday tohumu, konya tarım, tohumluk buğday',
+    status: 'approved',
+    isFeatured: false
+  },
+  {
+    id: 4,
+    title: 'Taze Dalından Salihli Napolyon Kirazı',
+    price: 75,
+    category: 'Mahsuller',
+    subCategory: 'Kiraz',
+    mode: 'Satılık',
+    location: 'Salihli / Manisa',
+    amount: '500 Kg',
+    description: 'İri taneli, ihracat kalitesinde taze Napolyon kiraz.',
+    seller: 'Manisa Meyvecilik',
+    phone: '0534 333 4455',
+    image: 'https://images.unsplash.com/photo-1528825871115-3581a5387919?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'salihli kirazı, napolyon kiraz, taze meyve',
+    status: 'approved',
+    isFeatured: false
+  },
+  {
+    id: 5,
+    title: 'Doğal Yayla Kuru Fasulyesi (Dermason)',
+    price: 90,
+    category: 'Mahsuller',
+    subCategory: 'Bakliyat',
+    mode: 'Satılık',
+    location: 'Niğde / Merkez',
+    amount: '200 Kg',
+    description: 'Aşım yapmayan, çabuk pişen organik niğde dermason fasulyesi.',
+    seller: 'Niğde Organik',
+    phone: '0535 444 5566',
+    image: 'https://images.unsplash.com/photo-1551462147-37885acc36f1?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'dermason fasulye, kuru bakliyat, doğal ürün',
+    status: 'approved',
+    isFeatured: false
+  },
+  {
+    id: 6,
+    title: 'Organik Çanakkale Domatesi ve Salçalık Biber',
+    price: 25,
+    category: 'Mahsuller',
+    subCategory: 'Meyve & Sebze',
+    mode: 'Satılık',
+    location: 'Çanakkale / Biga',
+    amount: '2 Ton',
+    description: 'Tarla üretimi lezzetli Biga domatesi ve kırmızı kapya biber.',
+    seller: 'Biga Çiftliği',
+    phone: '0536 555 6677',
+    image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'çanakkale domatesi, salçalık biber, taze sebze',
+    status: 'approved',
+    isFeatured: false
+  },
+  {
+    id: 7,
+    title: 'Taş Kırma Balıkesir Ayvalık Erken Hasat Zeytinyağı',
+    price: 280,
+    category: 'Mahsuller',
+    subCategory: 'Zeytin & Zeytinyağı',
+    mode: 'Satılık',
+    location: 'Ayvalık / Balıkesir',
+    amount: '50 Litre',
+    description: 'Erken hasat, filtrelenmemiş yüksek polifenollü gurme zeytinyağı.',
+    seller: 'Ayvalık Zeytin Evi',
+    phone: '0537 666 7788',
+    image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'ayvalık zeytinyağı, erken hasat, gurme yağ',
+    status: 'approved',
+    isFeatured: false
+  },
+
+  // --- ARICILIK (2 Adet) ---
+  {
+    id: 8,
     title: 'Organik Çiçek Balı ve Polen Seti (Yayla Ürünü)',
     price: 450,
     category: 'Arıcılık',
@@ -58,7 +146,353 @@ const DEFAULT_START_LISTINGS = [
     isFeatured: false
   },
   {
-    id: 4,
+    id: 9,
+    title: 'Saf Çam Balı ve Taze Arı Sütü Seti',
+    price: 520,
+    category: 'Arıcılık',
+    subCategory: 'Arı Sütü',
+    mode: 'Satılık',
+    location: 'Marmaris / Muğla',
+    amount: '1 Set',
+    description: 'Marmaris ormanlarından ham çam balı ve taze kovan arı sütü.',
+    seller: 'Ege Arıcılık',
+    phone: '0538 888 9900',
+    image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'çam balı, arı sütü, marmaris balı',
+    status: 'approved',
+    isFeatured: false
+  },
+
+  // --- TRAKTÖR (14 Adet) ---
+  {
+    id: 10,
+    title: 'Sahibinden Temiz John Deere 5075E Traktör',
+    price: 1250000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Tekirdağ / Süleymanpaşa',
+    amount: '75 HP',
+    description: 'Kapalı garajda muhafaza edilmiş, bakımlı ve masrafsız tarım traktörü.',
+    seller: 'Serkan Öztürk',
+    phone: '0531 333 4455',
+    image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'john deere, traktör, tekirdağ tarım',
+    status: 'approved',
+    isFeatured: true
+  },
+  {
+    id: 11,
+    title: 'New Holland TD100D Tarım Traktörü',
+    price: 1450000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Balıkesir / Gönen',
+    amount: '100 HP',
+    description: 'Tertemiz, tüm bakımları yetkili serviste yapılmış tarla traktörü.',
+    seller: 'Can İnce',
+    phone: '0535 768 1550',
+    image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'new holland, td100d, gönen traktör',
+    status: 'approved',
+    isFeatured: true
+  },
+  {
+    id: 12,
+    title: 'Massey Ferguson 240S Klasik Efsane Traktör',
+    price: 380000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Manisa / Akhisar',
+    amount: '50 HP',
+    description: 'Orijinal kırmızı gövde, motor ve şanzıman kusursuz.',
+    seller: 'Akhisar Galeri',
+    phone: '0539 111 0022',
+    image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'massey ferguson, 240s, efsane traktör',
+    status: 'approved',
+    isFeatured: false
+  },
+  {
+    id: 13,
+    title: 'Tümosan 8095 4WD Klimalı Kabinli Traktör',
+    price: 1100000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Konya / Ereğli',
+    amount: '95 HP',
+    description: 'Çift çeker, orijinal kabinli ve klimalı güçlü yerli traktör.',
+    seller: 'Ereğli Tarım',
+    phone: '0540 222 1133',
+    image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'tümosan, 8095, konya traktör',
+    status: 'approved',
+    isFeatured: false
+  },
+  {
+    id: 14,
+    title: 'Hattat T4110 Bahçe ve Tarla Traktörü',
+    price: 980000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Bursa / İnegöl',
+    amount: '110 HP',
+    description: 'Perkins motorlu, düşük çalışma saatli masrafsız traktör.',
+    seller: 'İnegöl Otomotiv',
+    phone: '0541 333 2244',
+    image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'hattat traktör, perkins motor, bursa tarım',
+    status: 'approved',
+    isFeatured: false
+  },
+  {
+    id: 15,
+    title: 'Case IH JX75C Çift Çeker Traktör',
+    price: 1180000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Adana / Ceyhan',
+    amount: '75 HP',
+    description: 'Ceyhan ovasında az kullanılmış, bakımları eksiksiz Case IH.',
+    seller: 'Ceyhan Tarım Galeri',
+    phone: '0542 444 3355',
+    image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'case ih, jx75c, adana traktör',
+    status: 'approved',
+    isFeatured: false
+  },
+  {
+    id: 16,
+    title: 'Erkunt Servet 80.4 Lüks Kabinli Traktör',
+    price: 920000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Yozgat / Sorgun',
+    amount: '80 HP',
+    description: 'Yakıt cimrisi Perkins motor, 4WD lüks kabin.',
+    seller: 'Sorgun Tarım',
+    phone: '0543 555 4466',
+    image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'erkunt traktör, servet 80, yozgat',
+    status: 'approved',
+    isFeatured: false
+  },
+  {
+    id: 17,
+    title: 'Deutz-Fahr 4080E Çift Çeker Traktör',
+    price: 1320000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'İzmir / Ödemiş',
+    amount: '80 HP',
+    description: 'Alman mühendisliği, senkronize şanzıman ve yüksek çekiş gücü.',
+    seller: 'Ödemiş Ege Tarım',
+    phone: '0544 666 5577',
+    image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'deutz fahr, 4080e, izmir traktör',
+    status: 'approved',
+    isFeatured: false
+  },
+  {
+    id: 18,
+    title: 'Başak 2080 BB Bahçe Tipi Kompakt Traktör',
+    price: 720000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Denizli / Çivril',
+    amount: '80 HP',
+    description: 'Elma ve meyve bahçeleri için alçak şasili özel seri.',
+    seller: 'Çivril Meyveci',
+    phone: '0545 777 6688',
+    image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'başak traktör, bahçe tipi, denizli',
+    status: 'approved',
+    isFeatured: false
+  },
+  {
+    id: 19,
+    title: 'New Holland T4.70V Dar Bağ Bahçe Traktörü',
+    price: 890000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Aydın / Sultanhisar',
+    amount: '70 HP',
+    description: 'Bağ ve zeytin araları için dar iz genişlikli özel üretim.',
+    seller: 'Aydın Bağcılık',
+    phone: '0546 888 7799',
+    image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'new holland dar iz, bağ traktörü, aydın',
+    status: 'approved',
+    isFeatured: false
+  },
+  {
+    id: 20,
+    title: 'Solis 50 4WD Klimalı Kabinli Traktör',
+    price: 650000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Samsun / Bafra',
+    amount: '50 HP',
+    description: 'Ekonomik fiyatlı, az çalışma saatli çift çeker tarım traktörü.',
+    seller: 'Bafra Ova Galeri',
+    phone: '0547 999 8800',
+    image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'solis 50, bafra traktör, kabinli traktör',
+    status: 'approved',
+    isFeatured: false
+  },
+  {
+    id: 21,
+    title: 'Kubota M7060 Japon Teknolojisi Traktör',
+    price: 1400000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Antalya / Elmalı',
+    amount: '70 HP',
+    description: 'Japon Kubota motor, hidrolik mekik ve yüksek manevra kabiliyeti.',
+    seller: 'Elmalı Yayla Tarım',
+    phone: '0548 000 1122',
+    image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'kubota m7060, japon motor, antalya',
+    status: 'approved',
+    isFeatured: false
+  },
+  {
+    id: 22,
+    title: 'Fiat 640 Klasik Efsane Kırmızı Traktör',
+    price: 310000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Edirne / Keşan',
+    amount: '64 HP',
+    description: 'Koleksiyonluk temizlikte, rektefiyesi yeni yapılmış Fiat 640.',
+    seller: 'Keşan Tarım',
+    phone: '0549 111 2233',
+    image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'fiat 640, keşan traktör, efsane fiat',
+    status: 'approved',
+    isFeatured: false
+  },
+  {
+    id: 23,
+    title: 'Farmtrac 6075 4x4 Tarla Traktörü',
+    price: 840000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Şanlıurfa / Siverek',
+    amount: '75 HP',
+    description: 'Geniş tarlalar için ideal, dayanıklı ve yüksek torklu.',
+    seller: 'Siverek Ova Galeri',
+    phone: '0550 222 3344',
+    image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'farmtrac, urfa traktör, 4x4 traktör',
+    status: 'approved',
+    isFeatured: false
+  },
+
+  // --- TARIM EKİPMANLARI (5 Adet) ---
+  {
+    id: 24,
+    title: '4 Dönerli Hidrolik Otomatik Pulluk',
+    price: 65000,
+    category: 'Tarım Ekipmanları',
+    subCategory: 'Pulluk',
+    mode: 'Satılık',
+    location: 'Eskişehir / Sivrihisar',
+    amount: '1 Adet',
+    description: 'Pistonlu dönerli, ağır tip çizel ve pulluk takımı.',
+    seller: 'Sivrihisar Makine',
+    phone: '0551 333 4455',
+    image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'dönerli pulluk, eskişehir tarım, hidrolik pulluk',
+    status: 'approved',
+    isFeatured: false
+  },
+  {
+    id: 25,
+    title: '1000 Litre Damla Sulama ve İlaçlama Makinesi',
+    price: 85000,
+    category: 'Tarım Ekipmanları',
+    subCategory: 'İlaçlama Makinesi',
+    mode: 'Satılık',
+    location: 'Afyonkarahisar / Sandıklı',
+    amount: '1 Adet',
+    description: 'İtalyan pompalı, 12 metre hidrolik kollu holder ilaçlama.',
+    seller: 'Sandıklı Ekipman',
+    phone: '0552 444 5566',
+    image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'holder ilaçlama, afyon tarım, 1000 lt tank',
+    status: 'approved',
+    isFeatured: false
+  },
+  {
+    id: 26,
+    title: '5 Tonluk Çift Dingilli Damperli Tarım Römorku',
+    price: 1100000,
+    category: 'Tarım Ekipmanları',
+    subCategory: 'Römork',
+    mode: 'Satılık',
+    location: 'Aksaray / Merkez',
+    amount: '1 Adet',
+    description: 'Sıfır ayarında, dönerli ön dingil, ilaveli damperli römork.',
+    seller: 'Aksaray Karoser',
+    phone: '0553 555 6677',
+    image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'damperli römork, aksaray karoser, çift dingil',
+    status: 'approved',
+    isFeatured: false
+  },
+  {
+    id: 27,
+    title: 'Benzinli Motorlu Rotovatör ve Toprak Çapa Makinası',
+    price: 35000,
+    category: 'Tarım Ekipmanları',
+    subCategory: 'Çapa Makinası',
+    mode: 'Satılık',
+    location: 'Sakarya / Akyazı',
+    amount: '1 Adet',
+    description: '7 HP Kaan çapa makinesi, çapa bıçakları ve tekerlekleri dahil.',
+    seller: 'Akyazı Bahçe',
+    phone: '0554 666 7788',
+    image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'çapa makinesi, rotovatör, sakarya bahçe',
+    status: 'approved',
+    isFeatured: false
+  },
+  {
+    id: 28,
+    title: 'Pistonlu Ot Toplama ve Balyalama Makinası',
+    price: 240000,
+    category: 'Tarım Ekipmanları',
+    subCategory: 'Kepçe & Yükleyici',
+    mode: 'Satılık',
+    location: 'Kırklareli / Lüleburgaz',
+    amount: '1 Adet',
+    description: 'Pöttinger marka sorunsuz çalışan sap ve ot balya makinesi.',
+    seller: 'Trakya Balyacılık',
+    phone: '0555 777 8899',
+    image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'balya makinesi, ot toplama, trakya tarım',
+    status: 'approved',
+    isFeatured: false
+  },
+
+  // --- UZMANLAR (1 Adet) ---
+  {
+    id: 29,
     title: 'Uzman Ziraat Mühendisinden Tarla Danışmanlığı ve Gübreleme Planı',
     price: 5000,
     category: 'Uzmanlar',
@@ -100,12 +534,13 @@ export default function App() {
       const saved = localStorage.getItem('pazartarla_listings');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        // Eğer kayıtlı listede 29 ilan yoksa, yeni dolu listeyi yükle!
+        if (Array.isArray(parsed) && parsed.length >= 29) return parsed;
       }
     } catch (e) {
       console.error("Güvenli veri okuma hatası:", e);
     }
-    // Eğer hafıza boşsa, varsayılan listeyi hem döndür hem de hafızaya kaydet ki hep dolu gelsin!
+    // Otomatik hafızaya kaydet ve tüm 29 ilanı anında döndür!
     try {
       localStorage.setItem('pazartarla_listings', JSON.stringify(DEFAULT_START_LISTINGS));
     } catch (err) {
@@ -416,7 +851,7 @@ export default function App() {
 
     const updated = [...dynamicPool, ...listings];
     saveListings(updated);
-    alert('🎉 Yepyeni ilan başarıyla çekildi ve onay kuyruğuna eklendi.');
+    alert('🎉 Yeni ilan eklendi ve onay kuyruğuna gönderildi.');
   };
 
   const approveListing = (id) => {
@@ -995,7 +1430,7 @@ export default function App() {
                     <Bot size={18} color="#059669" /> Akıllı Otomatik İlan Çek
                   </h3>
                   <p style={{ fontSize: '12px', color: '#047857', margin: '0 0 10px 0', lineHeight: '1.4' }}>
-                    Butona bastığınızda ilanlar kuyruğa eklenir.
+                    Butona bastığınızda yeni ilanlar onay kuyruğuna eklenir.
                   </p>
                   <button 
                     type="button" 
