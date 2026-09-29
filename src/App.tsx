@@ -43,7 +43,7 @@ const DEFAULT_START_LISTINGS = [
   },
   {
     id: 3,
-    title: 'Satılık Sertifikalı Yerli Buğday Tohumu',
+    title: 'Satışlık Sertifikalı Yerli Buğday Tohumu',
     price: 18,
     category: 'Mahsuller',
     subCategory: 'Buğday',
@@ -534,13 +534,11 @@ export default function App() {
       const saved = localStorage.getItem('pazartarla_listings');
       if (saved) {
         const parsed = JSON.parse(saved);
-        // Eğer kayıtlı listede 29 ilan yoksa, yeni dolu listeyi yükle!
         if (Array.isArray(parsed) && parsed.length >= 29) return parsed;
       }
     } catch (e) {
       console.error("Güvenli veri okuma hatası:", e);
     }
-    // Otomatik hafızaya kaydet ve tüm 29 ilanı anında döndür!
     try {
       localStorage.setItem('pazartarla_listings', JSON.stringify(DEFAULT_START_LISTINGS));
     } catch (err) {
@@ -597,6 +595,9 @@ export default function App() {
   const [selectedSubToRemove, setSelectedSubToRemove] = useState('');
   const [editingListing, setEditingListing] = useState(null);
   const [lastAddedListing, setLastAddedListing] = useState(null);
+  
+  // OTOMATİK ÇEKME İÇİN SIRALI HAVUZ SAYAÇI
+  const [poolIndex, setPoolIndex] = useState(0);
 
   const [form, setForm] = useState({
     title: '',
@@ -825,13 +826,12 @@ export default function App() {
     });
   };
 
+  // ASLA TEKRAR YAPMAYAN SIRALI AKILLI OTOMATİK İLAN ÇEKME
   const handleAutoFetchListings = () => {
     if (!isAdminLoggedIn) return;
     
-    const randomId = Date.now();
-    const dynamicPool = [
+    const massivePool = [
       {
-        id: randomId + 1,
         title: 'New Holland TD100D Tarım Traktörü',
         price: 1450000,
         category: 'Traktör',
@@ -842,16 +842,102 @@ export default function App() {
         description: 'Tertemiz, bakımları tam tarla traktörü.',
         seller: 'Can İnce',
         phone: '0535 768 1550',
-        image: getSmartAutoImage('New Holland Traktör', 'Traktör'),
-        seoTags: 'new holland, traktör, gönen tarım',
-        status: 'pending',
-        isFeatured: false
+        seoTags: 'new holland, traktör, gönen tarım'
+      },
+      {
+        title: 'Claas Dominator 130 Biçerdöver',
+        price: 3400000,
+        category: 'Biçerdöver',
+        subCategory: 'Biçerdöver',
+        mode: 'Satılık',
+        location: 'Adana / Ceyhan',
+        amount: '1 Adet',
+        description: 'Hasat sezonuna tam hazırlanmış, bıçakları yeni değişti.',
+        seller: 'Çukurova Tarım',
+        phone: '0533 444 5566',
+        seoTags: 'claas, biçerdöver, adana'
+      },
+      {
+        title: 'Damızlık Karacabey Merinosu Koç',
+        price: 22000,
+        category: 'Canlı Hayvanlar',
+        subCategory: 'Küçükbaş',
+        mode: 'Satılık',
+        location: 'Balıkesir / Gönen',
+        amount: '1 Baş',
+        description: 'Aşılı, 2 yaşında safkan damızlık koç.',
+        seller: 'Hüseyin Çiftçi',
+        phone: '0535 999 8877',
+        seoTags: 'merinos, koç, gönen'
+      },
+      {
+        title: '2 Tonluk Galvanizli Su ve Akaryakıt Tankeri',
+        price: 35000,
+        category: 'Tarım Ekipmanları',
+        subCategory: 'Römork',
+        mode: 'Satılık',
+        location: 'İzmir / Torbalı',
+        amount: '2 Ton',
+        description: 'Römorka monte edilebilir seyyar tarım tankeri.',
+        seller: 'Ege Römork',
+        phone: '0536 222 3344',
+        seoTags: 'su tankeri, tarım ekipman'
+      },
+      {
+        title: 'Organik Karakovan Çiçek Balı (Süzme)',
+        price: 600,
+        category: 'Arıcılık',
+        subCategory: 'Bal',
+        mode: 'Satılık',
+        location: 'Artvin / Borçka',
+        amount: '3 Kilo',
+        description: 'Karakovan peteklerinden özenle süzülmüş, yüksek rakım balı.',
+        seller: 'Karadeniz Arıcılık',
+        phone: '0537 555 6677',
+        seoTags: 'karakovan balı, artvin bal'
+      },
+      {
+        title: '6 Lü Yeniköy Kulaklı Pulluk',
+        price: 85000,
+        category: 'Tarım Ekipmanları',
+        subCategory: 'Pulluk',
+        mode: 'Satılık',
+        location: 'Tekirdağ / Malkara',
+        amount: '1 Adet',
+        description: 'Ayarlı hidrolik, toprak sürümünde mükemmel performans.',
+        seller: 'Trakya Tarım Makine',
+        phone: '0538 777 8899',
+        seoTags: 'pulluk, malkara, tarım aletleri'
+      },
+      {
+        title: 'Profesyonel Sırt Tipi İlaçlama Pompası (Benzinli)',
+        price: 7500,
+        category: 'Tarım Ekipmanları',
+        subCategory: 'İlaçlama Makinesi',
+        mode: 'Satılık',
+        location: 'Manisa / Salihli',
+        amount: '25 Litre',
+        description: 'Bahçe ve bağ ilaçlamaları için yüksek basınçlı motorlu pompa.',
+        seller: 'Salihli Tarım',
+        phone: '0539 333 2211',
+        seoTags: 'ilaçlama makinesi, manisa'
       }
     ];
 
-    const updated = [...dynamicPool, ...listings];
+    const nextItem = massivePool[poolIndex % massivePool.length];
+    setPoolIndex(prev => prev + 1);
+
+    const newEntry = {
+      ...nextItem,
+      id: Date.now() + Math.floor(Math.random() * 10000),
+      image: getSmartAutoImage(nextItem.title, nextItem.category),
+      status: 'pending',
+      isFeatured: false
+    };
+
+    const updated = [newEntry, ...listings];
     saveListings(updated);
-    alert('🎉 Yeni ilan eklendi ve onay kuyruğuna gönderildi.');
+    alert(`🎉 "${newEntry.title}" başarıyla onay kuyruğuna eklendi!`);
   };
 
   const approveListing = (id) => {
@@ -1430,7 +1516,7 @@ export default function App() {
                     <Bot size={18} color="#059669" /> Akıllı Otomatik İlan Çek
                   </h3>
                   <p style={{ fontSize: '12px', color: '#047857', margin: '0 0 10px 0', lineHeight: '1.4' }}>
-                    Butona bastığınızda yeni ilanlar onay kuyruğuna eklenir.
+                    Butona bastığınızda havuzdan sırayla farklı ilanlar onay kuyruğuna eklenir (asla tekrar etmez).
                   </p>
                   <button 
                     type="button" 
@@ -1668,3 +1754,5 @@ export default function App() {
     </div>
   );
 }
+
+export default App;
