@@ -9,7 +9,7 @@ import {
 // SUPABASE REST API BAĞLANTI AYARLARI
 // ==========================================
 const SUPABASE_URL = 'https://srbarfjzsfkmglsnmbtw.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable__8tUtClK2adq_ORRuL5PQ_oft6c';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyYmFyZmp6c2ZrbWdsc25tYnR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2ODAzMTQsImV4cCI6MjEwNjI1NjMxNH0.pTYlQxbTvVOHAarNW7ITckRJxffgDkZNO5li17F76xQ';
 
 const dbHeaders = {
   'apikey': SUPABASE_ANON_KEY,
@@ -238,7 +238,6 @@ export default function App() {
     }
   };
 
-  // DÜZELTİLDİ: Gelişmiş hata yakalama ve geri bildirim eklenen ilan ekleme fonksiyonu
   const handleDirectAdd = async (e) => {
     e.preventDefault();
     if (!form.title.trim() || !form.price || !form.phone.trim() || !form.seller.trim()) {
@@ -531,7 +530,6 @@ export default function App() {
             <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#1b3a2b', margin: '0 0 8px 0' }}>İlanınız Başarıyla Alındı!</h2>
             <p style={{ color: '#64748b', fontSize: '13px', marginBottom: '20px' }}>Yönetici onayından sonra tüm cihazlarda görünecektir.</p>
             
-            {/* DÜZELTİLDİ: Garantili çalışan WhatsApp wa.me bağlantı linki */}
             {lastAddedListing && (
               <a 
                 href={`https://wa.me/905357681550?text=${encodeURIComponent(`🔔 *Yeni İlan Onay Bekliyor!*\n\n*Başlık:* ${lastAddedListing.title}\n*Fiyat:*${lastAddedListing.price} TL\n*Kategori:* ${lastAddedListing.category} /${lastAddedListing.subCategory}\n*Satıcı:* ${lastAddedListing.seller} (${lastAddedListing.phone})`)}`}
