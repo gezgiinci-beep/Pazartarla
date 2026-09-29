@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import { 
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus, 
   Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, ChevronDown, X, 
@@ -7,12 +6,16 @@ import {
 } from 'lucide-react';
 
 // ==========================================
-// SUPABASE BAĞLANTI AYARLARI (Canlı Ortak Veritabanı)
+// SUPABASE REST API BAĞLANTI AYARLARI
 // ==========================================
 const SUPABASE_URL = 'https://srbarfjzsfkmglsnmbtw.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__8tUtClK2adq_ORRuL5PQ_oft6c';
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const dbHeaders = {
+  'apikey': SUPABASE_ANON_KEY,
+  'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+  'Content-Type': 'application/json'
+};
 
 const DEFAULT_START_LISTINGS = [
   {
@@ -72,15 +75,6 @@ export default function App() {
   const [categoriesWithSubs, setCategoriesWithSubs] = useState(FALLBACK_CATEGORIES);
   const [announcement, setAnnouncement] = useState('🌾 Türkiye genelinden tarım aletleri, veterinerler ve taze mahsul ilanları PazarTarla’da!');
 
-  const [favorites, setFavorites] = useState(() => {
-    try {
-      const savedFavs = localStorage.getItem('pazartarla_favorites');
-      return savedFavs ? JSON.parse(savedFavs) : [];
-    } catch (e) {
-      return [];
-    }
-  });
-
   const [selectedListing, setSelectedListing] = useState(null);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
@@ -104,33 +98,34 @@ export default function App() {
     isFeatured: false
   });
 
-  // Supabase Verilerini Çekme ve Canlı Senkronizasyon (Realtime)
-  useEffect(() => {
-    const timer = setTimeout(() => setShowSplash(false), 3500);
-
-    if (supabase) {
-      supabase.from('listings').select('*').then(({ data, error }) => {
-        if (!error && data && data.length > 0) {
+  // Supabase Verilerini Çekme (REST API üzerinden)
+  const fetchListings = async () => {
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/listings?select=*`, {
+        headers: dbHeaders
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.length > 0) {
           setListings(data);
         }
-      });
-
-      const channel = supabase
-        .channel('public:listings')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'listings' }, () => {
-          supabase.from('listings').select('*').then(({ data }) => {
-            if (data) setListings(data);
-          });
-        })
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-        clearTimeout(timer);
-      };
+      }
+    } catch (e) {
+      console.error('Veri çekme hatası:', e);
     }
+  };
 
-    return () => clearTimeout(timer);
+  useEffect(() => {
+    const timer = setTimeout(() => setShowSplash(false), 3500);
+    fetchListings();
+
+    // Her 5 saniyede bir otomatik senkronizasyon (Canlı Güncelleme)
+    const interval = setInterval(fetchListings, 5000);
+
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
   }, []);
 
   const changeTab = (tabName) => {
@@ -184,47 +179,68 @@ export default function App() {
     }
 
     const newEntry = {
-      ...form,
       title: sanitizeInput(form.title),
+      price: Number(form.price),
+      category: form.category,
+      subCategory: form.subCategory,
+      mode: form.mode,
+      location: sanitizeInput(form.location),
+      amount: sanitizeInput(form.amount),
       description: sanitizeInput(form.description),
       seller: sanitizeInput(form.seller),
       phone: sanitizeInput(form.phone),
       image: form.image || getSmartAutoImage(form.title, form.category),
-      price: Number(form.price),
+      seoTags: sanitizeInput(form.seoTags),
       status: 'pending',
       isFeatured: false
     };
 
-    if (supabase) {
-      const { error } = await supabase.from('listings').insert([newEntry]);
-      if (error) {
-        alert('İlan eklenirken hata oluştu: ' + error.message);
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/listings`, {
+        method: 'POST',
+        headers: { ...dbHeaders, 'Prefer': 'return=minimal' },
+        body: JSON.stringify(newEntry)
+      });
+
+      if (!res.ok) {
+        alert('İlan eklenirken veritabanı hatası oluştu.');
         return;
       }
-    } else {
-      setListings([ { ...newEntry, id: Date.now() }, ...listings ]);
+    } catch (err) {
+      alert('Bağlantı hatası.');
+      return;
     }
 
+    fetchListings();
     changeTab('home');
     alert('İlanınız başarıyla alındı. Onaylandıktan sonra tüm cihazlarda görünecektir.');
   };
 
   const approveListing = async (id) => {
     if (!isAdminLoggedIn) return;
-    if (supabase) {
-      await supabase.from('listings').update({ status: 'approved' }).eq('id', id);
-    } else {
-      setListings(listings.map(item => item.id === id ? { ...item, status: 'approved' } : item));
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/listings?id=eq.${id}`, {
+        method: 'PATCH',
+        headers: dbHeaders,
+        body: JSON.stringify({ status: 'approved' })
+      });
+      fetchListings();
+    } catch (e) {
+      console.error(e);
     }
   };
 
   const handleDeleteListing = async (id) => {
     if (!isAdminLoggedIn) return;
     if (window.confirm('Bu ilanı silmek istediğinize emin misiniz?')) {
-      if (supabase) {
-        await supabase.from('listings').delete().eq('id', id);
-      } else {
-        setListings(listings.filter(item => item.id !== id));
+      try {
+        await fetch(`${SUPABASE_URL}/rest/v1/listings?id=eq.${id}`, {
+          method: 'DELETE',
+          headers: dbHeaders
+        });
+        fetchListings();
+      } catch (e) {
+        console.error(e);
       }
     }
   };
@@ -314,7 +330,7 @@ export default function App() {
                 <img src={item.image} alt={item.title} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '8px' }} />
                 <div style={{ flex: 1 }}>
                   <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: '700' }}>{item.title}</h4>
-                  <div style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b' }}>{item.price.toLocaleString('tr-TR')} TL</div>
+                  <div style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b' }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
                   <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>📍 {item.location}</div>
                 </div>
               </div>
@@ -334,7 +350,7 @@ export default function App() {
                 <img src={item.image} alt={item.title} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '8px' }} />
                 <div style={{ flex: 1 }}>
                   <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: '700' }}>{item.title}</h4>
-                  <div style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b' }}>{item.price.toLocaleString('tr-TR')} TL</div>
+                  <div style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b' }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
                   <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>📍 {item.location}</div>
                 </div>
               </div>
@@ -347,7 +363,7 @@ export default function App() {
             <button onClick={() => changeTab('results')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer', marginBottom: '10px' }}>← Listeye Dön</button>
             <img src={selectedListing.image} alt={selectedListing.title} style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '8px', marginBottom: '10px' }} />
             <h2 style={{ fontSize: '18px', fontWeight: '800', margin: '8px 0' }}>{selectedListing.title}</h2>
-            <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '4px' }}>{selectedListing.price.toLocaleString('tr-TR')} TL</div>
+            <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '4px' }}>{Number(selectedListing.price).toLocaleString('tr-TR')} TL</div>
             <p style={{ color: '#475569', fontSize: '13px', marginBottom: '16px' }}>{selectedListing.description}</p>
             <a href={`tel:${selectedListing.phone}`} style={{ width: '100%', backgroundColor: '#1b3a2b', color: '#fff', padding: '12px', borderRadius: '8px', textAlign: 'center', fontWeight: '700', textDecoration: 'none', display: 'block' }}>
               📞 {selectedListing.phone} ({selectedListing.seller})
