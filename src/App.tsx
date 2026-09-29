@@ -92,6 +92,7 @@ export default function App() {
   const [adminPassword, setAdminPassword] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Tüm kategoriler');
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
+  const [poolIndex, setPoolIndex] = useState(0);
   
   const [form, setForm] = useState({
     title: '',
@@ -207,7 +208,7 @@ export default function App() {
     changeTab('success-wa');
   };
 
-  // SIRALI VE ASLA ÜST ÜSTE ÇAKIŞMAYAN AKILLI İLAN ÇEKME MİMARİSİ
+  // KESİN SIRALI VE KARIŞTIRMASIZ İLAN ÇEKME SİSTEMİ (SAYAÇLI)
   const handleAutoFetchListings = () => {
     if (!isAdminLoggedIn) return;
     
@@ -305,15 +306,8 @@ export default function App() {
       }
     ];
 
-    // Mevcut ilanlarda hiç geçmeyen veya en az tekrar eden öğeyi bulup sıradakini seçelim
-    const existingTitles = listings.map(l => l.title);
-    let nextItem = massivePool.find(item => !existingTitles.includes(item.title));
-    
-    // Eğer havuzdaki tüm ilanlar en az bir kez eklendiyse, döngüyü baştan al
-    if (!nextItem) {
-      const randomIndex = Math.floor(Math.random() * massivePool.length);
-      nextItem = massivePool[randomIndex];
-    }
+    const nextItem = massivePool[poolIndex % massivePool.length];
+    setPoolIndex(prev => prev + 1);
 
     const newEntry = {
       ...nextItem,
