@@ -94,7 +94,7 @@ export default function App() {
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
   const [openCategory, setOpenCategory] = useState('');
   const [adminOpenCategory, setAdminOpenCategory] = useState('');
-   
+  
   const [newCategoryName, setNewCategoryName] = useState('Mahsuller');
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
   const [selectedSubToRemove, setSelectedSubToRemove] = useState('');
@@ -140,7 +140,7 @@ export default function App() {
     const timer = setTimeout(() => setShowSplash(false), 3500);
     fetchListings();
 
-    // Canlı ortak senkronizasyon (Her 5 saniyede bir veritabanını kontrol eder)
+    // Canlı ortak senkronizasyon (Her 5 saniyede bir güncellenir)
     const interval = setInterval(fetchListings, 5000);
 
     return () => {
@@ -207,7 +207,14 @@ export default function App() {
 
   const handleEditFormChange = (e) => {
     const { name, value } = e.target;
-    setEditingListing(prev => ({ ...prev, [name]: value }));
+    setEditingListing(prev => {
+      const updated = { ...prev, [name]: value };
+      if (name === 'category') {
+        const subList = categoriesWithSubs[value] || ['Genel'];
+        updated.subCategory = subList[0];
+      }
+      return updated;
+    });
   };
 
   const handleImageUpload = (e) => {
@@ -268,7 +275,7 @@ export default function App() {
       });
 
       if (!res.ok) {
-        alert('İlan veritabanına eklenirken hata oluştu.');
+        alert('İlan eklenirken hata oluştu.');
         return;
       }
     } catch (err) {
@@ -281,6 +288,38 @@ export default function App() {
     changeTab('success-wa');
   };
 
+  const handleAutoFetchListings = async () => {
+    if (!isAdminLoggedIn) return;
+    const dynamicPool = {
+      title: 'New Holland TD100D Tarım Traktörü',
+      price: 1450000,
+      category: 'Traktör',
+      subCategory: 'İkinci El Traktör',
+      mode: 'Satılık',
+      location: 'Balıkesir / Gönen',
+      amount: '100 HP',
+      description: 'Tertemiz, bakımları tam tarla traktörü.',
+      seller: 'Can İnce',
+      phone: '0535 768 1550',
+      image: getSmartAutoImage('New Holland Traktör', 'Traktör'),
+      seoTags: 'new holland, traktör, gönen tarım',
+      status: 'pending',
+      isFeatured: false
+    };
+
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/listings`, {
+        method: 'POST',
+        headers: { ...dbHeaders, 'Prefer': 'return=minimal' },
+        body: JSON.stringify(dynamicPool)
+      });
+      fetchListings();
+      alert('🎉 Otomatik test ilanı kuyruğa eklendi.');
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const approveListing = async (id) => {
     if (!isAdminLoggedIn) return;
     try {
@@ -290,7 +329,6 @@ export default function App() {
         body: JSON.stringify({ status: 'approved' })
       });
       fetchListings();
-      alert('İlan onaylandı!');
     } catch (e) {
       console.error(e);
     }
@@ -315,7 +353,7 @@ export default function App() {
     if (!isAdminLoggedIn) return;
     const target = listings.find(i => i.id === id);
     if (!target) return;
-    
+
     try {
       await fetch(`${SUPABASE_URL}/rest/v1/listings?id=eq.${id}`, {
         method: 'PATCH',
@@ -328,10 +366,23 @@ export default function App() {
     }
   };
 
+  const startEditingFromDetail = (item) => {
+    if (!isAdminLoggedIn) {
+      alert('Önce Yönetici Paneline giriş yapmalısınız.');
+      changeTab('admin-page');
+      return;
+    }
+    setEditingListing(item);
+    changeTab('admin-page');
+    setTimeout(() => {
+      if (editFormRef.current) editFormRef.current.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  };
+
   const saveEditedListing = async (e) => {
     e.preventDefault();
     if (!isAdminLoggedIn) return;
-    
+
     try {
       await fetch(`${SUPABASE_URL}/rest/v1/listings?id=eq.${editingListing.id}`, {
         method: 'PATCH',
@@ -388,7 +439,8 @@ export default function App() {
     const currentSubs = categoriesWithSubs[catKey] || [];
     const updatedSubs = currentSubs.filter(sub => sub !== subToDel);
     setCategoriesWithSubs({ ...categoriesWithSubs, [catKey]: updatedSubs.length ? updatedSubs : ['Genel'] });
-    alert('Alt seçenek silindi!');
+    setSelectedSubToRemove('');
+    alert('Seçenek silindi!');
   };
 
   const handleDeleteCategory = (catKey) => {
@@ -493,6 +545,9 @@ export default function App() {
                     </div>
                     {isOpen && (
                       <div style={{ backgroundColor: '#fafafa', borderBottom: '1px solid #edf2f7' }}>
+                        <div onClick={() => { setSelectedCategory(cat); setSelectedSubCategory('Tümü'); changeTab('results'); }} style={{ padding: '10px 16px 10px 28px', borderBottom: '1px solid #f1f5f9', cursor: 'pointer', fontSize: '13px', color: '#166534', fontWeight: '600' }}>
+                          → Tüm {cat} İlanları
+                        </div>
                         {(categoriesWithSubs[cat] || []).map(sub => (
                           <div key={sub} onClick={(e) => { e.stopPropagation(); setSelectedCategory(cat); setSelectedSubCategory(sub); changeTab('results'); }} style={{ padding: '10px 16px 10px 28px', borderBottom: '1px solid #f1f5f9', cursor: 'pointer', fontSize: '13px', color: '#64748b' }}>
                             • {sub}
@@ -529,7 +584,15 @@ export default function App() {
 
         {activeTab === 'detail' && selectedListing && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
-            <button onClick={() => changeTab('results')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer', marginBottom: '10px' }}>← Listeye Dön</button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <button onClick={() => changeTab('results')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer' }}>← Listeye Dön</button>
+              {isAdminLoggedIn && (
+                <button onClick={() => startEditingFromDetail(selectedListing)} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: '700', fontSize: '12px', cursor: 'pointer' }}>
+                  ✏️ Bu İlanı Düzenle
+                </button>
+              )}
+            </div>
+
             <img src={selectedListing.image} alt={selectedListing.title} style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '8px', marginBottom: '10px' }} />
             <h2 style={{ fontSize: '18px', fontWeight: '800', margin: '8px 0' }}>{selectedListing.title}</h2>
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '4px' }}>{Number(selectedListing.price).toLocaleString('tr-TR')} TL</div>
@@ -586,11 +649,53 @@ export default function App() {
                   <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer' }}>Çıkış</button>
                 </div>
 
+                <div style={{ backgroundColor: '#ecfdf5', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
+                  <button type="button" onClick={handleAutoFetchListings} style={{ width: '100%', backgroundColor: '#059669', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>
+                    🤖 Otomatik Test İlanı Çek
+                  </button>
+                </div>
+
                 <div style={{ backgroundColor: '#fef9c3', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#854d0e', margin: '0 0 8px 0' }}>Duyuru Banner Yönetimi</h3>
                   <form onSubmit={saveAnnouncement} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <input type="text" value={tempAnnouncement} onChange={(e) => setTempAnnouncement(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #facc15' }} />
                     <button type="submit" style={{ backgroundColor: '#ca8a04', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Güncelle</button>
+                  </form>
+                </div>
+
+                {editingListing && (
+                  <div style={{ backgroundColor: '#f0fdf4', padding: '14px', borderRadius: '8px', border: '2px solid #22c55e', marginBottom: '20px' }}>
+                    <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 10px 0' }}>✏️ İlanı Düzenle</h3>
+                    <form onSubmit={saveEditedListing} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <input type="text" name="title" value={editingListing.title} onChange={handleEditFormChange} placeholder="Başlık" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                      <input type="number" name="price" value={editingListing.price} onChange={handleEditFormChange} placeholder="Fiyat" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                      <input type="text" name="location" value={editingListing.location} onChange={handleEditFormChange} placeholder="Konum" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                      <textarea name="description" value={editingListing.description} onChange={handleEditFormChange} placeholder="Açıklama" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '60px' }} />
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button type="submit" style={{ flex: 1, backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Kaydet</button>
+                        <button type="button" onClick={() => setEditingListing(null)} style={{ background: '#e2e8f0', border: 'none', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer' }}>İptal</button>
+                      </div>
+                    </form>
+                  </div>
+                )}
+
+                <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
+                  <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 8px 0' }}>Kategori & Alt Seçenek Yönetimi</h3>
+                  <form onSubmit={handleAddCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <select value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff' }}>
+                      {Object.keys(categoriesWithSubs).map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                    </select>
+                    
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <select value={selectedSubToRemove} onChange={(e) => setSelectedSubToRemove(e.target.value)} style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #ef4444', backgroundColor: '#fef2f2' }}>
+                        <option value="">Silinecek seçeneği seç...</option>
+                        {(categoriesWithSubs[newCategoryName] || []).map(sub => <option key={sub} value={sub}>{sub}</option>)}
+                      </select>
+                      <button type="button" onClick={() => handleDeleteSubCategory(newCategoryName, selectedSubToRemove)} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '0 10px', borderRadius: '6px', fontWeight: '700', fontSize: '11px', cursor: 'pointer' }}>Sil</button>
+                    </div>
+
+                    <input type="text" placeholder="Yeni alt seçenekler (Virgülle ayırın)" value={newSubCategoryName} onChange={(e) => setNewSubCategoryName(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                    <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Seçenek Ekle</button>
                   </form>
                 </div>
 
