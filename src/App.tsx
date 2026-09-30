@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = 'https://srbarfjzsfkmglsnmbtw.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable__8tUtClK2adq_ORRuL5PQ_oft6c';
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 export default function App() {
   const [listings, setListings] = useState<any[]>([]);
@@ -24,7 +22,15 @@ export default function App() {
   const [description, setDescription] = useState('');
 
   useEffect(() => {
-    fetchListings();
+    if ((window as any).supabase) {
+      fetchListings();
+    } else {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+      script.async = true;
+      script.onload = () => fetchListings();
+      document.body.appendChild(script);
+    }
   }, []);
 
   useEffect(() => {
@@ -41,8 +47,18 @@ export default function App() {
     setFilteredListings(result);
   }, [selectedCategory, searchQuery, listings]);
 
+  const getClient = () => {
+    const sb = (window as any).supabase;
+    if (sb) {
+      return sb.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+    return null;
+  };
+
   const fetchListings = async () => {
-    const { data, error } = await supabase.from('listings').select('*').order('created_at', { ascending: false });
+    const client = getClient();
+    if (!client) return;
+    const { data, error } = await client.from('listings').select('*').order('created_at', { ascending: false });
     if (!error && data) {
       setListings(data);
       setFilteredListings(data);
@@ -51,6 +67,11 @@ export default function App() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const client = getClient();
+    if (!client) {
+      alert('Bağlantı yükleniyor, lütfen birkaç saniye bekleyin.');
+      return;
+    }
 
     const rawPrice = price.toString().replace(/[^\d]/g, '');
     const parsedPrice = Number(rawPrice) || 0;
@@ -69,7 +90,7 @@ export default function App() {
     };
 
     try {
-      const { error } = await supabase
+      const { error } = await client
         .from('listings')
         .insert([listingData]);
 
@@ -91,7 +112,6 @@ export default function App() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#0f172a', color: '#f8fafc', fontFamily: 'system-ui, sans-serif' }}>
-      {/* Üst Header */}
       <header style={{ background: '#1e293b', borderBottom: '1px solid #334155', padding: '15px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => setView('home')}>
           <span style={{ fontSize: '26px' }}>🌾</span>
@@ -99,14 +119,13 @@ export default function App() {
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
           <button onClick={() => setView('home')} style={{ background: view === 'home' ? '#22c55e' : '#334155', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', cursor: 'pointer', fontWeight: '500' }}>İlanlar</button>
-          <button onClick={() => setView('create')} style={{ background: view === 'create' ? '#22c55e' : '#22c55e', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)' }}>+ Ücretsiz İlan Ver</button>
+          <button onClick={() => setView('create')} style={{ background: '#22c55e', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)' }}>+ Ücretsiz İlan Ver</button>
         </div>
       </header>
 
       <main style={{ maxWidth: '1100px', margin: '30px auto', padding: '0 20px' }}>
         {view === 'home' ? (
           <div>
-            {/* Arama ve Filtre Alanı */}
             <div style={{ background: '#1e293b', padding: '20px', borderRadius: '12px', border: '1px solid #334155', marginBottom: '25px', display: 'flex', flexWrap: 'wrap', gap: '15px', justifyContent: 'space-between', alignItems: 'center' }}>
               <input 
                 type="text" 
@@ -128,13 +147,12 @@ export default function App() {
               </div>
             </div>
 
-            {/* İlan Listesi */}
             <h2 style={{ fontSize: '20px', marginBottom: '20px', color: '#f8fafc', borderBottom: '2px solid #334155', paddingBottom: '10px' }}>Yayındaki Tarım ve Hayvancılık İlanları</h2>
             
             {filteredListings.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '60px', background: '#1e293b', borderRadius: '12px', border: '1px solid #334155' }}>
-                <p style={{ color: '#94a3b8', fontSize: '16px', marginBottom: '15px' }}>Aradığınız kriterlere uygun ilan bulunamadı.</p>
-                <button onClick={() => { setSelectedCategory('Tümü'); setSearchQuery(''); }} style={{ background: '#334155', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer' }}>Filtreleri Temizle</button>
+                <p style={{ color: '#94a3b8', fontSize: '16px', marginBottom: '15px' }}>Henüz ilan bulunmuyor veya yükleniyor...</p>
+                <button onClick={() => { setSelectedCategory('Tümü'); setSearchQuery(''); fetchListings(); }} style={{ background: '#334155', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer' }}>Yenile</button>
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '20px' }}>
@@ -159,7 +177,6 @@ export default function App() {
             )}
           </div>
         ) : (
-          /* İlan Ver Formu */
           <div style={{ background: '#1e293b', padding: '30px', borderRadius: '16px', border: '1px solid #334155', maxWidth: '650px', margin: '0 auto' }}>
             <h2 style={{ marginTop: 0, color: '#4ade80', fontSize: '22px', borderBottom: '1px solid #334155', paddingBottom: '15px' }}>PazarTarla'ya Yeni İlan Ekle</h2>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
@@ -179,7 +196,7 @@ export default function App() {
               </div>
 
               <div>
-                <label style={{ fontSize: '13px', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Fiyat (TL) * (Nokta veya virgül koysanız bile sistem otomatik düzenler)</label>
+                <label style={{ fontSize: '13px', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Fiyat (TL) *</label>
                 <input type="text" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Örn: 190000" required style={{ width: '100%', padding: '12px', background: '#0f172a', color: '#fff', border: '1px solid #475569', borderRadius: '8px', boxSizing: 'border-box' }} />
               </div>
 
@@ -196,17 +213,17 @@ export default function App() {
 
               <div>
                 <label style={{ fontSize: '13px', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Konum (Şehir / İlçe)</label>
-                <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Örn: Kocaeli / Gebze veya Balıkesir / Gönen" style={{ width: '100%', padding: '12px', background: '#0f172a', color: '#fff', border: '1px solid #475569', borderRadius: '8px', boxSizing: 'border-box' }} />
+                <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Örn: Kocaeli / Gebze" style={{ width: '100%', padding: '12px', background: '#0f172a', color: '#fff', border: '1px solid #475569', borderRadius: '8px', boxSizing: 'border-box' }} />
               </div>
 
               <div>
-                <label style={{ fontSize: '13px', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Görsel URL (İsteğe bağlı - boş bırakırsanız varsayılan eklenir)</label>
+                <label style={{ fontSize: '13px', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Görsel URL (İsteğe bağlı)</label>
                 <input type="text" value={image} onChange={(e) => setImage(e.target.value)} placeholder="https://..." style={{ width: '100%', padding: '12px', background: '#0f172a', color: '#fff', border: '1px solid #475569', borderRadius: '8px', boxSizing: 'border-box' }} />
               </div>
 
               <div>
                 <label style={{ fontSize: '13px', color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Açıklama</label>
-                <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="İlan detayları, özellikler ve durum bilgisi..." style={{ width: '100%', padding: '12px', background: '#0f172a', color: '#fff', border: '1px solid #475569', borderRadius: '8px', boxSizing: 'border-box', height: '120px' }}></textarea>
+                <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="İlan detayları..." style={{ width: '100%', padding: '12px', background: '#0f172a', color: '#fff', border: '1px solid #475569', borderRadius: '8px', boxSizing: 'border-box', height: '120px' }}></textarea>
               </div>
 
               <button type="submit" style={{ width: '100%', padding: '14px', background: '#22c55e', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '16px', marginTop: '10px' }}>🚀 İlanı Yayınla</button>
@@ -215,7 +232,6 @@ export default function App() {
         )}
       </main>
 
-      {/* İlan Detay Modalı */}
       {activeListing && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '20px' }} onClick={() => setActiveListing(null)}>
           <div style={{ background: '#1e293b', width: '100%', maxWidth: '650px', borderRadius: '16px', border: '1px solid #334155', overflow: 'hidden', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }} onClick={(e) => e.stopPropagation()}>
