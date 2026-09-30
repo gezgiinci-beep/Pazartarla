@@ -356,12 +356,12 @@ export default function App() {
         )}
       </main>
 
-      <footer style={{ backgroundColor: '#ffffff', borderTop: '1px solid #e5e7eb', padding: '24px 0', marginTop: '48px', textAlign: 'center' }}>
+      <footer style={{ backgroundColor: '#1b3a2b', borderTop: '1px solid #142c20', padding: '24px 0', marginTop: '48px', textAlign: 'center', color: '#ffffff' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-          <p style={{ color: '#4b5563', fontSize: '14px', margin: 0 }}>© 2026 PazarTarla - Tarım ve Ürün Pazarı</p>
+          <p style={{ color: '#e2e8f0', fontSize: '14px', margin: 0 }}>© 2026 PazarTarla - Tarım ve Ürün Pazarı</p>
           <button 
             onClick={() => changeTab('admin')} 
-            style={{ background: 'none', border: 'none', color: '#047857', fontWeight: '600', cursor: 'pointer', fontSize: '14px' }}
+            style={{ background: 'none', border: 'none', color: '#86efac', fontWeight: '600', cursor: 'pointer', fontSize: '14px' }}
           >
             Admin Paneli
           </button>
