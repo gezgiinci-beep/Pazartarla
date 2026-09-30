@@ -64,13 +64,11 @@ const FALLBACK_CATEGORIES = {
 };
 
 export default function App() {
-  const [showSplash, setShowSplash] = useState(false);
   const [activeTab, setActiveTab] = useState('home'); 
   const editFormRef = useRef(null);
    
   const [listings, setListings] = useState(DEFAULT_START_LISTINGS);
   const [categoriesWithSubs, setCategoriesWithSubs] = useState(FALLBACK_CATEGORIES);
-  const [announcement, setAnnouncement] = useState('🌾 Türkiye genelinden tarım aletleri, veterinerler ve taze mahsul ilanları PazarTarla’da!');
 
   const [selectedListing, setSelectedListing] = useState(null);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
@@ -87,8 +85,8 @@ export default function App() {
     location: 'Türkiye Geneli',
     amount: '',
     description: '',
-    seller: '',
-    phone: '',
+    seller: 'Can İnce',
+    phone: '0535 768 1550',
     image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
     seoTags: '',
     status: 'pending',
@@ -266,9 +264,12 @@ export default function App() {
           </div>
         </div>
 
-        <div>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <button onClick={() => changeTab('add')} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: '700', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Plus size={16} /> İlan Ver
+          </button>
+          <button onClick={() => changeTab('admin-page')} title="Yönetim Paneli" style={{ backgroundColor: '#11221b', color: '#86efac', border: '1px solid #22c55e', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: '700', fontSize: '12px' }}>
+            ⚙️ Yönetim
           </button>
         </div>
       </header>
@@ -372,7 +373,7 @@ export default function App() {
               <input type="text" name="phone" placeholder="Telefon Numaranız *" value={form.phone} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               <input type="text" name="title" placeholder="İlan Başlığı *" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               <input type="number" name="price" placeholder="Fiyat (TL) *" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
-              
+               
               <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>Ana Kategori:</label>
               <select name="category" value={form.category} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
                 {Object.keys(categoriesWithSubs).map(cat => <option key={cat} value={cat}>{cat}</option>)}
@@ -397,8 +398,9 @@ export default function App() {
             {!isAdminLoggedIn ? (
               <div style={{ maxWidth: '320px', margin: '30px auto', textAlign: 'center' }}>
                 <h2 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '10px' }}>Yönetici Girişi</h2>
+                <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '15px' }}>Yönetim paneline erişmek için şifrenizi girin (Şifre: 5538)</p>
                 <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <input type="password" placeholder="Şifre (5538)" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', textAlign: 'center' }} />
+                  <input type="password" placeholder="Şifre" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', textAlign: 'center' }} />
                   <button type="submit" style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Giriş Yap</button>
                 </form>
               </div>
@@ -408,7 +410,7 @@ export default function App() {
                   <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>🛡️ Canlı Yönetim Paneli</h2>
                   <button onClick={() => changeTab('home')} style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>Anasayfaya Dön</button>
                 </div>
-                
+                 
                 <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#d97706' }}>⏳ Onay Bekleyen İlanlar ({listings.filter(i => i.status === 'pending').length})</h3>
                 {listings.filter(i => i.status === 'pending').length === 0 ? (
                   <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '20px' }}>Onay bekleyen ilan bulunmuyor.</p>
@@ -454,10 +456,6 @@ export default function App() {
         <p style={{ margin: '0 0 4px 0', color: '#86efac' }}>İletişim / Destek: 0535 768 1550 | destek@pazartarla.com.tr</p>
         <p style={{ margin: 0, color: '#94a3b8' }}>© 2026 Tüm Hakları Saklıdır.</p>
       </footer>
-
-      <button onClick={() => changeTab('admin-page')} title="Yönetim Paneli" style={{ position: 'fixed', bottom: '20px', right: '20px', backgroundColor: '#1b3a2b', color: '#86efac', border: '2px solid #22c55e', borderRadius: '50%', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 999 }}>
-        ⚙️
-      </button>
     </div>
   );
 }
