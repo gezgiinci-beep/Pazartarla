@@ -232,6 +232,7 @@ export default function App() {
     changeTab('success-wa');
   };
 
+  // OTOMATİK TEST İLANI ÇEK (Supabase Şemasına %100 Uyumlu Güvenli Mod)
   const handleAutoFetchListings = async () => {
     if (!isAdminLoggedIn) return;
     
@@ -255,11 +256,14 @@ export default function App() {
       });
       if (res.ok) {
         fetchListings();
-        alert('🎉 Otomatik test ilanı başarıyla çekildi!');
+        alert('🎉 Otomatik test ilanı başarıyla çekildi ve yayına alındı!');
       } else {
-        alert('Test ilanı eklenirken sunucu reddetti.');
+        const errDetails = await res.text();
+        console.error('Supabase Hata Detayı:', errDetails);
+        alert('Test ilanı eklenirken sunucu reddetti. Lütfen konsolu kontrol edin.');
       }
     } catch (e) {
+      console.error(e);
       alert('Bağlantı hatası oluştu.');
     }
   };
@@ -465,7 +469,7 @@ export default function App() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button onClick={() => changeTab('favorites')} style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>
-            ❤️ ({favorites.length})
+            ❤️️ ({favorites.length})
           </button>
           <button onClick={() => changeTab('add')} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: '700', fontSize: '13px' }}>
             <Plus size={16} /> İlan Ver
