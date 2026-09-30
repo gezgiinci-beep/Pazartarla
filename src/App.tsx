@@ -54,7 +54,7 @@
 
     <script>
         const presets = {
-            arazi: { title: "Gönen Kalburcu'da 5 Yıllık Cevizli Tarla", price: 2850000, category: "Arazi & Tarla", location: "Balıkesir / Gönen", image: "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800", description: "8.300 m2 içinde damla sulama sistemi kurulu, verimli cevizli tarla." },
+            arazi: { title: "Gönen Kalburcu'da 5 Yıllık Chandler Cevizli Tarla", price: 2850000, category: "Arazi & Tarla", location: "Balıkesir / Gönen", image: "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800", description: "8.300 m2 içinde damla sulama sistemi kurulu, verimli Chandler cevizli tarla." },
             ceviz: { title: "Tarladan Doğrudan Taze Chandler Ceviz", price: 140, category: "Mahsuller", location: "Gönen / Balıkesir", image: "https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800", description: "Kendi bahçemizin ürünü, ilaçsız ve dolgun Chandler ceviz." },
             traktor: { title: "New Holland TD100D Tarım Traktörü", price: 1450000, category: "Traktör", location: "Balıkesir / Gönen", image: "https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800", description: "Tertemiz, bakımları tam tarla traktörü." },
             kovan: { title: "Meşe Ormanı Çevresinde 10 Kovan Arı ve Bal", price: 3500, category: "Arıcılık", location: "Gönen / Kalburcu", image: "https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800", description: "Zengin flora çevresinde üretilen doğal arı kovanı ve bal seti." },
