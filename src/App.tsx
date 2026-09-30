@@ -124,7 +124,7 @@ export default function App() {
                 <option value="Arıcılık">Arıcılık</option>
               </select>
 
-              <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '4px' => Konum</label>
+              <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Konum</label>
               <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Örn: Kocaeli / Gebze" style={{ width: '100%', padding: '10px', marginBottom: '10px', background: '#0f172a', color: '#fff', border: '1px solid #475569', borderRadius: '6px', boxSizing: 'border-box' }} />
 
               <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Görsel URL (İsteğe bağlı)</label>
