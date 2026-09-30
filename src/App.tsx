@@ -64,7 +64,7 @@ const FALLBACK_CATEGORIES = {
 };
 
 export default function App() {
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(false);
   const [activeTab, setActiveTab] = useState('home'); 
   const editFormRef = useRef(null);
    
@@ -96,8 +96,6 @@ export default function App() {
   });
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowSplash(false), 3500);
-
     if (supabase) {
       supabase.from('listings').select('*').then(({ data, error }) => {
         if (!error && data && data.length > 0) {
@@ -116,11 +114,8 @@ export default function App() {
 
       return () => {
         supabase.removeChannel(channel);
-        clearTimeout(timer);
       };
     }
-
-    return () => clearTimeout(timer);
   }, []);
 
   const changeTab = (tabName) => {
@@ -261,22 +256,10 @@ export default function App() {
         return matchesCategory && matchesSubCategory;
       });
 
-  if (showSplash) {
-    return (
-      <div style={{ position: 'fixed', inset: 0, backgroundColor: '#0f172a', color: '#f8fafc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '24px', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '32px', fontWeight: '700', margin: 0 }}>Türkiye'nin İlk ve Tek <br /><span style={{ color: '#2add9c' }}>Tarım Platformu</span></h1>
-      </div>
-    );
-  }
-
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f4f6f8', color: '#1e293b', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', boxSizing: 'border-box' }}>
       <header style={{ backgroundColor: '#1b3a2b', color: '#ffffff', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => { changeTab('home'); setSelectedCategory('Tüm kategoriler'); }}>
-          <div style={{ backgroundColor: '#22c55e', padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span>🌾</span>
-            <Tractor size={18} color="#fff" />
-          </div>
           <div>
             <h1 style={{ margin: 0, fontSize: '18px', fontWeight: '800' }}>PazarTarla</h1>
             <span style={{ fontSize: '10px', color: '#86efac' }}>Canlı Ortak Platform</span>
@@ -291,38 +274,32 @@ export default function App() {
       </header>
 
       <main style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '12px', flex: 1, boxSizing: 'border-box' }}>
-        <div style={{ backgroundColor: '#fef08a', color: '#713f12', padding: '10px 14px', borderRadius: '10px', marginBottom: '12px', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #facc15' }}>
-          <Megaphone size={16} color="#854d0e" />
-          <span>{announcement}</span>
-        </div>
-
         {activeTab === 'home' && (
           <div>
-            {/* VİTRİN İLANLARI KISMI */}
+            {/* VİTRİN İLANLARI */}
             {featuredListings.length > 0 && (
               <div style={{ marginBottom: '16px' }}>
-                <h3 style={{ fontSize: '15px', fontWeight: '800', marginBottom: '8px', color: '#1b3a2b', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Star size={16} fill="#f59e0b" color="#f59e0b" /> Vitrin İlanları (Öne Çıkanlar)
+                <h3 style={{ fontSize: '14px', fontWeight: '800', marginBottom: '8px', color: '#1b3a2b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Star size={15} fill="#f59e0b" color="#f59e0b" /> Vitrin İlanları
                 </h3>
                 {featuredListings.map(item => (
                   <div key={item.id} onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ backgroundColor: '#fffbeb', borderRadius: '10px', overflow: 'hidden', border: '1px solid #fde68a', cursor: 'pointer', display: 'flex', gap: '10px', padding: '10px', marginBottom: '8px' }}>
-                    <img src={item.image} alt={item.title} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '8px' }} />
+                    <img src={item.image} alt={item.title} style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px' }} />
                     <div style={{ flex: 1 }}>
-                      <span style={{ backgroundColor: '#f59e0b', color: '#fff', fontSize: '10px', fontWeight: '700', padding: '2px 6px', borderRadius: '4px' }}>VİTRİN</span>
+                      <span style={{ backgroundColor: '#f59e0b', color: '#fff', fontSize: '9px', fontWeight: '700', padding: '2px 6px', borderRadius: '4px' }}>VİTRİN</span>
                       <h4 style={{ margin: '4px 0', fontSize: '13px', fontWeight: '700' }}>{item.title}</h4>
-                      <div style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b' }}>{item.price.toLocaleString('tr-TR')} TL</div>
-                      <div style={{ fontSize: '11px', color: '#64748b' }}>📍 {item.location}</div>
+                      <div style={{ fontSize: '14px', fontWeight: '800', color: '#1b3a2b' }}>{item.price.toLocaleString('tr-TR')} TL</div>
                     </div>
                   </div>
                 ))}
               </div>
             )}
 
-            {/* ANA VE ALT KATEGORİLER */}
+            {/* ANA KATEGORİLER VE ALT KATEGORİLER */}
             <div style={{ backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflow: 'hidden', border: '1px solid #e2e8f0', marginBottom: '16px' }}>
               <div style={{ backgroundColor: '#1b3a2b', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <Menu size={20} />
-                <span style={{ fontSize: '16px', fontWeight: '700' }}>Kategoriler ve Alt Kategoriler</span>
+                <span style={{ fontSize: '16px', fontWeight: '700' }}>Kategoriler (Canlı)</span>
               </div>
 
               <div onClick={() => { setSelectedCategory('Tüm kategoriler'); setSelectedSubCategory('Tümü'); changeTab('results'); }} style={{ padding: '14px 16px', borderBottom: '1px solid #edf2f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', backgroundColor: '#f8fafc' }}>
@@ -333,10 +310,10 @@ export default function App() {
               {Object.entries(categoriesWithSubs).map(([catName, subList]) => (
                 <div key={catName} style={{ borderBottom: '1px solid #edf2f7' }}>
                   <div onClick={() => { setSelectedCategory(catName); setSelectedSubCategory('Tümü'); changeTab('results'); }} style={{ padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', backgroundColor: '#fff' }}>
-                    <span style={{ fontWeight: '700', color: '#1e293b', fontSize: '14px' }}>📂 {catName}</span>
-                    <span style={{ color: '#64748b', fontSize: '12px' }}>({approvedListings.filter(i => i.category === catName).length})</span>
+                    <span style={{ fontWeight: '600', color: '#334155', fontSize: '14px' }}>{catName}</span>
+                    <span style={{ color: '#94a3b8', fontSize: '13px' }}>({approvedListings.filter(i => i.category === catName).length})</span>
                   </div>
-                  <div style={{ padding: '0 16px 10px 24px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  <div style={{ padding: '0 16px 10px 16px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                     {subList.map(sub => (
                       <span key={sub} onClick={(e) => { e.stopPropagation(); setSelectedCategory(catName); setSelectedSubCategory(sub); changeTab('results'); }} style={{ backgroundColor: '#f1f5f9', color: '#475569', fontSize: '11px', fontWeight: '600', padding: '4px 8px', borderRadius: '6px', cursor: 'pointer', border: '1px solid #e2e8f0' }}>
                         {sub}
@@ -346,19 +323,6 @@ export default function App() {
                 </div>
               ))}
             </div>
-
-            <h3 style={{ fontSize: '15px', fontWeight: '800', marginBottom: '10px', color: '#1b3a2b' }}>Tüm Onaylı İlanlar</h3>
-            {regularApprovedListings.map(item => (
-              <div key={item.id} onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ backgroundColor: '#fff', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer', display: 'flex', gap: '10px', padding: '10px', marginBottom: '10px' }}>
-                <img src={item.image} alt={item.title} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '8px' }} />
-                <div style={{ flex: 1 }}>
-                  <span style={{ fontSize: '10px', color: '#22c55e', fontWeight: '700' }}>{item.category} &gt; {item.subCategory}</span>
-                  <h4 style={{ margin: '2px 0 4px 0', fontSize: '13px', fontWeight: '700' }}>{item.title}</h4>
-                  <div style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b' }}>{item.price.toLocaleString('tr-TR')} TL</div>
-                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>📍 {item.location}</div>
-                </div>
-              </div>
-            ))}
           </div>
         )}
 
@@ -440,7 +404,10 @@ export default function App() {
               </div>
             ) : (
               <div>
-                <h2 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '16px' }}>🛡️ Canlı Yönetim Paneli</h2>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>🛡️ Canlı Yönetim Paneli</h2>
+                  <button onClick={() => changeTab('home')} style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>Anasayfaya Dön</button>
+                </div>
                 
                 <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#d97706' }}>⏳ Onay Bekleyen İlanlar ({listings.filter(i => i.status === 'pending').length})</h3>
                 {listings.filter(i => i.status === 'pending').length === 0 ? (
@@ -460,11 +427,11 @@ export default function App() {
                   ))
                 )}
 
-                <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1b3a2b', marginTop: '20px' }}>🌟 Yayındaki İlanlar ve Vitrin Yönetimi</h3>
-                {approvedListings.map(item => (
+                <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1b3a2b', marginTop: '20px' }}>🌟 Vitrin Yönetimi</h3>
+                {listings.map(item => (
                   <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', backgroundColor: '#f8fafc', borderRadius: '6px', marginBottom: '8px', border: '1px solid #e2e8f0' }}>
                     <div style={{ fontSize: '12px' }}>
-                      <strong>{item.title}</strong> ({item.price} TL)<br />
+                      <strong>{item.title}</strong><br />
                       <span style={{ color: '#64748b' }}>{item.category} &gt; {item.subCategory}</span>
                     </div>
                     <div style={{ display: 'flex', gap: '4px' }}>
@@ -481,11 +448,11 @@ export default function App() {
         )}
       </main>
 
-     {/* İletişim Bilgileri ve Banner İçeren Alt Kısım */}
+      {/* İLETİŞİM VE BANNER ALANI */}
       <footer style={{ backgroundColor: '#1b3a2b', color: '#fff', padding: '16px', textAlign: 'center', marginTop: '20px', fontSize: '12px' }}>
         <p style={{ margin: '0 0 6px 0', fontWeight: '700' }}>PazarTarla - Türkiye'nin Güvenilir Tarım ve İlan Platformu</p>
         <p style={{ margin: '0 0 4px 0', color: '#86efac' }}>İletişim / Destek: 0535 768 1550 | destek@pazartarla.com.tr</p>
-       <p style={{ margin: 0, color: '#94a3b8' }}>© 2026 Tüm Hakları Saklıdır.</p>
+        <p style={{ margin: 0, color: '#94a3b8' }}>© 2026 Tüm Hakları Saklıdır.</p>
       </footer>
 
       <button onClick={() => changeTab('admin-page')} title="Yönetim Paneli" style={{ position: 'fixed', bottom: '20px', right: '20px', backgroundColor: '#1b3a2b', color: '#86efac', border: '2px solid #22c55e', borderRadius: '50%', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 999 }}>
