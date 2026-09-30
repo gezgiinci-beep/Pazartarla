@@ -481,11 +481,11 @@ export default function App() {
         )}
       </main>
 
-      {/* İletişim Bilgileri ve Banner İçeren Alt Kısım */}
+     {/* İletişim Bilgileri ve Banner İçeren Alt Kısım */}
       <footer style={{ backgroundColor: '#1b3a2b', color: '#fff', padding: '16px', textAlign: 'center', marginTop: '20px', fontSize: '12px' }}>
         <p style={{ margin: '0 0 6px 0', fontWeight: '700' }}>PazarTarla - Türkiye'nin Güvenilir Tarım ve İlan Platformu</p>
         <p style={{ margin: '0 0 4px 0', color: '#86efac' }}>İletişim / Destek: 0535 768 1550 | destek@pazartarla.com.tr</p>
-        <p style={{ margin: 0, color: '#94a3b8' }}>© 2026 Tüm Hakları Saklıdır.</p>
+       <p style={{ margin: 0, color: '#94a3b8' }}>© 2026 Tüm Hakları Saklıdır.</p>
       </footer>
 
       <button onClick={() => changeTab('admin-page')} title="Yönetim Paneli" style={{ position: 'fixed', bottom: '20px', right: '20px', backgroundColor: '#1b3a2b', color: '#86efac', border: '2px solid #22c55e', borderRadius: '50%', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 999 }}>
