@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trash2, FolderPlus, Package, LogOut } from 'lucide-react';
+import { Trash2, FolderPlus, Package, LogOut, Edit2 } from 'lucide-react';
 
 export function AdminPanel() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -48,6 +48,7 @@ export function AdminPanel() {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
 
+  const [editingId, setEditingId] = useState(null);
   const [newListing, setNewListing] = useState({
     title: '', category: categories[0]?.name || '', price: '', city: 'Gönen / Balıkesir', description: '', seoDescription: '', seoKeywords: ''
   });
@@ -91,7 +92,29 @@ export function AdminPanel() {
   const handleDeleteListing = (id) => {
     if (window.confirm('Bu ilanı silmek istediğinize emin misiniz?')) {
       setListings(listings.filter(item => item.id !== id));
+      if (editingId === id) {
+        handleCancelEdit();
+      }
     }
+  };
+
+  const handleStartEdit = (item) => {
+    setEditingId(item.id);
+    setNewListing({
+      title: item.title || '',
+      category: item.category || categories[0]?.name || '',
+      price: item.price || '',
+      city: item.city || 'Gönen / Balıkesir',
+      description: item.description || '',
+      seoDescription: item.seoDescription || '',
+      seoKeywords: item.seoKeywords || ''
+    });
+    window.scrollTo({ top: 400, behavior: 'smooth' });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setNewListing({ title: '', category: categories[0]?.name || '', price: '', city: 'Gönen / Balıkesir', description: '', seoDescription: '', seoKeywords: '' });
   };
 
   const handleDescriptionChange = (e) => {
@@ -109,15 +132,25 @@ export function AdminPanel() {
 
   const handleAddListingSubmit = (e) => {
     e.preventDefault();
-    const listingToAdd = {
-      ...newListing,
-      id: Date.now(),
-      price: Number(newListing.price),
-      image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800'
-    };
-    setListings([listingToAdd, ...listings]);
-    alert('İlan başarıyla eklendi!');
-    setNewListing({ title: '', category: categories[0]?.name || '', price: '', city: 'Gönen / Balıkesir', description: '', seoDescription: '', seoKeywords: '' });
+    if (editingId) {
+      setListings(listings.map(item => item.id === editingId ? {
+        ...item,
+        ...newListing,
+        price: Number(newListing.price)
+      } : item));
+      alert('İlan başarıyla güncellendi!');
+      handleCancelEdit();
+    } else {
+      const listingToAdd = {
+        ...newListing,
+        id: Date.now(),
+        price: Number(newListing.price),
+        image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800'
+      };
+      setListings([listingToAdd, ...listings]);
+      alert('İlan başarıyla eklendi!');
+      setNewListing({ title: '', category: categories[0]?.name || '', price: '', city: 'Gönen / Balıkesir', description: '', seoDescription: '', seoKeywords: '' });
+    }
   };
 
   if (!isAuthenticated) {
@@ -197,7 +230,17 @@ export function AdminPanel() {
       </div>
 
       <div style={{ backgroundColor: '#fffbeb', padding: '20px', borderRadius: '8px', marginBottom: '30px', border: '1px solid #fde68a' }}>
-        <h3 style={{ fontSize: '16px', color: '#92400e', margin: '0 0 15px 0' }}>✨ Yeni İlan Ekle (Otomatik SEO)</h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+          <h3 style={{ fontSize: '16px', color: '#92400e', margin: 0 }}>
+            {editingId ? '✏️ İlanı Düzenle' : '✨ Yeni İlan Ekle (Otomatik SEO)'}
+          </h3>
+          {editingId && (
+            <button type="button" onClick={handleCancelEdit} style={{ background: '#6b7280', color: '#fff', border: 'none', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
+              İptal Et
+            </button>
+          )}
+        </div>
+
         <form onSubmit={handleAddListingSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <input 
             type="text" placeholder="İlan Başlığı" required
@@ -238,8 +281,8 @@ export function AdminPanel() {
             />
           </div>
 
-          <button type="submit" style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
-            İlanı Yayınla
+          <button type="submit" style={{ backgroundColor: editingId ? '#d97706' : '#059669', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
+            {editingId ? 'Değişiklikleri Kaydet' : 'İlanı Yayınla'}
           </button>
         </form>
       </div>
@@ -252,9 +295,14 @@ export function AdminPanel() {
               <strong style={{ color: '#111827', display: 'block' }}>{item.title}</strong>
               <span style={{ fontSize: '12px', color: '#6b7280' }}>{item.category} • {item.price} TL</span>
             </div>
-            <button onClick={() => handleDeleteListing(item.id)} style={{ background: '#dc2626', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
-              Sil
-            </button>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button onClick={() => handleStartEdit(item)} style={{ background: '#2563eb', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Edit2 size={12} /> Düzenle
+              </button>
+              <button onClick={() => handleDeleteListing(item.id)} style={{ background: '#dc2626', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
+                Sil
+              </button>
+            </div>
           </div>
         ))}
       </div>
