@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trash2, FolderPlus, Package, LogOut } from 'lucide-react';
+import { Trash2, FolderPlus, Package, LogOut, Edit2 } from 'lucide-react';
 
 export function AdminPanel() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -20,6 +20,9 @@ export function AdminPanel() {
       category: "Tarım Makineleri",
       price: 140,
       city: "Gönen / Balıkesir",
+      description: "Kendi bahçemizin ürünü, ilaçsız ve dolgun Chandler ceviz.",
+      seoDescription: "Kendi bahçemizin ürünü, ilaçsız ve dolgun Chandler ceviz.",
+      seoKeywords: "bahçemizin ürünü, ilaçsız, dolgun Chandler ceviz",
       image: "https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800"
     }
   ];
@@ -45,7 +48,8 @@ export function AdminPanel() {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
 
-  // Otomatik SEO özellikli yeni ilan state'i
+  // İlan ekleme/düzenleme state'i
+  const [editingId, setEditingId] = useState(null);
   const [newListing, setNewListing] = useState({
     title: '', category: categories[0]?.name || '', price: '', city: 'Gönen / Balıkesir', description: '', seoDescription: '', seoKeywords: ''
   });
@@ -80,7 +84,6 @@ export function AdminPanel() {
     alert('Kategori başarıyla eklendi!');
   };
 
-  // Kategori Silme Fonksiyonu
   const handleDeleteCategory = (catId) => {
     if (window.confirm('Bu kategoriyi silmek istediğinize emin misiniz?')) {
       setCategories(categories.filter(cat => cat.id !== catId));
@@ -90,10 +93,31 @@ export function AdminPanel() {
   const handleDeleteListing = (id) => {
     if (window.confirm('Bu ilanı silmek istediğinize emin misiniz?')) {
       setListings(listings.filter(item => item.id !== id));
+      if (editingId === id) {
+        handleCancelEdit();
+      }
     }
   };
 
-  // Açıklama yazıldığında otomatik SEO üreten fonksiyon
+  const handleStartEdit = (item) => {
+    setEditingId(item.id);
+    setNewListing({
+      title: item.title || '',
+      category: item.category || categories[0]?.name || '',
+      price: item.price || '',
+      city: item.city || 'Gönen / Balıkesir',
+      description: item.description || '',
+      seoDescription: item.seoDescription || '',
+      seoKeywords: item.seoKeywords || ''
+    });
+    window.scrollTo({ top: 400, behavior: 'smooth' });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setNewListing({ title: '', category: categories[0]?.name || '', price: '', city: 'Gönen / Balıkesir', description: '', seoDescription: '', seoKeywords: '' });
+  };
+
   const handleDescriptionChange = (e) => {
     const text = e.target.value;
     const autoSeoDesc = text.substring(0, 150) + (text.length > 150 ? '...' : '');
@@ -109,15 +133,27 @@ export function AdminPanel() {
 
   const handleAddListingSubmit = (e) => {
     e.preventDefault();
-    const listingToAdd = {
-      ...newListing,
-      id: Date.now(),
-      price: Number(newListing.price),
-      image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800'
-    };
-    setListings([listingToAdd, ...listings]);
-    alert('İlan başarıyla eklendi!');
-    setNewListing({ title: '', category: categories[0]?.name || '', price: '', city: 'Gönen / Balıkesir', description: '', seoDescription: '', seoKeywords: '' });
+    if (editingId) {
+      // Güncelleme Modu
+      setListings(listings.map(item => item.id === editingId ? {
+        ...item,
+        ...newListing,
+        price: Number(newListing.price)
+      } : item));
+      alert('İlan başarıyla güncellendi!');
+      handleCancelEdit();
+    } else {
+      // Yeni Ekleme Modu
+      const listingToAdd = {
+        ...newListing,
+        id: Date.now(),
+        price: Number(newListing.price),
+        image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800'
+      };
+      setListings([listingToAdd, ...listings]);
+      alert('İlan başarıyla eklendi!');
+      setNewListing({ title: '', category: categories[0]?.name || '', price: '', city: 'Gönen / Balıkesir', description: '', seoDescription: '', seoKeywords: '' });
+    }
   };
 
   if (!isAuthenticated) {
@@ -198,9 +234,19 @@ export function AdminPanel() {
         </form>
       </div>
 
-      {/* İLAN EKLEME VE OTOMATİK SEO */}
+      {/* İLAN EKLEME / DÜZENLEME VE OTOMATİK SEO */}
       <div style={{ backgroundColor: '#fffbeb', padding: '20px', borderRadius: '8px', marginBottom: '30px', border: '1px solid #fde68a' }}>
-        <h3 style={{ fontSize: '16px', color: '#92400e', margin: '0 0 15px 0' }}>✨ Yeni İlan Ekle (Otomatik SEO)</h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+          <h3 style={{ fontSize: '16px', color: '#92400e', margin: 0 }}>
+            {editingId ? '✏️ İlanı Düzenle' : '✨ Yeni İlan Ekle (Otomatik SEO)'}
+          </h3>
+          {editingId && (
+            <button type="button" onClick={handleCancelEdit} style={{ background: '#6b7280', color: '#fff', border: 'none', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
+              İptal Et
+            </button>
+          )}
+        </div>
+
         <form onSubmit={handleAddListingSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <input 
             type="text" placeholder="İlan Başlığı" required
@@ -241,19 +287,29 @@ export function AdminPanel() {
             />
           </div>
 
-          <button type="submit" style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
-            İlanı Yayınla
+          <button type="submit" style={{ backgroundColor: editingId ? '#d97706' : '#059669', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
+            {editingId ? 'Değişiklikleri Kaydet' : 'İlanı Yayınla'}
           </button>
         </form>
       </div>
 
-      {/* İLAN YÖNETİMİ */}
+      {/* İLAN YÖNETİMİ (LİSTE & DÜZENLE / SİL) */}
       <h3 style={{ fontSize: '18px', color: '#1f2937', marginBottom: '15px' }}>İlan Yönetimi ({listings.length})</h3>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '250px', overflowY: 'auto' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '300px', overflowY: 'auto' }}>
         {listings.map(item => (
           <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 15px', backgroundColor: '#f9fafb', borderRadius: '6px', border: '1px solid #e5e7eb' }}>
-            <span>{item.title}</span>
-            <button onClick={() => handleDeleteListing(item.id)} style={{ background: '#dc2626', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Sil</button>
+            <div>
+              <strong style={{ color: '#111827', display: 'block' }}>{item.title}</strong>
+              <span style={{ fontSize: '12px', color: '#6b7280' }}>{item.category} • {item.price} TL</span>
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button onClick={() => handleStartEdit(item)} style={{ background: '#2563eb', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Edit2 size={12} /> Düzenle
+              </button>
+              <button onClick={() => handleDeleteListing(item.id)} style={{ background: '#dc2626', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
+                Sil
+              </button>
+            </div>
           </div>
         ))}
       </div>
