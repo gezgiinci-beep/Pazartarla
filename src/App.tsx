@@ -6,10 +6,10 @@ import {
 } from 'lucide-react';
 
 // ==========================================
-// SUPABASE REST API BAĞLANTI AYARLARI
+// SUPABASE BAĞLANTI AYARLARI (Vercel Güvenli Okuma)
 // ==========================================
-const SUPABASE_URL = 'https://srbarfjzsfkmglsnmbtw.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable__8tUtClK2adq_ORRuL5PQ_oft6c';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://srbarfjzsfkmglsnmbtw.supabase.co';
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable__8tUtClK2adq_ORRuL5PQ_oft6c';
 
 const dbHeaders = {
   'apikey': SUPABASE_ANON_KEY,
@@ -64,8 +64,8 @@ const FALLBACK_CATEGORIES = {
   'Tarım Ekipmanları': ['Römork', 'İlaçlama Makinesi', 'Çapa Makinası', 'Pulluk', 'Kepçe & Yükleyici'],
   'Tarım İşçileri': ['Hasat Ekibi', 'Budama Ekibi'],
   'Uzmanlar': ['Veterinerler', 'Ziraatçiler'],
-  'endüstriyel çadırlar': ['Çadır Örtüsü', 'Depo Çadırı'],
-  'geçici konutlar': ['konteyner', 'çadır', 'prefabrik']
+  'Endüstriyel Çadırlar': ['Çadır Örtüsü', 'Depo Çadırı'],
+  'Geçici Konutlar': ['Konteyner', 'Çadır', 'Prefabrik']
 };
 
 export default function App() {
@@ -99,6 +99,9 @@ export default function App() {
   const [selectedSubToRemove, setSelectedSubToRemove] = useState('');
   const [editingListing, setEditingListing] = useState(null);
   const [lastAddedListing, setLastAddedListing] = useState(null);
+
+  // Yeni Ana Kategori Ekleme / Silme State'leri
+  const [customCategoryInput, setCustomCategoryInput] = useState('');
 
   const [form, setForm] = useState({
     title: '',
@@ -255,7 +258,9 @@ export default function App() {
       });
 
       if (!res.ok) {
-        alert('İlan eklenirken hata oluştu.');
+        const errText = await res.text();
+        console.error('Supabase Ekleme Hatası:', errText);
+        alert('İlan eklenirken sunucu reddetti. Lütfen anahtarlarınızı kontrol edin.');
         return;
       }
     } catch (err) {
@@ -271,7 +276,6 @@ export default function App() {
   const handleAutoFetchListings = async () => {
     if (!isAdminLoggedIn) return;
     
-    // Supabase şeması ile tam uyumlu temel alanlar (id gönderilmez, veritabanı otomatik oluşturur)
     const dynamicPool = {
       title: 'New Holland TD100D Tarım Traktörü',
       price: 1450000,
@@ -407,7 +411,34 @@ export default function App() {
     }
   };
 
-  const handleAddCategory = (e) => {
+  // Yeni Ana Kategori Ekleme
+  const handleAddNewMainCategory = (e) => {
+    e.preventDefault();
+    if (!isAdminLoggedIn) return;
+    if (!customCategoryInput.trim()) return;
+    const cat = customCategoryInput.trim();
+    if (categoriesWithSubs[cat]) {
+      alert('Bu kategori zaten mevcut!');
+      return;
+    }
+    setCategoriesWithSubs({ ...categoriesWithSubs, [cat]: ['Genel'] });
+    setCustomCategoryInput('');
+    alert(`"${cat}" ana kategorisi başarıyla eklendi!`);
+  };
+
+  // Ana Kategori Silme
+  const handleDeleteMainCategory = (catKey) => {
+    if (!isAdminLoggedIn) return;
+    if (window.confirm(`"${catKey}" kategorisini ve altındaki tüm seçenekleri silmek istediğinize emin misiniz?`)) {
+      const updated = { ...categoriesWithSubs };
+      delete updated[catKey];
+      setCategoriesWithSubs(updated);
+      alert('Kategori silindi!');
+    }
+  };
+
+  // Alt Kategori Ekleme
+  const handleAddSubCategory = (e) => {
     e.preventDefault();
     if (!isAdminLoggedIn) return;
     const catName = newCategoryName;
@@ -509,7 +540,7 @@ export default function App() {
             <CheckCircle size={36} color="#166534" style={{ margin: '0 auto 12px auto' }} />
             <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#1b3a2b', margin: '0 0 8px 0' }}>İlanınız Başarıyla Alındı!</h2>
             <p style={{ color: '#64748b', fontSize: '13px', marginBottom: '20px' }}>Yönetici onayından sonra tüm cihazlarda görünecektir.</p>
-            
+             
             {lastAddedListing && (
               <a 
                 href={`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(`🔔 *Yeni İlan Onay Bekliyor!*\n\n*Başlık:* ${lastAddedListing.title}\n*Fiyat:*${lastAddedListing.price} TL\n*Kategori:* ${lastAddedListing.category} /${lastAddedListing.subCategory}\n*Satıcı:* ${lastAddedListing.seller} (${lastAddedListing.phone})`)}`}
@@ -527,6 +558,24 @@ export default function App() {
 
         {activeTab === 'home' && (
           <div>
+            {/* VİTRİN İLANLARI BÖLÜMÜ */}
+            {featuredListings.length > 0 && (
+              <div style={{ marginBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', fontWeight: '800', fontSize: '14px', color: '#854d0e' }}>
+                  <Star size={16} fill="#eab308" color="#eab308" /> Vitrin İlanları
+                </div>
+                <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '4px' }}>
+                  {featuredListings.map(item => (
+                    <div key={`feat-${item.id}`} onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ minWidth: '160px', maxWidth: '160px', backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #fde047', cursor: 'pointer', overflow: 'hidden', flexShrink: 0, padding: '8px' }}>
+                      <img src={item.image} alt={item.title} style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '6px', marginBottom: '6px' }} />
+                      <div style={{ fontSize: '12px', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</div>
+                      <div style={{ fontSize: '13px', fontWeight: '800', color: '#1b3a2b', marginTop: '2px' }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div style={{ backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflow: 'hidden', border: '1px solid #e2e8f0', marginBottom: '16px' }}>
               <div style={{ backgroundColor: '#1b3a2b', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <Menu size={20} />
@@ -620,7 +669,7 @@ export default function App() {
               <input type="text" name="phone" placeholder="Telefon Numaranız *" value={form.phone} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               <input type="text" name="title" placeholder="İlan Başlığı *" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               <input type="number" name="price" placeholder="Fiyat (TL) *" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
-              
+               
               <select name="category" value={form.category} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
                 {Object.keys(categoriesWithSubs).map(cat => <option key={cat} value={cat}>{cat}</option>)}
               </select>
@@ -630,7 +679,7 @@ export default function App() {
               </select>
 
               <input type="text" name="location" placeholder="Konum (Örn: Gönen / Balıkesir)" value={form.location} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
-              
+               
               <div style={{ backgroundColor: '#f8fafc', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>📷 Fotoğraf Yükle (Dosya Seç veya URL Yapıştır)</label>
                 <input type="file" accept="image/*" onChange={handleImageUpload} style={{ width: '100%', fontSize: '12px' }} />
@@ -682,7 +731,7 @@ export default function App() {
                       <input type="text" name="title" value={editingListing.title} onChange={handleEditFormChange} placeholder="Başlık" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       <input type="number" name="price" value={editingListing.price} onChange={handleEditFormChange} placeholder="Fiyat" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       <input type="text" name="location" value={editingListing.location} onChange={handleEditFormChange} placeholder="Konum" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-                      
+                       
                       <div style={{ backgroundColor: '#fff', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <label style={{ fontSize: '11px', fontWeight: '700', color: '#475569' }}>📷 Fotoğrafı Değiştir (Dosya veya URL)</label>
                         <input type="file" accept="image/*" onChange={handleEditImageUpload} style={{ width: '100%', fontSize: '11px' }} />
@@ -698,13 +747,31 @@ export default function App() {
                   </div>
                 )}
 
+                {/* YENİ ANA KATEGORİ EKLEME & SİLME BÖLÜMÜ */}
+                <div style={{ backgroundColor: '#f0fdf4', padding: '12px', borderRadius: '8px', border: '1px solid #bbf7d0', marginBottom: '20px' }}>
+                  <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 8px 0' }}>📁 Ana Kategori Ekle / Sil</h3>
+                  <form onSubmit={handleAddNewMainCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '10px' }}>
+                    <input type="text" placeholder="Yeni Ana Kategori Adı" value={customCategoryInput} onChange={(e) => setCustomCategoryInput(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                    <button type="submit" style={{ backgroundColor: '#166534', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Ana Kategori Ekle</button>
+                  </form>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <select id="mainCatDelSelect" style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #ef4444', backgroundColor: '#fef2f2' }}>
+                      {Object.keys(categoriesWithSubs).map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                    </select>
+                    <button type="button" onClick={() => {
+                      const sel = document.getElementById('mainCatDelSelect').value;
+                      handleDeleteMainCategory(sel);
+                    }} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '0 10px', borderRadius: '6px', fontWeight: '700', fontSize: '11px', cursor: 'pointer' }}>Ana Kategoriyi Sil</button>
+                  </div>
+                </div>
+
                 <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
-                  <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 8px 0' }}>Kategori & Alt Seçenek Yönetimi</h3>
-                  <form onSubmit={handleAddCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 8px 0' }}>Alt Seçenek Yönetimi</h3>
+                  <form onSubmit={handleAddSubCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <select value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff' }}>
                       {Object.keys(categoriesWithSubs).map(cat => <option key={cat} value={cat}>{cat}</option>)}
                     </select>
-                    
+                     
                     <div style={{ display: 'flex', gap: '6px' }}>
                       <select value={selectedSubToRemove} onChange={(e) => setSelectedSubToRemove(e.target.value)} style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #ef4444', backgroundColor: '#fef2f2' }}>
                         <option value="">Silinecek seçeneği seç...</option>
@@ -714,7 +781,7 @@ export default function App() {
                     </div>
 
                     <input type="text" placeholder="Yeni alt seçenekler (Virgülle ayırın)" value={newSubCategoryName} onChange={(e) => setNewSubCategoryName(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-                    <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Seçenek Ekle</button>
+                    <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Alt Seçenek Ekle</button>
                   </form>
                 </div>
 
