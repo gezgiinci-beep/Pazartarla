@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
 
-// Supabase Bağlantısı
-const SUPABASE_URL = 'https://srbarfjzsfkmglsnmbtw.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable__8tUtClK2adq_ORRuL5PQ_oft6c';
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Supabase CDN üzerinden güvenli bağlantı (npm paket bağımlılığı gerektirmez)
+declare const supabase: any;
 
 export default function App() {
   const [listings, setListings] = useState<any[]>([]);
@@ -20,26 +17,48 @@ export default function App() {
   const [image, setImage] = useState('');
   const [description, setDescription] = useState('');
 
+  const SUPABASE_URL = 'https://srbarfjzsfkmglsnmbtw.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable__8tUtClK2adq_ORRuL5PQ_oft6c';
+
   useEffect(() => {
-    fetchListings();
+    // Supabase kütüphanesinin CDN'den yüklenmesini bekleyip verileri çekiyoruz
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+    script.async = true;
+    script.onload = () => {
+      fetchListings();
+    };
+    document.body.appendChild(script);
   }, []);
 
+  const getClient = () => {
+    //@ts-ignore
+    if (window.supabase) {
+      //@ts-ignore
+      return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+    return null;
+  };
+
   const fetchListings = async () => {
-    const { data, error } = await supabase.from('listings').select('*').order('created_at', { ascending: false });
+    const client = getClient();
+    if (!client) return;
+    const { data, error } = await client.from('listings').select('*').order('created_at', { ascending: false });
     if (!error && data) {
       setListings(data);
     }
   };
 
-  // Akıllı ve Hataya Dayanıklı Gönderim Fonksiyonu
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const client = getClient();
+    if (!client) {
+      alert('Veritabanı bağlantısı yükleniyor, lütfen birkaç saniye bekleyin.');
+      return;
+    }
 
-    // Fiyat alanındaki nokta, virgül ve harfleri temizleyip tam sayıya çeviriyoruz
     const rawPrice = price.toString().replace(/[^\d]/g, '');
     const parsedPrice = Number(rawPrice) || 0;
-
-    // Görsel girilmediyse varsayılan bir tarım/doğa görseli atıyoruz
     const finalImage = image.trim() || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800';
 
     const listingData = {
@@ -55,16 +74,14 @@ export default function App() {
     };
 
     try {
-      const { error } = await supabase
+      const { error } = await client
         .from('listings')
         .insert([listingData]);
 
       if (error) {
-        console.error('Supabase hatası:', error.message);
         alert('İlan eklenirken sunucu reddetti: ' + error.message);
       } else {
         alert('🎉 İlan başarıyla yayınlandı!');
-        // Formu sıfırla ve ana sayfaya dön
         setTitle('');
         setPrice('');
         setDescription('');
@@ -73,7 +90,6 @@ export default function App() {
         fetchListings();
       }
     } catch (err: any) {
-      console.error('Bağlantı hatası:', err);
       alert('Sunucu bağlantısında bir sorun oluştu.');
     }
   };
@@ -93,7 +109,7 @@ export default function App() {
           <div>
             <h2>Yayındaki İlanlar</h2>
             {listings.length === 0 ? (
-              <p style={{ color: '#94a3b8' }}>Henüz ilan bulunmuyor.</p>
+              <p style={{ color: '#94a3b8' }}>Henüz ilan bulunmuyor veya yükleniyor...</p>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                 {listings.map((item) => (
@@ -121,7 +137,7 @@ export default function App() {
               <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>İlan Başlığı *</label>
               <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Örn: Yağlı Süt Efsanesi Orijinal Danimarka Jersey" required style={{ width: '100%', padding: '10px', marginBottom: '10px', background: '#0f172a', color: '#fff', border: '1px solid #475569', borderRadius: '6px', boxSizing: 'border-box' }} />
 
-              <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Fiyat (TL) * (Nokta veya virgül koysanız bile sistem otomatik düzenler)</label>
+              <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Fiyat (TL) *</label>
               <input type="text" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Örn: 190000" required style={{ width: '100%', padding: '10px', marginBottom: '10px', background: '#0f172a', color: '#fff', border: '1px solid #475569', borderRadius: '6px', boxSizing: 'border-box' }} />
 
               <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Kategori</label>
@@ -136,7 +152,7 @@ export default function App() {
               <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Konum</label>
               <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Örn: Kocaeli / Gebze" style={{ width: '100%', padding: '10px', marginBottom: '10px', background: '#0f172a', color: '#fff', border: '1px solid #475569', borderRadius: '6px', boxSizing: 'border-box' }} />
 
-              <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Görsel URL (İsteğe bağlı - boş bırakırsanız varsayılan eklenir)</label>
+              <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Görsel URL (İsteğe bağlı)</label>
               <input type="text" value={image} onChange={(e) => setImage(e.target.value)} placeholder="https://..." style={{ width: '100%', padding: '10px', marginBottom: '10px', background: '#0f172a', color: '#fff', border: '1px solid #475569', borderRadius: '6px', boxSizing: 'border-box' }} />
 
               <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Açıklama</label>
