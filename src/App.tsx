@@ -104,7 +104,6 @@ export default function App() {
     isFeatured: false
   });
 
-  // Supabase Verilerini Çekme ve Canlı Senkronizasyon (Realtime)
   useEffect(() => {
     const timer = setTimeout(() => setShowSplash(false), 3500);
 
