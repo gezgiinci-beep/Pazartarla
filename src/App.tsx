@@ -211,6 +211,19 @@ export default function App() {
     }
   };
 
+  const makeFeatured = async (id, currentStatus) => {
+    if (!isAdminLoggedIn) return;
+    const newFeaturedState = !currentStatus;
+    if (supabase) {
+      const { error } = await supabase.from('listings').update({ isFeatured: newFeaturedState }).eq('id', id);
+      if (!error) {
+        setListings(listings.map(item => item.id === id ? { ...item, isFeatured: newFeaturedState } : item));
+      }
+    } else {
+      setListings(listings.map(item => item.id === id ? { ...item, isFeatured: newFeaturedState } : item));
+    }
+  };
+
   const handleDeleteListing = async (id) => {
     if (!isAdminLoggedIn) return;
     if (window.confirm('Bu ilanı silmek/reddetmek istediğinize emin misiniz?')) {
@@ -285,10 +298,31 @@ export default function App() {
 
         {activeTab === 'home' && (
           <div>
+            {/* VİTRİN İLANLARI KISMI */}
+            {featuredListings.length > 0 && (
+              <div style={{ marginBottom: '16px' }}>
+                <h3 style={{ fontSize: '15px', fontWeight: '800', marginBottom: '8px', color: '#1b3a2b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Star size={16} fill="#f59e0b" color="#f59e0b" /> Vitrin İlanları (Öne Çıkanlar)
+                </h3>
+                {featuredListings.map(item => (
+                  <div key={item.id} onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ backgroundColor: '#fffbeb', borderRadius: '10px', overflow: 'hidden', border: '1px solid #fde68a', cursor: 'pointer', display: 'flex', gap: '10px', padding: '10px', marginBottom: '8px' }}>
+                    <img src={item.image} alt={item.title} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '8px' }} />
+                    <div style={{ flex: 1 }}>
+                      <span style={{ backgroundColor: '#f59e0b', color: '#fff', fontSize: '10px', fontWeight: '700', padding: '2px 6px', borderRadius: '4px' }}>VİTRİN</span>
+                      <h4 style={{ margin: '4px 0', fontSize: '13px', fontWeight: '700' }}>{item.title}</h4>
+                      <div style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b' }}>{item.price.toLocaleString('tr-TR')} TL</div>
+                      <div style={{ fontSize: '11px', color: '#64748b' }}>📍 {item.location}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* ANA VE ALT KATEGORİLER */}
             <div style={{ backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflow: 'hidden', border: '1px solid #e2e8f0', marginBottom: '16px' }}>
               <div style={{ backgroundColor: '#1b3a2b', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <Menu size={20} />
-                <span style={{ fontSize: '16px', fontWeight: '700' }}>Kategoriler (Canlı)</span>
+                <span style={{ fontSize: '16px', fontWeight: '700' }}>Kategoriler ve Alt Kategoriler</span>
               </div>
 
               <div onClick={() => { setSelectedCategory('Tüm kategoriler'); setSelectedSubCategory('Tümü'); changeTab('results'); }} style={{ padding: '14px 16px', borderBottom: '1px solid #edf2f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', backgroundColor: '#f8fafc' }}>
@@ -296,20 +330,30 @@ export default function App() {
                 <span style={{ color: '#22c55e', fontWeight: '700' }}>({approvedListings.length})</span>
               </div>
 
-              {Object.keys(categoriesWithSubs).map(cat => (
-                <div key={cat} onClick={() => { setSelectedCategory(cat); setSelectedSubCategory('Tümü'); changeTab('results'); }} style={{ padding: '14px 16px', borderBottom: '1px solid #edf2f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
-                  <span style={{ fontWeight: '600', color: '#334155', fontSize: '14px' }}>{cat}</span>
-                  <span style={{ color: '#94a3b8', fontSize: '13px' }}>({approvedListings.filter(i => i.category === cat).length})</span>
+              {Object.entries(categoriesWithSubs).map(([catName, subList]) => (
+                <div key={catName} style={{ borderBottom: '1px solid #edf2f7' }}>
+                  <div onClick={() => { setSelectedCategory(catName); setSelectedSubCategory('Tümü'); changeTab('results'); }} style={{ padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', backgroundColor: '#fff' }}>
+                    <span style={{ fontWeight: '700', color: '#1e293b', fontSize: '14px' }}>📂 {catName}</span>
+                    <span style={{ color: '#64748b', fontSize: '12px' }}>({approvedListings.filter(i => i.category === catName).length})</span>
+                  </div>
+                  <div style={{ padding: '0 16px 10px 24px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {subList.map(sub => (
+                      <span key={sub} onClick={(e) => { e.stopPropagation(); setSelectedCategory(catName); setSelectedSubCategory(sub); changeTab('results'); }} style={{ backgroundColor: '#f1f5f9', color: '#475569', fontSize: '11px', fontWeight: '600', padding: '4px 8px', borderRadius: '6px', cursor: 'pointer', border: '1px solid #e2e8f0' }}>
+                        {sub}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
 
-            <h3 style={{ fontSize: '15px', fontWeight: '800', marginBottom: '10px', color: '#1b3a2b' }}>Son Eklenen İlanlar</h3>
-            {approvedListings.map(item => (
+            <h3 style={{ fontSize: '15px', fontWeight: '800', marginBottom: '10px', color: '#1b3a2b' }}>Tüm Onaylı İlanlar</h3>
+            {regularApprovedListings.map(item => (
               <div key={item.id} onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ backgroundColor: '#fff', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer', display: 'flex', gap: '10px', padding: '10px', marginBottom: '10px' }}>
                 <img src={item.image} alt={item.title} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '8px' }} />
                 <div style={{ flex: 1 }}>
-                  <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: '700' }}>{item.title}</h4>
+                  <span style={{ fontSize: '10px', color: '#22c55e', fontWeight: '700' }}>{item.category} &gt; {item.subCategory}</span>
+                  <h4 style={{ margin: '2px 0 4px 0', fontSize: '13px', fontWeight: '700' }}>{item.title}</h4>
                   <div style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b' }}>{item.price.toLocaleString('tr-TR')} TL</div>
                   <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>📍 {item.location}</div>
                 </div>
@@ -322,14 +366,15 @@ export default function App() {
           <div>
             <div style={{ backgroundColor: '#1b3a2b', color: '#fff', borderRadius: '10px', padding: '10px 14px', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <button onClick={() => changeTab('home')} style={{ background: 'none', border: 'none', color: '#86efac', fontWeight: '700', cursor: 'pointer' }}><ArrowLeft size={16} /> Kategoriler</button>
-              <span>{filteredListings.length} sonuç</span>
+              <span>{selectedCategory} ({selectedSubCategory}) - {filteredListings.length} sonuç</span>
             </div>
 
             {filteredListings.map(item => (
               <div key={item.id} onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ backgroundColor: '#fff', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer', display: 'flex', gap: '10px', padding: '10px', marginBottom: '10px' }}>
                 <img src={item.image} alt={item.title} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '8px' }} />
                 <div style={{ flex: 1 }}>
-                  <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: '700' }}>{item.title}</h4>
+                  <span style={{ fontSize: '10px', color: '#22c55e', fontWeight: '700' }}>{item.category} &gt; {item.subCategory}</span>
+                  <h4 style={{ margin: '2px 0 4px 0', fontSize: '13px', fontWeight: '700' }}>{item.title}</h4>
                   <div style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b' }}>{item.price.toLocaleString('tr-TR')} TL</div>
                   <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>📍 {item.location}</div>
                 </div>
@@ -342,7 +387,8 @@ export default function App() {
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
             <button onClick={() => changeTab('results')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer', marginBottom: '10px' }}>← Listeye Dön</button>
             <img src={selectedListing.image} alt={selectedListing.title} style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '8px', marginBottom: '10px' }} />
-            <h2 style={{ fontSize: '18px', fontWeight: '800', margin: '8px 0' }}>{selectedListing.title}</h2>
+            <span style={{ fontSize: '12px', color: '#22c55e', fontWeight: '700' }}>{selectedListing.category} / {selectedListing.subCategory}</span>
+            <h2 style={{ fontSize: '18px', fontWeight: '800', margin: '4px 0' }}>{selectedListing.title}</h2>
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '4px' }}>{selectedListing.price.toLocaleString('tr-TR')} TL</div>
             <p style={{ color: '#475569', fontSize: '13px', marginBottom: '16px' }}>{selectedListing.description}</p>
             <a href={`tel:${selectedListing.phone}`} style={{ width: '100%', backgroundColor: '#1b3a2b', color: '#fff', padding: '12px', borderRadius: '8px', textAlign: 'center', fontWeight: '700', textDecoration: 'none', display: 'block' }}>
@@ -363,10 +409,12 @@ export default function App() {
               <input type="text" name="title" placeholder="İlan Başlığı *" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               <input type="number" name="price" placeholder="Fiyat (TL) *" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               
+              <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>Ana Kategori:</label>
               <select name="category" value={form.category} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
                 {Object.keys(categoriesWithSubs).map(cat => <option key={cat} value={cat}>{cat}</option>)}
               </select>
 
+              <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>Alt Kategori:</label>
               <select name="subCategory" value={form.subCategory} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
                 {(categoriesWithSubs[form.category] || ['Genel']).map(sub => <option key={sub} value={sub}>{sub}</option>)}
               </select>
@@ -393,9 +441,10 @@ export default function App() {
             ) : (
               <div>
                 <h2 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '16px' }}>🛡️ Canlı Yönetim Paneli</h2>
+                
                 <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#d97706' }}>⏳ Onay Bekleyen İlanlar ({listings.filter(i => i.status === 'pending').length})</h3>
                 {listings.filter(i => i.status === 'pending').length === 0 ? (
-                  <p style={{ fontSize: '13px', color: '#64748b' }}>Onay bekleyen ilan bulunmuyor.</p>
+                  <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '20px' }}>Onay bekleyen ilan bulunmuyor.</p>
                 ) : (
                   listings.filter(i => i.status === 'pending').map(item => (
                     <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', backgroundColor: '#fefce8', borderRadius: '6px', marginBottom: '8px' }}>
@@ -410,6 +459,22 @@ export default function App() {
                     </div>
                   ))
                 )}
+
+                <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1b3a2b', marginTop: '20px' }}>🌟 Yayındaki İlanlar ve Vitrin Yönetimi</h3>
+                {approvedListings.map(item => (
+                  <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', backgroundColor: '#f8fafc', borderRadius: '6px', marginBottom: '8px', border: '1px solid #e2e8f0' }}>
+                    <div style={{ fontSize: '12px' }}>
+                      <strong>{item.title}</strong> ({item.price} TL)<br />
+                      <span style={{ color: '#64748b' }}>{item.category} &gt; {item.subCategory}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      <button onClick={() => makeFeatured(item.id, item.isFeatured)} style={{ backgroundColor: item.isFeatured ? '#f59e0b' : '#cbd5e1', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: '700', fontSize: '12px' }}>
+                        {item.isFeatured ? '⭐ Vitrinden Çıkar' : '☆ Vitrine Ekle'}
+                      </button>
+                      <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: '700', fontSize: '12px' }}>Sil</button>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -424,7 +489,7 @@ export default function App() {
       </footer>
 
       <button onClick={() => changeTab('admin-page')} title="Yönetim Paneli" style={{ position: 'fixed', bottom: '20px', right: '20px', backgroundColor: '#1b3a2b', color: '#86efac', border: '2px solid #22c55e', borderRadius: '50%', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 999 }}>
-        ⚙️️
+        ⚙️
       </button>
     </div>
   );
