@@ -1,9 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
-
-const SUPABASE_URL = 'https://srbarfjzsfkmglsnmbtw.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable__8tUtClK2adq_ORRuL5PQ_oft6c';
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 export default function App() {
   const [listings, setListings] = useState<any[]>([]);
@@ -18,12 +13,34 @@ export default function App() {
   const [image, setImage] = useState('');
   const [description, setDescription] = useState('');
 
+  const SUPABASE_URL = 'https://srbarfjzsfkmglsnmbtw.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable__8tUtClK2adq_ORRuL5PQ_oft6c';
+
   useEffect(() => {
-    fetchListings();
+    // Supabase kütüphanesini tarayıcıya dinamik yükleyip verileri çekiyoruz
+    if ((window as any).supabase) {
+      fetchListings();
+    } else {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+      script.async = true;
+      script.onload = () => fetchListings();
+      document.body.appendChild(script);
+    }
   }, []);
 
+  const getClient = () => {
+    const sb = (window as any).supabase;
+    if (sb) {
+      return sb.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+    return null;
+  };
+
   const fetchListings = async () => {
-    const { data, error } = await supabase.from('listings').select('*').order('created_at', { ascending: false });
+    const client = getClient();
+    if (!client) return;
+    const { data, error } = await client.from('listings').select('*').order('created_at', { ascending: false });
     if (!error && data) {
       setListings(data);
     }
@@ -31,6 +48,11 @@ export default function App() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const client = getClient();
+    if (!client) {
+      alert('Veritabanı bağlantısı yükleniyor, lütfen 2 saniye bekleyip tekrar deneyin.');
+      return;
+    }
 
     const rawPrice = price.toString().replace(/[^\d]/g, '');
     const parsedPrice = Number(rawPrice) || 0;
@@ -49,7 +71,7 @@ export default function App() {
     };
 
     try {
-      const { error } = await supabase
+      const { error } = await client
         .from('listings')
         .insert([listingData]);
 
