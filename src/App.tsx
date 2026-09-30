@@ -1,49 +1,29 @@
 import React, { useState, useEffect } from 'react';
+import { createClient } from '@supabase/supabase-js';
 
-// Supabase CDN üzerinden güvenli bağlantı (npm paket bağımlılığı gerektirmez)
-declare const supabase: any;
+const SUPABASE_URL = 'https://srbarfjzsfkmglsnmbtw.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable__8tUtClK2adq_ORRuL5PQ_oft6c';
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 export default function App() {
   const [listings, setListings] = useState<any[]>([]);
   const [view, setView] = useState<'home' | 'create'>('home');
 
-  // Form State'leri
   const [seller, setSeller] = useState('Can İnce');
   const [phone, setPhone] = useState('0535 768 1550');
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
   const [category, setCategory] = useState('Canlı Hayvanlar');
-  const [location, setLocation] = useState('Gönen / Balıkesir');
+  const [location, setLocation] = useState('Kocaeli / Gebze');
   const [image, setImage] = useState('');
   const [description, setDescription] = useState('');
 
-  const SUPABASE_URL = 'https://srbarfjzsfkmglsnmbtw.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable__8tUtClK2adq_ORRuL5PQ_oft6c';
-
   useEffect(() => {
-    // Supabase kütüphanesinin CDN'den yüklenmesini bekleyip verileri çekiyoruz
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
-    script.async = true;
-    script.onload = () => {
-      fetchListings();
-    };
-    document.body.appendChild(script);
+    fetchListings();
   }, []);
 
-  const getClient = () => {
-    //@ts-ignore
-    if (window.supabase) {
-      //@ts-ignore
-      return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    }
-    return null;
-  };
-
   const fetchListings = async () => {
-    const client = getClient();
-    if (!client) return;
-    const { data, error } = await client.from('listings').select('*').order('created_at', { ascending: false });
+    const { data, error } = await supabase.from('listings').select('*').order('created_at', { ascending: false });
     if (!error && data) {
       setListings(data);
     }
@@ -51,11 +31,6 @@ export default function App() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const client = getClient();
-    if (!client) {
-      alert('Veritabanı bağlantısı yükleniyor, lütfen birkaç saniye bekleyin.');
-      return;
-    }
 
     const rawPrice = price.toString().replace(/[^\d]/g, '');
     const parsedPrice = Number(rawPrice) || 0;
@@ -74,12 +49,12 @@ export default function App() {
     };
 
     try {
-      const { error } = await client
+      const { error } = await supabase
         .from('listings')
         .insert([listingData]);
 
       if (error) {
-        alert('İlan eklenirken sunucu reddetti: ' + error.message);
+        alert('İlan eklenirken hata oluştu: ' + error.message);
       } else {
         alert('🎉 İlan başarıyla yayınlandı!');
         setTitle('');
@@ -109,7 +84,7 @@ export default function App() {
           <div>
             <h2>Yayındaki İlanlar</h2>
             {listings.length === 0 ? (
-              <p style={{ color: '#94a3b8' }}>Henüz ilan bulunmuyor veya yükleniyor...</p>
+              <p style={{ color: '#94a3b8' }}>Henüz ilan bulunmuyor.</p>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                 {listings.map((item) => (
@@ -149,7 +124,7 @@ export default function App() {
                 <option value="Arıcılık">Arıcılık</option>
               </select>
 
-              <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Konum</label>
+              <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '4px' => Konum</label>
               <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Örn: Kocaeli / Gebze" style={{ width: '100%', padding: '10px', marginBottom: '10px', background: '#0f172a', color: '#fff', border: '1px solid #475569', borderRadius: '6px', boxSizing: 'border-box' }} />
 
               <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Görsel URL (İsteğe bağlı)</label>
