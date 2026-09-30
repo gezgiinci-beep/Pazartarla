@@ -44,7 +44,7 @@ export default function App() {
     const SUPABASE_URL = 'https://srbarfjzsfkmglsnmbtw.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable__8tUtClK2adq_ORRuL5PQ_oft6c';
 
-    const payload = {
+    const data = {
       title: formData.title.trim(),
       price: Number(formData.price),
       category: formData.category.trim(),
@@ -56,7 +56,7 @@ export default function App() {
       status: 'approved'
     };
 
-    if (!payload.title || !payload.price) {
+    if (!data.title || !data.price) {
       alert('Lütfen başlık ve fiyat alanlarını doldurun!');
       return;
     }
@@ -70,7 +70,7 @@ export default function App() {
           'Content-Type': 'application/json',
           'Prefer': 'return=minimal'
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(data)
       });
 
       if (res.ok) {
@@ -86,8 +86,8 @@ export default function App() {
   };
 
   return (
-    <div style={{ fontFamily: 'system-ui, sans-serif', background: '#0f172a', padding: '20px', minHeight: '100vh', color: '#f8fafc' }}>
-      <div style={{ background: '#1e293b', padding: '20px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', border: '1px solid #334155', maxWidth: '480px', margin: '0 auto' }}>
+    <div style={{ fontFamily: 'system-ui, sans-serif', background: '#0f172a', padding: '20px', minHeight: '100vh', color: '#f8fafc', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <div style={{ background: '#1e293b', padding: '20px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', border: '1px solid #334155', width: '100%', maxWidth: '480px' }}>
         <h2 style={{ marginTop: 0, color: '#4ade80', fontSize: '18px' }}>🌾 PazarTarla Tarım & Arazi İlan Aracı</h2>
         
         <label style={{ fontSize: '12px', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Tarım & Arazi Şablonu Seç:</label>
