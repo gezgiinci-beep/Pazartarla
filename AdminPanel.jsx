@@ -48,7 +48,7 @@ export function AdminPanel() {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
 
-  // İlan ekleme/düzenleme state'i
+  // İlan ekleme / düzenleme state'leri
   const [editingId, setEditingId] = useState(null);
   const [newListing, setNewListing] = useState({
     title: '', category: categories[0]?.name || '', price: '', city: 'Gönen / Balıkesir', description: '', seoDescription: '', seoKeywords: ''
@@ -189,7 +189,7 @@ export function AdminPanel() {
         </button>
       </div>
 
-      {/* KATEGORİ LİSTESİ VE SİLME */}
+      {/* KİMLİK / KATEGORİ LİSTESİ VE SİLME */}
       <div style={{ backgroundColor: '#f0fdf4', padding: '20px', borderRadius: '8px', marginBottom: '25px', border: '1px solid #bbf7d0' }}>
         <h3 style={{ fontSize: '18px', color: '#166534', margin: '0 0 15px 0' }}>📁 Kategori Listesi ve Silme ({categories.length})</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '250px', overflowY: 'auto' }}>
