@@ -66,7 +66,8 @@ const FALLBACK_CATEGORIES = {
 export default function App() {
   const [activeTab, setActiveTab] = useState('home'); 
   const editFormRef = useRef(null);
-   const [listings, setListings] = useState([]);
+   
+  const [listings, setListings] = useState(DEFAULT_START_LISTINGS);
   const [categoriesWithSubs, setCategoriesWithSubs] = useState(FALLBACK_CATEGORIES);
 
   const [selectedListing, setSelectedListing] = useState(null);
