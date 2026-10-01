@@ -304,18 +304,16 @@ export default function App() {
     }
   };
 
-  // E-POSTA YEDEKLEME BUTONU FONKSİYONU
-  const sendEmailBackup = () => {
-    const emailTo = 'gezgiinci@gmail.com';
-    const subject = encodeURIComponent(`PazarTarla Veritabanı Yedeği - ${new Date().toLocaleDateString('tr-TR')}`);
+  // WHATSAPP İLE GÜVENLİ RAPOR GÖNDERME FONKSİYONU (Kesin Çalışır)
+  const sendWhatsAppBackup = () => {
+    let reportText = `🛡️ *PazarTarla Sistem & İlan Raporu*\n📅 Tarih: ${new Date().toLocaleString('tr-TR')}\n📊 Toplam İlan: ${listings.length}\n\n`;
     
-    let bodyText = `PazarTarla Platformu Güncel İlan Yedeği\nTarih: ${new Date().toLocaleString('tr-TR')}\nToplam İlan Sayısı: ${listings.length}\n\n`;
     listings.forEach((item, index) => {
-      bodyText += `${index + 1}. [${(item.status || 'unknown').toUpperCase()}] ${item.title} - ${item.price} TL\nSatıcı: ${item.seller} (${item.phone})\nKonum: ${item.location}\nKategori: ${item.category} / ${item.subCategory}\n----------------------------------------\n`;
+      reportText += `${index + 1}. *${item.title}* - ${item.price} TL\n   Durum: ${item.status} | Kategori: ${item.category}\n   Satıcı: ${item.seller} (${item.phone})\n\n`;
     });
 
-    const mailtoLink = `mailto:${emailTo}?subject=${subject}&body=${encodeURIComponent(bodyText)}`;
-    window.location.href = mailtoLink;
+    const waUrl = `https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(reportText)}`;
+    window.open(waUrl, '_blank');
   };
 
   const approveListing = async (id) => {
@@ -715,12 +713,12 @@ export default function App() {
                   <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer' }}>Çıkış</button>
                 </div>
 
-                {/* E-POSTA İLE YEDEKLEME BUTONU */}
-                <div style={{ backgroundColor: '#eff6ff', padding: '14px', borderRadius: '8px', border: '1px solid #3b82f6', marginBottom: '16px', textAlign: 'center' }}>
-                  <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1e40af', margin: '0 0 8px 0' }}>📧 E-Posta ile Yedek Gönder</h3>
-                  <p style={{ fontSize: '12px', color: '#475569', marginBottom: '10px' }}>Tüm ilan listesini doğrudan <b>gezgiinci@gmail.com</b> adresine mail olarak gönder.</p>
-                  <button onClick={sendEmailBackup} style={{ backgroundColor: '#2563eb', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%' }}>
-                    <Mail size={16} /> Mail ile Rapor Gönder
+                {/* WHATSAPP İLE GÜVENLİ RAPOR GÖNDERME BUTONU */}
+                <div style={{ backgroundColor: '#f0fdf4', padding: '14px', borderRadius: '8px', border: '1px solid #22c55e', marginBottom: '16px', textAlign: 'center' }}>
+                  <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 6px 0' }}>📱 WhatsApp ile Rapor ve Yedek Al</h3>
+                  <p style={{ fontSize: '12px', color: '#475569', marginBottom: '10px' }}>Tüm güncel ilanların listesini ve raporunu tek tıkla kendi WhatsApp'ına gönder.</p>
+                  <button onClick={sendWhatsAppBackup} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%' }}>
+                    <MessageCircle size={16} /> WhatsApp ile Rapor Gönder
                   </button>
                 </div>
 
@@ -837,15 +835,15 @@ export default function App() {
       <footer style={{ backgroundColor: '#1b3a2b', color: '#94a3b8', padding: '20px 16px', textAlign: 'center', fontSize: '12px', marginTop: 'auto', borderTop: '1px solid #2d5a43' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <div style={{ color: '#fff', fontWeight: '700', fontSize: '14px' }}>PazarTarla İletişim & Destek</div>
-          <div>📞 WhatsApp / Tel: 0535 768 1550</div>
-          <div>✉️ E-posta: gezgiinci@gmail.com</div>
-          <div>📍 Konum: Gönen / Balıkesir</div>
+          📞 WhatsApp / Tel: 0535 768 1550
+          ✉️ E-posta: gezgiinci@gmail.com
+          📍 Konum: Gönen / Balıkesir
           <div style={{ color: '#86efac', marginTop: '4px' }}>© 2026 PazarTarla • Türkiye'nin İlk ve Tek Tarım Platformu</div>
         </div>
       </footer>
 
       <button onClick={() => changeTab('admin-page')} title="Yönetim Paneli" style={{ position: 'fixed', bottom: '20px', right: '20px', backgroundColor: '#1b3a2b', color: '#86efac', border: '2px solid #22c55e', borderRadius: '50%', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 999 }}>
-        ⚙️️
+        ⚙️
       </button>
     </div>
   );
