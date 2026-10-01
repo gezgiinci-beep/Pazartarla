@@ -164,7 +164,6 @@ export default function App() {
     changeTab('success-wa');
   };
 
-  // E-POSTA İLE YEDEK GÖNDERME FONKSİYONU
   const sendEmailBackup = () => {
     const emailTo = 'gezgiinci@gmail.com';
     const subject = encodeURIComponent(`PazarTarla Veritabanı Yedeği - ${new Date().toLocaleDateString('tr-TR')}`);
