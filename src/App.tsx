@@ -304,15 +304,20 @@ export default function App() {
     }
   };
 
-  // WHATSAPP İLE GÜVENLİ RAPOR GÖNDERME FONKSİYONU (Kesin Çalışır)
+  // WHATSAPP İLE GÜVENLİ VE HATASIZ RAPOR GÖNDERME FONKSİYONU
   const sendWhatsAppBackup = () => {
-    let reportText = `🛡️ *PazarTarla Sistem & İlan Raporu*\n📅 Tarih: ${new Date().toLocaleString('tr-TR')}\n📊 Toplam İlan: ${listings.length}\n\n`;
+    let reportText = "PazarTarla Sistem Raporu\n";
+    reportText += "Tarih: " + new Date().toLocaleDateString('tr-TR') + "\n";
+    reportText += "Toplam İlan: " + listings.length + "\n\n";
     
     listings.forEach((item, index) => {
-      reportText += `${index + 1}. *${item.title}* - ${item.price} TL\n   Durum: ${item.status} | Kategori: ${item.category}\n   Satıcı: ${item.seller} (${item.phone})\n\n`;
+      reportText += (index + 1) + ". Baslik: " + item.title + "\n";
+      reportText += "Fiyat: " + item.price + " TL | Durum: " + item.status + "\n";
+      reportText += "Satici: " + item.seller + " (" + item.phone + ")\n";
+      reportText += "--------------------\n";
     });
 
-    const waUrl = `https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(reportText)}`;
+    const waUrl = "https://api.whatsapp.com/send?phone=905357681550&text=" + encodeURIComponent(reportText);
     window.open(waUrl, '_blank');
   };
 
@@ -511,7 +516,7 @@ export default function App() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button onClick={() => changeTab('favorites')} style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>
-            ❤️ ({favorites.length})
+            ❤️️ ({favorites.length})
           </button>
           <button onClick={() => changeTab('add')} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: '700', fontSize: '13px' }}>
             <Plus size={16} /> İlan Ver
@@ -547,7 +552,7 @@ export default function App() {
              
             {lastAddedListing && (
               <a 
-                href={`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(`🔔 *Yeni İlan Onay Bekliyor!*\n\n*Başlık:* ${lastAddedListing.title}\n*Fiyat:*${lastAddedListing.price} TL\n*Kategori:* ${lastAddedListing.category} /${lastAddedListing.subCategory}\n*Satıcı:* ${lastAddedListing.seller} (${lastAddedListing.phone})`)}`}
+                href={`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(`Yeni İlan Onay Bekliyor:\nBaslik: ${lastAddedListing.title}\nFiyat: ${lastAddedListing.price} TL\nKategori:${lastAddedListing.category}\nSatici: ${lastAddedListing.seller} (${lastAddedListing.phone})`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#22c55e', color: '#fff', padding: '12px', borderRadius: '8px', fontWeight: '800', textDecoration: 'none', fontSize: '14px', marginBottom: '12px' }}
@@ -835,9 +840,9 @@ export default function App() {
       <footer style={{ backgroundColor: '#1b3a2b', color: '#94a3b8', padding: '20px 16px', textAlign: 'center', fontSize: '12px', marginTop: 'auto', borderTop: '1px solid #2d5a43' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <div style={{ color: '#fff', fontWeight: '700', fontSize: '14px' }}>PazarTarla İletişim & Destek</div>
-          📞 WhatsApp / Tel: 0535 768 1550
-          ✉️ E-posta: gezgiinci@gmail.com
-          📍 Konum: Gönen / Balıkesir
+          <div>📞 WhatsApp / Tel: 0535 768 1550</div>
+          <div>✉️️ E-posta: gezgiinci@gmail.com</div>
+          <div>📍 Konum: Gönen / Balıkesir</div>
           <div style={{ color: '#86efac', marginTop: '4px' }}>© 2026 PazarTarla • Türkiye'nin İlk ve Tek Tarım Platformu</div>
         </div>
       </footer>
