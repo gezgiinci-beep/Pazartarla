@@ -136,11 +136,13 @@ export default function App() {
     subCategory: 'Ceviz',
     mode: 'Satılık',
     location: 'Türkiye Geneli',
+    city: 'Balıkesir',
     amount: '',
     description: '',
     seller: '',
     phone: '',
     image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
+    seoTags: '',
     status: 'pending',
     isFeatured: false
   });
@@ -273,8 +275,7 @@ export default function App() {
       return;
     }
 
-    // OTOMATİK SEO ETİKETİ ÜRETME (İlan veren uğraşmaz)
-    const autoTags = `${form.title}, ${form.category}, ${form.subCategory}, ${form.location}, tarım ilanı, pazartarla`.toLowerCase();
+    const fallbackTags = `${form.title}, ${form.category}, ${form.subCategory}, ${form.location}, tarım ilanı, pazartarla`.toLowerCase();
 
     const newEntry = {
       title: sanitizeInput(form.title),
@@ -288,8 +289,9 @@ export default function App() {
       seller: sanitizeInput(form.seller),
       phone: sanitizeInput(form.phone),
       image: form.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
-      seoTags: sanitizeInput(autoTags),
-      status: 'pending'
+      seoTags: sanitizeInput(form.seoTags ? form.seoTags : fallbackTags),
+      status: 'pending',
+      isFeatured: false
     };
 
     try {
@@ -329,7 +331,8 @@ export default function App() {
       phone: '0535 768 1550',
       image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
       seoTags: 'new holland, traktör, gönen tarım, tarım ilanı',
-      status: 'approved'
+      status: 'approved',
+      isFeatured: true
     };
 
     try {
@@ -386,11 +389,13 @@ export default function App() {
     const target = listings.find(i => i.id === id);
     if (!target) return;
 
+    const currentFeatured = target.isFeatured === true || target.isFeatured === 'true';
+
     try {
       await fetch(`${SUPABASE_URL}/rest/v1/listings?id=eq.${id}`, {
         method: 'PATCH',
         headers: dbHeaders,
-        body: JSON.stringify({ isFeatured: !target.isFeatured })
+        body: JSON.stringify({ isFeatured: !currentFeatured })
       });
       fetchListings();
     } catch (e) {
@@ -513,8 +518,8 @@ export default function App() {
   };
 
   const approvedListings = listings.filter(item => item.status === 'approved');
-  const featuredListings = approvedListings.filter(item => item.isFeatured);
-  const regularApprovedListings = approvedListings.filter(item => !item.isFeatured);
+  const featuredListings = approvedListings.filter(item => item.isFeatured === true || item.isFeatured === 'true');
+  const regularApprovedListings = approvedListings.filter(item => !item.isFeatured || item.isFeatured === false);
 
   const filteredListings = (selectedCategory === 'Tüm kategoriler' && selectedSubCategory === 'Tümü')
     ? [...featuredListings, ...regularApprovedListings]
@@ -654,15 +659,11 @@ export default function App() {
             </div>
 
             {/* VİTRİN İLANLARI BÖLÜMÜ */}
-            <div style={{ marginBottom: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', fontWeight: '800', fontSize: '14px', color: '#854d0e' }}>
-                <Star size={16} fill="#eab308" color="#eab308" /> Vitrin İlanları ({featuredListings.length})
-              </div>
-              {featuredListings.length === 0 ? (
-                <div style={{ backgroundColor: '#fff', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px', color: '#64748b', textAlign: 'center' }}>
-                  Henüz vitrine eklenmiş ilan bulunmuyor. Yönetici panelinden ilanları vitrin yapabilirsiniz.
+            {featuredListings.length > 0 && (
+              <div style={{ marginBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', fontWeight: '800', fontSize: '14px', color: '#854d0e' }}>
+                  <Star size={16} fill="#eab308" color="#eab308" /> Vitrin İlanları ({featuredListings.length})
                 </div>
-              ) : (
                 <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '4px' }}>
                   {featuredListings.map(item => {
                     const isFav = favorites.some(fav => fav.id === item.id);
@@ -678,8 +679,8 @@ export default function App() {
                     );
                   })}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             <div style={{ backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflow: 'hidden', border: '1px solid #e2e8f0', marginBottom: '16px' }}>
               <div style={{ backgroundColor: '#1b3a2b', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -751,7 +752,7 @@ export default function App() {
         )}
 
         {activeTab === 'detail' && selectedListing && (
-          <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0', position: 'relative' }}>
+          <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
               <button onClick={() => changeTab('results')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer' }}>← Listeye Dön</button>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -771,11 +772,11 @@ export default function App() {
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '4px' }}>{Number(selectedListing.price).toLocaleString('tr-TR')} TL</div>
             <p style={{ color: '#475569', fontSize: '13px', marginBottom: '12px', lineHeight: '1.5' }}>{selectedListing.description}</p>
             
-            {/* OTOMATİK SEO ETİKETLERİ BÖLÜMÜ */}
+            {/* SEO ETİKETLERİ BÖLÜMÜ */}
             {selectedListing.seoTags && (
               <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '10px 12px', marginBottom: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '700', color: '#166534', marginBottom: '6px' }}>
-                  <Tag size={12} /> Otomatik Arama & SEO Etiketleri
+                  <Tag size={12} /> Arama & SEO Etiketleri
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                   {selectedListing.seoTags.split(',').map((tag, idx) => (
@@ -849,10 +850,8 @@ export default function App() {
               </select>
 
               <input type="text" name="location" placeholder="Konum (Örn: Gönen / Balıkesir)" value={form.location} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
-
-              <div style={{ backgroundColor: '#f0fdf4', padding: '10px', borderRadius: '6px', border: '1px solid #bbf7d0', fontSize: '11px', color: '#166534', fontWeight: '600' }}>
-                ✨ SEO etiketleri başlık, kategori ve konumunuza göre sistem tarafından <b>otomatik olarak</b> oluşturulur.
-              </div>
+              
+              <input type="text" name="seoTags" placeholder="SEO Etiketleri (Virgülle ayırın: ceviz, gönen)" value={form.seoTags} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
 
               <div style={{ backgroundColor: '#f8fafc', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>📷 Fotoğraf Yükle (Dosya Seç veya URL Yapıştır)</label>
@@ -905,7 +904,7 @@ export default function App() {
                       <input type="text" name="title" value={editingListing.title} onChange={handleEditFormChange} placeholder="Başlık" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       <input type="number" name="price" value={editingListing.price} onChange={handleEditFormChange} placeholder="Fiyat" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       <input type="text" name="location" value={editingListing.location} onChange={handleEditFormChange} placeholder="Konum" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-                      <input type="text" name="seoTags" value={editingListing.seoTags || ''} onChange={handleEditFormChange} placeholder="SEO Etiketleri" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                      <input type="text" name="seoTags" value={editingListing.seoTags || ''} onChange={handleEditFormChange} placeholder="SEO Etiketleri (Virgülle ayırın)" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       
                       <div style={{ backgroundColor: '#fff', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <label style={{ fontSize: '11px', fontWeight: '700', color: '#475569' }}>📷 Fotoğrafı Değiştir (Dosya veya URL)</label>
@@ -978,18 +977,21 @@ export default function App() {
                 ))}
 
                 <h3 style={{ fontSize: '14px', fontWeight: '700', marginTop: '20px', marginBottom: '8px' }}>📋 Tüm İlanlar ({listings.length})</h3>
-                {listings.map(item => (
-                  <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '6px', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '12px', fontWeight: '600' }}>{item.title}</span>
-                    <div style={{ display: 'flex', gap: '4px' }}>
-                      <button onClick={() => toggleFeaturedListing(item.id)} style={{ backgroundColor: item.isFeatured ? '#fef08a' : '#f1f5f9', color: '#854d0e', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>
-                        {item.isFeatured ? '⭐ Vitrinde' : '☆ Vitrin Yap'}
-                      </button>
-                      <button onClick={() => { setEditingListing(item); if (editFormRef.current) editFormRef.current.scrollIntoView({ behavior: 'smooth' }); }} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Düzenle</button>
-                      <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Sil</button>
+                {listings.map(item => {
+                  const isFeat = item.isFeatured === true || item.isFeatured === 'true';
+                  return (
+                    <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '6px', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '12px', fontWeight: '600' }}>{item.title}</span>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <button onClick={() => toggleFeaturedListing(item.id)} style={{ backgroundColor: isFeat ? '#fef08a' : '#f1f5f9', color: '#854d0e', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>
+                          {isFeat ? '⭐ Vitrinde' : '☆ Vitrin Yap'}
+                        </button>
+                        <button onClick={() => { setEditingListing(item); if (editFormRef.current) editFormRef.current.scrollIntoView({ behavior: 'smooth' }); }} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Düzenle</button>
+                        <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Sil</button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
