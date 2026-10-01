@@ -1037,7 +1037,7 @@ export default function App() {
             </div>
 
             <a href="https://api.whatsapp.com/send?phone=905357681550&text=Merhaba,%20PazarTarla%20üzerinden%20bilgi%20almak%20istiyorum." target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', backgroundColor: '#22c55e', color: '#fff', padding: '8px', textDecoration: 'none', fontSize: '12px', fontWeight: '700' }}>
-              <MessageCircle size/14 /> WhatsApp ile Canlı Bağlan
+              <MessageCircle size={14} /> WhatsApp ile Canlı Bağlan
             </a>
 
             <form onSubmit={handleSendMessage} style={{ display: 'flex', padding: '6px', borderTop: '1px solid #cbd5e1', backgroundColor: '#fff' }}>
