@@ -72,14 +72,18 @@ export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState('home'); 
   const editFormRef = useRef(null);
+  
+  // Canlı Destek Modülü State'leri
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState([
+    { sender: 'bot', text: 'Merhaba! PazarTarla canlı destek hattına hoş geldiniz. Size nasıl yardımcı olabilirim?' }
+  ]);
+  const [chatInput, setChatInput] = useState('');
    
   const [listings, setListings] = useState(DEFAULT_START_LISTINGS);
   const [categoriesWithSubs, setCategoriesWithSubs] = useState(FALLBACK_CATEGORIES);
   const [announcement, setAnnouncement] = useState('🌾 Türkiye genelinden tarım aletleri, veterinerler ve taze mahsul ilanları PazarTarla’da!');
   const [tempAnnouncement, setTempAnnouncement] = useState(announcement);
-
-  // Asistan Destek Formu State'leri
-  const [supportForm, setSupportForm] = useState({ name: '', city: '', message: '' });
 
   const [favorites, setFavorites] = useState(() => {
     try {
@@ -103,7 +107,6 @@ export default function App() {
   const [editingListing, setEditingListing] = useState(null);
   const [lastAddedListing, setLastAddedListing] = useState(null);
 
-  // Yeni Ana Kategori Ekleme / Silme State'leri
   const [customCategoryInput, setCustomCategoryInput] = useState('');
 
   const [form, setForm] = useState({
@@ -124,7 +127,6 @@ export default function App() {
     isFeatured: false
   });
 
-  // Supabase Verilerini Çekme (REST API)
   const fetchListings = async () => {
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/listings?select=*`, {
@@ -167,6 +169,21 @@ export default function App() {
   const changeTab = (tabName) => {
     window.history.pushState({ tab: tabName }, '');
     setActiveTab(tabName);
+  };
+
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    if (!chatInput.trim()) return;
+    const userText = chatInput.trim();
+    setChatMessages(prev => [...prev, { sender: 'user', text: userText }]);
+    setChatInput('');
+
+    setTimeout(() => {
+      setChatMessages(prev => [
+        ...prev,
+        { sender: 'bot', text: 'Mesajınız alındı! Canlı destek ekibimize iletildi veya dilerseniz hemen WhatsApp üzerinden devam edebilirsiniz.' }
+      ]);
+    }, 1000);
   };
 
   const saveAnnouncement = (e) => {
@@ -250,6 +267,7 @@ export default function App() {
       seller: sanitizeInput(form.seller),
       phone: sanitizeInput(form.phone),
       image: form.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
+      seoTags: sanitizeInput(form.seoTags || form.title.toLowerCase().split(' ').join(', ')),
       status: 'pending'
     };
 
@@ -289,6 +307,7 @@ export default function App() {
       seller: 'Can İnce',
       phone: '0535 768 1550',
       image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
+      seoTags: 'new holland, traktör, gönen tarım',
       status: 'approved'
     };
 
@@ -386,6 +405,7 @@ export default function App() {
           subCategory: editingListing.subCategory,
           location: sanitizeInput(editingListing.location),
           description: sanitizeInput(editingListing.description),
+          seoTags: sanitizeInput(editingListing.seoTags || ''),
           image: editingListing.image,
           status: 'approved'
         })
@@ -414,7 +434,6 @@ export default function App() {
     }
   };
 
-  // Yeni Ana Kategori Ekleme
   const handleAddNewMainCategory = (e) => {
     e.preventDefault();
     if (!isAdminLoggedIn) return;
@@ -429,7 +448,6 @@ export default function App() {
     alert(`"${cat}" ana kategorisi başarıyla eklendi!`);
   };
 
-  // Ana Kategori Silme
   const handleDeleteMainCategory = (catKey) => {
     if (!isAdminLoggedIn) return;
     if (window.confirm(`"${catKey}" kategorisini ve altındaki tüm seçenekleri silmek istediğinize emin misiniz?`)) {
@@ -440,7 +458,6 @@ export default function App() {
     }
   };
 
-  // Alt Kategori Ekleme
   const handleAddSubCategory = (e) => {
     e.preventDefault();
     if (!isAdminLoggedIn) return;
@@ -495,7 +512,7 @@ export default function App() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f4f6f8', color: '#1e293b', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', boxSizing: 'border-box' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f4f6f8', color: '#1e293b', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', boxSizing: 'border-box', position: 'relative' }}>
       <header style={{ backgroundColor: '#1b3a2b', color: '#ffffff', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => { changeTab('home'); setSelectedCategory('Tüm kategoriler'); }}>
           <div style={{ backgroundColor: '#22c55e', padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -509,11 +526,8 @@ export default function App() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <button onClick={() => changeTab('support')} style={{ backgroundColor: 'rgba(34, 197, 94, 0.2)', color: '#86efac', border: '1px solid #22c55e', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '700' }}>
-            💡 Öneri & Destek
-          </button>
           <button onClick={() => changeTab('favorites')} style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>
-            ❤️ ({favorites.length})
+            ❤ ({favorites.length})
           </button>
           <button onClick={() => changeTab('add')} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: '700', fontSize: '13px' }}>
             <Plus size={16} /> İlan Ver
@@ -541,72 +555,6 @@ export default function App() {
           </div>
         )}
 
-        {/* ÖNERİ & DESTEK ASİSTANI EKRANI */}
-        {activeTab === 'support' && (
-          <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '20px', border: '1px solid #e2e8f0' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <button onClick={() => changeTab('home')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer' }}>← Ana Sayfa</button>
-              <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#1b3a2b', margin: 0 }}>💡 PazarTarla Asistanı</h2>
-            </div>
-
-            <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', padding: '12px', borderRadius: '8px', marginBottom: '16px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-              <Bot size={24} color="#166534" style={{ flexShrink: 0, marginTop: '2px' }} />
-              <div style={{ fontSize: '13px', color: '#166534', lineHeight: '1.4' }}>
-                Merhaba! Ben PazarTarla Destek Asistanı. Platformumuzu daha iyi hale getirmek için fikirlerini, önerilerini veya karşılaştığın sorunları doğrudan ekibimize iletebilirsin.
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569', display: 'block', marginBottom: '4px' }}>Adınız Soyadınız *</label>
-                <input 
-                  type="text" 
-                  placeholder="Örn: Can İnce" 
-                  value={supportForm.name} 
-                  onChange={(e) => setSupportForm({ ...supportForm, name: e.target.value })} 
-                  style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} 
-                />
-              </div>
-
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569', display: 'block', marginBottom: '4px' }}>Şehriniz / Konumunuz *</label>
-                <input 
-                  type="text" 
-                  placeholder="Örn: Balıkesir / Gönen" 
-                  value={supportForm.city} 
-                  onChange={(e) => setSupportForm({ ...supportForm, city: e.target.value })} 
-                  style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} 
-                />
-              </div>
-
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569', display: 'block', marginBottom: '4px' }}>Öneriniz veya Destek Talebiniz *</label>
-                <textarea 
-                  placeholder="Platforma şu özellik eklense harika olur veya şu konuda desteğe ihtiyacım var..." 
-                  value={supportForm.message} 
-                  onChange={(e) => setSupportForm({ ...supportForm, message: e.target.value })} 
-                  style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '100px', boxSizing: 'border-box' }} 
-                />
-              </div>
-
-              <a 
-                href={'https://api.whatsapp.com/send?phone=905357681550&text=' + encodeURIComponent('💡 PazarTarla Destek & Öneri Hattı\n\nİsim: ' + (supportForm.name || 'Belirtilmedi') + '\nKonum: ' + (supportForm.city || 'Belirtilmedi') + '\n\nMesaj / Öneri:\n' + (supportForm.message || 'Boş'))}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => {
-                  if (!supportForm.name.trim() || !supportForm.message.trim()) {
-                    e.preventDefault();
-                    alert('Lütfen adınızı ve önerinizi yazın.');
-                  }
-                }}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#22c55e', color: '#fff', padding: '12px', borderRadius: '8px', fontWeight: '800', textDecoration: 'none', fontSize: '14px', marginTop: '4px' }}
-              >
-                <MessageCircle size={18} /> WhatsApp ile Ekipe Gönder
-              </a>
-            </div>
-          </div>
-        )}
-
         {activeTab === 'success-wa' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '24px', textAlign: 'center', border: '1px solid #e2e8f0' }}>
             <CheckCircle size={36} color="#166534" style={{ margin: '0 auto 12px auto' }} />
@@ -615,7 +563,7 @@ export default function App() {
              
             {lastAddedListing && (
               <a 
-                href={'https://api.whatsapp.com/send?phone=905357681550&text=' + encodeURIComponent('🔔 Yeni İlan Onay Bekliyor!\n\nBaşlık: ' + lastAddedListing.title + '\nFiyat: ' + lastAddedListing.price + ' TL\nKategori: ' + lastAddedListing.category + ' / ' + lastAddedListing.subCategory + '\nSatıcı: ' + lastAddedListing.seller + ' (' + lastAddedListing.phone + ')') }
+                href={`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(`🔔 *Yeni İlan Onay Bekliyor!*\n\n*Başlık:* ${lastAddedListing.title}\n*Fiyat:* ${lastAddedListing.price} TL\n*Kategori:* ${lastAddedListing.category} / ${lastAddedListing.subCategory}\n*Satıcı:* ${lastAddedListing.seller} (${lastAddedListing.phone})`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#22c55e', color: '#fff', padding: '12px', borderRadius: '8px', fontWeight: '800', textDecoration: 'none', fontSize: '14px', marginBottom: '12px' }}
@@ -630,7 +578,6 @@ export default function App() {
 
         {activeTab === 'home' && (
           <div>
-            {/* VİTRİN İLANLARI BÖLÜMÜ */}
             {featuredListings.length > 0 && (
               <div style={{ marginBottom: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', fontWeight: '800', fontSize: '14px', color: '#854d0e' }}>
@@ -709,6 +656,7 @@ export default function App() {
           </div>
         )}
 
+        {/* İLAN DETAY SAYFASI (SEO VE SOSYAL MEDYA PAYLAŞ BUTONLARI İLE) */}
         {activeTab === 'detail' && selectedListing && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
@@ -723,12 +671,64 @@ export default function App() {
             <img src={selectedListing.image} alt={selectedListing.title} style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '8px', marginBottom: '10px' }} />
             <h2 style={{ fontSize: '18px', fontWeight: '800', margin: '8px 0' }}>{selectedListing.title}</h2>
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '4px' }}>{Number(selectedListing.price).toLocaleString('tr-TR')} TL</div>
-            <p style={{ color: '#475569', fontSize: '13px', marginBottom: '16px' }}>{selectedListing.description}</p>
-            <a href={`tel:${selectedListing.phone}`} style={{ width: '100%', backgroundColor: '#1b3a2b', color: '#fff', padding: '12px', borderRadius: '8px', textAlign: 'center', fontWeight: '700', textDecoration: 'none', display: 'block' }}>
+            <p style={{ color: '#475569', fontSize: '13px', marginBottom: '12px', lineHeight: '1.5' }}>{selectedListing.description}</p>
+            
+            {/* SEO ETİKETLERİ BÖLÜMÜ */}
+            {selectedListing.seoTags && (
+              <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '10px 12px', marginBottom: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '700', color: '#166534', marginBottom: '6px' }}>
+                  <Tag size={12} /> Arama & SEO Etiketleri
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {selectedListing.seoTags.split(',').map((tag, idx) => (
+                    <span key={idx} style={{ backgroundColor: '#dcfce7', color: '#14532d', padding: '3px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '600' }}>
+                      #{tag.trim()}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* SOSYAL MEDYA PAYLAŞ BUTONLARI */}
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>📤 Bu İlanı Paylaş:</div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <a 
+                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`🌾 *PazarTarla İlanı*\n*${selectedListing.title}*\nFiyat: ${Number(selectedListing.price).toLocaleString('tr-TR')} TL\nKonum:${selectedListing.location}\nİncelemek için tıkla!`)}`}
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  style={{ flex: 1, backgroundColor: '#22c55e', color: '#fff', padding: '8px 10px', borderRadius: '6px', textAlign: 'center', fontWeight: '700', textDecoration: 'none', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
+                >
+                  <MessageCircle size={14} /> WhatsApp
+                </a>
+
+                <a 
+                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  style={{ flex: 1, backgroundColor: '#1877f2', color: '#fff', padding: '8px 10px', borderRadius: '6px', textAlign: 'center', fontWeight: '700', textDecoration: 'none', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
+                >
+                  <Share2 size={14} /> Facebook
+                </a>
+
+                <button 
+                  onClick={() => {
+                    const shareText = `PazarTarla'da harika bir tarım ilanı: ${selectedListing.title} - ${Number(selectedListing.price).toLocaleString('tr-TR')} TL (${selectedListing.location})`;
+                    navigator.clipboard.writeText(shareText);
+                    alert('📋 İlan bilgileri panoya kopyalandı! Instagram hikayenizde veya mesajınızda doğrudan yapıştırıp paylaşabilirsiniz.');
+                  }}
+                  style={{ flex: 1, backgroundColor: '#e1306c', color: '#fff', border: 'none', padding: '8px 10px', borderRadius: '6px', textAlign: 'center', fontWeight: '700', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
+                >
+                  <ImageIcon size={14} /> Instagram
+                </button>
+              </div>
+            </div>
+
+            <a href={`tel:${selectedListing.phone}`} style={{ width: '100%', backgroundColor: '#1b3a2b', color: '#fff', padding: '12px', borderRadius: '8px', textAlign: 'center', fontWeight: '700', textDecoration: 'none', display: 'block', boxSizing: 'border-box' }}>
               📞 {selectedListing.phone} ({selectedListing.seller})
             </a>
           </div>
-        )}
+      )}
 
         {activeTab === 'add' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
@@ -741,7 +741,7 @@ export default function App() {
               <input type="text" name="phone" placeholder="Telefon Numaranız *" value={form.phone} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               <input type="text" name="title" placeholder="İlan Başlığı *" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               <input type="number" name="price" placeholder="Fiyat (TL) *" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
-               
+              
               <select name="category" value={form.category} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
                 {Object.keys(categoriesWithSubs).map(cat => <option key={cat} value={cat}>{cat}</option>)}
               </select>
@@ -751,7 +751,9 @@ export default function App() {
               </select>
 
               <input type="text" name="location" placeholder="Konum (Örn: Gönen / Balıkesir)" value={form.location} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
-               
+              
+              <input type="text" name="seoTags" placeholder="SEO Etiketleri (Virgülle ayırın: ceviz, gönen)" value={form.seoTags} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+
               <div style={{ backgroundColor: '#f8fafc', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>📷 Fotoğraf Yükle (Dosya Seç veya URL Yapıştır)</label>
                 <input type="file" accept="image/*" onChange={handleImageUpload} style={{ width: '100%', fontSize: '12px' }} />
@@ -763,7 +765,7 @@ export default function App() {
               <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}>İlanı Gönder</button>
             </form>
           </div>
-        )}
+      )}
 
         {activeTab === 'admin-page' && (
           <div ref={editFormRef} style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
@@ -803,7 +805,8 @@ export default function App() {
                       <input type="text" name="title" value={editingListing.title} onChange={handleEditFormChange} placeholder="Başlık" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       <input type="number" name="price" value={editingListing.price} onChange={handleEditFormChange} placeholder="Fiyat" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       <input type="text" name="location" value={editingListing.location} onChange={handleEditFormChange} placeholder="Konum" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-                       
+                      <input type="text" name="seoTags" value={editingListing.seoTags || ''} onChange={handleEditFormChange} placeholder="SEO Etiketleri (Virgülle ayırın)" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                      
                       <div style={{ backgroundColor: '#fff', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <label style={{ fontSize: '11px', fontWeight: '700', color: '#475569' }}>📷 Fotoğrafı Değiştir (Dosya veya URL)</label>
                         <input type="file" accept="image/*" onChange={handleEditImageUpload} style={{ width: '100%', fontSize: '11px' }} />
@@ -819,7 +822,6 @@ export default function App() {
                   </div>
                 )}
 
-                {/* YENİ ANA KATEGORİ EKLEME & SİLME BÖLÜMÜ */}
                 <div style={{ backgroundColor: '#f0fdf4', padding: '12px', borderRadius: '8px', border: '1px solid #bbf7d0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 8px 0' }}>📁 Ana Kategori Ekle / Sil</h3>
                   <form onSubmit={handleAddNewMainCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '10px' }}>
@@ -843,7 +845,7 @@ export default function App() {
                     <select value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff' }}>
                       {Object.keys(categoriesWithSubs).map(cat => <option key={cat} value={cat}>{cat}</option>)}
                     </select>
-                     
+                    
                     <div style={{ display: 'flex', gap: '6px' }}>
                       <select value={selectedSubToRemove} onChange={(e) => setSelectedSubToRemove(e.target.value)} style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #ef4444', backgroundColor: '#fef2f2' }}>
                         <option value="">Silinecek seçeneği seç...</option>
@@ -883,14 +885,14 @@ export default function App() {
                         {item.isFeatured ? '⭐ Vitrinde' : '☆ Vitrin Yap'}
                       </button>
                       <button onClick={() => { setEditingListing(item); if (editFormRef.current) editFormRef.current.scrollIntoView({ behavior: 'smooth' }); }} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Düzenle</button>
-                      <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}>Sil</button>
+                      <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Sil</button>
                     </div>
                   </div>
                 ))}
               </div>
             )}
           </div>
-        )}
+      )}
       </main>
 
       <footer style={{ backgroundColor: '#1b3a2b', color: '#94a3b8', padding: '20px 16px', textAlign: 'center', fontSize: '12px', marginTop: 'auto', borderTop: '1px solid #2d5a43' }}>
@@ -903,9 +905,62 @@ export default function App() {
         </div>
       </footer>
 
+      {/* SAĞ ALT KÖŞE: YÖNETİM PANELİ BUTONU */}
       <button onClick={() => changeTab('admin-page')} title="Yönetim Paneli" style={{ position: 'fixed', bottom: '20px', right: '20px', backgroundColor: '#1b3a2b', color: '#86efac', border: '2px solid #22c55e', borderRadius: '50%', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 999 }}>
-        ⚙️
+        ⚙️️
       </button>
+
+      {/* SAĞ ALT KÖŞE: KULAKLIKLI CANLI DESTEK ASİSTANI */}
+      <div style={{ position: 'fixed', bottom: '76px', right: '20px', zIndex: 1000 }}>
+        {!isChatOpen ? (
+          <div onClick={() => setIsChatOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#ffffff', padding: '6px 12px 6px 6px', borderRadius: '30px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', border: '2px solid #22c55e', cursor: 'pointer' }}>
+            <div style={{ position: 'relative', width: '38px', height: '38px', borderRadius: '50%', overflow: 'hidden', border: '2px solid #22c55e', flexShrink: 0 }}>
+              <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200" alt="Canlı Destek" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <span style={{ position: 'absolute', bottom: '0', right: '0', width: '10px', height: '10px', backgroundColor: '#22c55e', borderRadius: '50%', border: '2px solid #fff' }}></span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: '11px', fontWeight: '800', color: '#1b3a2b', lineHeight: '1.2' }}>Canlı Destek</span>
+              <span style={{ fontSize: '9px', color: '#166534', fontWeight: '600' }}>Çevrim içi • Soru Sor</span>
+            </div>
+          </div>
+        ) : (
+          <div style={{ width: '300px', backgroundColor: '#ffffff', borderRadius: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.2)', border: '1px solid #cbd5e1', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ backgroundColor: '#1b3a2b', color: '#ffffff', padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ position: 'relative', width: '30px', height: '30px', borderRadius: '50%', overflow: 'hidden', border: '1.5px solid #22c55e' }}>
+                  <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200" alt="Asistan" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: '700' }}>PazarTarla Asistan</div>
+                  <div style={{ fontSize: '9px', color: '#86efac' }}>Canlı Destek Ekibi</div>
+                </div>
+              </div>
+              <button onClick={() => setIsChatOpen(false)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '4px' }}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <div style={{ padding: '10px', height: '200px', overflowY: 'auto', backgroundColor: '#f8fafc', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {chatMessages.map((msg, index) => (
+                <div key={index} style={{ alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start', maxWidth: '80%', backgroundColor: msg.sender === 'user' ? '#22c55e' : '#e2e8f0', color: msg.sender === 'user' ? '#fff' : '#1e293b', padding: '8px 10px', borderRadius: '8px', fontSize: '12px', lineHeight: '1.4' }}>
+                  {msg.text}
+                </div>
+              ))}
+            </div>
+
+            <a href="https://api.whatsapp.com/send?phone=905357681550&text=Merhaba,%20PazarTarla%20üzerinden%20bilgi%20almak%20istiyorum." target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', backgroundColor: '#22c55e', color: '#fff', padding: '8px', textDecoration: 'none', fontSize: '12px', fontWeight: '700' }}>
+              <MessageCircle size={14} /> WhatsApp ile Canlı Bağlan
+            </a>
+
+            <form onSubmit={handleSendMessage} style={{ display: 'flex', padding: '6px', borderTop: '1px solid #cbd5e1', backgroundColor: '#fff' }}>
+              <input type="text" placeholder="Mesajınızı yazın..." value={chatInput} onChange={(e) => setChatInput(e.target.value)} style={{ flex: 1, padding: '6px 8px', borderRadius: '4px', border: '1px solid #cbd5e1', fontSize: '11px', outline: 'none' }} />
+              <button type="submit" style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '4px', marginLeft: '4px', cursor: 'pointer', fontSize: '11px' }}>
+                <Send size={12} />
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
