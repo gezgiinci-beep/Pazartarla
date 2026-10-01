@@ -282,7 +282,6 @@ export default function App() {
       return;
     }
 
-    // Başlık, kategori, alt kategori, konum ve açıklamayı kapsayan akıllı SEO anahtar kelimeleri üretimi
     const comprehensiveSeo = `${form.title}, ${form.category}, ${form.subCategory}, ${form.location}, ${form.description ? form.description.slice(0, 50) : ''}, tarım ilanı, pazartarla, sahibinden`.toLowerCase().replace(/[\r\n]+/g, ' ');
 
     const newEntry = {
@@ -840,7 +839,6 @@ export default function App() {
 
               <input type="text" name="location" placeholder="Konum (Örn: Gönen / Balıkesir)" value={form.location} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               
-              {/* Tarayıcı otomatik tamamlama geçmişini kapatmak için autoComplete="off" eklendi */}
               <input type="text" name="seoTags" autoComplete="off" placeholder="SEO Etiketleri (Boş bırakırsanız başlık, açıklama ve kategoriden otomatik üretilir)" value={form.seoTags} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
 
               <div style={{ backgroundColor: '#f8fafc', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -1039,7 +1037,7 @@ export default function App() {
             </div>
 
             <a href="https://api.whatsapp.com/send?phone=905357681550&text=Merhaba,%20PazarTarla%20üzerinden%20bilgi%20almak%20istiyorum." target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', backgroundColor: '#22c55e', color: '#fff', padding: '8px', textDecoration: 'none', fontSize: '12px', fontWeight: '700' }}>
-              <MessageCircle size={14} /> WhatsApp ile Canlı Bağlan
+              <MessageCircle size/14 /> WhatsApp ile Canlı Bağlan
             </a>
 
             <form onSubmit={handleSendMessage} style={{ display: 'flex', padding: '6px', borderTop: '1px solid #cbd5e1', backgroundColor: '#fff' }}>
