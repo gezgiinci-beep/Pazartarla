@@ -68,25 +68,11 @@ const FALLBACK_CATEGORIES = {
   'Geçici Konutlar': ['Konteyner', 'Çadır', 'Prefabrik']
 };
 
-// 🤖 OTOMATİK SEO ÜRETİCİ FONKSİYONU
-const generateAutoSeo = (title, category, subCategory, location) => {
-  const cleanTitle = title ? title.toLowerCase().trim() : '';
-  const cleanCat = category ? category.toLowerCase().trim() : '';
-  const cleanSub = subCategory ? subCategory.toLowerCase().trim() : '';
-  const cleanLoc = location ? location.toLowerCase().trim() : '';
-  
-  let tags = [cleanTitle, cleanCat, cleanSub, cleanLoc, 'pazartarla', 'türkiye tarım ilanı'];
-  const words = cleanTitle.split(' ').filter(w => w.length > 2);
-  const combined = Array.from(new Set([...tags, ...words]));
-  return combined.filter(Boolean).join(', ');
-};
-
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState('home'); 
   const editFormRef = useRef(null);
   
-  // Canlı Destek Modülü State'leri
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState([
     { sender: 'bot', text: 'Merhaba! PazarTarla canlı destek hattına hoş geldiniz. Size nasıl yardımcı olabilirim?' }
@@ -97,6 +83,16 @@ export default function App() {
   const [categoriesWithSubs, setCategoriesWithSubs] = useState(FALLBACK_CATEGORIES);
   const [announcement, setAnnouncement] = useState('🌾 Türkiye genelinden tarım aletleri, veterinerler ve taze mahsul ilanları PazarTarla’da!');
   const [tempAnnouncement, setTempAnnouncement] = useState(announcement);
+
+  // Yerel depolamadan vitrin listesini de güvenli tutmak için state
+  const [featuredIds, setFeaturedIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem('pazartarla_featured');
+      return saved ? JSON.parse(saved) : [1, 2];
+    } catch (e) {
+      return [1, 2];
+    }
+  });
 
   const [favorites, setFavorites] = useState(() => {
     try {
@@ -136,8 +132,7 @@ export default function App() {
     phone: '',
     image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
     seoTags: '',
-    status: 'pending',
-    isFeatured: false
+    status: 'pending'
   });
 
   const fetchListings = async () => {
@@ -219,8 +214,6 @@ export default function App() {
         const subList = categoriesWithSubs[value] || ['Genel'];
         updated.subCategory = subList[0];
       }
-      // Otomatik SEO etiketlerini anlık olarak güncelle
-      updated.seoTags = generateAutoSeo(updated.title, updated.category, updated.subCategory, updated.location);
       return updated;
     });
   };
@@ -233,7 +226,6 @@ export default function App() {
         const subList = categoriesWithSubs[value] || ['Genel'];
         updated.subCategory = subList[0];
       }
-      updated.seoTags = generateAutoSeo(updated.title, updated.category, updated.subCategory, updated.location);
       return updated;
     });
   };
@@ -271,25 +263,18 @@ export default function App() {
       return;
     }
 
-    const finalSeoTags = form.seoTags.trim() 
-      ? sanitizeInput(form.seoTags) 
-      : generateAutoSeo(form.title, form.category, form.subCategory, form.location);
-
     const newEntry = {
       title: sanitizeInput(form.title),
       price: Number(form.price),
       category: form.category,
       subCategory: form.subCategory,
-      mode: form.mode,
       location: sanitizeInput(form.location),
-      amount: sanitizeInput(form.amount),
       description: sanitizeInput(form.description),
       seller: sanitizeInput(form.seller),
       phone: sanitizeInput(form.phone),
       image: form.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
-      seoTags: finalSeoTags,
-      status: 'pending',
-      isFeatured: false
+      seoTags: sanitizeInput(form.seoTags || form.title.toLowerCase().split(' ').join(', ')),
+      status: 'pending'
     };
 
     try {
@@ -302,7 +287,7 @@ export default function App() {
       if (!res.ok) {
         const errText = await res.text();
         console.error('Supabase Ekleme Hatası:', errText);
-        alert('İlan eklenirken sunucu reddetti. Lütfen anahtarlarınızı kontrol edin.');
+        alert('İlan eklenirken sunucu reddetti: ' + errText);
         return;
       }
     } catch (err) {
@@ -328,9 +313,8 @@ export default function App() {
       seller: 'Can İnce',
       phone: '0535 768 1550',
       image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
-      seoTags: generateAutoSeo('New Holland TD100D Tarım Traktörü', 'Traktör', 'İkinci El Traktör', 'Balıkesir / Gönen'),
-      status: 'approved',
-      isFeatured: true
+      seoTags: 'new holland, traktör, gönen tarım',
+      status: 'approved'
     };
 
     try {
@@ -382,31 +366,19 @@ export default function App() {
     }
   };
 
-  // 🛠️ VİTRİN DURUMUNU GÜNCELLEYEN FONKSİYON (Hem isFeatured hem is_featured destekli)
-  const toggleFeaturedListing = async (id) => {
+  // ⚡ VİTRİN DURUMUNU ANINDA GÜNCELLEYEN VE HAFIZADA TUTAN FONKSİYON
+  const toggleFeaturedListing = (id) => {
     if (!isAdminLoggedIn) return;
-    const target = listings.find(i => i.id === id);
-    if (!target) return;
-
-    const currentStatus = target.isFeatured ?? target.is_featured ?? false;
-    const nextStatus = !currentStatus;
-
-    try {
-      // Supabase veritabanında hangi sütun adının kullanılabileceğine göre güncelleyelim
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/listings?id=eq.${id}`, {
-        method: 'PATCH',
-        headers: { ...dbHeaders, 'Prefer': 'return=minimal' },
-        body: JSON.stringify({ isFeatured: nextStatus, is_featured: nextStatus })
-      });
-      
-      if (res.ok) {
-        fetchListings();
-      } else {
-        console.error("Vitrin güncellenemedi.");
-      }
-    } catch (e) {
-      console.error(e);
+    let updated;
+    if (featuredIds.includes(id)) {
+      updated = featuredIds.filter(itemKey => itemKey !== id);
+    } else {
+      updated = [...featuredIds, id];
     }
+    setFeaturedIds(updated);
+    try {
+      localStorage.setItem('pazartarla_featured', JSON.stringify(updated));
+    } catch (e) {}
   };
 
   const startEditingFromDetail = (item) => {
@@ -426,10 +398,6 @@ export default function App() {
     e.preventDefault();
     if (!isAdminLoggedIn) return;
 
-    const finalSeoTags = editingListing.seoTags 
-      ? sanitizeInput(editingListing.seoTags) 
-      : generateAutoSeo(editingListing.title, editingListing.category, editingListing.subCategory, editingListing.location);
-
     try {
       await fetch(`${SUPABASE_URL}/rest/v1/listings?id=eq.${editingListing.id}`, {
         method: 'PATCH',
@@ -441,7 +409,7 @@ export default function App() {
           subCategory: editingListing.subCategory,
           location: sanitizeInput(editingListing.location),
           description: sanitizeInput(editingListing.description),
-          seoTags: finalSeoTags,
+          seoTags: sanitizeInput(editingListing.seoTags || ''),
           image: editingListing.image,
           status: 'approved'
         })
@@ -528,9 +496,8 @@ export default function App() {
   };
 
   const approvedListings = listings.filter(item => item.status === 'approved');
-  // 🛠️ VİTRİN FİLTRESİ: Hem isFeatured hem is_featured destekleniyor
-  const featuredListings = approvedListings.filter(item => item.isFeatured || item.is_featured);
-  const regularApprovedListings = approvedListings.filter(item => !(item.isFeatured || item.is_featured));
+  const featuredListings = approvedListings.filter(item => featuredIds.includes(item.id) || item.isFeatured || item.is_featured);
+  const regularApprovedListings = approvedListings.filter(item => !(featuredIds.includes(item.id) || item.isFeatured || item.is_featured));
 
   const filteredListings = (selectedCategory === 'Tüm kategoriler' && selectedSubCategory === 'Tümü')
     ? [...featuredListings, ...regularApprovedListings]
@@ -636,7 +603,7 @@ export default function App() {
               </a>
             </div>
 
-            {/* ⭐ VİTRİN İLANLARI BÖLÜMÜ */}
+            {/* VİTRİN İLANLARI BÖLÜMÜ */}
             {featuredListings.length > 0 && (
               <div style={{ marginBottom: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', fontWeight: '800', fontSize: '14px', color: '#854d0e' }}>
@@ -792,7 +759,7 @@ export default function App() {
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
               <button onClick={() => changeTab('home')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer' }}>← Vazgeç</button>
-              <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>İlan Ver (Otomatik SEO)</h2>
+              <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>İlan Ver</h2>
             </div>
             <form onSubmit={handleDirectAdd} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <input type="text" name="seller" placeholder="Adınız Soyadınız *" value={form.seller} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
@@ -810,10 +777,7 @@ export default function App() {
 
               <input type="text" name="location" placeholder="Konum (Örn: Gönen / Balıkesir)" value={form.location} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               
-              <div>
-                <label style={{ fontSize: '11px', fontWeight: '700', color: '#166534', display: 'block', marginBottom: '4px' }}>🤖 Otomatik / Özel SEO Etiketleri</label>
-                <input type="text" name="seoTags" placeholder="Boş bırakırsanız başlık ve konuma göre otomatik oluşturulur" value={form.seoTags} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #bbf7d0', backgroundColor: '#f0fdf4', boxSizing: 'border-box', fontSize: '12px' }} />
-              </div>
+              <input type="text" name="seoTags" placeholder="SEO Etiketleri (Virgülle ayırın: ceviz, gönen)" value={form.seoTags} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
 
               <div style={{ backgroundColor: '#f8fafc', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>📷 Fotoğraf Yükle (Dosya Seç veya URL Yapıştır)</label>
@@ -861,7 +825,7 @@ export default function App() {
 
                 {editingListing && (
                   <div style={{ backgroundColor: '#f0fdf4', padding: '14px', borderRadius: '8px', border: '2px solid #22c55e', marginBottom: '20px' }}>
-                    <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 10px 0' }}>✏️️ İlanı Düzenle</h3>
+                    <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 10px 0' }}>✏️ İlanı Düzenle</h3>
                     <form onSubmit={saveEditedListing} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <input type="text" name="title" value={editingListing.title} onChange={handleEditFormChange} placeholder="Başlık" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       <input type="number" name="price" value={editingListing.price} onChange={handleEditFormChange} placeholder="Fiyat" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
@@ -940,7 +904,7 @@ export default function App() {
 
                 <h3 style={{ fontSize: '14px', fontWeight: '700', marginTop: '20px', marginBottom: '8px' }}>📋 Tüm İlanlar ({listings.length})</h3>
                 {listings.map(item => {
-                  const isFeat = item.isFeatured || item.is_featured;
+                  const isFeat = featuredIds.includes(item.id) || item.isFeatured || item.is_featured;
                   return (
                     <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '6px', marginBottom: '6px' }}>
                       <span style={{ fontSize: '12px', fontWeight: '600' }}>{item.title}</span>
