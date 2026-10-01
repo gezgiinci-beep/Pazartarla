@@ -213,6 +213,7 @@ export default function App() {
     });
   };
 
+  // Akıllı Fotoğraf Sıkıştırma (Cep Telefonu Çözünürlük Hatasını Önler)
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -751,35 +752,38 @@ export default function App() {
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '4px' }}>{Number(selectedListing.price).toLocaleString('tr-TR')} TL</div>
             <p style={{ color: '#475569', fontSize: '13px', marginBottom: '16px' }}>{selectedListing.description}</p>
 
+            {/* SOSYAL MEDYA PAYLAŞIM ALANI (WhatsApp, Facebook, Instagram) */}
             <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '16px' }}>
               <div style={{ fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <ShareIcon size={14} /> Sosyal Medyada ve WhatsApp'ta Paylaş
+                <ShareIcon size={14} /> Sosyal Medyada Paylaş
               </div>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 <a 
-                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`🌾 PazarTarla İlanı: ${selectedListing.title} -${Number(selectedListing.price).toLocaleString('tr-TR')} TL\nDetaylar için inceleyin!`)}`}
+                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`🌾 PazarTarla İlanı: ${selectedListing.title}\nFiyat:${Number(selectedListing.price).toLocaleString('tr-TR')} TL\nKonum: ${selectedListing.location}\nİletişim: ${selectedListing.phone}`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ backgroundColor: '#22c55e', color: '#fff', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
                 >
                   <MessageCircle size={14} /> WhatsApp
                 </a>
+
                 <a 
-                  href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`🌾 PazarTarla Tarım İlanı: ${selectedListing.title} -${Number(selectedListing.price).toLocaleString('tr-TR')} TL`)}`}
+                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent(`🌾 PazarTarla İlanı: ${selectedListing.title} -${Number(selectedListing.price).toLocaleString('tr-TR')} TL`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ backgroundColor: '#0f172a', color: '#fff', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', textDecoration: 'none' }}
+                  style={{ backgroundColor: '#1877f2', color: '#fff', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
                 >
-                  𝕏 Twitter / X
+                  📘 Facebook
                 </a>
+
                 <button 
                   onClick={() => {
-                    navigator.clipboard.writeText(`PazarTarla İlanı: ${selectedListing.title} - Fiyat: ${selectedListing.price} TL - Açıklama: ${selectedListing.description}`);
-                    alert('📋 İlan bilgileri panoya kopyalandı! İstediğin sosyal medya hesabına yapıştırabilirsin.');
+                    navigator.clipboard.writeText(`🌾 PazarTarla İlanı\n📌 ${selectedListing.title}\n💰 Fiyat: ${Number(selectedListing.price).toLocaleString('tr-TR')} TL\n📍 Konum: ${selectedListing.location}\n📞 İletişim: ${selectedListing.phone}\n📝 Açıklama: ${selectedListing.description}`);
+                    alert('📸 İlan metni kopyalandı! Instagram hesabına story veya gönderi açarak bu metni yapıştırabilir ve ilanın fotoğrafını ekleyebilirsin.');
                   }}
-                  style={{ backgroundColor: '#e2e8f0', color: '#334155', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                  style={{ backgroundColor: '#e1306c', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
                 >
-                  <Copy size={14} /> Metni Kopyala
+                  📷 Instagram İçin Kopyala
                 </button>
               </div>
             </div>
@@ -886,7 +890,6 @@ export default function App() {
                   </div>
                 )}
 
-                {/* YENİ ANA KATEGORİ EKLEME & SİLME BÖLÜMÜ */}
                 <div style={{ backgroundColor: '#f0fdf4', padding: '12px', borderRadius: '8px', border: '1px solid #bbf7d0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 8px 0' }}>📁 Ana Kategori Ekle / Sil</h3>
                   <form onSubmit={handleAddNewMainCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '10px' }}>
