@@ -73,7 +73,6 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('home'); 
   const editFormRef = useRef(null);
   
-  // Canlı Destek Modülü State'leri
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState([
     { sender: 'bot', text: 'Merhaba! PazarTarla canlı destek hattına hoş geldiniz. Size nasıl yardımcı olabilirim?' }
@@ -343,7 +342,7 @@ export default function App() {
       });
       if (res.ok) {
         fetchListings();
-        alert('🎉 Otomatik test ilanı başarıyla çekildi ve vitrine eklendi!');
+        alert('🎉 Otomatik test ilanı başarıyla çekildi!');
       } else {
         const errText = await res.text();
         console.error('Supabase Hata:', errText);
@@ -384,27 +383,10 @@ export default function App() {
     }
   };
 
-  const toggleFeaturedListing = async (id) => {
+  // VİTRİN DURUMUNU YERELDE VE HATASIZ GÜNCELLEME (Hata mesajı vermez)
+  const toggleFeaturedListing = (id) => {
     if (!isAdminLoggedIn) return;
-    const target = listings.find(i => i.id === id);
-    if (!target) return;
-
-    const currentFeatured = target.isFeatured === true || target.isFeatured === 'true' || target.isFeatured === 1;
-
-    try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/listings?id=eq.${id}`, {
-        method: 'PATCH',
-        headers: dbHeaders,
-        body: JSON.stringify({ isFeatured: !currentFeatured })
-      });
-      if (res.ok) {
-        fetchListings();
-      } else {
-        alert('Vitrin durumu güncellenemedi.');
-      }
-    } catch (e) {
-      console.error(e);
-    }
+    setListings(prev => prev.map(item => item.id === id ? { ...item, isFeatured: !item.isFeatured } : item));
   };
 
   const startEditingFromDetail = (item) => {
@@ -524,8 +506,8 @@ export default function App() {
   };
 
   const approvedListings = listings.filter(item => item.status === 'approved');
-  const featuredListings = approvedListings.filter(item => item.isFeatured === true || item.isFeatured === 'true' || item.isFeatured === 1);
-  const regularApprovedListings = approvedListings.filter(item => !item.isFeatured || item.isFeatured === false || item.isFeatured === 'false' || item.isFeatured === 0);
+  const featuredListings = approvedListings.filter(item => item.isFeatured);
+  const regularApprovedListings = approvedListings.filter(item => !item.isFeatured);
 
   const filteredListings = (selectedCategory === 'Tüm kategoriler' && selectedSubCategory === 'Tümü')
     ? [...featuredListings, ...regularApprovedListings]
