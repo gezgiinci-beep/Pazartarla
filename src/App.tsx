@@ -653,16 +653,20 @@ export default function App() {
             </div>
 
             {/* VİTRİN İLANLARI BÖLÜMÜ */}
-            {featuredListings.length > 0 && (
-              <div style={{ marginBottom: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', fontWeight: '800', fontSize: '14px', color: '#854d0e' }}>
-                  <Star size={16} fill="#eab308" color="#eab308" /> Vitrin İlanları
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', fontWeight: '800', fontSize: '14px', color: '#854d0e' }}>
+                <Star size={16} fill="#eab308" color="#eab308" /> Vitrin İlanları ({featuredListings.length})
+              </div>
+              {featuredListings.length === 0 ? (
+                <div style={{ backgroundColor: '#fff', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px', color: '#64748b', textAlign: 'center' }}>
+                  Henüz vitrine eklenmiş ilan bulunmuyor. Yönetici panelinden ilanları vitrin yapabilirsiniz.
                 </div>
+              ) : (
                 <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '4px' }}>
                   {featuredListings.map(item => {
                     const isFav = favorites.some(fav => fav.id === item.id);
                     return (
-                      <div key={`feat-${item.id}`} onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ minWidth: '160px', maxWidth: '160px', backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #fde047', cursor: 'pointer', overflow: 'hidden', flexShrink: '0', padding: '8px', position: 'relative' }}>
+                      <div key={`feat-${item.id}`} onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ minWidth: '160px', maxWidth: '160px', backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #fde047', cursor: 'pointer', overflow: 'hidden', flexShrink: 0, padding: '8px', position: 'relative' }}>
                         <button onClick={(e) => toggleFavorite(item, e)} style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(255,255,255,0.8)', border: 'none', borderRadius: '50%', width: '26px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 2 }}>
                           <Heart size={14} fill={isFav ? '#ef4444' : 'none'} color={isFav ? '#ef4444' : '#64748b'} />
                         </button>
@@ -673,8 +677,8 @@ export default function App() {
                     );
                   })}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             <div style={{ backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflow: 'hidden', border: '1px solid #e2e8f0', marginBottom: '16px' }}>
               <div style={{ backgroundColor: '#1b3a2b', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
