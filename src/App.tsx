@@ -273,7 +273,7 @@ export default function App() {
 
   const handleAutoFetchListings = async () => {
     if (!isAdminLoggedIn) return;
-     
+    
     const dynamicPool = {
       title: 'New Holland TD100D Tarım Traktörü',
       price: 1450000,
@@ -304,6 +304,7 @@ export default function App() {
     }
   };
 
+  // E-POSTA YEDEKLEME BUTONU FONKSİYONU
   const sendEmailBackup = () => {
     const emailTo = 'gezgiinci@gmail.com';
     const subject = encodeURIComponent(`PazarTarla Veritabanı Yedeği - ${new Date().toLocaleDateString('tr-TR')}`);
@@ -612,13 +613,13 @@ export default function App() {
                             • {sub}
                           </div>
                         ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
+        </div>
         )}
 
         {activeTab === 'results' && (
@@ -714,6 +715,7 @@ export default function App() {
                   <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer' }}>Çıkış</button>
                 </div>
 
+                {/* E-POSTA İLE YEDEKLEME BUTONU */}
                 <div style={{ backgroundColor: '#eff6ff', padding: '14px', borderRadius: '8px', border: '1px solid #3b82f6', marginBottom: '16px', textAlign: 'center' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1e40af', margin: '0 0 8px 0' }}>📧 E-Posta ile Yedek Gönder</h3>
                   <p style={{ fontSize: '12px', color: '#475569', marginBottom: '10px' }}>Tüm ilan listesini doğrudan <b>gezgiinci@gmail.com</b> adresine mail olarak gönder.</p>
@@ -843,7 +845,7 @@ export default function App() {
       </footer>
 
       <button onClick={() => changeTab('admin-page')} title="Yönetim Paneli" style={{ position: 'fixed', bottom: '20px', right: '20px', backgroundColor: '#1b3a2b', color: '#86efac', border: '2px solid #22c55e', borderRadius: '50%', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 999 }}>
-        ⚙️
+        ⚙️️
       </button>
     </div>
   );
