@@ -72,13 +72,13 @@ export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState('home'); 
   const editFormRef = useRef(null);
-  
+   
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState([
     { sender: 'bot', text: 'Merhaba! PazarTarla canlı destek hattına hoş geldiniz. Size nasıl yardımcı olabilirim?' }
   ]);
   const [chatInput, setChatInput] = useState('');
-   
+    
   const [listings, setListings] = useState(DEFAULT_START_LISTINGS);
   const [categoriesWithSubs, setCategoriesWithSubs] = useState(FALLBACK_CATEGORIES);
   const [announcement, setAnnouncement] = useState('🌾 Türkiye genelinden tarım aletleri, veterinerler ve taze mahsul ilanları PazarTarla’da!');
@@ -99,7 +99,7 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState('Tüm kategoriler');
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
   const [openCategory, setOpenCategory] = useState('');
-   
+    
   const [newCategoryName, setNewCategoryName] = useState('Mahsuller');
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
   const [selectedSubToRemove, setSelectedSubToRemove] = useState('');
@@ -126,6 +126,17 @@ export default function App() {
     isFeatured: false
   });
 
+  // ⚡ OTOMATİK SEO ETİKETİ ÜRETİCİ FONKSİYON
+  const generateAutoSeoTags = (title, category, subCategory, location) => {
+    const cleanWords = (str) => str ? str.toLowerCase().replace(/[^a-zğüşıöç0-9\s]/g, '').split(/\s+/).filter(w => w.length > 2) : [];
+    const titleWords = cleanWords(title).slice(0, 4).join(', ');
+    const catWords = [category, subCategory].filter(Boolean).join(', ').toLowerCase();
+    const locWords = location ? location.toLowerCase().replace('/', '').trim() : '';
+    
+    let combined = [titleWords, catWords, locWords, 'pazartarla', 'tarım ilanı', 'sahibinden tarım'].filter(Boolean).join(', ');
+    return combined;
+  };
+
   const fetchListings = async () => {
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/listings?select=*`, {
@@ -134,7 +145,12 @@ export default function App() {
       if (res.ok) {
         const data = await res.json();
         if (data && data.length > 0) {
-          setListings(data);
+          // Gelen ilanlara dinamik olarak eksikse otomatik SEO etiketi ekleyelim
+          const enhancedData = data.map(item => ({
+            ...item,
+            seoTags: item.seoTags || generateAutoSeoTags(item.title, item.category, item.subCategory, item.location)
+          }));
+          setListings(enhancedData);
         }
       }
     } catch (e) {
@@ -254,7 +270,11 @@ export default function App() {
       return;
     }
 
-    // ⚡ YALNIZCA TABLODA OLAN GERÇEK KOLONLAR GÖNDERİLİYOR (seoTags veritabanına gitmez, hata vermez)
+    // ⚡ EĞER SEO KUTUSU BOŞSA OTOMATİK OLUŞTUR
+    const finalSeoTags = form.seoTags.trim() 
+      ? sanitizeInput(form.seoTags) 
+      : generateAutoSeoTags(form.title, form.category, form.subCategory, form.location);
+
     const newEntry = {
       title: sanitizeInput(form.title),
       price: Number(form.price),
@@ -290,14 +310,14 @@ export default function App() {
     fetchListings();
     setLastAddedListing({
       ...newEntry,
-      seoTags: form.seoTags || `${form.title.toLowerCase().split(' ').join(', ')}, ${form.category.toLowerCase()}, ${form.location.toLowerCase()}`
+      seoTags: finalSeoTags
     });
     changeTab('success-wa');
   };
 
   const handleAutoFetchListings = async () => {
     if (!isAdminLoggedIn) return;
-    
+     
     const dynamicPool = {
       title: 'New Holland TD100D Tarım Traktörü',
       price: 1450000,
@@ -529,7 +549,7 @@ export default function App() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button onClick={() => changeTab('favorites')} style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>
-            ❤️️ ({favorites.length})
+            ❤ ({favorites.length})
           </button>
           <button onClick={() => changeTab('add')} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: '700', fontSize: '13px' }}>
             <Plus size={16} /> İlan Ver
@@ -562,7 +582,7 @@ export default function App() {
             <CheckCircle size={36} color="#166534" style={{ margin: '0 auto 12px auto' }} />
             <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#1b3a2b', margin: '0 0 8px 0' }}>İlanınız Başarıyla Alındı!</h2>
             <p style={{ color: '#64748b', fontSize: '13px', marginBottom: '20px' }}>Yönetici onayından sonra tüm cihazlarda görünecektir.</p>
-             
+              
             {lastAddedListing && (
               <a 
                 href={`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(`🔔 *Yeni İlan Onay Bekliyor!*\n\n*Başlık:* ${lastAddedListing.title}\n*Fiyat:* ${lastAddedListing.price} TL\n*Kategori:* ${lastAddedListing.category} / ${lastAddedListing.subCategory}\n*Satıcı:* ${lastAddedListing.seller} (${lastAddedListing.phone})`)}`}
@@ -695,14 +715,14 @@ export default function App() {
             <h2 style={{ fontSize: '18px', fontWeight: '800', margin: '8px 0' }}>{selectedListing.title}</h2>
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '4px' }}>{Number(selectedListing.price).toLocaleString('tr-TR')} TL</div>
             <p style={{ color: '#475569', fontSize: '13px', marginBottom: '12px', lineHeight: '1.5' }}>{selectedListing.description}</p>
-            
-            {/* SEO ETİKETLERİ BÖLÜMÜ */}
+             
+            {/* OTOMATİK OLUŞTURULAN VEYA KAYITLI SEO ETİKETLERİ */}
             <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '10px 12px', marginBottom: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '700', color: '#166534', marginBottom: '6px' }}>
-                <Tag size={12} /> Arama & SEO Etiketleri
+                <Tag size={12} /> Arama & Otomatik SEO Etiketleri
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                {(selectedListing.seoTags || `${selectedListing.title.toLowerCase().split(' ').join(', ')}, ${selectedListing.category.toLowerCase()}, ${selectedListing.location.toLowerCase()}`).split(',').map((tag, idx) => (
+                {(selectedListing.seoTags || generateAutoSeoTags(selectedListing.title, selectedListing.category, selectedListing.subCategory, selectedListing.location)).split(',').map((tag, idx) => (
                   <span key={idx} style={{ backgroundColor: '#dcfce7', color: '#14532d', padding: '3px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '600' }}>
                     #{tag.trim()}
                   </span>
@@ -762,7 +782,7 @@ export default function App() {
               <input type="text" name="phone" placeholder="Telefon Numaranız *" value={form.phone} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               <input type="text" name="title" placeholder="İlan Başlığı *" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               <input type="number" name="price" placeholder="Fiyat (TL) *" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
-              
+               
               <select name="category" value={form.category} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
                 {Object.keys(categoriesWithSubs).map(cat => <option key={cat} value={cat}>{cat}</option>)}
               </select>
@@ -772,7 +792,7 @@ export default function App() {
               </select>
 
               <input type="text" name="location" placeholder="Konum (Örn: Gönen / Balıkesir)" value={form.location} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
-              
+               
               <input type="text" name="seoTags" placeholder="SEO Etiketleri (Boş bırakırsanız otomatik üretilir)" value={form.seoTags} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
 
               <div style={{ backgroundColor: '#f8fafc', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -801,7 +821,7 @@ export default function App() {
             ) : (
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                  <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>🛡️ Tam Kontrol Paneli</h2>
+                  <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>🛡️️ Tam Kontrol Paneli</h2>
                   <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer' }}>Çıkış</button>
                 </div>
 
@@ -821,12 +841,12 @@ export default function App() {
 
                 {editingListing && (
                   <div style={{ backgroundColor: '#f0fdf4', padding: '14px', borderRadius: '8px', border: '2px solid #22c55e', marginBottom: '20px' }}>
-                    <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 10px 0' }}>✏️️ İlanı Düzenle</h3>
+                    <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 10px 0' }}>✏ İlanı Düzenle</h3>
                     <form onSubmit={saveEditedListing} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <input type="text" name="title" value={editingListing.title} onChange={handleEditFormChange} placeholder="Başlık" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       <input type="number" name="price" value={editingListing.price} onChange={handleEditFormChange} placeholder="Fiyat" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       <input type="text" name="location" value={editingListing.location} onChange={handleEditFormChange} placeholder="Konum" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-                      
+                       
                       <div style={{ backgroundColor: '#fff', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <label style={{ fontSize: '11px', fontWeight: '700', color: '#475569' }}>📷 Fotoğrafı Değiştir (Dosya veya URL)</label>
                         <input type="file" accept="image/*" onChange={handleEditImageUpload} style={{ width: '100%', fontSize: '11px' }} />
@@ -866,7 +886,7 @@ export default function App() {
                     <select value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff' }}>
                       {Object.keys(categoriesWithSubs).map(cat => <option key={cat} value={cat}>{cat}</option>)}
                     </select>
-                    
+                     
                     <div style={{ display: 'flex', gap: '6px' }}>
                       <select value={selectedSubToRemove} onChange={(e) => setSelectedSubToRemove(e.target.value)} style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #ef4444', backgroundColor: '#fef2f2' }}>
                         <option value="">Silinecek seçeneği seç...</option>
