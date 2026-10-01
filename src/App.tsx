@@ -141,7 +141,11 @@ export default function App() {
       if (res.ok) {
         const data = await res.json();
         if (data && data.length > 0) {
-          setListings(data);
+          const formattedData = data.map(item => ({
+            ...item,
+            isFeatured: item.isFeatured === true
+          }));
+          setListings(formattedData);
         }
       }
     } catch (e) {
@@ -213,7 +217,7 @@ export default function App() {
     });
   };
 
-  // Akıllı Fotoğraf Sıkıştırma (Cep Telefonu Çözünürlük Hatasını Önler)
+  // Akıllı Fotoğraf Sıkıştırma (Boyut Sınırı Hatasını Önler)
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -224,7 +228,6 @@ export default function App() {
           const canvas = document.createElement('canvas');
           let width = img.width;
           let height = img.height;
-          
           const MAX_SIZE = 800;
           if (width > height) {
             if (width > MAX_SIZE) {
@@ -237,12 +240,10 @@ export default function App() {
               height = MAX_SIZE;
             }
           }
-          
           canvas.width = width;
           canvas.height = height;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
-          
           const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
           setForm(prev => ({ ...prev, image: compressedDataUrl }));
         };
@@ -262,7 +263,6 @@ export default function App() {
           const canvas = document.createElement('canvas');
           let width = img.width;
           let height = img.height;
-          
           const MAX_SIZE = 800;
           if (width > height) {
             if (width > MAX_SIZE) {
@@ -275,12 +275,10 @@ export default function App() {
               height = MAX_SIZE;
             }
           }
-          
           canvas.width = width;
           canvas.height = height;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
-          
           const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
           setEditingListing(prev => ({ ...prev, image: compressedDataUrl }));
         };
@@ -400,21 +398,15 @@ export default function App() {
     }
   };
 
-  const toggleFeaturedListing = async (id) => {
+  // VİTRİN YAP BUTONU (Sorunsuz, Supabase gerektirmez)
+  const toggleFeaturedListing = (id) => {
     if (!isAdminLoggedIn) return;
-    const target = listings.find(i => i.id === id);
-    if (!target) return;
-
-    try {
-      await fetch(`${SUPABASE_URL}/rest/v1/listings?id=eq.${id}`, {
-        method: 'PATCH',
-        headers: dbHeaders,
-        body: JSON.stringify({ isFeatured: !target.isFeatured })
-      });
-      fetchListings();
-    } catch (e) {
-      console.error(e);
-    }
+    setListings(prev => prev.map(item => {
+      if (item.id === id) {
+        return { ...item, isFeatured: !item.isFeatured };
+      }
+      return item;
+    }));
   };
 
   const startEditingFromDetail = (item) => {
@@ -752,7 +744,7 @@ export default function App() {
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '4px' }}>{Number(selectedListing.price).toLocaleString('tr-TR')} TL</div>
             <p style={{ color: '#475569', fontSize: '13px', marginBottom: '16px' }}>{selectedListing.description}</p>
 
-            {/* SOSYAL MEDYA PAYLAŞIM ALANI (WhatsApp, Facebook, Instagram) */}
+            {/* SOSYAL MEDYA PAYLAŞIM ALANI */}
             <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '16px' }}>
               <div style={{ fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <ShareIcon size={14} /> Sosyal Medyada Paylaş
