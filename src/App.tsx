@@ -78,9 +78,6 @@ export default function App() {
   const [announcement, setAnnouncement] = useState('🌾 Türkiye genelinden tarım aletleri, veterinerler ve taze mahsul ilanları PazarTarla’da!');
   const [tempAnnouncement, setTempAnnouncement] = useState(announcement);
 
-  // Panoya kopyalandı bildirimi için state
-  const [copySuccess, setCopySuccess] = useState(false);
-
   const [favorites, setFavorites] = useState(() => {
     try {
       const savedFavs = localStorage.getItem('pazartarla_favorites');
@@ -103,7 +100,6 @@ export default function App() {
   const [editingListing, setEditingListing] = useState(null);
   const [lastAddedListing, setLastAddedListing] = useState(null);
 
-  // Yeni Ana Kategori Ekleme / Silme State'leri
   const [customCategoryInput, setCustomCategoryInput] = useState('');
 
   const [form, setForm] = useState({
@@ -124,7 +120,6 @@ export default function App() {
     isFeatured: false
   });
 
-  // Supabase Verilerini Çekme (REST API)
   const fetchListings = async () => {
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/listings?select=*`, {
@@ -414,7 +409,6 @@ export default function App() {
     }
   };
 
-  // Yeni Ana Kategori Ekleme
   const handleAddNewMainCategory = (e) => {
     e.preventDefault();
     if (!isAdminLoggedIn) return;
@@ -429,7 +423,6 @@ export default function App() {
     alert(`"${cat}" ana kategorisi başarıyla eklendi!`);
   };
 
-  // Ana Kategori Silme
   const handleDeleteMainCategory = (catKey) => {
     if (!isAdminLoggedIn) return;
     if (window.confirm(`"${catKey}" kategorisini ve altındaki tüm seçenekleri silmek istediğinize emin misiniz?`)) {
@@ -440,7 +433,6 @@ export default function App() {
     }
   };
 
-  // Alt Kategori Ekleme
   const handleAddSubCategory = (e) => {
     e.preventDefault();
     if (!isAdminLoggedIn) return;
@@ -549,23 +541,10 @@ export default function App() {
                 href={`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(`🔔 *Yeni İlan Onay Bekliyor!*\n\n*Başlık:* ${lastAddedListing.title}\n*Fiyat:*${lastAddedListing.price} TL\n*Kategori:* ${lastAddedListing.category} /${lastAddedListing.subCategory}\n*Satıcı:* ${lastAddedListing.seller} (${lastAddedListing.phone})`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => {
-                  const textToCopy = `🔔 *Yeni İlan Onay Bekliyor!*\n\n*Başlık:* ${lastAddedListing.title}\n*Fiyat:* ${lastAddedListing.price} TL\n*Kategori:* ${lastAddedListing.category} / ${lastAddedListing.subCategory}\n*Satıcı:* ${lastAddedListing.seller} (${lastAddedListing.phone})`;
-                  navigator.clipboard.writeText(textToCopy).then(() => {
-                    setCopySuccess(true);
-                    setTimeout(() => setCopySuccess(false), 4000);
-                  }).catch(err => console.error('Panoya kopyalanamadı:', err));
-                }}
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#22c55e', color: '#fff', padding: '12px', borderRadius: '8px', fontWeight: '800', textDecoration: 'none', fontSize: '14px', marginBottom: '12px' }}
               >
                 <MessageCircle size={18} /> WhatsApp ile Ekipten Onay İste
               </a>
-            )}
-
-            {copySuccess && (
-              <div style={{ backgroundColor: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', padding: '10px', borderRadius: '8px', fontSize: '12px', fontWeight: '600', marginBottom: '12px' }}>
-                📋 İlan metni hafızaya kopyalandı! WhatsApp açıldığında mesaj kutusuna sağ tıklayıp <b>"Yapıştır"</b> (veya Ctrl+V) diyebilirsiniz.
-              </div>
             )}
 
             <button onClick={() => changeTab('home')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '700', cursor: 'pointer' }}>← Ana Sayfaya Dön</button>
@@ -574,7 +553,6 @@ export default function App() {
 
         {activeTab === 'home' && (
           <div>
-            {/* VİTRİN İLANLARI BÖLÜMÜ */}
             {featuredListings.length > 0 && (
               <div style={{ marginBottom: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', fontWeight: '800', fontSize: '14px', color: '#854d0e' }}>
@@ -726,17 +704,17 @@ export default function App() {
                   <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer' }}>Çıkış</button>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+                <div style={{ backgroundColor: '#ecfdf5', padding: '12px', borderRadius: '8px', marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <button type="button" onClick={handleAutoFetchListings} style={{ width: '100%', backgroundColor: '#059669', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>
                     🤖 Otomatik Test İlanı Çek
                   </button>
                   <button type="button" onClick={() => {
-                    const sampleCode = `// PazarTarla Güncel Kod Parçacığı\nconsole.log("PazarTarla Çalışıyor!");`;
-                    navigator.clipboard.writeText(sampleCode).then(() => {
-                      alert('📋 Kod panoya kopyalandı!');
+                    const backupData = `// === PAZARTARLA SİSTEM YEDEĞİ ===\n// İlan Sayısı: ${listings.length}\n${JSON.stringify(listings, null, 2)}`;
+                    navigator.clipboard.writeText(backupData).then(() => {
+                      alert('📋 Tüm ana kodlar ve güncel ilanlar panoya kopyalandı! İstediğin yere yapıştırabilirsin.');
                     });
                   }} style={{ width: '100%', backgroundColor: '#0284c7', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>
-                    💻 Kod Al / Panoya Kopyala
+                    💻 Tüm Kodları ve İlanları Panoya Kopyala
                   </button>
                 </div>
 
@@ -771,7 +749,6 @@ export default function App() {
                   </div>
                 )}
 
-                {/* YENİ ANA KATEGORİ EKLEME & SİLME BÖLÜMÜ */}
                 <div style={{ backgroundColor: '#f0fdf4', padding: '12px', borderRadius: '8px', border: '1px solid #bbf7d0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 8px 0' }}>📁 Ana Kategori Ekle / Sil</h3>
                   <form onSubmit={handleAddNewMainCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '10px' }}>
