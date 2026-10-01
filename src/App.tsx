@@ -260,7 +260,6 @@ export default function App() {
       seller: sanitizeInput(form.seller),
       phone: sanitizeInput(form.phone),
       image: form.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
-      seoTags: sanitizeInput(form.seoTags || generatedSeo),
       status: 'pending'
     };
 
@@ -283,7 +282,7 @@ export default function App() {
     }
 
     fetchListings();
-    setLastAddedListing(newEntry);
+    setLastAddedListing({ ...newEntry, seoTags: form.seoTags || generatedSeo });
     changeTab('success-wa');
   };
 
@@ -300,7 +299,6 @@ export default function App() {
       seller: 'Can İnce',
       phone: '0535 768 1550',
       image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
-      seoTags: 'new holland, traktör, gönen tarım',
       status: 'approved'
     };
 
@@ -399,7 +397,6 @@ export default function App() {
           location: sanitizeInput(editingListing.location),
           description: sanitizeInput(editingListing.description),
           image: editingListing.image,
-          seoTags: sanitizeInput(editingListing.seoTags || ''),
           status: 'approved'
         })
       });
@@ -739,14 +736,12 @@ export default function App() {
               </div>
             </div>
 
-            {selectedListing.seoTags && (
-              <div style={{ backgroundColor: '#fefce8', padding: '10px 12px', borderRadius: '8px', border: '1px solid #fde047', marginBottom: '16px' }}>
-                <div style={{ fontSize: '11px', fontWeight: '700', color: '#854d0e', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <Tag size={12} /> SEO ve Arama Etiketleri
-                </div>
-                <div style={{ fontSize: '12px', color: '#713f12' }}>{selectedListing.seoTags}</div>
+            <div style={{ backgroundColor: '#fefce8', padding: '10px 12px', borderRadius: '8px', border: '1px solid #fde047', marginBottom: '16px' }}>
+              <div style={{ fontSize: '11px', fontWeight: '700', color: '#854d0e', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Tag size={12} /> Otomatik SEO ve Arama Etiketleri
               </div>
-            )}
+              <div style={{ fontSize: '12px', color: '#713f12' }}>{`${selectedListing.title}, ${selectedListing.category}, ${selectedListing.subCategory}, ${selectedListing.location}, tarım ilanı, pazartarla`}</div>
+            </div>
 
             <a href={`tel:${selectedListing.phone}`} style={{ width: '100%', backgroundColor: '#1b3a2b', color: '#fff', padding: '12px', borderRadius: '8px', textAlign: 'center', fontWeight: '700', textDecoration: 'none', display: 'block', boxSizing: 'border-box' }}>
               📞 {selectedListing.phone} ({selectedListing.seller})
@@ -783,8 +778,6 @@ export default function App() {
               </div>
 
               <textarea name="description" placeholder="Açıklama..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px' }} />
-              
-              <input type="text" name="seoTags" placeholder="SEO Etiketleri (Örn: ceviz, gönen, tarım - İsteğe bağlı)" value={form.seoTags} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
 
               <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}>İlanı Gönder</button>
             </form>
@@ -808,17 +801,9 @@ export default function App() {
                   <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer' }}>Çıkış</button>
                 </div>
 
-                <div style={{ backgroundColor: '#ecfdf5', padding: '12px', borderRadius: '8px', marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ backgroundColor: '#ecfdf5', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
                   <button type="button" onClick={handleAutoFetchListings} style={{ width: '100%', backgroundColor: '#059669', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>
                     🤖 Otomatik Test İlanı Çek
-                  </button>
-                  <button type="button" onClick={() => {
-                    const backupData = `// === PAZARTARLA SİSTEM YEDEĞİ ===\n// İlan Sayısı: ${listings.length}\n${JSON.stringify(listings, null, 2)}`;
-                    navigator.clipboard.writeText(backupData).then(() => {
-                      alert('📋 Tüm ana kodlar ve güncel ilanlar panoya kopyalandı! İstediğin yere yapıştırabilirsin.');
-                    });
-                  }} style={{ width: '100%', backgroundColor: '#0284c7', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>
-                    💻 Tüm Kodları ve İlanları Panoya Kopyala
                   </button>
                 </div>
 
@@ -832,7 +817,7 @@ export default function App() {
 
                 {editingListing && (
                   <div style={{ backgroundColor: '#f0fdf4', padding: '14px', borderRadius: '8px', border: '2px solid #22c55e', marginBottom: '20px' }}>
-                    <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 10px 0' }}>✏️ İlanı Düzenle & SEO Ayarla</h3>
+                    <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 10px 0' }}>✏️ İlanı Düzenle</h3>
                     <form onSubmit={saveEditedListing} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <input type="text" name="title" value={editingListing.title} onChange={handleEditFormChange} placeholder="Başlık" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       <input type="number" name="price" value={editingListing.price} onChange={handleEditFormChange} placeholder="Fiyat" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
@@ -845,9 +830,6 @@ export default function App() {
                       </div>
 
                       <textarea name="description" value={editingListing.description} onChange={handleEditFormChange} placeholder="Açıklama" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '60px' }} />
-                      
-                      <input type="text" name="seoTags" value={editingListing.seoTags || ''} onChange={handleEditFormChange} placeholder="SEO Etiketleri (virgülle ayırın)" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <button type="submit" style={{ flex: 1, backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Kaydet</button>
                         <button type="button" onClick={() => setEditingListing(null)} style={{ background: '#e2e8f0', border: 'none', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer' }}>İptal</button>
