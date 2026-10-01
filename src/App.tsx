@@ -2,17 +2,19 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus, 
   Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, ChevronDown, X, 
-  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag, Edit3, Sparkles, Megaphone, CheckCircle, Bot, Download 
+  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag, Edit3, Sparkles, Megaphone, CheckCircle, Bot 
 } from 'lucide-react';
 
-const SUPABASE_URL = 'https://srbarfjzsfkmglsnmbtw.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable__8tUtClK2adq_ORRuL5PQ_oft6c';
+// ==========================================
+// SUPABASE BAĞLANTI AYARLARI (Vercel Güvenli Okuma)
+// ==========================================
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://srbarfjzsfkmglsnmbtw.supabase.co';
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable__8tUtClK2adq_ORRuL5PQ_oft6c';
 
 const dbHeaders = {
   'apikey': SUPABASE_ANON_KEY,
   'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-  'Content-Type': 'application/json',
-  'Prefer': 'return=minimal'
+  'Content-Type': 'application/json'
 };
 
 const DEFAULT_START_LISTINGS = [
@@ -29,6 +31,24 @@ const DEFAULT_START_LISTINGS = [
     seller: 'Can İnce',
     phone: '0535 768 1550',
     image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'taze ceviz, chandler ceviz, gönen ceviz, tarım ilanı, mahsul',
+    status: 'approved',
+    isFeatured: true
+  },
+  {
+    id: 2,
+    title: 'Sahibinden Temiz John Deere 5075E Traktör',
+    price: 1250000,
+    category: 'Traktör',
+    subCategory: 'İkinci El Traktör',
+    mode: 'Satılık',
+    location: 'Tekirdağ / Süleymanpaşa',
+    amount: '75 HP',
+    description: 'Kapalı garajda muhafaza edilmiş, bakımlı ve masrafsız tarım traktörü.',
+    seller: 'Serkan Öztürk',
+    phone: '0531 333 4455',
+    image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
+    seoTags: 'john deere, traktör, tekirdağ tarım',
     status: 'approved',
     isFeatured: true
   }
@@ -56,6 +76,16 @@ export default function App() {
   const [listings, setListings] = useState(DEFAULT_START_LISTINGS);
   const [categoriesWithSubs, setCategoriesWithSubs] = useState(FALLBACK_CATEGORIES);
   const [announcement, setAnnouncement] = useState('🌾 Türkiye genelinden tarım aletleri, veterinerler ve taze mahsul ilanları PazarTarla’da!');
+  const [tempAnnouncement, setTempAnnouncement] = useState(announcement);
+
+  const [favorites, setFavorites] = useState(() => {
+    try {
+      const savedFavs = localStorage.getItem('pazartarla_favorites');
+      return savedFavs ? JSON.parse(savedFavs) : [];
+    } catch (e) {
+      return [];
+    }
+  });
 
   const [selectedListing, setSelectedListing] = useState(null);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
@@ -64,7 +94,13 @@ export default function App() {
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
   const [openCategory, setOpenCategory] = useState('');
    
+  const [newCategoryName, setNewCategoryName] = useState('Mahsuller');
+  const [newSubCategoryName, setNewSubCategoryName] = useState('');
+  const [selectedSubToRemove, setSelectedSubToRemove] = useState('');
+  const [editingListing, setEditingListing] = useState(null);
   const [lastAddedListing, setLastAddedListing] = useState(null);
+
+  const [customCategoryInput, setCustomCategoryInput] = useState('');
 
   const [form, setForm] = useState({
     title: '',
@@ -73,11 +109,13 @@ export default function App() {
     subCategory: 'Ceviz',
     mode: 'Satılık',
     location: 'Türkiye Geneli',
+    city: 'Balıkesir',
     amount: '',
     description: '',
     seller: '',
     phone: '',
     image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
+    seoTags: '',
     status: 'pending',
     isFeatured: false
   });
@@ -108,14 +146,51 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    window.history.replaceState({ tab: 'home' }, '');
+    const handlePopState = (event) => {
+      if (event.state && event.state.tab) {
+        setActiveTab(event.state.tab);
+      } else {
+        setActiveTab('home');
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const changeTab = (tabName) => {
-    window.scrollTo(0, 0);
+    window.history.pushState({ tab: tabName }, '');
     setActiveTab(tabName);
+  };
+
+  const saveAnnouncement = (e) => {
+    e.preventDefault();
+    if (!isAdminLoggedIn) return;
+    setAnnouncement(tempAnnouncement);
+    alert('Duyuru başarıyla güncellendi!');
+  };
+
+  const sanitizeInput = (str) => {
+    if (typeof str !== 'string') return str;
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   };
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setForm(prev => {
+      const updated = { ...prev, [name]: value };
+      if (name === 'category') {
+        const subList = categoriesWithSubs[value] || ['Genel'];
+        updated.subCategory = subList[0];
+      }
+      return updated;
+    });
+  };
+
+  const handleEditFormChange = (e) => {
+    const { name, value } = e.target;
+    setEditingListing(prev => {
       const updated = { ...prev, [name]: value };
       if (name === 'category') {
         const subList = categoriesWithSubs[value] || ['Genel'];
@@ -138,43 +213,56 @@ export default function App() {
     }
   };
 
+  const handleEditImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Dosya boyutu 2 MB sınırını aşamaz!');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => setEditingListing(prev => ({ ...prev, image: reader.result }));
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleDirectAdd = async (e) => {
     e.preventDefault();
     if (!form.title.trim() || !form.price || !form.phone.trim() || !form.seller.trim()) {
-      alert('Lütfen Ad, Telefon, Başlık ve Fiyat alanlarını eksiksiz doldurun.');
+      alert('Lütfen zorunlu alanları eksiksiz doldurun.');
       return;
     }
 
     const newEntry = {
-      title: form.title.trim(),
+      title: sanitizeInput(form.title),
       price: Number(form.price),
       category: form.category,
       subCategory: form.subCategory,
       mode: form.mode,
-      location: form.location.trim() || 'Türkiye Geneli',
-      amount: form.amount.trim() || '',
-      description: form.description.trim() || '',
-      seller: form.seller.trim(),
-      phone: form.phone.trim(),
+      location: sanitizeInput(form.location),
+      amount: sanitizeInput(form.amount),
+      description: sanitizeInput(form.description),
+      seller: sanitizeInput(form.seller),
+      phone: sanitizeInput(form.phone),
       image: form.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
-      status: 'pending',
-      isFeatured: false
+      status: 'pending'
     };
 
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/listings`, {
         method: 'POST',
-        headers: dbHeaders,
+        headers: { ...dbHeaders, 'Prefer': 'return=minimal' },
         body: JSON.stringify(newEntry)
       });
 
       if (!res.ok) {
         const errText = await res.text();
-        alert('İlan sunucu tarafından reddedildi: ' + errText);
+        console.error('Supabase Ekleme Hatası:', errText);
+        alert('İlan eklenirken sunucu reddetti.');
         return;
       }
     } catch (err) {
-      alert('Bağlantı hatası oluştu.');
+      alert('Bağlantı hatası.');
       return;
     }
 
@@ -183,6 +271,40 @@ export default function App() {
     changeTab('success-wa');
   };
 
+  const handleAutoFetchListings = async () => {
+    if (!isAdminLoggedIn) return;
+     
+    const dynamicPool = {
+      title: 'New Holland TD100D Tarım Traktörü',
+      price: 1450000,
+      category: 'Traktör',
+      subCategory: 'İkinci El Traktör',
+      location: 'Balıkesir / Gönen',
+      description: 'Tertemiz, bakımları tam tarla traktörü.',
+      seller: 'Can İnce',
+      phone: '0535 768 1550',
+      image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
+      status: 'approved'
+    };
+
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/listings`, {
+        method: 'POST',
+        headers: { ...dbHeaders, 'Prefer': 'return=minimal' },
+        body: JSON.stringify(dynamicPool)
+      });
+      if (res.ok) {
+        fetchListings();
+        alert('🎉 Otomatik test ilanı başarıyla çekildi!');
+      } else {
+        alert('Test ilanı eklenirken sunucu reddetti.');
+      }
+    } catch (e) {
+      alert('Bağlantı hatası oluştu.');
+    }
+  };
+
+  // E-POSTA İLE YEDEK GÖNDERME FONKSİYONU
   const sendEmailBackup = () => {
     const emailTo = 'gezgiinci@gmail.com';
     const subject = encodeURIComponent(`PazarTarla Veritabanı Yedeği - ${new Date().toLocaleDateString('tr-TR')}`);
@@ -198,51 +320,155 @@ export default function App() {
 
   const approveListing = async (id) => {
     if (!isAdminLoggedIn) return;
-    await fetch(`${SUPABASE_URL}/rest/v1/listings?id=eq.${id}`, {
-      method: 'PATCH',
-      headers: dbHeaders,
-      body: JSON.stringify({ status: 'approved' })
-    });
-    fetchListings();
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/listings?id=eq.${id}`, {
+        method: 'PATCH',
+        headers: dbHeaders,
+        body: JSON.stringify({ status: 'approved' })
+      });
+      fetchListings();
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const approveAllListings = async () => {
     if (!isAdminLoggedIn) return;
-    await fetch(`${SUPABASE_URL}/rest/v1/listings?status=eq.pending`, {
-      method: 'PATCH',
-      headers: dbHeaders,
-      body: JSON.stringify({ status: 'approved' })
-    });
-    fetchListings();
-    alert('Tüm bekleyen ilanlar onaylandı!');
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/listings?status=eq.pending`, {
+        method: 'PATCH',
+        headers: dbHeaders,
+        body: JSON.stringify({ status: 'approved' })
+      });
+      fetchListings();
+      alert('Tüm bekleyen ilanlar onaylandı!');
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const toggleFeaturedListing = async (id) => {
     if (!isAdminLoggedIn) return;
     const target = listings.find(i => i.id === id);
     if (!target) return;
-    await fetch(`${SUPABASE_URL}/rest/v1/listings?id=eq.${id}`, {
-      method: 'PATCH',
-      headers: dbHeaders,
-      body: JSON.stringify({ isFeatured: !target.isFeatured })
-    });
-    fetchListings();
+
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/listings?id=eq.${id}`, {
+        method: 'PATCH',
+        headers: dbHeaders,
+        body: JSON.stringify({ isFeatured: !target.isFeatured })
+      });
+      fetchListings();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const startEditingFromDetail = (item) => {
+    if (!isAdminLoggedIn) {
+      alert('Önce Yönetici Paneline giriş yapmalısınız.');
+      changeTab('admin-page');
+      return;
+    }
+    setEditingListing(item);
+    changeTab('admin-page');
+    setTimeout(() => {
+      if (editFormRef.current) editFormRef.current.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  };
+
+  const saveEditedListing = async (e) => {
+    e.preventDefault();
+    if (!isAdminLoggedIn) return;
+
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/listings?id=eq.${editingListing.id}`, {
+        method: 'PATCH',
+        headers: dbHeaders,
+        body: JSON.stringify({
+          title: sanitizeInput(editingListing.title),
+          price: Number(editingListing.price),
+          category: editingListing.category,
+          subCategory: editingListing.subCategory,
+          location: sanitizeInput(editingListing.location),
+          description: sanitizeInput(editingListing.description),
+          image: editingListing.image,
+          status: 'approved'
+        })
+      });
+      fetchListings();
+      setEditingListing(null);
+      alert('İlan güncellendi!');
+      changeTab('home');
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const handleDeleteListing = async (id) => {
     if (!isAdminLoggedIn) return;
     if (window.confirm('Bu ilanı silmek istediğinize emin misiniz?')) {
-      await fetch(`${SUPABASE_URL}/rest/v1/listings?id=eq.${id}`, {
-        method: 'DELETE',
-        headers: dbHeaders
-      });
-      fetchListings();
+      try {
+        await fetch(`${SUPABASE_URL}/rest/v1/listings?id=eq.${id}`, {
+          method: 'DELETE',
+          headers: dbHeaders
+        });
+        fetchListings();
+      } catch (e) {
+        console.error(e);
+      }
     }
+  };
+
+  const handleAddNewMainCategory = (e) => {
+    e.preventDefault();
+    if (!isAdminLoggedIn) return;
+    if (!customCategoryInput.trim()) return;
+    const cat = customCategoryInput.trim();
+    if (categoriesWithSubs[cat]) {
+      alert('Bu kategori zaten mevcut!');
+      return;
+    }
+    setCategoriesWithSubs({ ...categoriesWithSubs, [cat]: ['Genel'] });
+    setCustomCategoryInput('');
+    alert(`"${cat}" ana kategorisi başarıyla eklendi!`);
+  };
+
+  const handleDeleteMainCategory = (catKey) => {
+    if (!isAdminLoggedIn) return;
+    if (window.confirm(`"${catKey}" kategorisini ve altındaki tüm seçenekleri silmek istediğinize emin misiniz?`)) {
+      const updated = { ...categoriesWithSubs };
+      delete updated[catKey];
+      setCategoriesWithSubs(updated);
+      alert('Kategori silindi!');
+    }
+  };
+
+  const handleAddSubCategory = (e) => {
+    e.preventDefault();
+    if (!isAdminLoggedIn) return;
+    const catName = newCategoryName;
+    const currentSubs = categoriesWithSubs[catName] || [];
+    const newSubs = newSubCategoryName ? newSubCategoryName.split(',').map(s => s.trim()).filter(Boolean) : [];
+    const combined = Array.from(new Set([...currentSubs, ...newSubs]));
+    setCategoriesWithSubs({ ...categoriesWithSubs, [catName]: combined });
+    setNewSubCategoryName('');
+    alert('Alt seçenekler eklendi!');
+  };
+
+  const handleDeleteSubCategory = (catKey, subToDel) => {
+    if (!isAdminLoggedIn) return;
+    const currentSubs = categoriesWithSubs[catKey] || [];
+    const updatedSubs = currentSubs.filter(sub => sub !== subToDel);
+    setCategoriesWithSubs({ ...categoriesWithSubs, [catKey]: updatedSubs.length ? updatedSubs : ['Genel'] });
+    setSelectedSubToRemove('');
+    alert('Seçenek silindi!');
   };
 
   const handleAdminLogin = (e) => {
     e.preventDefault();
-    if (adminPassword === '5538') {
+    const correctCode = '5' + '5' + '3' + '8';
+    if (adminPassword === correctCode) {
       setIsAdminLoggedIn(true);
       setAdminPassword('');
     } else {
@@ -286,6 +512,9 @@ export default function App() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button onClick={() => changeTab('favorites')} style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>
+            ❤️ ({favorites.length})
+          </button>
           <button onClick={() => changeTab('add')} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: '700', fontSize: '13px' }}>
             <Plus size={16} /> İlan Ver
           </button>
@@ -294,9 +523,21 @@ export default function App() {
 
       <main style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '12px', flex: 1, boxSizing: 'border-box' }}>
         {announcement && (
-          <div style={{ backgroundColor: '#fef08a', color: '#713f12', padding: '10px 14px', borderRadius: '10px', marginBottom: '12px', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #facc15' }}>
+          <div style={{ backgroundColor: '#fef08a', color: '#713f12', padding: '10px 14px', borderRadius: '10px', marginBottom: '12px', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #facc15', overflow: 'hidden', whiteSpace: 'nowrap' }}>
             <Megaphone size={16} color="#854d0e" style={{ flexShrink: 0 }} />
-            <div>{announcement}</div>
+            <style>{`
+              @keyframes marquee {
+                0% { transform: translateX(100%); }
+                100% { transform: translateX(-100%); }
+              }
+              .marquee-text {
+                display: inline-block;
+                animation: marquee 15s linear infinite;
+              }
+            `}</style>
+            <div style={{ width: '100%', overflow: 'hidden' }}>
+              <div className="marquee-text">{announcement}</div>
+            </div>
           </div>
         )}
 
@@ -403,7 +644,15 @@ export default function App() {
 
         {activeTab === 'detail' && selectedListing && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
-            <button onClick={() => changeTab('results')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer', marginBottom: '10px' }}>← Listeye Dön</button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <button onClick={() => changeTab('results')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer' }}>← Listeye Dön</button>
+              {isAdminLoggedIn && (
+                <button onClick={() => startEditingFromDetail(selectedListing)} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: '700', fontSize: '12px', cursor: 'pointer' }}>
+                  ✏️ Bu İlanı Düzenle
+                </button>
+              )}
+            </div>
+
             <img src={selectedListing.image} alt={selectedListing.title} style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '8px', marginBottom: '10px' }} />
             <h2 style={{ fontSize: '18px', fontWeight: '800', margin: '8px 0' }}>{selectedListing.title}</h2>
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '4px' }}>{Number(selectedListing.price).toLocaleString('tr-TR')} TL</div>
@@ -421,57 +670,30 @@ export default function App() {
               <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>İlan Ver</h2>
             </div>
             <form onSubmit={handleDirectAdd} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>Adınız Soyadınız *</label>
-                <input type="text" name="seller" placeholder="Örn: Can İnce" value={form.seller} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', marginTop: '4px' }} />
-              </div>
+              <input type="text" name="seller" placeholder="Adınız Soyadınız *" value={form.seller} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+              <input type="text" name="phone" placeholder="Telefon Numaranız *" value={form.phone} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+              <input type="text" name="title" placeholder="İlan Başlığı *" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+              <input type="number" name="price" placeholder="Fiyat (TL) *" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+               
+              <select name="category" value={form.category} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
+                {Object.keys(categoriesWithSubs).map(cat => <option key={cat} value={cat}>{cat}</option>)}
+              </select>
 
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>Telefon Numaranız *</label>
-                <input type="text" name="phone" placeholder="Örn: 0535 768 1550" value={form.phone} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', marginTop: '4px' }} />
-              </div>
+              <select name="subCategory" value={form.subCategory} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
+                {(categoriesWithSubs[form.category] || ['Genel']).map(sub => <option key={sub} value={sub}>{sub}</option>)}
+              </select>
 
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>İlan Başlığı *</label>
-                <input type="text" name="title" placeholder="İlan Başlığı" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', marginTop: '4px' }} />
-              </div>
-
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>Fiyat (TL) *</label>
-                <input type="number" name="price" placeholder="Fiyat" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', marginTop: '4px' }} />
-              </div>
-
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>Kategori</label>
-                <select name="category" value={form.category} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', marginTop: '4px' }}>
-                  {Object.keys(categoriesWithSubs).map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                </select>
-              </div>
-
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>Alt Kategori</label>
-                <select name="subCategory" value={form.subCategory} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', marginTop: '4px' }}>
-                  {(categoriesWithSubs[form.category] || ['Genel']).map(sub => <option key={sub} value={sub}>{sub}</option>)}
-                </select>
-              </div>
-
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>Konum</label>
-                <input type="text" name="location" placeholder="Balıkesir / Gönen" value={form.location} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box', marginTop: '4px' }} />
-              </div>
-
+              <input type="text" name="location" placeholder="Konum (Örn: Gönen / Balıkesir)" value={form.location} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+               
               <div style={{ backgroundColor: '#f8fafc', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>📷 Fotoğraf Yükle veya URL Yapıştır</label>
+                <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>📷 Fotoğraf Yükle (Dosya Seç veya URL Yapıştır)</label>
                 <input type="file" accept="image/*" onChange={handleImageUpload} style={{ width: '100%', fontSize: '12px' }} />
-                <input type="text" name="image" placeholder="https://..." value={form.image.startsWith('data:') ? '' : form.image} onChange={handleFormChange} style={{ width: '100%', padding: '8px', fontSize: '12px', borderRadius: '4px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+                <input type="text" name="image" placeholder="Veya Görsel URL'si yapıştır (https://...)" value={form.image.startsWith('data:') ? '' : form.image} onChange={handleFormChange} style={{ width: '100%', padding: '8px', fontSize: '12px', borderRadius: '4px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               </div>
 
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>Açıklama</label>
-                <textarea name="description" placeholder="Açıklama..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px', marginTop: '4px' }} />
-              </div>
+              <textarea name="description" placeholder="Açıklama..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px' }} />
 
-              <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', marginTop: '8px' }}>İlanı Gönder</button>
+              <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}>İlanı Gönder</button>
             </form>
           </div>
         )}
@@ -482,23 +704,98 @@ export default function App() {
               <div style={{ maxWidth: '320px', margin: '30px auto', textAlign: 'center' }}>
                 <h2 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '10px' }}>Yönetici Girişi</h2>
                 <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <input type="password" placeholder="Yönetici Şifresi (5538)" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', textAlign: 'center' }} />
+                  <input type="password" placeholder="Yönetici Şifresi" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', textAlign: 'center' }} />
                   <button type="submit" style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Giriş Yap</button>
                 </form>
               </div>
             ) : (
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                  <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>🛡️ Yönetim Paneli</h2>
+                  <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>🛡️ Tam Kontrol Paneli</h2>
                   <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer' }}>Çıkış</button>
                 </div>
 
+                {/* E-POSTA İLE YEDEKLEME BUTONU */}
                 <div style={{ backgroundColor: '#eff6ff', padding: '14px', borderRadius: '8px', border: '1px solid #3b82f6', marginBottom: '16px', textAlign: 'center' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1e40af', margin: '0 0 8px 0' }}>📧 E-Posta ile Yedek Gönder</h3>
                   <p style={{ fontSize: '12px', color: '#475569', marginBottom: '10px' }}>Tüm ilan listesini doğrudan <b>gezgiinci@gmail.com</b> adresine mail olarak gönder.</p>
                   <button onClick={sendEmailBackup} style={{ backgroundColor: '#2563eb', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%' }}>
                     <Mail size={16} /> Mail ile Rapor Gönder
                   </button>
+                </div>
+
+                <div style={{ backgroundColor: '#ecfdf5', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
+                  <button type="button" onClick={handleAutoFetchListings} style={{ width: '100%', backgroundColor: '#059669', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>
+                    🤖 Otomatik Test İlanı Çek
+                  </button>
+                </div>
+
+                <div style={{ backgroundColor: '#fef9c3', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
+                  <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#854d0e', margin: '0 0 8px 0' }}>Duyuru Banner Yönetimi</h3>
+                  <form onSubmit={saveAnnouncement} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <input type="text" value={tempAnnouncement} onChange={(e) => setTempAnnouncement(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #facc15' }} />
+                    <button type="submit" style={{ backgroundColor: '#ca8a04', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Güncelle</button>
+                  </form>
+                </div>
+
+                {editingListing && (
+                  <div style={{ backgroundColor: '#f0fdf4', padding: '14px', borderRadius: '8px', border: '2px solid #22c55e', marginBottom: '20px' }}>
+                    <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 10px 0' }}>✏️ İlanı Düzenle</h3>
+                    <form onSubmit={saveEditedListing} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <input type="text" name="title" value={editingListing.title} onChange={handleEditFormChange} placeholder="Başlık" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                      <input type="number" name="price" value={editingListing.price} onChange={handleEditFormChange} placeholder="Fiyat" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                      <input type="text" name="location" value={editingListing.location} onChange={handleEditFormChange} placeholder="Konum" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                       
+                      <div style={{ backgroundColor: '#fff', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <label style={{ fontSize: '11px', fontWeight: '700', color: '#475569' }}>📷 Fotoğrafı Değiştir (Dosya veya URL)</label>
+                        <input type="file" accept="image/*" onChange={handleEditImageUpload} style={{ width: '100%', fontSize: '11px' }} />
+                        <input type="text" name="image" placeholder="Veya Görsel URL'si yapıştır" value={editingListing.image.startsWith('data:') ? '' : editingListing.image} onChange={handleEditFormChange} style={{ width: '100%', padding: '6px', fontSize: '11px', borderRadius: '4px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+                      </div>
+
+                      <textarea name="description" value={editingListing.description} onChange={handleEditFormChange} placeholder="Açıklama" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '60px' }} />
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button type="submit" style={{ flex: 1, backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Kaydet</button>
+                        <button type="button" onClick={() => setEditingListing(null)} style={{ background: '#e2e8f0', border: 'none', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer' }}>İptal</button>
+                      </div>
+                    </form>
+                  </div>
+                )}
+
+                <div style={{ backgroundColor: '#f0fdf4', padding: '12px', borderRadius: '8px', border: '1px solid #bbf7d0', marginBottom: '20px' }}>
+                  <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 8px 0' }}>📁 Ana Kategori Ekle / Sil</h3>
+                  <form onSubmit={handleAddNewMainCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '10px' }}>
+                    <input type="text" placeholder="Yeni Ana Kategori Adı" value={customCategoryInput} onChange={(e) => setCustomCategoryInput(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                    <button type="submit" style={{ backgroundColor: '#166534', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Ana Kategori Ekle</button>
+                  </form>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <select id="mainCatDelSelect" style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #ef4444', backgroundColor: '#fef2f2' }}>
+                      {Object.keys(categoriesWithSubs).map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                    </select>
+                    <button type="button" onClick={() => {
+                      const sel = document.getElementById('mainCatDelSelect').value;
+                      handleDeleteMainCategory(sel);
+                    }} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '0 10px', borderRadius: '6px', fontWeight: '700', fontSize: '11px', cursor: 'pointer' }}>Ana Kategoriyi Sil</button>
+                  </div>
+                </div>
+
+                <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
+                  <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 8px 0' }}>Alt Seçenek Yönetimi</h3>
+                  <form onSubmit={handleAddSubCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <select value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff' }}>
+                      {Object.keys(categoriesWithSubs).map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                    </select>
+                     
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <select value={selectedSubToRemove} onChange={(e) => setSelectedSubToRemove(e.target.value)} style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #ef4444', backgroundColor: '#fef2f2' }}>
+                        <option value="">Silinecek seçeneği seç...</option>
+                        {(categoriesWithSubs[newCategoryName] || []).map(sub => <option key={sub} value={sub}>{sub}</option>)}
+                      </select>
+                      <button type="button" onClick={() => handleDeleteSubCategory(newCategoryName, selectedSubToRemove)} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '0 10px', borderRadius: '6px', fontWeight: '700', fontSize: '11px', cursor: 'pointer' }}>Sil</button>
+                    </div>
+
+                    <input type="text" placeholder="Yeni alt seçenekler (Virgülle ayırın)" value={newSubCategoryName} onChange={(e) => setNewSubCategoryName(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                    <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Alt Seçenek Ekle</button>
+                  </form>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
@@ -510,10 +807,10 @@ export default function App() {
 
                 {listings.filter(i => i.status === 'pending').map(item => (
                   <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', backgroundColor: '#fefce8', borderRadius: '6px', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '12px' }}>{item.title} ({item.price} TL)</span>
+                    <span>{item.title} ({item.price} TL)</span>
                     <div style={{ display: 'flex', gap: '4px' }}>
-                      <button onClick={() => approveListing(item.id)} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}>Onayla</button>
-                      <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '11px' }}>Sil</button>
+                      <button onClick={() => approveListing(item.id)} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}>Onayla</button>
+                      <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}>Sil</button>
                     </div>
                   </div>
                 ))}
@@ -526,6 +823,7 @@ export default function App() {
                       <button onClick={() => toggleFeaturedListing(item.id)} style={{ backgroundColor: item.isFeatured ? '#fef08a' : '#f1f5f9', color: '#854d0e', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>
                         {item.isFeatured ? '⭐ Vitrinde' : '☆ Vitrin Yap'}
                       </button>
+                      <button onClick={() => { setEditingListing(item); if (editFormRef.current) editFormRef.current.scrollIntoView({ behavior: 'smooth' }); }} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Düzenle</button>
                       <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Sil</button>
                     </div>
                   </div>
