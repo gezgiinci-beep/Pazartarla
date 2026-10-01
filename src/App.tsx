@@ -93,26 +93,6 @@ export default function App() {
     }
   });
 
-  useEffect(() => {
-    try {
-      localStorage.setItem('pazartarla_favorites', JSON.stringify(favorites));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [favorites]);
-
-  const toggleFavorite = (item, e) => {
-    if (e) e.stopPropagation();
-    setFavorites(prev => {
-      const exists = prev.some(fav => fav.id === item.id);
-      if (exists) {
-        return prev.filter(fav => fav.id !== item.id);
-      } else {
-        return [...prev, item];
-      }
-    });
-  };
-
   const [selectedListing, setSelectedListing] = useState(null);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
@@ -154,15 +134,7 @@ export default function App() {
       if (res.ok) {
         const data = await res.json();
         if (data && data.length > 0) {
-          setListings(prev => {
-            return data.map(serverItem => {
-              const existing = prev.find(p => p.id === serverItem.id);
-              return {
-                ...serverItem,
-                isFeatured: existing ? existing.isFeatured : (serverItem.isFeatured || false)
-              };
-            });
-          });
+          setListings(data);
         }
       }
     } catch (e) {
@@ -282,23 +254,17 @@ export default function App() {
       return;
     }
 
-    const comprehensiveSeo = `${form.title}, ${form.category}, ${form.subCategory}, ${form.location}, ${form.description ? form.description.slice(0, 50) : ''}, tarım ilanı, pazartarla, sahibinden`.toLowerCase().replace(/[\r\n]+/g, ' ');
-
     const newEntry = {
       title: sanitizeInput(form.title),
       price: Number(form.price),
       category: form.category,
       subCategory: form.subCategory,
-      mode: form.mode,
       location: sanitizeInput(form.location),
-      amount: sanitizeInput(form.amount),
       description: sanitizeInput(form.description),
       seller: sanitizeInput(form.seller),
       phone: sanitizeInput(form.phone),
       image: form.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
-      seoTags: sanitizeInput(form.seoTags && form.seoTags.trim() !== '' ? form.seoTags : comprehensiveSeo),
-      status: 'pending',
-      isFeatured: false
+      status: 'pending'
     };
 
     try {
@@ -337,9 +303,7 @@ export default function App() {
       seller: 'Can İnce',
       phone: '0535 768 1550',
       image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
-      seoTags: 'new holland, traktör, gönen tarım, tarım ilanı',
-      status: 'approved',
-      isFeatured: false
+      status: 'approved'
     };
 
     try {
@@ -352,6 +316,8 @@ export default function App() {
         fetchListings();
         alert('🎉 Otomatik test ilanı başarıyla çekildi!');
       } else {
+        const errText = await res.text();
+        console.error('Supabase Hata:', errText);
         alert('Test ilanı eklenirken sunucu reddetti.');
       }
     } catch (e) {
@@ -389,9 +355,21 @@ export default function App() {
     }
   };
 
-  const toggleFeaturedListing = (id) => {
+  const toggleFeaturedListing = async (id) => {
     if (!isAdminLoggedIn) return;
-    setListings(prev => prev.map(item => item.id === id ? { ...item, isFeatured: !item.isFeatured } : item));
+    const target = listings.find(i => i.id === id);
+    if (!target) return;
+
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/listings?id=eq.${id}`, {
+        method: 'PATCH',
+        headers: dbHeaders,
+        body: JSON.stringify({ isFeatured: !target.isFeatured })
+      });
+      fetchListings();
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const startEditingFromDetail = (item) => {
@@ -411,8 +389,6 @@ export default function App() {
     e.preventDefault();
     if (!isAdminLoggedIn) return;
 
-    const comprehensiveSeo = `${editingListing.title}, ${editingListing.category}, ${editingListing.subCategory}, ${editingListing.location}, ${editingListing.description ? editingListing.description.slice(0, 50) : ''}, tarım ilanı, pazartarla`.toLowerCase().replace(/[\r\n]+/g, ' ');
-
     try {
       await fetch(`${SUPABASE_URL}/rest/v1/listings?id=eq.${editingListing.id}`, {
         method: 'PATCH',
@@ -424,7 +400,6 @@ export default function App() {
           subCategory: editingListing.subCategory,
           location: sanitizeInput(editingListing.location),
           description: sanitizeInput(editingListing.description),
-          seoTags: sanitizeInput(editingListing.seoTags && editingListing.seoTags.trim() !== '' ? editingListing.seoTags : comprehensiveSeo),
           image: editingListing.image,
           status: 'approved'
         })
@@ -545,8 +520,8 @@ export default function App() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <button onClick={() => changeTab('favorites')} style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <Heart size={14} fill={favorites.length > 0 ? '#ef4444' : 'none'} color={favorites.length > 0 ? '#ef4444' : '#fff'} /> ({favorites.length})
+          <button onClick={() => changeTab('favorites')} style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>
+            ❤️ ({favorites.length})
           </button>
           <button onClick={() => changeTab('add')} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: '700', fontSize: '13px' }}>
             <Plus size={16} /> İlan Ver
@@ -571,38 +546,6 @@ export default function App() {
             <div style={{ width: '100%', overflow: 'hidden' }}>
               <div className="marquee-text">{announcement}</div>
             </div>
-          </div>
-        )}
-
-        {activeTab === 'favorites' && (
-          <div>
-            <div style={{ backgroundColor: '#1b3a2b', color: '#fff', borderRadius: '10px', padding: '10px 14px', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <button onClick={() => changeTab('home')} style={{ background: 'none', border: 'none', color: '#86efac', fontWeight: '700', cursor: 'pointer' }}><ArrowLeft size={16} /> Ana Sayfa</button>
-              <span>Favori İlanlarım ({favorites.length})</span>
-            </div>
-
-            {favorites.length === 0 ? (
-              <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '30px', textAlign: 'center', border: '1px solid #e2e8f0', color: '#64748b' }}>
-                <Heart size={36} color="#cbd5e1" style={{ margin: '0 auto 10px auto' }} />
-                <p style={{ fontWeight: '600', fontSize: '14px' }}>Henüz favorilere ilan eklemediniz.</p>
-              </div>
-            ) : (
-              favorites.map(item => (
-                <div key={item.id} style={{ backgroundColor: '#fff', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', display: 'flex', gap: '10px', padding: '10px', marginBottom: '10px', position: 'relative' }}>
-                  <div onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ display: 'flex', gap: '10px', flex: 1, cursor: 'pointer' }}>
-                    <img src={item.image} alt={item.title} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '8px' }} />
-                    <div style={{ flex: 1 }}>
-                      <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: '700' }}>{item.title}</h4>
-                      <div style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b' }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
-                      <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>📍 {item.location}</div>
-                    </div>
-                  </div>
-                  <button onClick={(e) => toggleFavorite(item, e)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', alignSelf: 'flex-start' }}>
-                    <Heart size={20} fill="#ef4444" color="#ef4444" />
-                  </button>
-                </div>
-              ))
-            )}
           </div>
         )}
 
@@ -652,22 +595,16 @@ export default function App() {
             {featuredListings.length > 0 && (
               <div style={{ marginBottom: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', fontWeight: '800', fontSize: '14px', color: '#854d0e' }}>
-                  <Star size={16} fill="#eab308" color="#eab308" /> Vitrin İlanları ({featuredListings.length})
+                  <Star size={16} fill="#eab308" color="#eab308" /> Vitrin İlanları
                 </div>
                 <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '4px' }}>
-                  {featuredListings.map(item => {
-                    const isFav = favorites.some(fav => fav.id === item.id);
-                    return (
-                      <div key={`feat-${item.id}`} onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ minWidth: '160px', maxWidth: '160px', backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #fde047', cursor: 'pointer', overflow: 'hidden', flexShrink: 0, padding: '8px', position: 'relative' }}>
-                        <button onClick={(e) => toggleFavorite(item, e)} style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(255,255,255,0.8)', border: 'none', borderRadius: '50%', width: '26px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 2 }}>
-                          <Heart size={14} fill={isFav ? '#ef4444' : 'none'} color={isFav ? '#ef4444' : '#64748b'} />
-                        </button>
-                        <img src={item.image} alt={item.title} style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '6px', marginBottom: '6px' }} />
-                        <div style={{ fontSize: '12px', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</div>
-                        <div style={{ fontSize: '13px', fontWeight: '800', color: '#1b3a2b', marginTop: '2px' }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
-                      </div>
-                    );
-                  })}
+                  {featuredListings.map(item => (
+                    <div key={`feat-${item.id}`} onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ minWidth: '160px', maxWidth: '160px', backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #fde047', cursor: 'pointer', overflow: 'hidden', flexShrink: 0, padding: '8px' }}>
+                      <img src={item.image} alt={item.title} style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '6px', marginBottom: '6px' }} />
+                      <div style={{ fontSize: '12px', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</div>
+                      <div style={{ fontSize: '13px', fontWeight: '800', color: '#1b3a2b', marginTop: '2px' }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -704,9 +641,9 @@ export default function App() {
                             • {sub}
                           </div>
                         ))}
-                      </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
+                </div>
                 );
               })}
             </div>
@@ -720,24 +657,16 @@ export default function App() {
               <span>{filteredListings.length} sonuç</span>
             </div>
 
-            {filteredListings.map(item => {
-              const isFav = favorites.some(fav => fav.id === item.id);
-              return (
-                <div key={item.id} style={{ backgroundColor: '#fff', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', display: 'flex', gap: '10px', padding: '10px', marginBottom: '10px', position: 'relative' }}>
-                  <div onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ display: 'flex', gap: '10px', flex: 1, cursor: 'pointer' }}>
-                    <img src={item.image} alt={item.title} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '8px' }} />
-                    <div style={{ flex: 1 }}>
-                      <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: '700' }}>{item.title}</h4>
-                      <div style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b' }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
-                      <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>📍 {item.location}</div>
-                    </div>
-                  </div>
-                  <button onClick={(e) => toggleFavorite(item, e)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', alignSelf: 'flex-start' }}>
-                    <Heart size={20} fill={isFav ? '#ef4444' : 'none'} color={isFav ? '#ef4444' : '#64748b'} />
-                  </button>
+            {filteredListings.map(item => (
+              <div key={item.id} onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ backgroundColor: '#fff', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer', display: 'flex', gap: '10px', padding: '10px', marginBottom: '10px' }}>
+                <img src={item.image} alt={item.title} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '8px' }} />
+                <div style={{ flex: 1 }}>
+                  <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: '700' }}>{item.title}</h4>
+                  <div style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b' }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
+                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>📍 {item.location}</div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         )}
 
@@ -745,16 +674,11 @@ export default function App() {
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
               <button onClick={() => changeTab('results')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer' }}>← Listeye Dön</button>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <button onClick={(e) => toggleFavorite(selectedListing, e)} style={{ backgroundColor: '#f1f5f9', border: 'none', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: '700', color: '#475569' }}>
-                  <Heart size={16} fill={favorites.some(fav => fav.id === selectedListing.id) ? '#ef4444' : 'none'} color={favorites.some(fav => fav.id === selectedListing.id) ? '#ef4444' : '#475569'} /> Favori
+              {isAdminLoggedIn && (
+                <button onClick={() => startEditingFromDetail(selectedListing)} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: '700', fontSize: '12px', cursor: 'pointer' }}>
+                  ✏️ Bu İlanı Düzenle
                 </button>
-                {isAdminLoggedIn && (
-                  <button onClick={() => startEditingFromDetail(selectedListing)} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: '700', fontSize: '12px', cursor: 'pointer' }}>
-                    ✏️ Düzenle
-                  </button>
-                )}
-              </div>
+              )}
             </div>
 
             <img src={selectedListing.image} alt={selectedListing.title} style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '8px', marginBottom: '10px' }} />
@@ -781,7 +705,7 @@ export default function App() {
               <div style={{ fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>📤 Bu İlanı Paylaş:</div>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <a 
-                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`🌾 *PazarTarla İlanı*\n*${selectedListing.title}*\nFiyat: ${Number(selectedListing.price).toLocaleString('tr-TR')} TL\nKonum: ${selectedListing.location}\nİncelemek için tıkla!`)}`}
+                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`🌾 *PazarTarla İlanı*\n*${selectedListing.title}*\nFiyat: ${Number(selectedListing.price).toLocaleString('tr-TR')} TL\nKonum:${selectedListing.location}\nİncelemek için tıkla!`)}`}
                   target="_blank" 
                   rel="noopener noreferrer" 
                   style={{ flex: 1, backgroundColor: '#22c55e', color: '#fff', padding: '8px 10px', borderRadius: '6px', textAlign: 'center', fontWeight: '700', textDecoration: 'none', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
@@ -802,7 +726,7 @@ export default function App() {
                   onClick={() => {
                     const shareText = `PazarTarla'da harika bir tarım ilanı: ${selectedListing.title} - ${Number(selectedListing.price).toLocaleString('tr-TR')} TL (${selectedListing.location})`;
                     navigator.clipboard.writeText(shareText);
-                    alert('📋 İlan bilgileri panoya kopyalandı!');
+                    alert('📋 İlan bilgileri panoya kopyalandı! Instagram hikayenizde veya mesajınızda doğrudan yapıştırıp paylaşabilirsiniz.');
                   }}
                   style={{ flex: 1, backgroundColor: '#e1306c', color: '#fff', border: 'none', padding: '8px 10px', borderRadius: '6px', textAlign: 'center', fontWeight: '700', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
                 >
@@ -839,12 +763,12 @@ export default function App() {
 
               <input type="text" name="location" placeholder="Konum (Örn: Gönen / Balıkesir)" value={form.location} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               
-              <input type="text" name="seoTags" autoComplete="off" placeholder="SEO Etiketleri (Boş bırakırsanız başlık, açıklama ve kategoriden otomatik üretilir)" value={form.seoTags} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+              <input type="text" name="seoTags" placeholder="SEO Etiketleri (Virgülle ayırın: ceviz, gönen)" value={form.seoTags} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
 
               <div style={{ backgroundColor: '#f8fafc', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>📷 Fotoğraf Yükle</label>
+                <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>📷 Fotoğraf Yükle (Dosya Seç veya URL Yapıştır)</label>
                 <input type="file" accept="image/*" onChange={handleImageUpload} style={{ width: '100%', fontSize: '12px' }} />
-                <input type="text" name="image" placeholder="Veya Görsel URL'si yapıştır" value={form.image.startsWith('data:') ? '' : form.image} onChange={handleFormChange} style={{ width: '100%', padding: '8px', fontSize: '12px', borderRadius: '4px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+                <input type="text" name="image" placeholder="Veya Görsel URL'si yapıştır (https://...)" value={form.image.startsWith('data:') ? '' : form.image} onChange={handleFormChange} style={{ width: '100%', padding: '8px', fontSize: '12px', borderRadius: '4px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               </div>
 
               <textarea name="description" placeholder="Açıklama..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px' }} />
@@ -892,10 +816,10 @@ export default function App() {
                       <input type="text" name="title" value={editingListing.title} onChange={handleEditFormChange} placeholder="Başlık" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       <input type="number" name="price" value={editingListing.price} onChange={handleEditFormChange} placeholder="Fiyat" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       <input type="text" name="location" value={editingListing.location} onChange={handleEditFormChange} placeholder="Konum" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-                      <input type="text" name="seoTags" autoComplete="off" value={editingListing.seoTags || ''} onChange={handleEditFormChange} placeholder="SEO Etiketleri" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                      <input type="text" name="seoTags" value={editingListing.seoTags || ''} onChange={handleEditFormChange} placeholder="SEO Etiketleri (Virgülle ayırın)" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       
                       <div style={{ backgroundColor: '#fff', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        <label style={{ fontSize: '11px', fontWeight: '700', color: '#475569' }}>📷 Fotoğrafı Değiştir</label>
+                        <label style={{ fontSize: '11px', fontWeight: '700', color: '#475569' }}>📷 Fotoğrafı Değiştir (Dosya veya URL)</label>
                         <input type="file" accept="image/*" onChange={handleEditImageUpload} style={{ width: '100%', fontSize: '11px' }} />
                         <input type="text" name="image" placeholder="Veya Görsel URL'si yapıştır" value={editingListing.image.startsWith('data:') ? '' : editingListing.image} onChange={handleEditFormChange} style={{ width: '100%', padding: '6px', fontSize: '11px', borderRadius: '4px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
                       </div>
@@ -964,21 +888,18 @@ export default function App() {
                 ))}
 
                 <h3 style={{ fontSize: '14px', fontWeight: '700', marginTop: '20px', marginBottom: '8px' }}>📋 Tüm İlanlar ({listings.length})</h3>
-                {listings.map(item => {
-                  const isFeat = Boolean(item.isFeatured);
-                  return (
-                    <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '6px', marginBottom: '6px' }}>
-                      <span style={{ fontSize: '12px', fontWeight: '600' }}>{item.title}</span>
-                      <div style={{ display: 'flex', gap: '4px' }}>
-                        <button onClick={() => toggleFeaturedListing(item.id)} style={{ backgroundColor: isFeat ? '#fef08a' : '#f1f5f9', color: '#854d0e', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>
-                          {isFeat ? '⭐ Vitrinde' : '☆ Vitrin Yap'}
-                        </button>
-                        <button onClick={() => { setEditingListing(item); if (editFormRef.current) editFormRef.current.scrollIntoView({ behavior: 'smooth' }); }} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Düzenle</button>
-                        <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Sil</button>
-                      </div>
+                {listings.map(item => (
+                  <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '6px', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: '600' }}>{item.title}</span>
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      <button onClick={() => toggleFeaturedListing(item.id)} style={{ backgroundColor: item.isFeatured ? '#fef08a' : '#f1f5f9', color: '#854d0e', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>
+                        {item.isFeatured ? '⭐ Vitrinde' : '☆ Vitrin Yap'}
+                      </button>
+                      <button onClick={() => { setEditingListing(item); if (editFormRef.current) editFormRef.current.scrollIntoView({ behavior: 'smooth' }); }} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Düzenle</button>
+                      <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Sil</button>
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -1049,6 +970,6 @@ export default function App() {
           </div>
         )}
       </div>
-    </div>
+      </div>
   );
 }
