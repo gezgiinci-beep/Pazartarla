@@ -78,6 +78,9 @@ export default function App() {
   const [announcement, setAnnouncement] = useState('🌾 Türkiye genelinden tarım aletleri, veterinerler ve taze mahsul ilanları PazarTarla’da!');
   const [tempAnnouncement, setTempAnnouncement] = useState(announcement);
 
+  // Panoya kopyalandı bildirimi için state
+  const [copySuccess, setCopySuccess] = useState(false);
+
   const [favorites, setFavorites] = useState(() => {
     try {
       const savedFavs = localStorage.getItem('pazartarla_favorites');
@@ -258,7 +261,7 @@ export default function App() {
       if (!res.ok) {
         const errText = await res.text();
         console.error('Supabase Ekleme Hatası:', errText);
-        alert('İlan eklenirken sunucu reddetti.');
+        alert('İlan eklenirken sunucu reddetti. Lütfen anahtarlarınızı kontrol edin.');
         return;
       }
     } catch (err) {
@@ -297,28 +300,14 @@ export default function App() {
         fetchListings();
         alert('🎉 Otomatik test ilanı başarıyla çekildi!');
       } else {
+        const errText = await res.text();
+        console.error('Supabase Hata:', errText);
         alert('Test ilanı eklenirken sunucu reddetti.');
       }
     } catch (e) {
+      console.error(e);
       alert('Bağlantı hatası oluştu.');
     }
-  };
-
-  // WHATSAPP İLE GÜVENLİ VE HATASIZ RAPOR GÖNDERME FONKSİYONU
-  const sendWhatsAppBackup = () => {
-    let reportText = "PazarTarla Sistem Raporu\n";
-    reportText += "Tarih: " + new Date().toLocaleDateString('tr-TR') + "\n";
-    reportText += "Toplam İlan: " + listings.length + "\n\n";
-    
-    listings.forEach((item, index) => {
-      reportText += (index + 1) + ". Baslik: " + item.title + "\n";
-      reportText += "Fiyat: " + item.price + " TL | Durum: " + item.status + "\n";
-      reportText += "Satici: " + item.seller + " (" + item.phone + ")\n";
-      reportText += "--------------------\n";
-    });
-
-    const waUrl = "https://api.whatsapp.com/send?phone=905357681550&text=" + encodeURIComponent(reportText);
-    window.open(waUrl, '_blank');
   };
 
   const approveListing = async (id) => {
@@ -516,7 +505,7 @@ export default function App() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button onClick={() => changeTab('favorites')} style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>
-            ❤️️ ({favorites.length})
+            ❤️ ({favorites.length})
           </button>
           <button onClick={() => changeTab('add')} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: '700', fontSize: '13px' }}>
             <Plus size={16} /> İlan Ver
@@ -552,13 +541,26 @@ export default function App() {
              
             {lastAddedListing && (
               <a 
-                href={`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(`Yeni İlan Onay Bekliyor:\nBaslik: ${lastAddedListing.title}\nFiyat: ${lastAddedListing.price} TL\nKategori:${lastAddedListing.category}\nSatici: ${lastAddedListing.seller} (${lastAddedListing.phone})`)}`}
+                href={`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(`🔔 *Yeni İlan Onay Bekliyor!*\n\n*Başlık:* ${lastAddedListing.title}\n*Fiyat:*${lastAddedListing.price} TL\n*Kategori:* ${lastAddedListing.category} /${lastAddedListing.subCategory}\n*Satıcı:* ${lastAddedListing.seller} (${lastAddedListing.phone})`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => {
+                  const textToCopy = `🔔 *Yeni İlan Onay Bekliyor!*\n\n*Başlık:* ${lastAddedListing.title}\n*Fiyat:* ${lastAddedListing.price} TL\n*Kategori:* ${lastAddedListing.category} / ${lastAddedListing.subCategory}\n*Satıcı:* ${lastAddedListing.seller} (${lastAddedListing.phone})`;
+                  navigator.clipboard.writeText(textToCopy).then(() => {
+                    setCopySuccess(true);
+                    setTimeout(() => setCopySuccess(false), 4000);
+                  }).catch(err => console.error('Panoya kopyalanamadı:', err));
+                }}
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#22c55e', color: '#fff', padding: '12px', borderRadius: '8px', fontWeight: '800', textDecoration: 'none', fontSize: '14px', marginBottom: '12px' }}
               >
                 <MessageCircle size={18} /> WhatsApp ile Ekipten Onay İste
               </a>
+            )}
+
+            {copySuccess && (
+              <div style={{ backgroundColor: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', padding: '10px', borderRadius: '8px', fontSize: '12px', fontWeight: '600', marginBottom: '12px' }}>
+                📋 İlan metni hafızaya kopyalandı! WhatsApp açıldığında mesaj kutusuna sağ tıklayıp <b>"Yapıştır"</b> (veya Ctrl+V) diyebilirsiniz.
+              </div>
             )}
 
             <button onClick={() => changeTab('home')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '700', cursor: 'pointer' }}>← Ana Sayfaya Dön</button>
@@ -567,6 +569,7 @@ export default function App() {
 
         {activeTab === 'home' && (
           <div>
+            {/* VİTRİN İLANLARI BÖLÜMÜ */}
             {featuredListings.length > 0 && (
               <div style={{ marginBottom: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', fontWeight: '800', fontSize: '14px', color: '#854d0e' }}>
@@ -616,13 +619,13 @@ export default function App() {
                             • {sub}
                           </div>
                         ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
         )}
 
         {activeTab === 'results' && (
@@ -718,15 +721,6 @@ export default function App() {
                   <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer' }}>Çıkış</button>
                 </div>
 
-                {/* WHATSAPP İLE GÜVENLİ RAPOR GÖNDERME BUTONU */}
-                <div style={{ backgroundColor: '#f0fdf4', padding: '14px', borderRadius: '8px', border: '1px solid #22c55e', marginBottom: '16px', textAlign: 'center' }}>
-                  <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 6px 0' }}>📱 WhatsApp ile Rapor ve Yedek Al</h3>
-                  <p style={{ fontSize: '12px', color: '#475569', marginBottom: '10px' }}>Tüm güncel ilanların listesini ve raporunu tek tıkla kendi WhatsApp'ına gönder.</p>
-                  <button onClick={sendWhatsAppBackup} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%' }}>
-                    <MessageCircle size={16} /> WhatsApp ile Rapor Gönder
-                  </button>
-                </div>
-
                 <div style={{ backgroundColor: '#ecfdf5', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
                   <button type="button" onClick={handleAutoFetchListings} style={{ width: '100%', backgroundColor: '#059669', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>
                     🤖 Otomatik Test İlanı Çek
@@ -764,6 +758,7 @@ export default function App() {
                   </div>
                 )}
 
+                {/* YENİ ANA KATEGORİ EKLEME & SİLME BÖLÜMÜ */}
                 <div style={{ backgroundColor: '#f0fdf4', padding: '12px', borderRadius: '8px', border: '1px solid #bbf7d0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 8px 0' }}>📁 Ana Kategori Ekle / Sil</h3>
                   <form onSubmit={handleAddNewMainCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '10px' }}>
@@ -841,7 +836,7 @@ export default function App() {
         <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <div style={{ color: '#fff', fontWeight: '700', fontSize: '14px' }}>PazarTarla İletişim & Destek</div>
           <div>📞 WhatsApp / Tel: 0535 768 1550</div>
-          <div>✉️️ E-posta: gezgiinci@gmail.com</div>
+          <div>✉️ E-posta: gezgiinci@gmail.com</div>
           <div>📍 Konum: Gönen / Balıkesir</div>
           <div style={{ color: '#86efac', marginTop: '4px' }}>© 2026 PazarTarla • Türkiye'nin İlk ve Tek Tarım Platformu</div>
         </div>
