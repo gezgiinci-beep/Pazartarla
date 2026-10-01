@@ -103,6 +103,7 @@ export default function App() {
   const [editingListing, setEditingListing] = useState(null);
   const [lastAddedListing, setLastAddedListing] = useState(null);
 
+  // Yeni Ana Kategori Ekleme / Silme State'leri
   const [customCategoryInput, setCustomCategoryInput] = useState('');
 
   const [form, setForm] = useState({
@@ -123,6 +124,7 @@ export default function App() {
     isFeatured: false
   });
 
+  // Supabase Verilerini Çekme (REST API)
   const fetchListings = async () => {
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/listings?select=*`, {
@@ -412,6 +414,7 @@ export default function App() {
     }
   };
 
+  // Yeni Ana Kategori Ekleme
   const handleAddNewMainCategory = (e) => {
     e.preventDefault();
     if (!isAdminLoggedIn) return;
@@ -426,6 +429,7 @@ export default function App() {
     alert(`"${cat}" ana kategorisi başarıyla eklendi!`);
   };
 
+  // Ana Kategori Silme
   const handleDeleteMainCategory = (catKey) => {
     if (!isAdminLoggedIn) return;
     if (window.confirm(`"${catKey}" kategorisini ve altındaki tüm seçenekleri silmek istediğinize emin misiniz?`)) {
@@ -436,6 +440,7 @@ export default function App() {
     }
   };
 
+  // Alt Kategori Ekleme
   const handleAddSubCategory = (e) => {
     e.preventDefault();
     if (!isAdminLoggedIn) return;
@@ -506,6 +511,9 @@ export default function App() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button onClick={() => changeTab('support')} style={{ backgroundColor: 'rgba(34, 197, 94, 0.2)', color: '#86efac', border: '1px solid #22c55e', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: '700' }}>
             💡 Öneri & Destek
+          </button>
+          <button onClick={() => changeTab('favorites')} style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>
+            ❤️ ({favorites.length})
           </button>
           <button onClick={() => changeTab('add')} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: '700', fontSize: '13px' }}>
             <Plus size={16} /> İlan Ver
@@ -582,7 +590,7 @@ export default function App() {
               </div>
 
               <a 
-                href={`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(`💡 *PazarTarla Destek & Öneri Hattı*\n\n*İsim:* ${supportForm.name || 'Belirtilmedi'}\n*Konum:* ${supportForm.city \vert{}\vert{} 'Belirtilmedi'}\n\n*Mesaj / Öneri:* \n${supportForm.message || 'Boş'}`)}`}
+                href={`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent('💡 PazarTarla Destek & Öneri Hattı\n\nİsim: ' + (supportForm.name || 'Belirtilmedi') + '\nKonum: ' + (supportForm.city || 'Belirtilmedi') + '\n\nMesaj / Öneri:\n' + (supportForm.message || 'Boş'))}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => {
@@ -607,7 +615,7 @@ export default function App() {
              
             {lastAddedListing && (
               <a 
-                href={`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(`🔔 *Yeni İlan Onay Bekliyor!*\n\n*Başlık:* ${lastAddedListing.title}\n*Fiyat:*${lastAddedListing.price} TL\n*Kategori:* ${lastAddedListing.category} /${lastAddedListing.subCategory}\n*Satıcı:* ${lastAddedListing.seller} (${lastAddedListing.phone})`)}`}
+                href={`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent('🔔 Yeni İlan Onay Bekliyor!\n\nBaşlık: ' + lastAddedListing.title + '\nFiyat: ' + lastAddedListing.price + ' TL\nKategori: ' + lastAddedListing.category + ' / ' + lastAddedListing.subCategory + '\nSatıcı: ' + lastAddedListing.seller + ' (' + lastAddedListing.phone + ')')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#22c55e', color: '#fff', padding: '12px', borderRadius: '8px', fontWeight: '800', textDecoration: 'none', fontSize: '14px', marginBottom: '12px' }}
@@ -790,7 +798,7 @@ export default function App() {
 
                 {editingListing && (
                   <div style={{ backgroundColor: '#f0fdf4', padding: '14px', borderRadius: '8px', border: '2px solid #22c55e', marginBottom: '20px' }}>
-                    <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 10px 0' }}>✏️️ İlanı Düzenle</h3>
+                    <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 10px 0' }}>✏️ İlanı Düzenle</h3>
                     <form onSubmit={saveEditedListing} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <input type="text" name="title" value={editingListing.title} onChange={handleEditFormChange} placeholder="Başlık" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       <input type="number" name="price" value={editingListing.price} onChange={handleEditFormChange} placeholder="Fiyat" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
@@ -895,7 +903,7 @@ export default function App() {
         </div>
       </footer>
 
-      <button onClick={() => changeTab('admin-page')} title="Yönetim Paneli" style={{ position: 'fixed', bottom: '20px', right: '20px', backgroundColor: '#1b3a2b', color: '#86efac', border: '2px solid #22c55e', borderRadius: '50%', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: '999' }}>
+      <button onClick={() => changeTab('admin-page')} title="Yönetim Paneli" style={{ position: 'fixed', bottom: '20px', right: '20px', backgroundColor: '#1b3a2b', color: '#86efac', border: '2px solid #22c55e', borderRadius: '50%', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 999 }}>
         ⚙️
       </button>
     </div>
