@@ -726,9 +726,17 @@ export default function App() {
                   <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer' }}>Çıkış</button>
                 </div>
 
-                <div style={{ backgroundColor: '#ecfdf5', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
                   <button type="button" onClick={handleAutoFetchListings} style={{ width: '100%', backgroundColor: '#059669', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>
                     🤖 Otomatik Test İlanı Çek
+                  </button>
+                  <button type="button" onClick={() => {
+                    const sampleCode = `// PazarTarla Güncel Kod Parçacığı\nconsole.log("PazarTarla Çalışıyor!");`;
+                    navigator.clipboard.writeText(sampleCode).then(() => {
+                      alert('📋 Kod panoya kopyalandı!');
+                    });
+                  }} style={{ width: '100%', backgroundColor: '#0284c7', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>
+                    💻 Kod Al / Panoya Kopyala
                   </button>
                 </div>
 
