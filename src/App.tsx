@@ -103,6 +103,7 @@ export default function App() {
   const [editingListing, setEditingListing] = useState(null);
   const [lastAddedListing, setLastAddedListing] = useState(null);
 
+  // Yeni Ana Kategori Ekleme / Silme State'leri
   const [customCategoryInput, setCustomCategoryInput] = useState('');
 
   const [form, setForm] = useState({
@@ -123,6 +124,7 @@ export default function App() {
     isFeatured: false
   });
 
+  // Supabase Verilerini Çekme (REST API)
   const fetchListings = async () => {
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/listings?select=*`, {
@@ -412,6 +414,7 @@ export default function App() {
     }
   };
 
+  // Yeni Ana Kategori Ekleme
   const handleAddNewMainCategory = (e) => {
     e.preventDefault();
     if (!isAdminLoggedIn) return;
@@ -426,6 +429,7 @@ export default function App() {
     alert(`"${cat}" ana kategorisi başarıyla eklendi!`);
   };
 
+  // Ana Kategori Silme
   const handleDeleteMainCategory = (catKey) => {
     if (!isAdminLoggedIn) return;
     if (window.confirm(`"${catKey}" kategorisini ve altındaki tüm seçenekleri silmek istediğinize emin misiniz?`)) {
@@ -436,6 +440,7 @@ export default function App() {
     }
   };
 
+  // Alt Kategori Ekleme
   const handleAddSubCategory = (e) => {
     e.preventDefault();
     if (!isAdminLoggedIn) return;
