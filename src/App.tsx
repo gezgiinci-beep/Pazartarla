@@ -136,13 +136,11 @@ export default function App() {
     subCategory: 'Ceviz',
     mode: 'Satılık',
     location: 'Türkiye Geneli',
-    city: 'Balıkesir',
     amount: '',
     description: '',
     seller: '',
     phone: '',
     image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
-    seoTags: '',
     status: 'pending',
     isFeatured: false
   });
@@ -275,6 +273,9 @@ export default function App() {
       return;
     }
 
+    // OTOMATİK SEO ETİKETİ ÜRETME (İlan veren uğraşmaz)
+    const autoTags = `${form.title}, ${form.category}, ${form.subCategory}, ${form.location}, tarım ilanı, pazartarla`.toLowerCase();
+
     const newEntry = {
       title: sanitizeInput(form.title),
       price: Number(form.price),
@@ -287,7 +288,7 @@ export default function App() {
       seller: sanitizeInput(form.seller),
       phone: sanitizeInput(form.phone),
       image: form.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
-      seoTags: sanitizeInput(form.seoTags || form.title.toLowerCase().split(' ').join(', ')),
+      seoTags: sanitizeInput(autoTags),
       status: 'pending'
     };
 
@@ -327,7 +328,7 @@ export default function App() {
       seller: 'Can İnce',
       phone: '0535 768 1550',
       image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
-      seoTags: 'new holland, traktör, gönen tarım',
+      seoTags: 'new holland, traktör, gönen tarım, tarım ilanı',
       status: 'approved'
     };
 
@@ -770,11 +771,11 @@ export default function App() {
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '4px' }}>{Number(selectedListing.price).toLocaleString('tr-TR')} TL</div>
             <p style={{ color: '#475569', fontSize: '13px', marginBottom: '12px', lineHeight: '1.5' }}>{selectedListing.description}</p>
             
-            {/* SEO ETİKETLERİ BÖLÜMÜ */}
+            {/* OTOMATİK SEO ETİKETLERİ BÖLÜMÜ */}
             {selectedListing.seoTags && (
               <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '10px 12px', marginBottom: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '700', color: '#166534', marginBottom: '6px' }}>
-                  <Tag size={12} /> Arama & SEO Etiketleri
+                  <Tag size={12} /> Otomatik Arama & SEO Etiketleri
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                   {selectedListing.seoTags.split(',').map((tag, idx) => (
@@ -848,8 +849,10 @@ export default function App() {
               </select>
 
               <input type="text" name="location" placeholder="Konum (Örn: Gönen / Balıkesir)" value={form.location} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
-              
-              <input type="text" name="seoTags" placeholder="SEO Etiketleri (Virgülle ayırın: ceviz, gönen)" value={form.seoTags} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+
+              <div style={{ backgroundColor: '#f0fdf4', padding: '10px', borderRadius: '6px', border: '1px solid #bbf7d0', fontSize: '11px', color: '#166534', fontWeight: '600' }}>
+                ✨ SEO etiketleri başlık, kategori ve konumunuza göre sistem tarafından <b>otomatik olarak</b> oluşturulur.
+              </div>
 
               <div style={{ backgroundColor: '#f8fafc', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>📷 Fotoğraf Yükle (Dosya Seç veya URL Yapıştır)</label>
@@ -902,7 +905,7 @@ export default function App() {
                       <input type="text" name="title" value={editingListing.title} onChange={handleEditFormChange} placeholder="Başlık" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       <input type="number" name="price" value={editingListing.price} onChange={handleEditFormChange} placeholder="Fiyat" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       <input type="text" name="location" value={editingListing.location} onChange={handleEditFormChange} placeholder="Konum" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-                      <input type="text" name="seoTags" value={editingListing.seoTags || ''} onChange={handleEditFormChange} placeholder="SEO Etiketleri (Virgülle ayırın)" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                      <input type="text" name="seoTags" value={editingListing.seoTags || ''} onChange={handleEditFormChange} placeholder="SEO Etiketleri" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       
                       <div style={{ backgroundColor: '#fff', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <label style={{ fontSize: '11px', fontWeight: '700', color: '#475569' }}>📷 Fotoğrafı Değiştir (Dosya veya URL)</label>
