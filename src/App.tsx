@@ -261,6 +261,11 @@ export default function App() {
       return;
     }
 
+    // ⚡ OTOMATİK SEO ÜRETECİ (Boş bırakılırsa başlık, kategori ve konumdan üretir)
+    const generatedSeo = form.seoTags.trim() 
+      ? form.seoTags 
+      : `${form.title.toLowerCase()}, ${form.category.toLowerCase()}, ${form.subCategory.toLowerCase()}, ${form.location.toLowerCase()}, tarım ilanı, pazartarla`;
+
     const newEntry = {
       title: sanitizeInput(form.title),
       price: Number(form.price),
@@ -271,7 +276,7 @@ export default function App() {
       seller: sanitizeInput(form.seller),
       phone: sanitizeInput(form.phone),
       image: form.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
-      seoTags: sanitizeInput(form.seoTags || form.title.toLowerCase().split(' ').join(', ')),
+      seoTags: sanitizeInput(generatedSeo),
       status: 'pending'
     };
 
@@ -311,7 +316,7 @@ export default function App() {
       seller: 'Can İnce',
       phone: '0535 768 1550',
       image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
-      seoTags: 'new holland, traktör, gönen tarım',
+      seoTags: 'new holland, traktör, gönen tarım, ikinci el traktör',
       status: 'approved'
     };
 
@@ -364,7 +369,7 @@ export default function App() {
     }
   };
 
-  // ⚡ KESİN ÇÖZÜM: VİTRİN DURUMUNU ANINDA DEĞİŞTİREN VE KAYDEDEN FONKSİYON
+  // ⚡ VİTRİN DURUMUNU ANINDA DEĞİŞTİREN VE KAYDEDEN FONKSİYON
   const toggleFeaturedListing = (id) => {
     if (!isAdminLoggedIn) return;
     let updated;
@@ -529,7 +534,7 @@ export default function App() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button onClick={() => changeTab('favorites')} style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>
-            ❤️ ({favorites.length})
+            ❤️️ ({favorites.length})
           </button>
           <button onClick={() => changeTab('add')} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: '700', fontSize: '13px' }}>
             <Plus size={16} /> İlan Ver
@@ -775,7 +780,7 @@ export default function App() {
 
               <input type="text" name="location" placeholder="Konum (Örn: Gönen / Balıkesir)" value={form.location} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               
-              <input type="text" name="seoTags" placeholder="SEO Etiketleri (Virgülle ayırın: ceviz, gönen)" value={form.seoTags} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+              <input type="text" name="seoTags" placeholder="SEO Etiketleri (Boş bırakırsanız otomatik üretilir)" value={form.seoTags} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
 
               <div style={{ backgroundColor: '#f8fafc', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>📷 Fotoğraf Yükle (Dosya Seç veya URL Yapıştır)</label>
