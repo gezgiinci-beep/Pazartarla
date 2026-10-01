@@ -31,7 +31,7 @@ const DEFAULT_START_LISTINGS = [
     seller: 'Can İnce',
     phone: '0535 768 1550',
     image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
-    seoTags: 'taze ceviz, chandler ceviz, gönen ceviz, tarım ilanı, mahsul',
+    seoTags: 'taze ceviz, chandler ceviz, gönen ceviz, tarım ilanı, mahsul, balıkesir tarım',
     status: 'approved',
     isFeatured: true
   },
@@ -48,7 +48,7 @@ const DEFAULT_START_LISTINGS = [
     seller: 'Serkan Öztürk',
     phone: '0531 333 4455',
     image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
-    seoTags: 'john deere, traktör, tekirdağ tarım',
+    seoTags: 'john deere, traktör, tekirdağ tarım, ikinci el traktör, 75 hp',
     status: 'approved',
     isFeatured: true
   }
@@ -68,11 +68,26 @@ const FALLBACK_CATEGORIES = {
   'Geçici Konutlar': ['Konteyner', 'Çadır', 'Prefabrik']
 };
 
+// 🤖 OTOMATİK SEO ÜRETİCİ YARDIMCI FONKSİYONU
+const generateAutoSeo = (title, category, subCategory, location) => {
+  const cleanTitle = title ? title.toLowerCase().trim() : '';
+  const cleanCat = category ? category.toLowerCase().trim() : '';
+  const cleanSub = subCategory ? subCategory.toLowerCase().trim() : '';
+  const cleanLoc = location ? location.toLowerCase().trim() : '';
+  
+  let tags = [cleanTitle, cleanCat, cleanSub, cleanLoc, 'pazartarla', 'türkiye tarım ilanı'];
+  // Kelimeleri parçalayıp benzersiz ve temiz etiketler oluşturalım
+  const words = cleanTitle.split(' ').filter(w => w.length > 2);
+  const combined = Array.from(new Set([...tags, ...words]));
+  return combined.filter(Boolean).join(', ');
+};
+
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState('home'); 
   const editFormRef = useRef(null);
   
+  // Canlı Destek Modülü State'leri
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState([
     { sender: 'bot', text: 'Merhaba! PazarTarla canlı destek hattına hoş geldiniz. Size nasıl yardımcı olabilirim?' }
@@ -114,7 +129,7 @@ export default function App() {
     category: 'Mahsuller',
     subCategory: 'Ceviz',
     mode: 'Satılık',
-    location: 'Türkiye Geneli',
+    location: 'Gönen / Balıkesir',
     city: 'Balıkesir',
     amount: '',
     description: '',
@@ -205,6 +220,8 @@ export default function App() {
         const subList = categoriesWithSubs[value] || ['Genel'];
         updated.subCategory = subList[0];
       }
+      // Kullanıcı başlık, konum veya kategori değiştirdiğinde SEO etiketlerini otomatik güncelle (eğer elle silmediyse)
+      updated.seoTags = generateAutoSeo(updated.title, updated.category, updated.subCategory, updated.location);
       return updated;
     });
   };
@@ -217,6 +234,7 @@ export default function App() {
         const subList = categoriesWithSubs[value] || ['Genel'];
         updated.subCategory = subList[0];
       }
+      updated.seoTags = generateAutoSeo(updated.title, updated.category, updated.subCategory, updated.location);
       return updated;
     });
   };
@@ -254,17 +272,26 @@ export default function App() {
       return;
     }
 
+    // Otomatik SEO oluşturucu desteği
+    const finalSeoTags = form.seoTags.trim() 
+      ? sanitizeInput(form.seoTags) 
+      : generateAutoSeo(form.title, form.category, form.subCategory, form.location);
+
     const newEntry = {
       title: sanitizeInput(form.title),
       price: Number(form.price),
       category: form.category,
       subCategory: form.subCategory,
+      mode: form.mode,
       location: sanitizeInput(form.location),
+      amount: sanitizeInput(form.amount),
       description: sanitizeInput(form.description),
       seller: sanitizeInput(form.seller),
       phone: sanitizeInput(form.phone),
       image: form.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
-      status: 'pending'
+      seoTags: finalSeoTags,
+      status: 'pending',
+      isFeatured: false
     };
 
     try {
@@ -277,7 +304,7 @@ export default function App() {
       if (!res.ok) {
         const errText = await res.text();
         console.error('Supabase Ekleme Hatası:', errText);
-        alert('İlan eklenirken sunucu reddetti.');
+        alert('İlan eklenirken sunucu reddetti. Lütfen anahtarlarınızı kontrol edin.');
         return;
       }
     } catch (err) {
@@ -303,7 +330,9 @@ export default function App() {
       seller: 'Can İnce',
       phone: '0535 768 1550',
       image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
-      status: 'approved'
+      seoTags: generateAutoSeo('New Holland TD100D Tarım Traktörü', 'Traktör', 'İkinci El Traktör', 'Balıkesir / Gönen'),
+      status: 'approved',
+      isFeatured: true
     };
 
     try {
@@ -314,7 +343,7 @@ export default function App() {
       });
       if (res.ok) {
         fetchListings();
-        alert('🎉 Otomatik test ilanı başarıyla çekildi!');
+        alert('🎉 Otomatik test ilanı başarıyla vitrin uyumlu olarak çekildi!');
       } else {
         const errText = await res.text();
         console.error('Supabase Hata:', errText);
@@ -389,6 +418,10 @@ export default function App() {
     e.preventDefault();
     if (!isAdminLoggedIn) return;
 
+    const finalSeoTags = editingListing.seoTags 
+      ? sanitizeInput(editingListing.seoTags) 
+      : generateAutoSeo(editingListing.title, editingListing.category, editingListing.subCategory, editingListing.location);
+
     try {
       await fetch(`${SUPABASE_URL}/rest/v1/listings?id=eq.${editingListing.id}`, {
         method: 'PATCH',
@@ -400,6 +433,7 @@ export default function App() {
           subCategory: editingListing.subCategory,
           location: sanitizeInput(editingListing.location),
           description: sanitizeInput(editingListing.description),
+          seoTags: finalSeoTags,
           image: editingListing.image,
           status: 'approved'
         })
@@ -553,7 +587,7 @@ export default function App() {
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '24px', textAlign: 'center', border: '1px solid #e2e8f0' }}>
             <CheckCircle size={36} color="#166534" style={{ margin: '0 auto 12px auto' }} />
             <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#1b3a2b', margin: '0 0 8px 0' }}>İlanınız Başarıyla Alındı!</h2>
-            <p style={{ color: '#64748b', fontSize: '13px', marginBottom: '20px' }}>Yönetici onayından sonra tüm cihazlarda görünecektir.</p>
+            <p style={{ color: '#64748b', fontSize: '13px', marginBottom: '20px' }}>Yönetici onayından sonra tüm cihazlarda görünecektir. Otomatik SEO etiketleri oluşturuldu.</p>
              
             {lastAddedListing && (
               <a 
@@ -572,6 +606,7 @@ export default function App() {
 
         {activeTab === 'home' && (
           <div>
+            {/* REKLAM VER KUTUCUĞU */}
             <div style={{ backgroundColor: '#ecfdf5', border: '1.5px dashed #10b981', borderRadius: '12px', padding: '14px 16px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <div style={{ backgroundColor: '#d1fae5', padding: '8px', borderRadius: '8px', color: '#059669', flexShrink: 0 }}>
@@ -592,17 +627,22 @@ export default function App() {
               </a>
             </div>
 
+            {/* ⭐ VİTRİN İLANLARI BÖLÜMÜ (ÖZEL VİTRİN KARTLARI) */}
             {featuredListings.length > 0 && (
-              <div style={{ marginBottom: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', fontWeight: '800', fontSize: '14px', color: '#854d0e' }}>
-                  <Star size={16} fill="#eab308" color="#eab308" /> Vitrin İlanları
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px', fontWeight: '800', fontSize: '15px', color: '#854d0e' }}>
+                  <Star size={18} fill="#eab308" color="#eab308" /> Öne Çıkan Vitrin İlanları
                 </div>
-                <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '4px' }}>
+                <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '6px' }}>
                   {featuredListings.map(item => (
-                    <div key={`feat-${item.id}`} onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ minWidth: '160px', maxWidth: '160px', backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #fde047', cursor: 'pointer', overflow: 'hidden', flexShrink: 0, padding: '8px' }}>
-                      <img src={item.image} alt={item.title} style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '6px', marginBottom: '6px' }} />
-                      <div style={{ fontSize: '12px', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</div>
+                    <div key={`feat-${item.id}`} onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ minWidth: '180px', maxWidth: '180px', backgroundColor: '#fff', borderRadius: '10px', border: '2px solid #facc15', cursor: 'pointer', overflow: 'hidden', flexShrink: '0', padding: '8px', boxShadow: '0 4px 10px rgba(234, 179, 8, 0.15)' }}>
+                      <div style={{ position: 'relative' }}>
+                        <img src={item.image} alt={item.title} style={{ width: '100%', height: '110px', objectFit: 'cover', borderRadius: '6px', marginBottom: '6px' }} />
+                        <span style={{ position: 'absolute', top: '4px', right: '4px', backgroundColor: '#eab308', color: '#fff', padding: '2px 6px', borderRadius: '4px', fontSize: '9px', fontWeight: '800' }}>VİTRİN</span>
+                      </div>
+                      <div style={{ fontSize: '12px', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#1e293b' }}>{item.title}</div>
                       <div style={{ fontSize: '13px', fontWeight: '800', color: '#1b3a2b', marginTop: '2px' }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
+                      <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>📍 {item.location}</div>
                     </div>
                   ))}
                 </div>
@@ -641,9 +681,9 @@ export default function App() {
                             • {sub}
                           </div>
                         ))}
-                    </div>
-                  )}
-                </div>
+                      </div>
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -658,9 +698,10 @@ export default function App() {
             </div>
 
             {filteredListings.map(item => (
-              <div key={item.id} onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ backgroundColor: '#fff', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer', display: 'flex', gap: '10px', padding: '10px', marginBottom: '10px' }}>
+              <div key={item.id} onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ backgroundColor: '#fff', borderRadius: '10px', overflow: 'hidden', border: item.isFeatured ? '2px solid #eab308' : '1px solid #e2e8f0', cursor: 'pointer', display: 'flex', gap: '10px', padding: '10px', marginBottom: '10px', position: 'relative' }}>
                 <img src={item.image} alt={item.title} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '8px' }} />
                 <div style={{ flex: 1 }}>
+                  {item.isFeatured && <span style={{ backgroundColor: '#fef08a', color: '#854d0e', fontSize: '9px', fontWeight: '800', padding: '2px 6px', borderRadius: '4px', marginBottom: '3px', display: 'inline-block' }}>⭐ VİTRİN</span>}
                   <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: '700' }}>{item.title}</h4>
                   <div style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b' }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
                   <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>📍 {item.location}</div>
@@ -686,10 +727,11 @@ export default function App() {
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '4px' }}>{Number(selectedListing.price).toLocaleString('tr-TR')} TL</div>
             <p style={{ color: '#475569', fontSize: '13px', marginBottom: '12px', lineHeight: '1.5' }}>{selectedListing.description}</p>
             
+            {/* OTOMATİK SEO ETİKETLERİ GÖSTERİMİ */}
             {selectedListing.seoTags && (
               <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '10px 12px', marginBottom: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '700', color: '#166534', marginBottom: '6px' }}>
-                  <Tag size={12} /> Arama & SEO Etiketleri
+                  <Tag size={12} /> Otomatik Arama & SEO Etiketleri
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                   {selectedListing.seoTags.split(',').map((tag, idx) => (
@@ -701,6 +743,7 @@ export default function App() {
               </div>
             )}
 
+            {/* SOSYAL MEDYA PAYLAŞ BUTONLARI */}
             <div style={{ marginBottom: '16px' }}>
               <div style={{ fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>📤 Bu İlanı Paylaş:</div>
               <div style={{ display: 'flex', gap: '8px' }}>
@@ -745,7 +788,7 @@ export default function App() {
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
               <button onClick={() => changeTab('home')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer' }}>← Vazgeç</button>
-              <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>İlan Ver</h2>
+              <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>İlan Ver (Otomatik SEO)</h2>
             </div>
             <form onSubmit={handleDirectAdd} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <input type="text" name="seller" placeholder="Adınız Soyadınız *" value={form.seller} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
@@ -763,7 +806,10 @@ export default function App() {
 
               <input type="text" name="location" placeholder="Konum (Örn: Gönen / Balıkesir)" value={form.location} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               
-              <input type="text" name="seoTags" placeholder="SEO Etiketleri (Virgülle ayırın: ceviz, gönen)" value={form.seoTags} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: '700', color: '#166534', display: 'block', marginBottom: '4px' }}>🤖 Otomatik / Özel SEO Etiketleri</label>
+                <input type="text" name="seoTags" placeholder="Boş bırakırsanız başlık ve konuma göre otomatik oluşturulur" value={form.seoTags} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #bbf7d0', backgroundColor: '#f0fdf4', boxSizing: 'border-box', fontSize: '12px' }} />
+              </div>
 
               <div style={{ backgroundColor: '#f8fafc', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>📷 Fotoğraf Yükle (Dosya Seç veya URL Yapıştır)</label>
@@ -797,7 +843,7 @@ export default function App() {
 
                 <div style={{ backgroundColor: '#ecfdf5', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
                   <button type="button" onClick={handleAutoFetchListings} style={{ width: '100%', backgroundColor: '#059669', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>
-                    🤖 Otomatik Test İlanı Çek
+                    🤖 Otomatik Vitrin Test İlanı Çek
                   </button>
                 </div>
 
@@ -811,12 +857,12 @@ export default function App() {
 
                 {editingListing && (
                   <div style={{ backgroundColor: '#f0fdf4', padding: '14px', borderRadius: '8px', border: '2px solid #22c55e', marginBottom: '20px' }}>
-                    <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 10px 0' }}>✏️ İlanı Düzenle</h3>
+                    <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 10px 0' }}>✏️ İlanı Düzenle & SEO Optimize Et</h3>
                     <form onSubmit={saveEditedListing} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <input type="text" name="title" value={editingListing.title} onChange={handleEditFormChange} placeholder="Başlık" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       <input type="number" name="price" value={editingListing.price} onChange={handleEditFormChange} placeholder="Fiyat" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       <input type="text" name="location" value={editingListing.location} onChange={handleEditFormChange} placeholder="Konum" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-                      <input type="text" name="seoTags" value={editingListing.seoTags || ''} onChange={handleEditFormChange} placeholder="SEO Etiketleri (Virgülle ayırın)" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                      <input type="text" name="seoTags" value={editingListing.seoTags || ''} onChange={handleEditFormChange} placeholder="SEO Etiketleri (Otomatik üretilir)" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fdf8e2' }} />
                       
                       <div style={{ backgroundColor: '#fff', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <label style={{ fontSize: '11px', fontWeight: '700', color: '#475569' }}>📷 Fotoğrafı Değiştir (Dosya veya URL)</label>
@@ -833,6 +879,7 @@ export default function App() {
                   </div>
                 )}
 
+                {/* YENİ ANA KATEGORİ EKLEME & SİLME BÖLÜMÜ */}
                 <div style={{ backgroundColor: '#f0fdf4', padding: '12px', borderRadius: '8px', border: '1px solid #bbf7d0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 8px 0' }}>📁 Ana Kategori Ekle / Sil</h3>
                   <form onSubmit={handleAddNewMainCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '10px' }}>
@@ -887,11 +934,12 @@ export default function App() {
                   </div>
                 ))}
 
-                <h3 style={{ fontSize: '14px', fontWeight: '700', marginTop: '20px', marginBottom: '8px' }}>📋 Tüm İlanlar ({listings.length})</h3>
+                <h3 style={{ fontSize: '14px', fontWeight: '700', marginTop: '20px', marginBottom: '8px' }}>📋 Tüm İlanlar ve Vitrin Yönetimi ({listings.length})</h3>
                 {listings.map(item => (
                   <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '6px', marginBottom: '6px' }}>
                     <span style={{ fontSize: '12px', fontWeight: '600' }}>{item.title}</span>
                     <div style={{ display: 'flex', gap: '4px' }}>
+                      {/* ⭐ VİTRİN YAP / ÇIKART DÜĞMESİ */}
                       <button onClick={() => toggleFeaturedListing(item.id)} style={{ backgroundColor: item.isFeatured ? '#fef08a' : '#f1f5f9', color: '#854d0e', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>
                         {item.isFeatured ? '⭐ Vitrinde' : '☆ Vitrin Yap'}
                       </button>
@@ -916,10 +964,12 @@ export default function App() {
         </div>
       </footer>
 
+      {/* SAĞ ALT KÖŞE: YÖNETİM PANELİ BUTONU */}
       <button onClick={() => changeTab('admin-page')} title="Yönetim Paneli" style={{ position: 'fixed', bottom: '20px', right: '20px', backgroundColor: '#1b3a2b', color: '#86efac', border: '2px solid #22c55e', borderRadius: '50%', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 999 }}>
         ⚙️
       </button>
 
+      {/* SAĞ ALT KÖŞE: KULAKLIKLI CANLI DESTEK ASİSTANI */}
       <div style={{ position: 'fixed', bottom: '76px', right: '20px', zIndex: 1000 }}>
         {!isChatOpen ? (
           <div onClick={() => setIsChatOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#ffffff', padding: '6px 12px 6px 6px', borderRadius: '30px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', border: '2px solid #22c55e', cursor: 'pointer' }}>
@@ -970,6 +1020,6 @@ export default function App() {
           </div>
         )}
       </div>
-      </div>
+    </div>
   );
 }
