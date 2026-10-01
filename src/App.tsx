@@ -32,7 +32,8 @@ const DEFAULT_START_LISTINGS = [
     phone: '0535 768 1550',
     image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
     seoTags: 'taze ceviz, chandler ceviz, gönen ceviz, tarım ilanı, mahsul',
-    status: 'approved'
+    status: 'approved',
+    isFeatured: true
   },
   {
     id: 2,
@@ -48,7 +49,8 @@ const DEFAULT_START_LISTINGS = [
     phone: '0531 333 4455',
     image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
     seoTags: 'john deere, traktör, tekirdağ tarım',
-    status: 'approved'
+    status: 'approved',
+    isFeatured: true
   }
 ];
 
@@ -81,16 +83,6 @@ export default function App() {
   const [categoriesWithSubs, setCategoriesWithSubs] = useState(FALLBACK_CATEGORIES);
   const [announcement, setAnnouncement] = useState('🌾 Türkiye genelinden tarım aletleri, veterinerler ve taze mahsul ilanları PazarTarla’da!');
   const [tempAnnouncement, setTempAnnouncement] = useState(announcement);
-
-  // ⚡ VİTRİN İÇİN HAFIZA (LOCALSTORAGE) DESTEĞİ
-  const [featuredIds, setFeaturedIds] = useState(() => {
-    try {
-      const saved = localStorage.getItem('pazartarla_featured_ids');
-      return saved ? JSON.parse(saved) : [1, 2];
-    } catch (e) {
-      return [1, 2];
-    }
-  });
 
   const [favorites, setFavorites] = useState(() => {
     try {
@@ -130,7 +122,8 @@ export default function App() {
     phone: '',
     image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
     seoTags: '',
-    status: 'pending'
+    status: 'pending',
+    isFeatured: false
   });
 
   const fetchListings = async () => {
@@ -261,11 +254,7 @@ export default function App() {
       return;
     }
 
-    // ⚡ OTOMATİK SEO ÜRETECİ (Boş bırakılırsa başlık, kategori ve konumdan üretir)
-    const generatedSeo = form.seoTags.trim() 
-      ? form.seoTags 
-      : `${form.title.toLowerCase()}, ${form.category.toLowerCase()}, ${form.subCategory.toLowerCase()}, ${form.location.toLowerCase()}, tarım ilanı, pazartarla`;
-
+    // ⚡ YALNIZCA TABLODA OLAN GERÇEK KOLONLAR GÖNDERİLİYOR (seoTags veritabanına gitmez, hata vermez)
     const newEntry = {
       title: sanitizeInput(form.title),
       price: Number(form.price),
@@ -276,8 +265,8 @@ export default function App() {
       seller: sanitizeInput(form.seller),
       phone: sanitizeInput(form.phone),
       image: form.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
-      seoTags: sanitizeInput(generatedSeo),
-      status: 'pending'
+      status: 'pending',
+      isFeatured: false
     };
 
     try {
@@ -299,7 +288,10 @@ export default function App() {
     }
 
     fetchListings();
-    setLastAddedListing(newEntry);
+    setLastAddedListing({
+      ...newEntry,
+      seoTags: form.seoTags || `${form.title.toLowerCase().split(' ').join(', ')}, ${form.category.toLowerCase()}, ${form.location.toLowerCase()}`
+    });
     changeTab('success-wa');
   };
 
@@ -316,8 +308,8 @@ export default function App() {
       seller: 'Can İnce',
       phone: '0535 768 1550',
       image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
-      seoTags: 'new holland, traktör, gönen tarım, ikinci el traktör',
-      status: 'approved'
+      status: 'approved',
+      isFeatured: true
     };
 
     try {
@@ -369,19 +361,23 @@ export default function App() {
     }
   };
 
-  // ⚡ VİTRİN DURUMUNU ANINDA DEĞİŞTİREN VE KAYDEDEN FONKSİYON
-  const toggleFeaturedListing = (id) => {
+  const toggleFeaturedListing = async (id) => {
     if (!isAdminLoggedIn) return;
-    let updated;
-    if (featuredIds.includes(id)) {
-      updated = featuredIds.filter(itemKey => itemKey !== id);
-    } else {
-      updated = [...featuredIds, id];
-    }
-    setFeaturedIds(updated);
+    const target = listings.find(i => i.id === id);
+    if (!target) return;
+
+    const nextStatus = !(target.isFeatured ?? target.is_featured ?? false);
+
     try {
-      localStorage.setItem('pazartarla_featured_ids', JSON.stringify(updated));
-    } catch (e) {}
+      await fetch(`${SUPABASE_URL}/rest/v1/listings?id=eq.${id}`, {
+        method: 'PATCH',
+        headers: dbHeaders,
+        body: JSON.stringify({ isFeatured: nextStatus })
+      });
+      fetchListings();
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const startEditingFromDetail = (item) => {
@@ -412,7 +408,6 @@ export default function App() {
           subCategory: editingListing.subCategory,
           location: sanitizeInput(editingListing.location),
           description: sanitizeInput(editingListing.description),
-          seoTags: sanitizeInput(editingListing.seoTags || ''),
           image: editingListing.image,
           status: 'approved'
         })
@@ -499,8 +494,8 @@ export default function App() {
   };
 
   const approvedListings = listings.filter(item => item.status === 'approved');
-  const featuredListings = approvedListings.filter(item => featuredIds.includes(item.id) || item.isFeatured || item.is_featured);
-  const regularApprovedListings = approvedListings.filter(item => !(featuredIds.includes(item.id) || item.isFeatured || item.is_featured));
+  const featuredListings = approvedListings.filter(item => item.isFeatured || item.is_featured);
+  const regularApprovedListings = approvedListings.filter(item => !(item.isFeatured || item.is_featured));
 
   const filteredListings = (selectedCategory === 'Tüm kategoriler' && selectedSubCategory === 'Tümü')
     ? [...featuredListings, ...regularApprovedListings]
@@ -702,20 +697,18 @@ export default function App() {
             <p style={{ color: '#475569', fontSize: '13px', marginBottom: '12px', lineHeight: '1.5' }}>{selectedListing.description}</p>
             
             {/* SEO ETİKETLERİ BÖLÜMÜ */}
-            {selectedListing.seoTags && (
-              <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '10px 12px', marginBottom: '12px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '700', color: '#166534', marginBottom: '6px' }}>
-                  <Tag size={12} /> Arama & SEO Etiketleri
-                </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                  {selectedListing.seoTags.split(',').map((tag, idx) => (
-                    <span key={idx} style={{ backgroundColor: '#dcfce7', color: '#14532d', padding: '3px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '600' }}>
-                      #{tag.trim()}
-                    </span>
-                  ))}
-                </div>
+            <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '10px 12px', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '700', color: '#166534', marginBottom: '6px' }}>
+                <Tag size={12} /> Arama & SEO Etiketleri
               </div>
-            )}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                {(selectedListing.seoTags || `${selectedListing.title.toLowerCase().split(' ').join(', ')}, ${selectedListing.category.toLowerCase()}, ${selectedListing.location.toLowerCase()}`).split(',').map((tag, idx) => (
+                  <span key={idx} style={{ backgroundColor: '#dcfce7', color: '#14532d', padding: '3px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '600' }}>
+                    #{tag.trim()}
+                  </span>
+                ))}
+              </div>
+            </div>
 
             {/* SOSYAL MEDYA PAYLAŞ BUTONLARI */}
             <div style={{ marginBottom: '16px' }}>
@@ -828,12 +821,11 @@ export default function App() {
 
                 {editingListing && (
                   <div style={{ backgroundColor: '#f0fdf4', padding: '14px', borderRadius: '8px', border: '2px solid #22c55e', marginBottom: '20px' }}>
-                    <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 10px 0' }}>✏️ İlanı Düzenle</h3>
+                    <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 10px 0' }}>✏️️ İlanı Düzenle</h3>
                     <form onSubmit={saveEditedListing} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <input type="text" name="title" value={editingListing.title} onChange={handleEditFormChange} placeholder="Başlık" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       <input type="number" name="price" value={editingListing.price} onChange={handleEditFormChange} placeholder="Fiyat" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       <input type="text" name="location" value={editingListing.location} onChange={handleEditFormChange} placeholder="Konum" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-                      <input type="text" name="seoTags" value={editingListing.seoTags || ''} onChange={handleEditFormChange} placeholder="SEO Etiketleri (Virgülle ayırın)" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       
                       <div style={{ backgroundColor: '#fff', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <label style={{ fontSize: '11px', fontWeight: '700', color: '#475569' }}>📷 Fotoğrafı Değiştir (Dosya veya URL)</label>
@@ -907,7 +899,7 @@ export default function App() {
 
                 <h3 style={{ fontSize: '14px', fontWeight: '700', marginTop: '20px', marginBottom: '8px' }}>📋 Tüm İlanlar ({listings.length})</h3>
                 {listings.map(item => {
-                  const isFeat = featuredIds.includes(item.id) || item.isFeatured || item.is_featured;
+                  const isFeat = item.isFeatured || item.is_featured;
                   return (
                     <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '6px', marginBottom: '6px' }}>
                       <span style={{ fontSize: '12px', fontWeight: '600' }}>{item.title}</span>
