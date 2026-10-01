@@ -32,8 +32,7 @@ const DEFAULT_START_LISTINGS = [
     phone: '0535 768 1550',
     image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
     seoTags: 'taze ceviz, chandler ceviz, gönen ceviz, tarım ilanı, mahsul',
-    status: 'approved',
-    isFeatured: true
+    status: 'approved'
   },
   {
     id: 2,
@@ -49,8 +48,7 @@ const DEFAULT_START_LISTINGS = [
     phone: '0531 333 4455',
     image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
     seoTags: 'john deere, traktör, tekirdağ tarım',
-    status: 'approved',
-    isFeatured: true
+    status: 'approved'
   }
 ];
 
@@ -84,10 +82,10 @@ export default function App() {
   const [announcement, setAnnouncement] = useState('🌾 Türkiye genelinden tarım aletleri, veterinerler ve taze mahsul ilanları PazarTarla’da!');
   const [tempAnnouncement, setTempAnnouncement] = useState(announcement);
 
-  // Yerel depolamadan vitrin listesini de güvenli tutmak için state
+  // ⚡ VİTRİN İÇİN HAFIZA (LOCALSTORAGE) DESTEĞİ
   const [featuredIds, setFeaturedIds] = useState(() => {
     try {
-      const saved = localStorage.getItem('pazartarla_featured');
+      const saved = localStorage.getItem('pazartarla_featured_ids');
       return saved ? JSON.parse(saved) : [1, 2];
     } catch (e) {
       return [1, 2];
@@ -366,7 +364,7 @@ export default function App() {
     }
   };
 
-  // ⚡ VİTRİN DURUMUNU ANINDA GÜNCELLEYEN VE HAFIZADA TUTAN FONKSİYON
+  // ⚡ KESİN ÇÖZÜM: VİTRİN DURUMUNU ANINDA DEĞİŞTİREN VE KAYDEDEN FONKSİYON
   const toggleFeaturedListing = (id) => {
     if (!isAdminLoggedIn) return;
     let updated;
@@ -377,7 +375,7 @@ export default function App() {
     }
     setFeaturedIds(updated);
     try {
-      localStorage.setItem('pazartarla_featured', JSON.stringify(updated));
+      localStorage.setItem('pazartarla_featured_ids', JSON.stringify(updated));
     } catch (e) {}
   };
 
