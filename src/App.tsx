@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus, 
   Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, ChevronDown, X, 
-  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag, Edit3, Sparkles, Megaphone, CheckCircle, Bot, Share2 as ShareIcon 
+  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag, Edit3, Sparkles, Megaphone, CheckCircle, Bot 
 } from 'lucide-react';
 
 // ==========================================
@@ -32,8 +32,7 @@ const DEFAULT_START_LISTINGS = [
     phone: '0535 768 1550',
     image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
     seoTags: 'taze ceviz, chandler ceviz, gönen ceviz, tarım ilanı, mahsul',
-    status: 'approved',
-    isFeatured: true
+    status: 'approved'
   },
   {
     id: 2,
@@ -49,8 +48,7 @@ const DEFAULT_START_LISTINGS = [
     phone: '0531 333 4455',
     image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
     seoTags: 'john deere, traktör, tekirdağ tarım',
-    status: 'approved',
-    isFeatured: true
+    status: 'approved'
   }
 ];
 
@@ -78,6 +76,22 @@ export default function App() {
   const [announcement, setAnnouncement] = useState('🌾 Türkiye genelinden tarım aletleri, veterinerler ve taze mahsul ilanları PazarTarla’da!');
   const [tempAnnouncement, setTempAnnouncement] = useState(announcement);
 
+  // Canlı vitrin seçimlerini anında kalıcı tutan mekanizma
+  const [featuredIds, setFeaturedIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem('pazartarla_featured_live');
+      return saved ? JSON.parse(saved) : [1, 2];
+    } catch (e) {
+      return [1, 2];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('pazartarla_featured_live', JSON.stringify(featuredIds));
+    } catch (e) {}
+  }, [featuredIds]);
+
   const [favorites, setFavorites] = useState(() => {
     try {
       const savedFavs = localStorage.getItem('pazartarla_favorites');
@@ -86,19 +100,6 @@ export default function App() {
       return [];
     }
   });
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('pazartarla_favorites', JSON.stringify(favorites));
-    } catch (e) {}
-  }, [favorites]);
-
-  const toggleFavorite = (id, e) => {
-    if (e) e.stopPropagation();
-    setFavorites(prev => 
-      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
-    );
-  };
 
   const [selectedListing, setSelectedListing] = useState(null);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
@@ -129,8 +130,7 @@ export default function App() {
     phone: '',
     image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
     seoTags: '',
-    status: 'pending',
-    isFeatured: false
+    status: 'pending'
   });
 
   const fetchListings = async () => {
@@ -141,15 +141,7 @@ export default function App() {
       if (res.ok) {
         const data = await res.json();
         if (data && data.length > 0) {
-          setListings(prevListings => {
-            return data.map(newItem => {
-              const existing = prevListings.find(p => p.id === newItem.id);
-              return {
-                ...newItem,
-                isFeatured: existing ? existing.isFeatured : false
-              };
-            });
-          });
+          setListings(data);
         }
       }
     } catch (e) {
@@ -357,15 +349,11 @@ export default function App() {
     }
   };
 
-  // KESİN ÇÖZÜM: VİTRİN YAP (Anında Tarayıcınızda Değişir)
   const toggleFeaturedListing = (id) => {
     if (!isAdminLoggedIn) return;
-    setListings(prev => prev.map(item => {
-      if (item.id === id) {
-        return { ...item, isFeatured: !item.isFeatured };
-      }
-      return item;
-    }));
+    setFeaturedIds(prev => 
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    );
   };
 
   const startEditingFromDetail = (item) => {
@@ -482,8 +470,8 @@ export default function App() {
   };
 
   const approvedListings = listings.filter(item => item.status === 'approved');
-  const featuredListings = approvedListings.filter(item => item.isFeatured);
-  const regularApprovedListings = approvedListings.filter(item => !item.isFeatured);
+  const featuredListings = approvedListings.filter(item => featuredIds.includes(item.id));
+  const regularApprovedListings = approvedListings.filter(item => !featuredIds.includes(item.id));
 
   const filteredListings = (selectedCategory === 'Tüm kategoriler' && selectedSubCategory === 'Tümü')
     ? [...featuredListings, ...regularApprovedListings]
@@ -571,7 +559,7 @@ export default function App() {
             {featuredListings.length > 0 && (
               <div style={{ marginBottom: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', fontWeight: '800', fontSize: '14px', color: '#854d0e' }}>
-                  <Star size={16} fill="#eab308" color="#eab308" /> Vitrin İlanları
+                  <Star size={16} fill="#eab308" color="#eab308" /> Vitrin İlanları ({featuredListings.length})
                 </div>
                 <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '4px' }}>
                   {featuredListings.map(item => (
@@ -652,7 +640,7 @@ export default function App() {
               <button onClick={() => changeTab('results')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer' }}>← Listeye Dön</button>
               {isAdminLoggedIn && (
                 <button onClick={() => startEditingFromDetail(selectedListing)} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: '700', fontSize: '12px', cursor: 'pointer' }}>
-                  ✏️ Bu İlanı Düzenle
+                  ✏️️ Bu İlanı Düzenle
                 </button>
               )}
             </div>
@@ -812,18 +800,21 @@ export default function App() {
                 ))}
 
                 <h3 style={{ fontSize: '14px', fontWeight: '700', marginTop: '20px', marginBottom: '8px' }}>📋 Tüm İlanlar ({listings.length})</h3>
-                {listings.map(item => (
-                  <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '6px', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '12px', fontWeight: '600' }}>{item.title}</span>
-                    <div style={{ display: 'flex', gap: '4px' }}>
-                      <button onClick={() => toggleFeaturedListing(item.id)} style={{ backgroundColor: item.isFeatured ? '#fef08a' : '#f1f5f9', color: '#854d0e', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>
-                        {item.isFeatured ? '⭐ Vitrinde' : '☆ Vitrin Yap'}
-                      </button>
-                      <button onClick={() => { setEditingListing(item); if (editFormRef.current) editFormRef.current.scrollIntoView({ behavior: 'smooth' }); }} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Düzenle</button>
-                      <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Sil</button>
+                {listings.map(item => {
+                  const isFeatured = featuredIds.includes(item.id);
+                  return (
+                    <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '6px', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '12px', fontWeight: '600' }}>{item.title}</span>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <button onClick={() => toggleFeaturedListing(item.id)} style={{ backgroundColor: isFeatured ? '#fef08a' : '#f1f5f9', color: '#854d0e', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>
+                          {isFeatured ? '⭐ Vitrinde' : '☆ Vitrin Yap'}
+                        </button>
+                        <button onClick={() => { setEditingListing(item); if (editFormRef.current) editFormRef.current.scrollIntoView({ behavior: 'smooth' }); }} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Düzenle</button>
+                        <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Sil</button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -834,7 +825,7 @@ export default function App() {
         <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <div style={{ color: '#fff', fontWeight: '700', fontSize: '14px' }}>PazarTarla İletişim & Destek</div>
           <div>📞 WhatsApp / Tel: 0535 768 1550</div>
-          <div>✉️️ E-posta: gezgiinci@gmail.com</div>
+          <div>✉️ E-posta: gezgiinci@gmail.com</div>
           <div>📍 Konum: Gönen / Balıkesir</div>
           <div style={{ color: '#86efac', marginTop: '4px' }}>© 2026 PazarTarla • Türkiye'nin İlk ve Tek Tarım Platformu</div>
         </div>
