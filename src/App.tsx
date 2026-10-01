@@ -216,12 +216,37 @@ export default function App() {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        alert('Dosya boyutu 2 MB sınırını aşamaz!');
-        return;
-      }
       const reader = new FileReader();
-      reader.onloadend = () => setForm(prev => ({ ...prev, image: reader.result }));
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          
+          const MAX_SIZE = 800;
+          if (width > height) {
+            if (width > MAX_SIZE) {
+              height *= MAX_SIZE / width;
+              width = MAX_SIZE;
+            }
+          } else {
+            if (height > MAX_SIZE) {
+              width *= MAX_SIZE / height;
+              height = MAX_SIZE;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+          setForm(prev => ({ ...prev, image: compressedDataUrl }));
+        };
+        img.src = event.target.result;
+      };
       reader.readAsDataURL(file);
     }
   };
@@ -229,12 +254,37 @@ export default function App() {
   const handleEditImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        alert('Dosya boyutu 2 MB sınırını aşamaz!');
-        return;
-      }
       const reader = new FileReader();
-      reader.onloadend = () => setEditingListing(prev => ({ ...prev, image: reader.result }));
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          
+          const MAX_SIZE = 800;
+          if (width > height) {
+            if (width > MAX_SIZE) {
+              height *= MAX_SIZE / width;
+              width = MAX_SIZE;
+            }
+          } else {
+            if (height > MAX_SIZE) {
+              width *= MAX_SIZE / height;
+              height = MAX_SIZE;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+          setEditingListing(prev => ({ ...prev, image: compressedDataUrl }));
+        };
+        img.src = event.target.result;
+      };
       reader.readAsDataURL(file);
     }
   };
@@ -245,8 +295,6 @@ export default function App() {
       alert('Lütfen zorunlu alanları eksiksiz doldurun.');
       return;
     }
-
-    const generatedSeo = `${form.title}, ${form.category}, ${form.subCategory}, ${form.location}, tarım ilanı, pazartarla`;
 
     const newEntry = {
       title: sanitizeInput(form.title),
@@ -282,7 +330,7 @@ export default function App() {
     }
 
     fetchListings();
-    setLastAddedListing({ ...newEntry, seoTags: form.seoTags || generatedSeo });
+    setLastAddedListing(newEntry);
     changeTab('success-wa');
   };
 
@@ -838,6 +886,7 @@ export default function App() {
                   </div>
                 )}
 
+                {/* YENİ ANA KATEGORİ EKLEME & SİLME BÖLÜMÜ */}
                 <div style={{ backgroundColor: '#f0fdf4', padding: '12px', borderRadius: '8px', border: '1px solid #bbf7d0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 8px 0' }}>📁 Ana Kategori Ekle / Sil</h3>
                   <form onSubmit={handleAddNewMainCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '10px' }}>
