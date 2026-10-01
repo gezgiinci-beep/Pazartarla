@@ -94,6 +94,26 @@ export default function App() {
     }
   });
 
+  useEffect(() => {
+    try {
+      localStorage.setItem('pazartarla_favorites', JSON.stringify(favorites));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [favorites]);
+
+  const toggleFavorite = (item, e) => {
+    if (e) e.stopPropagation();
+    setFavorites(prev => {
+      const exists = prev.some(fav => fav.id === item.id);
+      if (exists) {
+        return prev.filter(fav => fav.id !== item.id);
+      } else {
+        return [...prev, item];
+      }
+    });
+  };
+
   const [selectedListing, setSelectedListing] = useState(null);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
@@ -526,8 +546,8 @@ export default function App() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <button onClick={() => changeTab('favorites')} style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>
-            ❤️ ({favorites.length})
+          <button onClick={() => changeTab('favorites')} style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Heart size={14} fill={favorites.length > 0 ? '#ef4444' : 'none'} color={favorites.length > 0 ? '#ef4444' : '#fff'} /> ({favorites.length})
           </button>
           <button onClick={() => changeTab('add')} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: '700', fontSize: '13px' }}>
             <Plus size={16} /> İlan Ver
@@ -552,6 +572,39 @@ export default function App() {
             <div style={{ width: '100%', overflow: 'hidden' }}>
               <div className="marquee-text">{announcement}</div>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'favorites' && (
+          <div>
+            <div style={{ backgroundColor: '#1b3a2b', color: '#fff', borderRadius: '10px', padding: '10px 14px', marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <button onClick={() => changeTab('home')} style={{ background: 'none', border: 'none', color: '#86efac', fontWeight: '700', cursor: 'pointer' }}><ArrowLeft size={16} /> Ana Sayfa</button>
+              <span>Favori İlanlarım ({favorites.length})</span>
+            </div>
+
+            {favorites.length === 0 ? (
+              <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '30px', textAlign: 'center', border: '1px solid #e2e8f0', color: '#64748b' }}>
+                <Heart size={36} color="#cbd5e1" style={{ margin: '0 auto 10px auto' }} />
+                <p style={{ fontWeight: '600', fontSize: '14px' }}>Henüz favorilere ilan eklemediniz.</p>
+                <p style={{ fontSize: '12px', marginTop: '4px' }}>İlanlardaki kalp ikonuna tıklayarak favorilerinize ekleyebilirsiniz.</p>
+              </div>
+            ) : (
+              favorites.map(item => (
+                <div key={item.id} style={{ backgroundColor: '#fff', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', display: 'flex', gap: '10px', padding: '10px', marginBottom: '10px', position: 'relative' }}>
+                  <div onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ display: 'flex', gap: '10px', flex: 1, cursor: 'pointer' }}>
+                    <img src={item.image} alt={item.title} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '8px' }} />
+                    <div style={{ flex: 1 }}>
+                      <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: '700' }}>{item.title}</h4>
+                      <div style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b' }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
+                      <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>📍 {item.location}</div>
+                    </div>
+                  </div>
+                  <button onClick={(e) => toggleFavorite(item, e)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', alignSelf: 'flex-start' }}>
+                    <Heart size={20} fill="#ef4444" color="#ef4444" />
+                  </button>
+                </div>
+              ))
+            )}
           </div>
         )}
 
@@ -606,13 +659,19 @@ export default function App() {
                   <Star size={16} fill="#eab308" color="#eab308" /> Vitrin İlanları
                 </div>
                 <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '4px' }}>
-                  {featuredListings.map(item => (
-                    <div key={`feat-${item.id}`} onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ minWidth: '160px', maxWidth: '160px', backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #fde047', cursor: 'pointer', overflow: 'hidden', flexShrink: 0, padding: '8px' }}>
-                      <img src={item.image} alt={item.title} style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '6px', marginBottom: '6px' }} />
-                      <div style={{ fontSize: '12px', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</div>
-                      <div style={{ fontSize: '13px', fontWeight: '800', color: '#1b3a2b', marginTop: '2px' }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
-                    </div>
-                  ))}
+                  {featuredListings.map(item => {
+                    const isFav = favorites.some(fav => fav.id === item.id);
+                    return (
+                      <div key={`feat-${item.id}`} onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ minWidth: '160px', maxWidth: '160px', backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #fde047', cursor: 'pointer', overflow: 'hidden', flexShrink: '0', padding: '8px', position: 'relative' }}>
+                        <button onClick={(e) => toggleFavorite(item, e)} style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(255,255,255,0.8)', border: 'none', borderRadius: '50%', width: '26px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 2 }}>
+                          <Heart size={14} fill={isFav ? '#ef4444' : 'none'} color={isFav ? '#ef4444' : '#64748b'} />
+                        </button>
+                        <img src={item.image} alt={item.title} style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '6px', marginBottom: '6px' }} />
+                        <div style={{ fontSize: '12px', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</div>
+                        <div style={{ fontSize: '13px', fontWeight: '800', color: '#1b3a2b', marginTop: '2px' }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -665,28 +724,41 @@ export default function App() {
               <span>{filteredListings.length} sonuç</span>
             </div>
 
-            {filteredListings.map(item => (
-              <div key={item.id} onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ backgroundColor: '#fff', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer', display: 'flex', gap: '10px', padding: '10px', marginBottom: '10px' }}>
-                <img src={item.image} alt={item.title} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '8px' }} />
-                <div style={{ flex: 1 }}>
-                  <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: '700' }}>{item.title}</h4>
-                  <div style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b' }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
-                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>📍 {item.location}</div>
+            {filteredListings.map(item => {
+              const isFav = favorites.some(fav => fav.id === item.id);
+              return (
+                <div key={item.id} style={{ backgroundColor: '#fff', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', display: 'flex', gap: '10px', padding: '10px', marginBottom: '10px', position: 'relative' }}>
+                  <div onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ display: 'flex', gap: '10px', flex: 1, cursor: 'pointer' }}>
+                    <img src={item.image} alt={item.title} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '8px' }} />
+                    <div style={{ flex: 1 }}>
+                      <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: '700' }}>{item.title}</h4>
+                      <div style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b' }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
+                      <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>📍 {item.location}</div>
+                    </div>
+                  </div>
+                  <button onClick={(e) => toggleFavorite(item, e)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', alignSelf: 'flex-start' }}>
+                    <Heart size={20} fill={isFav ? '#ef4444' : 'none'} color={isFav ? '#ef4444' : '#64748b'} />
+                  </button>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
         {activeTab === 'detail' && selectedListing && (
-          <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
+          <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0', position: 'relative' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
               <button onClick={() => changeTab('results')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer' }}>← Listeye Dön</button>
-              {isAdminLoggedIn && (
-                <button onClick={() => startEditingFromDetail(selectedListing)} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: '700', fontSize: '12px', cursor: 'pointer' }}>
-                  ✏️ Bu İlanı Düzenle
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <button onClick={(e) => toggleFavorite(selectedListing, e)} style={{ backgroundColor: '#f1f5f9', border: 'none', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: '700', color: '#475569' }}>
+                  <Heart size={16} fill={favorites.some(fav => fav.id === selectedListing.id) ? '#ef4444' : 'none'} color={favorites.some(fav => fav.id === selectedListing.id) ? '#ef4444' : '#475569'} /> Favori
                 </button>
-              )}
+                {isAdminLoggedIn && (
+                  <button onClick={() => startEditingFromDetail(selectedListing)} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: '700', fontSize: '12px', cursor: 'pointer' }}>
+                    ✏️ Düzenle
+                  </button>
+                )}
+              </div>
             </div>
 
             <img src={selectedListing.image} alt={selectedListing.title} style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '8px', marginBottom: '10px' }} />
@@ -921,7 +993,7 @@ export default function App() {
         <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <div style={{ color: '#fff', fontWeight: '700', fontSize: '14px' }}>PazarTarla İletişim & Destek</div>
           <div>📞 WhatsApp / Tel: 0535 768 1550</div>
-          <div>✉️️ E-posta: gezgiinci@gmail.com</div>
+          <div>✉ E-posta: gezgiinci@gmail.com</div>
           <div>📍 Konum: Gönen / Balıkesir</div>
           <div style={{ color: '#86efac', marginTop: '4px' }}>© 2026 PazarTarla • Türkiye'nin İlk ve Tek Tarım Platformu</div>
         </div>
