@@ -15,6 +15,25 @@ const dbHeaders = {
   'Prefer': 'return=minimal'
 };
 
+const DEFAULT_START_LISTINGS = [
+  {
+    id: 1,
+    title: 'Tarladan Doğrudan Taze Chandler Ceviz',
+    price: 140,
+    category: 'Mahsuller',
+    subCategory: 'Ceviz',
+    mode: 'Satılık',
+    location: 'Gönen / Balıkesir',
+    amount: '1 Ton',
+    description: 'Kendi bahçemizin ürünü, ilaçsız ve dolgun Chandler ceviz.',
+    seller: 'Can İnce',
+    phone: '0535 768 1550',
+    image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
+    status: 'approved',
+    isFeatured: true
+  }
+];
+
 const FALLBACK_CATEGORIES = {
   'Mahsuller': ['Kiraz', 'Ceviz', 'Zeytin & Zeytinyağı', 'Buğday', 'Bakliyat', 'Meyve & Sebze'],
   'Canlı Hayvanlar': ['Büyükbaş', 'Küçükbaş', 'Kanatlı'],
@@ -34,7 +53,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('home'); 
   const editFormRef = useRef(null);
    
-  const [listings, setListings] = useState([]);
+  const [listings, setListings] = useState(DEFAULT_START_LISTINGS);
   const [categoriesWithSubs, setCategoriesWithSubs] = useState(FALLBACK_CATEGORIES);
   const [announcement, setAnnouncement] = useState('🌾 Türkiye genelinden tarım aletleri, veterinerler ve taze mahsul ilanları PazarTarla’da!');
 
@@ -70,7 +89,7 @@ export default function App() {
       });
       if (res.ok) {
         const data = await res.json();
-        if (data) {
+        if (data && data.length > 0) {
           setListings(data);
         }
       }
