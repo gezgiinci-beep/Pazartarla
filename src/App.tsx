@@ -615,7 +615,7 @@ export default function App() {
              
             {lastAddedListing && (
               <a 
-                href={'https://api.whatsapp.com/send?phone=905357681550&text=' + encodeURIComponent('🔔 Yeni İlan Onay Bekliyor!\n\nBaşlık: ' + lastAddedListing.title + '\nFiyat: ' + lastAddedListing.price + ' TL\nKategori: ' + lastAddedListing.category + ' / ' + lastAddedListing.subCategory + '\nSatıcı: ' + lastAddedListing.seller + ' (' + lastAddedListing.phone + ')')}
+                href={'https://api.whatsapp.com/send?phone=905357681550&text=' + encodeURIComponent('🔔 Yeni İlan Onay Bekliyor!\n\nBaşlık: ' + lastAddedListing.title + '\nFiyat: ' + lastAddedListing.price + ' TL\nKategori: ' + lastAddedListing.category + ' / ' + lastAddedListing.subCategory + '\nSatıcı: ' + lastAddedListing.seller + ' (' + lastAddedListing.phone + ')') }
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#22c55e', color: '#fff', padding: '12px', borderRadius: '8px', fontWeight: '800', textDecoration: 'none', fontSize: '14px', marginBottom: '12px' }}
