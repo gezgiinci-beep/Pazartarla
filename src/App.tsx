@@ -258,7 +258,7 @@ export default function App() {
       if (!res.ok) {
         const errText = await res.text();
         console.error('Supabase Ekleme Hatası:', errText);
-        alert('İlan eklenirken sunucu reddetti. Lütfen anahtarlarınızı kontrol edin.');
+        alert('İlan eklenirken sunucu reddetti.');
         return;
       }
     } catch (err) {
@@ -297,17 +297,13 @@ export default function App() {
         fetchListings();
         alert('🎉 Otomatik test ilanı başarıyla çekildi!');
       } else {
-        const errText = await res.text();
-        console.error('Supabase Hata:', errText);
         alert('Test ilanı eklenirken sunucu reddetti.');
       }
     } catch (e) {
-      console.error(e);
       alert('Bağlantı hatası oluştu.');
     }
   };
 
-  // E-POSTA İLE YEDEK GÖNDERME FONKSİYONU
   const sendEmailBackup = () => {
     const emailTo = 'gezgiinci@gmail.com';
     const subject = encodeURIComponent(`PazarTarla Veritabanı Yedeği - ${new Date().toLocaleDateString('tr-TR')}`);
@@ -718,7 +714,6 @@ export default function App() {
                   <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer' }}>Çıkış</button>
                 </div>
 
-                {/* E-POSTA İLE YEDEKLEME BUTONU */}
                 <div style={{ backgroundColor: '#eff6ff', padding: '14px', borderRadius: '8px', border: '1px solid #3b82f6', marginBottom: '16px', textAlign: 'center' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1e40af', margin: '0 0 8px 0' }}>📧 E-Posta ile Yedek Gönder</h3>
                   <p style={{ fontSize: '12px', color: '#475569', marginBottom: '10px' }}>Tüm ilan listesini doğrudan <b>gezgiinci@gmail.com</b> adresine mail olarak gönder.</p>
@@ -804,7 +799,7 @@ export default function App() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#d97706' }}>⏳ Onay Bekleyen İlanlar ({listings.filter(i => i.status === 'pending').length})</h3>
                   {listings.filter(i => i.status === 'pending').length > 0 && (
-                    <button onClick={approveAllListings} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Tümünü Onayla</value>
+                    <button onClick={approveAllListings} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Tümünü Onayla</button>
                   )}
                 </div>
 
