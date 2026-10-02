@@ -72,13 +72,13 @@ export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState('home'); 
   const editFormRef = useRef(null);
-   
+  
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState([
     { sender: 'bot', text: 'Merhaba! PazarTarla canlı destek hattına hoş geldiniz. Size nasıl yardımcı olabilirim?' }
   ]);
   const [chatInput, setChatInput] = useState('');
-    
+   
   const [listings, setListings] = useState(DEFAULT_START_LISTINGS);
   const [categoriesWithSubs, setCategoriesWithSubs] = useState(FALLBACK_CATEGORIES);
   const [announcement, setAnnouncement] = useState('🌾 Türkiye genelinden tarım aletleri, veterinerler ve taze mahsul ilanları PazarTarla’da!');
@@ -99,7 +99,7 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState('Tüm kategoriler');
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
   const [openCategory, setOpenCategory] = useState('');
-    
+   
   const [newCategoryName, setNewCategoryName] = useState('Mahsuller');
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
   const [selectedSubToRemove, setSelectedSubToRemove] = useState('');
@@ -115,27 +115,14 @@ export default function App() {
     subCategory: 'Ceviz',
     mode: 'Satılık',
     location: 'Türkiye Geneli',
-    city: 'Balıkesir',
-    amount: '',
     description: '',
     seller: '',
     phone: '',
-    image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
+    images: ['https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800'],
     seoTags: '',
     status: 'pending',
     isFeatured: false
   });
-
-  // Otomatik SEO Üretici Fonksiyon
-  const generateAutoSeoTags = (title, category, subCategory, location) => {
-    const cleanWords = (str) => str ? str.toLowerCase().replace(/[^a-zğüşıöç0-9\s]/g, '').split(/\s+/).filter(w => w.length > 2) : [];
-    const titleWords = cleanWords(title).slice(0, 4).join(', ');
-    const catWords = [category, subCategory].filter(Boolean).join(', ').toLowerCase();
-    const locWords = location ? location.toLowerCase().replace('/', '').trim() : '';
-    
-    let combined = [titleWords, catWords, locWords, 'pazartarla', 'tarım ilanı', 'sahibinden tarım'].filter(Boolean).join(', ');
-    return combined;
-  };
 
   const fetchListings = async () => {
     try {
@@ -145,11 +132,12 @@ export default function App() {
       if (res.ok) {
         const data = await res.json();
         if (data && data.length > 0) {
-          const enhancedData = data.map(item => ({
+          const formatted = data.map(item => ({
             ...item,
-            seoTags: item.seoTags || generateAutoSeoTags(item.title, item.category, item.subCategory, item.location)
+            images: item.images || (item.image ? [item.image] : ['https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800']),
+            isFeatured: item.isFeatured ?? item.is_featured ?? false
           }));
-          setListings(enhancedData);
+          setListings(formatted);
         }
       }
     } catch (e) {
@@ -236,30 +224,80 @@ export default function App() {
     });
   };
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
+  // 10 Adete Kadar Çoklu Fotoğraf Yükleme (Add Form)
+  const handleMultipleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    const currentCount = form.images.length;
+    if (currentCount + files.length > 10) {
+      alert('En fazla 10 adet fotoğraf yükleyebilirsiniz!');
+      return;
+    }
+
+    let loadedCount = 0;
+    const newImages = [...form.images];
+
+    files.forEach(file => {
       if (file.size > 2 * 1024 * 1024) {
-        alert('Dosya boyutu 2 MB sınırını aşamaz!');
+        alert(`"${file.name}" 2 MB sınırını aştığı için eklenmedi.`);
         return;
       }
       const reader = new FileReader();
-      reader.onloadend = () => setForm(prev => ({ ...prev, image: reader.result }));
+      reader.onloadend = () => {
+        newImages.push(reader.result);
+        loadedCount++;
+        if (loadedCount === files.length || newImages.length <= 10) {
+          setForm(prev => ({ ...prev, images: newImages.slice(0, 10) }));
+        }
+      };
       reader.readAsDataURL(file);
-    }
+    });
   };
 
-  const handleEditImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
+  const removeFormImage = (index) => {
+    setForm(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
+  };
+
+  // 10 Adete Kadar Çoklu Fotoğraf Yükleme (Edit Form)
+  const handleEditMultipleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    const currentCount = (editingListing.images || []).length;
+    if (currentCount + files.length > 10) {
+      alert('En fazla 10 adet fotoğraf yükleyebilirsiniz!');
+      return;
+    }
+
+    let loadedCount = 0;
+    const newImages = [...(editingListing.images || [])];
+
+    files.forEach(file => {
       if (file.size > 2 * 1024 * 1024) {
-        alert('Dosya boyutu 2 MB sınırını aşamaz!');
+        alert(`"${file.name}" 2 MB sınırını aştığı için eklenmedi.`);
         return;
       }
       const reader = new FileReader();
-      reader.onloadend = () => setEditingListing(prev => ({ ...prev, image: reader.result }));
+      reader.onloadend = () => {
+        newImages.push(reader.result);
+        loadedCount++;
+        if (loadedCount === files.length || newImages.length <= 10) {
+          setEditingListing(prev => ({ ...prev, images: newImages.slice(0, 10) }));
+        }
+      };
       reader.readAsDataURL(file);
-    }
+    });
+  };
+
+  const removeEditImage = (index) => {
+    setEditingListing(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
   };
 
   const handleDirectAdd = async (e) => {
@@ -269,11 +307,13 @@ export default function App() {
       return;
     }
 
-    const finalSeoTags = form.seoTags.trim() 
-      ? sanitizeInput(form.seoTags) 
-      : generateAutoSeoTags(form.title, form.category, form.subCategory, form.location);
+    // ⚡ OTOMATİK SEO ETİKETLERİ ÜRETİMİ
+    const generatedSeoTags = `${form.title.toLowerCase().split(' ').join(', ')}, ${form.category.toLowerCase()}, ${form.subCategory.toLowerCase()}, ${form.location.toLowerCase()}, tarım ilanı, pazartarla`;
+    const finalSeoTags = form.seoTags.trim() ? form.seoTags : generatedSeoTags;
 
-    // ⚡ YALNIZCA VERİTABANINDA KESİN OLARAK BULUNAN KOLONLAR GÖNDERİLİYOR (Hata almamak için isFeatured kaldırıldı)
+    const primaryImage = (form.images && form.images[0]) || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800';
+
+    // Supabase tablosunun kabul ettiği ana kolonlar (Hata vermemesi için tablo yapısına birebir uygun)
     const newEntry = {
       title: sanitizeInput(form.title),
       price: Number(form.price),
@@ -283,8 +323,9 @@ export default function App() {
       description: sanitizeInput(form.description),
       seller: sanitizeInput(form.seller),
       phone: sanitizeInput(form.phone),
-      image: form.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
-      status: 'pending'
+      image: primaryImage,
+      status: 'pending',
+      isFeatured: false
     };
 
     try {
@@ -308,6 +349,7 @@ export default function App() {
     fetchListings();
     setLastAddedListing({
       ...newEntry,
+      images: form.images,
       seoTags: finalSeoTags
     });
     changeTab('success-wa');
@@ -315,7 +357,7 @@ export default function App() {
 
   const handleAutoFetchListings = async () => {
     if (!isAdminLoggedIn) return;
-     
+    
     const dynamicPool = {
       title: 'New Holland TD100D Tarım Traktörü',
       price: 1450000,
@@ -326,7 +368,8 @@ export default function App() {
       seller: 'Can İnce',
       phone: '0535 768 1550',
       image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
-      status: 'approved'
+      status: 'approved',
+      isFeatured: true
     };
 
     try {
@@ -383,13 +426,14 @@ export default function App() {
     const target = listings.find(i => i.id === id);
     if (!target) return;
 
-    const nextStatus = !(target.isFeatured ?? target.is_featured ?? false);
+    const currentFeat = target.isFeatured === true || target.is_featured === true;
+    const nextStatus = !currentFeat;
 
     try {
       await fetch(`${SUPABASE_URL}/rest/v1/listings?id=eq.${id}`, {
         method: 'PATCH',
         headers: dbHeaders,
-        body: JSON.stringify({ isFeatured: nextStatus })
+        body: JSON.stringify({ isFeatured: nextStatus, is_featured: nextStatus })
       });
       fetchListings();
     } catch (e) {
@@ -403,7 +447,10 @@ export default function App() {
       changeTab('admin-page');
       return;
     }
-    setEditingListing(item);
+    setEditingListing({
+      ...item,
+      images: item.images || (item.image ? [item.image] : [])
+    });
     changeTab('admin-page');
     setTimeout(() => {
       if (editFormRef.current) editFormRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -413,6 +460,8 @@ export default function App() {
   const saveEditedListing = async (e) => {
     e.preventDefault();
     if (!isAdminLoggedIn) return;
+
+    const primaryImage = (editingListing.images && editingListing.images[0]) || editingListing.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800';
 
     try {
       await fetch(`${SUPABASE_URL}/rest/v1/listings?id=eq.${editingListing.id}`, {
@@ -425,7 +474,7 @@ export default function App() {
           subCategory: editingListing.subCategory,
           location: sanitizeInput(editingListing.location),
           description: sanitizeInput(editingListing.description),
-          image: editingListing.image,
+          image: primaryImage,
           status: 'approved'
         })
       });
@@ -511,8 +560,8 @@ export default function App() {
   };
 
   const approvedListings = listings.filter(item => item.status === 'approved');
-  const featuredListings = approvedListings.filter(item => item.isFeatured || item.is_featured);
-  const regularApprovedListings = approvedListings.filter(item => !(item.isFeatured || item.is_featured));
+  const featuredListings = approvedListings.filter(item => item.isFeatured === true || item.is_featured === true);
+  const regularApprovedListings = approvedListings.filter(item => !(item.isFeatured === true || item.is_featured === true));
 
   const filteredListings = (selectedCategory === 'Tüm kategoriler' && selectedSubCategory === 'Tümü')
     ? [...featuredListings, ...regularApprovedListings]
@@ -578,8 +627,8 @@ export default function App() {
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '24px', textAlign: 'center', border: '1px solid #e2e8f0' }}>
             <CheckCircle size={36} color="#166534" style={{ margin: '0 auto 12px auto' }} />
             <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#1b3a2b', margin: '0 0 8px 0' }}>İlanınız Başarıyla Alındı!</h2>
-            <p style={{ color: '#64748b', fontSize: '13px', marginBottom: '20px' }}>Yönetici onayından sonra tüm cihazlarda görünecektir.</p>
-              
+            <p style={{ color: '#64748b', fontSize: '13px', marginBottom: '20px' }}>SEO etiketleri otomatik oluşturuldu. Yönetici onayından sonra tüm cihazlarda görünecektir.</p>
+             
             {lastAddedListing && (
               <a 
                 href={`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(`🔔 *Yeni İlan Onay Bekliyor!*\n\n*Başlık:* ${lastAddedListing.title}\n*Fiyat:* ${lastAddedListing.price} TL\n*Kategori:* ${lastAddedListing.category} / ${lastAddedListing.subCategory}\n*Satıcı:* ${lastAddedListing.seller} (${lastAddedListing.phone})`)}`}
@@ -597,6 +646,7 @@ export default function App() {
 
         {activeTab === 'home' && (
           <div>
+            {/* REKLAM VER KUTUCUĞU */}
             <div style={{ backgroundColor: '#ecfdf5', border: '1.5px dashed #10b981', borderRadius: '12px', padding: '14px 16px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <div style={{ backgroundColor: '#d1fae5', padding: '8px', borderRadius: '8px', color: '#059669', flexShrink: 0 }}>
@@ -617,19 +667,23 @@ export default function App() {
               </a>
             </div>
 
+            {/* VİTRİN İLANLARI BÖLÜMÜ */}
             {featuredListings.length > 0 && (
               <div style={{ marginBottom: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', fontWeight: '800', fontSize: '14px', color: '#854d0e' }}>
                   <Star size={16} fill="#eab308" color="#eab308" /> Vitrin İlanları
                 </div>
                 <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '4px' }}>
-                  {featuredListings.map(item => (
-                    <div key={`feat-${item.id}`} onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ minWidth: '160px', maxWidth: '160px', backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #fde047', cursor: 'pointer', overflow: 'hidden', flexShrink: 0, padding: '8px' }}>
-                      <img src={item.image} alt={item.title} style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '6px', marginBottom: '6px' }} />
-                      <div style={{ fontSize: '12px', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</div>
-                      <div style={{ fontSize: '13px', fontWeight: '800', color: '#1b3a2b', marginTop: '2px' }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
-                    </div>
-                  ))}
+                  {featuredListings.map(item => {
+                    const displayImg = (item.images && item.images[0]) || item.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800';
+                    return (
+                      <div key={`feat-${item.id}`} onClick={() => { setSelectedListing({ ...item, images: item.images || [displayImg] }); changeTab('detail'); }} style={{ minWidth: '160px', maxWidth: '160px', backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #fde047', cursor: 'pointer', overflow: 'hidden', flexShrink: 0, padding: '8px' }}>
+                        <img src={displayImg} alt={item.title} style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '6px', marginBottom: '6px' }} />
+                        <div style={{ fontSize: '12px', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</div>
+                        <div style={{ fontSize: '13px', fontWeight: '800', color: '#1b3a2b', marginTop: '2px' }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -682,16 +736,19 @@ export default function App() {
               <span>{filteredListings.length} sonuç</span>
             </div>
 
-            {filteredListings.map(item => (
-              <div key={item.id} onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ backgroundColor: '#fff', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer', display: 'flex', gap: '10px', padding: '10px', marginBottom: '10px' }}>
-                <img src={item.image} alt={item.title} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '8px' }} />
-                <div style={{ flex: 1 }}>
-                  <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: '700' }}>{item.title}</h4>
-                  <div style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b' }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
-                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>📍 {item.location}</div>
+            {filteredListings.map(item => {
+              const displayImg = (item.images && item.images[0]) || item.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800';
+              return (
+                <div key={item.id} onClick={() => { setSelectedListing({ ...item, images: item.images || [displayImg] }); changeTab('detail'); }} style={{ backgroundColor: '#fff', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer', display: 'flex', gap: '10px', padding: '10px', marginBottom: '10px' }}>
+                  <img src={displayImg} alt={item.title} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '8px' }} />
+                  <div style={{ flex: 1 }}>
+                    <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: '700' }}>{item.title}</h4>
+                    <div style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b' }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
+                    <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>📍 {item.location}</div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -706,17 +763,42 @@ export default function App() {
               )}
             </div>
 
-            <img src={selectedListing.image} alt={selectedListing.title} style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '8px', marginBottom: '10px' }} />
+            {/* ÇOKLU FOTOĞRAF GALERİSİ */}
+            {selectedListing.images && selectedListing.images.length > 0 ? (
+              <div>
+                <img src={selectedListing.images[0]} alt={selectedListing.title} style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '8px', marginBottom: '8px' }} />
+                {selectedListing.images.length > 1 && (
+                  <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', marginBottom: '12px', paddingBottom: '4px' }}>
+                    {selectedListing.images.map((imgUrl, idx) => (
+                      <img 
+                        key={idx} 
+                        src={imgUrl} 
+                        alt={`Galeri ${idx}`} 
+                        onClick={() => {
+                          const updatedImgs = [imgUrl, ...selectedListing.images.filter((_, i) => i !== idx)];
+                          setSelectedListing({ ...selectedListing, images: updatedImgs });
+                        }} 
+                        style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px', cursor: 'pointer', border: idx === 0 ? '2px solid #22c55e' : '1px solid #cbd5e1', flexShrink: 0 }} 
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <img src={selectedListing.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800'} alt={selectedListing.title} style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '8px', marginBottom: '10px' }} />
+            )}
+
             <h2 style={{ fontSize: '18px', fontWeight: '800', margin: '8px 0' }}>{selectedListing.title}</h2>
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '4px' }}>{Number(selectedListing.price).toLocaleString('tr-TR')} TL</div>
             <p style={{ color: '#475569', fontSize: '13px', marginBottom: '12px', lineHeight: '1.5' }}>{selectedListing.description}</p>
-             
+            
+            {/* OTOMATİK SEO ETİKETLERİ BÖLÜMÜ */}
             <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '10px 12px', marginBottom: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '700', color: '#166534', marginBottom: '6px' }}>
-                <Tag size={12} /> Arama & Otomatik SEO Etiketleri
+                <Tag size={12} /> Otomatik Arama & SEO Etiketleri
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                {(selectedListing.seoTags || generateAutoSeoTags(selectedListing.title, selectedListing.category, selectedListing.subCategory, selectedListing.location)).split(',').map((tag, idx) => (
+                {(selectedListing.seoTags || `${selectedListing.title.toLowerCase().split(' ').join(', ')}, ${selectedListing.category.toLowerCase()}, ${selectedListing.location.toLowerCase()}`).split(',').map((tag, idx) => (
                   <span key={idx} style={{ backgroundColor: '#dcfce7', color: '#14532d', padding: '3px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '600' }}>
                     #{tag.trim()}
                   </span>
@@ -724,6 +806,7 @@ export default function App() {
               </div>
             </div>
 
+            {/* SOSYAL MEDYA PAYLAŞ BUTONLARI */}
             <div style={{ marginBottom: '16px' }}>
               <div style={{ fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>📤 Bu İlanı Paylaş:</div>
               <div style={{ display: 'flex', gap: '8px' }}>
@@ -768,14 +851,14 @@ export default function App() {
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
               <button onClick={() => changeTab('home')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer' }}>← Vazgeç</button>
-              <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>İlan Ver</h2>
+              <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>İlan Ver (Otomatik SEO)</h2>
             </div>
             <form onSubmit={handleDirectAdd} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <input type="text" name="seller" placeholder="Adınız Soyadınız *" value={form.seller} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               <input type="text" name="phone" placeholder="Telefon Numaranız *" value={form.phone} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
-              <input type="text" name="title" placeholder="İlan Başlığı *" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+              <input type="text" name="title" placeholder="İlan Başlığı * (Otomatik SEO için önemlidir)" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               <input type="number" name="price" placeholder="Fiyat (TL) *" value={form.price} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
-               
+              
               <select name="category" value={form.category} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
                 {Object.keys(categoriesWithSubs).map(cat => <option key={cat} value={cat}>{cat}</option>)}
               </select>
@@ -785,20 +868,31 @@ export default function App() {
               </select>
 
               <input type="text" name="location" placeholder="Konum (Örn: Gönen / Balıkesir)" value={form.location} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
-               
-              <input type="text" name="seoTags" placeholder="SEO Etiketleri (Boş bırakırsanız otomatik üretilir)" value={form.seoTags} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+              
+              <input type="text" name="seoTags" placeholder="Özel SEO Etiketleri (Boş bırakırsanız otomatik üretilir)" value={form.seoTags} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
 
-              <div style={{ backgroundColor: '#f8fafc', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>📷 Fotoğraf Yükle (Dosya Seç veya URL Yapıştır)</label>
-                <input type="file" accept="image/*" onChange={handleImageUpload} style={{ width: '100%', fontSize: '12px' }} />
-                <input type="text" name="image" placeholder="Veya Görsel URL'si yapıştır (https://...)" value={form.image.startsWith('data:') ? '' : form.image} onChange={handleFormChange} style={{ width: '100%', padding: '8px', fontSize: '12px', borderRadius: '4px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
-              </div>
+              {/* 10 ADETE KADAR ÇOKLU FOTOĞRAF YÜKLEME ALANI */}
+            <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>📷 Fotoğraf Yükle (En Fazla 10 Adet - Seçili: {form.images.length}/10)</label>
+              <input type="file" accept="image/*" multiple onChange={handleMultipleImageUpload} style={{ width: '100%', fontSize: '12px' }} />
+              
+              {form.images.length > 0 && (
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
+                  {form.images.map((imgSrc, idx) => (
+                    <div key={idx} style={{ position: 'relative', width: '60px', height: '60px' }}>
+                      <img src={imgSrc} alt={`Önizleme ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                      <button type="button" onClick={() => removeFormImage(idx)} style={{ position: 'absolute', top: '-4px', right: '-4px', backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: '50%', width: '18px', height: '18px', fontSize: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
-              <textarea name="description" placeholder="Açıklama..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px' }} />
+            <textarea name="description" placeholder="Açıklama..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px' }} />
 
-              <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}>İlanı Gönder</button>
-            </form>
-          </div>
+            <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}>İlanı Gönder ve Otomatik SEO Uygula</button>
+          </form>
+        </div>
         )}
 
         {activeTab === 'admin-page' && (
@@ -814,7 +908,7 @@ export default function App() {
             ) : (
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                  <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>🛡 Tam Kontrol Paneli</h2>
+                  <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>🛡️ Tam Kontrol Paneli</h2>
                   <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer' }}>Çıkış</button>
                 </div>
 
@@ -839,11 +933,21 @@ export default function App() {
                       <input type="text" name="title" value={editingListing.title} onChange={handleEditFormChange} placeholder="Başlık" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       <input type="number" name="price" value={editingListing.price} onChange={handleEditFormChange} placeholder="Fiyat" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       <input type="text" name="location" value={editingListing.location} onChange={handleEditFormChange} placeholder="Konum" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-                       
+                      
                       <div style={{ backgroundColor: '#fff', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        <label style={{ fontSize: '11px', fontWeight: '700', color: '#475569' }}>📷 Fotoğrafı Değiştir (Dosya veya URL)</label>
-                        <input type="file" accept="image/*" onChange={handleEditImageUpload} style={{ width: '100%', fontSize: '11px' }} />
-                        <input type="text" name="image" placeholder="Veya Görsel URL'si yapıştır" value={editingListing.image.startsWith('data:') ? '' : editingListing.image} onChange={handleEditFormChange} style={{ width: '100%', padding: '6px', fontSize: '11px', borderRadius: '4px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+                        <label style={{ fontSize: '11px', fontWeight: '700', color: '#475569' }}>📷 Fotoğrafları Yönet (En Fazla 10 Adet)</label>
+                        <input type="file" accept="image/*" multiple onChange={handleEditMultipleImageUpload} style={{ width: '100%', fontSize: '11px' }} />
+                        
+                        {editingListing.images && editingListing.images.length > 0 && (
+                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
+                            {editingListing.images.map((imgSrc, idx) => (
+                              <div key={idx} style={{ position: 'relative', width: '50px', height: '50px' }}>
+                                <img src={imgSrc} alt={`Düzenle Önizleme ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px', border: '1px solid #cbd5e1' }} />
+                                <button type="button" onClick={() => removeEditImage(idx)} style={{ position: 'absolute', top: '-4px', right: '-4px', backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: '50%', width: '16px', height: '16px', fontSize: '9px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+                              </div>
+                          ))}
+                        </div>
+                      )}
                       </div>
 
                       <textarea name="description" value={editingListing.description} onChange={handleEditFormChange} placeholder="Açıklama" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '60px' }} />
@@ -855,6 +959,7 @@ export default function App() {
                   </div>
                 )}
 
+                {/* YENİ ANA KATEGORİ EKLEME & SİLME BÖLÜMÜ */}
                 <div style={{ backgroundColor: '#f0fdf4', padding: '12px', borderRadius: '8px', border: '1px solid #bbf7d0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 8px 0' }}>📁 Ana Kategori Ekle / Sil</h3>
                   <form onSubmit={handleAddNewMainCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '10px' }}>
@@ -878,7 +983,7 @@ export default function App() {
                     <select value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff' }}>
                       {Object.keys(categoriesWithSubs).map(cat => <option key={cat} value={cat}>{cat}</option>)}
                     </select>
-                     
+                    
                     <div style={{ display: 'flex', gap: '6px' }}>
                       <select value={selectedSubToRemove} onChange={(e) => setSelectedSubToRemove(e.target.value)} style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #ef4444', backgroundColor: '#fef2f2' }}>
                         <option value="">Silinecek seçeneği seç...</option>
@@ -911,7 +1016,7 @@ export default function App() {
 
                 <h3 style={{ fontSize: '14px', fontWeight: '700', marginTop: '20px', marginBottom: '8px' }}>📋 Tüm İlanlar ({listings.length})</h3>
                 {listings.map(item => {
-                  const isFeat = item.isFeatured || item.is_featured;
+                  const isFeat = item.isFeatured === true || item.is_featured === true;
                   return (
                     <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '6px', marginBottom: '6px' }}>
                       <span style={{ fontSize: '12px', fontWeight: '600' }}>{item.title}</span>
@@ -919,7 +1024,7 @@ export default function App() {
                         <button onClick={() => toggleFeaturedListing(item.id)} style={{ backgroundColor: isFeat ? '#fef08a' : '#f1f5f9', color: '#854d0e', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>
                           {isFeat ? '⭐ Vitrinde' : '☆ Vitrin Yap'}
                         </button>
-                        <button onClick={() => { setEditingListing(item); if (editFormRef.current) editFormRef.current.scrollIntoView({ behavior: 'smooth' }); }} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Düzenle</button>
+                        <button onClick={() => { setEditingListing({ ...item, images: item.images || [item.image] }); if (editFormRef.current) editFormRef.current.scrollIntoView({ behavior: 'smooth' }); }} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Düzenle</button>
                         <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Sil</button>
                       </div>
                     </div>
@@ -941,10 +1046,12 @@ export default function App() {
         </div>
       </footer>
 
+      {/* SAĞ ALT KÖŞE: YÖNETİM PANELİ BUTONU */}
       <button onClick={() => changeTab('admin-page')} title="Yönetim Paneli" style={{ position: 'fixed', bottom: '20px', right: '20px', backgroundColor: '#1b3a2b', color: '#86efac', border: '2px solid #22c55e', borderRadius: '50%', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 999 }}>
         ⚙️
       </button>
 
+      {/* SAĞ ALT KÖŞE: KULAKLIKLI CANLI DESTEK ASİSTANI */}
       <div style={{ position: 'fixed', bottom: '76px', right: '20px', zIndex: 1000 }}>
         {!isChatOpen ? (
           <div onClick={() => setIsChatOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#ffffff', padding: '6px 12px 6px 6px', borderRadius: '30px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', border: '2px solid #22c55e', cursor: 'pointer' }}>
