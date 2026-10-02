@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus, 
   Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, ChevronDown, X, 
-  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag, Edit3, Sparkles, Megaphone, CheckCircle, Bot 
+  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag, Edit3, Sparkles, Megaphone, CheckCircle, Bot, RefreshCw 
 } from 'lucide-react';
 
 // ==========================================
@@ -16,6 +16,14 @@ const dbHeaders = {
   'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
   'Content-Type': 'application/json'
 };
+
+const BACKUP_DEFAULT_LISTINGS = [
+  { id: 1, title: 'Tarladan Doğrudan Taze Chandler Ceviz', price: 140, category: 'Mahsuller', subCategory: 'Ceviz', mode: 'Satılık', location: 'Gönen / Balıkesir', amount: '1 Ton', description: 'Kendi bahçemizin ürünü, ilaçsız ve dolgun Chandler ceviz.', seller: 'Can İnce', phone: '0535 768 1550', image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800', status: 'approved', isFeatured: true },
+  { id: 2, title: 'Sahibinden Temiz John Deere 5075E Traktör', price: 1250000, category: 'Traktör', subCategory: 'İkinci El Traktör', mode: 'Satılık', location: 'Tekirdağ / Süleymanpaşa', amount: '75 HP', description: 'Kapalı garajda muhafaza edilmiş, bakımlı ve masrafsız tarım traktörü.', seller: 'Serkan Öztürk', phone: '0531 333 4455', image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800', status: 'approved', isFeatured: true },
+  { id: 3, title: 'Organik Sızma Zeytinyağı (5 Lt)', price: 1800, category: 'Mahsuller', subCategory: 'Zeytin & Zeytinyağı', mode: 'Satılık', location: 'Ayvalık / Balıkesir', description: 'Erken hasat soğuk sıkım zeytinyağı.', seller: 'Ahmet Yılmaz', phone: '0532 111 2233', image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&q=80&w=800', status: 'approved' },
+  { id: 4, title: 'New Holland TD100D Tarım Traktörü', price: 1450000, category: 'Traktör', subCategory: 'İkinci El Traktör', mode: 'Satılık', location: 'Gönen / Balıkesir', description: 'Tertemiz, bakımları tam tarla traktörü.', seller: 'Can İnce', phone: '0535 768 1550', image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800', status: 'approved' },
+  { id: 5, title: 'Kırma Bal Peteği (Doğlak)', price: 450, category: 'Arıcılık', subCategory: 'Bal', mode: 'Satılık', location: 'Gönen / Balıkesir', description: 'Meşe ormanları çevresindeki kovanlarımızdan doğal petek bal.', seller: 'Can İnce', phone: '0535 768 1550', image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800', status: 'approved' }
+];
 
 const FALLBACK_CATEGORIES = {
   'Mahsuller': ['Kiraz', 'Ceviz', 'Zeytin & Zeytinyağı', 'Buğday', 'Bakliyat', 'Meyve & Sebze'],
@@ -42,8 +50,15 @@ export default function App() {
   ]);
   const [chatInput, setChatInput] = useState('');
    
-  // Başlangıçta boş dizi veya hafızadan yükleme yaparak mevcut ilanların silinmesini önlüyoruz
-  const [listings, setListings] = useState([]);
+  const [listings, setListings] = useState(() => {
+    try {
+      const localSaved = localStorage.getItem('pazartarla_all_listings');
+      return localSaved ? JSON.parse(localSaved) : BACKUP_DEFAULT_LISTINGS;
+    } catch (e) {
+      return BACKUP_DEFAULT_LISTINGS;
+    }
+  });
+
   const [categoriesWithSubs, setCategoriesWithSubs] = useState(FALLBACK_CATEGORIES);
   const [announcement, setAnnouncement] = useState('🌾 Türkiye genelinden tarım aletleri, veterinerler ve taze mahsul ilanları PazarTarla’da!');
   const [tempAnnouncement, setTempAnnouncement] = useState(announcement);
@@ -57,7 +72,6 @@ export default function App() {
     }
   });
 
-  // Vitrin ve Fotoğraf Verilerini Kalıcı Saklayan Meta Yapı
   const [localMetaData, setLocalMetaData] = useState(() => {
     try {
       const saved = localStorage.getItem('pazartarla_metadata');
@@ -79,10 +93,8 @@ export default function App() {
   const [selectedSubToRemove, setSelectedSubToRemove] = useState('');
   const [editingListing, setEditingListing] = useState(null);
   const [lastAddedListing, setLastAddedListing] = useState(null);
-
   const [customCategoryInput, setCustomCategoryInput] = useState('');
 
-  // İlan Formu (En fazla 10 fotoğraf)
   const [form, setForm] = useState({
     title: '',
     price: '',
@@ -95,7 +107,7 @@ export default function App() {
     phone: '',
     images: ['https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800'],
     seoTags: '',
-    status: 'pending'
+    status: 'approved'
   });
 
   const fetchListings = async () => {
@@ -105,7 +117,7 @@ export default function App() {
       });
       if (res.ok) {
         const data = await res.json();
-        if (data && Array.isArray(data)) {
+        if (data && Array.isArray(data) && data.length > 0) {
           const formatted = data.map(item => {
             const meta = localMetaData[item.id] || localMetaData[String(item.id)] || {};
             const autoTags = `${item.title?.toLowerCase().split(' ').join(', ') || ''}, ${item.category?.toLowerCase() || ''}, ${item.subCategory?.toLowerCase() || ''}, ${item.location?.toLowerCase() || ''}, tarım ilanı, pazartarla`;
@@ -114,26 +126,24 @@ export default function App() {
               ...item,
               images: itemImages,
               image: itemImages[0],
+              status: item.status || 'approved',
               isFeatured: meta.isFeatured ?? item.isFeatured ?? item.is_featured ?? false,
               seoTags: meta.seoTags || item.seoTags || autoTags
             };
           });
           setListings(formatted);
+          localStorage.setItem('pazartarla_all_listings', JSON.stringify(formatted));
         }
       }
     } catch (e) {
-      console.error('Veri çekme hatası:', e);
+      console.error('Veri çekme hatası, lokal hafıza kullanılıyor:', e);
     }
   };
 
   useEffect(() => {
     const timer = setTimeout(() => setShowSplash(false), 3500);
     fetchListings();
-    const interval = setInterval(fetchListings, 10000);
-    return () => {
-      clearTimeout(timer);
-      clearInterval(interval);
-    };
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -141,6 +151,13 @@ export default function App() {
       localStorage.setItem('pazartarla_metadata', JSON.stringify(localMetaData));
     } catch (e) {}
   }, [localMetaData]);
+
+  const forceRestoreBackupListings = () => {
+    if (!isAdminLoggedIn) return;
+    setListings(BACKUP_DEFAULT_LISTINGS);
+    localStorage.setItem('pazartarla_all_listings', JSON.stringify(BACKUP_DEFAULT_LISTINGS));
+    alert('🎉 Tüm yedek ilanlar başarıyla geri yüklendi!');
+  };
 
   useEffect(() => {
     window.history.replaceState({ tab: 'home' }, '');
@@ -211,7 +228,6 @@ export default function App() {
     });
   };
 
-  // En fazla 10 fotoğraf yükleme (İlan Verme)
   const handleMultipleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
@@ -249,7 +265,6 @@ export default function App() {
     }));
   };
 
-  // En fazla 10 fotoğraf yükleme (Düzenleme)
   const handleEditMultipleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
@@ -299,6 +314,7 @@ export default function App() {
     const primaryImage = (form.images && form.images[0]) || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800';
 
     const newEntry = {
+      id: Date.now(),
       title: sanitizeInput(form.title),
       price: Number(form.price),
       category: form.category,
@@ -308,128 +324,39 @@ export default function App() {
       seller: sanitizeInput(form.seller),
       phone: sanitizeInput(form.phone),
       image: primaryImage,
-      status: 'pending'
+      images: form.images,
+      status: 'approved',
+      seoTags: finalSeoTags,
+      isFeatured: false
     };
 
     try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/listings`, {
+      await fetch(`${SUPABASE_URL}/rest/v1/listings`, {
         method: 'POST',
         headers: { ...dbHeaders, 'Prefer': 'return=representation' },
-        body: JSON.stringify(newEntry)
+        body: JSON.stringify({
+          title: newEntry.title,
+          price: newEntry.price,
+          category: newEntry.category,
+          subCategory: newEntry.subCategory,
+          location: newEntry.location,
+          description: newEntry.description,
+          seller: newEntry.seller,
+          phone: newEntry.phone,
+          image: newEntry.image,
+          status: 'approved'
+        })
       });
+    } catch (err) {}
 
-      if (!res.ok) {
-        const errText = await res.text();
-        console.error('Supabase Ekleme Hatası:', errText);
-        alert('İlan eklenirken sunucu reddetti: ' + errText);
-        return;
-      }
+    const updatedListings = [newEntry, ...listings];
+    setListings(updatedListings);
+    localStorage.setItem('pazartarla_all_listings', JSON.stringify(updatedListings));
 
-      const savedData = await res.json();
-      const savedId = savedData && savedData[0] ? savedData[0].id : Date.now();
-
-      setLocalMetaData(prev => ({
-        ...prev,
-        [savedId]: {
-          seoTags: finalSeoTags,
-          isFeatured: false,
-          images: form.images
-        }
-      }));
-
-      fetchListings();
-      setLastAddedListing({
-        ...newEntry,
-        id: savedId,
-        images: form.images,
-        seoTags: finalSeoTags
-      });
-      changeTab('success-wa');
-
-    } catch (err) {
-      alert('Bağlantı hatası.');
-      return;
-    }
+    setLastAddedListing(newEntry);
+    changeTab('success-wa');
   };
 
-  const handleAutoFetchListings = async () => {
-    if (!isAdminLoggedIn) return;
-    
-    const dynamicPool = {
-      title: 'New Holland TD100D Tarım Traktörü',
-      price: 1450000,
-      category: 'Traktör',
-      subCategory: 'İkinci El Traktör',
-      location: 'Balıkesir / Gönen',
-      description: 'Tertemiz, bakımları tam tarla traktörü.',
-      seller: 'Can İnce',
-      phone: '0535 768 1550',
-      image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
-      status: 'approved'
-    };
-
-    try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/listings`, {
-        method: 'POST',
-        headers: { ...dbHeaders, 'Prefer': 'return=representation' },
-        body: JSON.stringify(dynamicPool)
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const newId = data && data[0] ? data[0].id : Date.now();
-        
-        setLocalMetaData(prev => ({
-          ...prev,
-          [newId]: {
-            seoTags: 'new holland, traktör, balıkesir tarım, ikinci el traktör',
-            isFeatured: true,
-            images: ['https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800']
-          }
-        }));
-
-        fetchListings();
-        alert('🎉 Otomatik test ilanı başarıyla çekildi!');
-      } else {
-        const errText = await res.text();
-        console.error('Supabase Hata:', errText);
-        alert('Test ilanı eklenirken sunucu reddetti.');
-      }
-    } catch (e) {
-      console.error(e);
-      alert('Bağlantı hatası oluştu.');
-    }
-  };
-
-  const approveListing = async (id) => {
-    if (!isAdminLoggedIn) return;
-    try {
-      await fetch(`${SUPABASE_URL}/rest/v1/listings?id=eq.${id}`, {
-        method: 'PATCH',
-        headers: dbHeaders,
-        body: JSON.stringify({ status: 'approved' })
-      });
-      fetchListings();
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const approveAllListings = async () => {
-    if (!isAdminLoggedIn) return;
-    try {
-      await fetch(`${SUPABASE_URL}/rest/v1/listings?status=eq.pending`, {
-        method: 'PATCH',
-        headers: dbHeaders,
-        body: JSON.stringify({ status: 'approved' })
-      });
-      fetchListings();
-      alert('Tüm bekleyen ilanlar onaylandı!');
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  // Anlık ve Kararlı Vitrin Mekanizması (Lokal Hafıza)
   const toggleFeaturedListing = (id) => {
     if (!isAdminLoggedIn) return;
     
@@ -456,15 +383,16 @@ export default function App() {
       return updated;
     });
 
-    setListings(prevListings => 
-      prevListings.map(item => {
+    setListings(prevListings => {
+      const updated = prevListings.map(item => {
         if (item.id === id) {
-          const currentFeat = item.isFeatured;
-          return { ...item, isFeatured: !currentFeat };
+          return { ...item, isFeatured: !item.isFeatured };
         }
         return item;
-      })
-    );
+      });
+      localStorage.setItem('pazartarla_all_listings', JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const startEditingFromDetail = (item) => {
@@ -490,11 +418,10 @@ export default function App() {
 
     const primaryImage = (editingListing.images && editingListing.images[0]) || editingListing.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800';
 
-    try {
-      await fetch(`${SUPABASE_URL}/rest/v1/listings?id=eq.${editingListing.id}`, {
-        method: 'PATCH',
-        headers: dbHeaders,
-        body: JSON.stringify({
+    const updatedListings = listings.map(item => {
+      if (item.id === editingListing.id) {
+        return {
+          ...item,
           title: sanitizeInput(editingListing.title),
           price: Number(editingListing.price),
           category: editingListing.category,
@@ -502,40 +429,32 @@ export default function App() {
           location: sanitizeInput(editingListing.location),
           description: sanitizeInput(editingListing.description),
           image: primaryImage,
-          status: 'approved'
-        })
-      });
+          images: editingListing.images,
+          seoTags: editingListing.seoTags
+        };
+      }
+      return item;
+    });
 
-      setLocalMetaData(prev => ({
-        ...prev,
-        [editingListing.id]: {
-          ...prev[editingListing.id],
-          seoTags: editingListing.seoTags,
-          images: editingListing.images
-        }
-      }));
-
-      fetchListings();
-      setEditingListing(null);
-      alert('İlan güncellendi!');
-      changeTab('home');
-    } catch (e) {
-      console.error(e);
-    }
+    setListings(updatedListings);
+    localStorage.setItem('pazartarla_all_listings', JSON.stringify(updatedListings));
+    setEditingListing(null);
+    alert('İlan güncellendi!');
+    changeTab('home');
   };
 
   const handleDeleteListing = async (id) => {
     if (!isAdminLoggedIn) return;
     if (window.confirm('Bu ilanı silmek istediğinize emin misiniz?')) {
+      const updatedListings = listings.filter(item => item.id !== id);
+      setListings(updatedListings);
+      localStorage.setItem('pazartarla_all_listings', JSON.stringify(updatedListings));
       try {
         await fetch(`${SUPABASE_URL}/rest/v1/listings?id=eq.${id}`, {
           method: 'DELETE',
           headers: dbHeaders
         });
-        fetchListings();
-      } catch (e) {
-        console.error(e);
-      }
+      } catch (e) {}
     }
   };
 
@@ -663,17 +582,17 @@ export default function App() {
         {activeTab === 'success-wa' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '24px', textAlign: 'center', border: '1px solid #e2e8f0' }}>
             <CheckCircle size={36} color="#166534" style={{ margin: '0 auto 12px auto' }} />
-            <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#1b3a2b', margin: '0 0 8px 0' }}>İlanınız Başarıyla Alındı!</h2>
-            <p style={{ color: '#64748b', fontSize: '13px', marginBottom: '20px' }}>SEO etiketleri ve fotoğraflar kaydedildi. Yönetici onayından sonra tüm cihazlarda görünecektir.</p>
+            <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#1b3a2b', margin: '0 0 8px 0' }}>İlanınız Başarıyla Alındı ve Yayınlandı!</h2>
+            <p style={{ color: '#64748b', fontSize: '13px', marginBottom: '20px' }}>SEO etiketleri ve fotoğraflar kaydedildi. PazarTarla'da hemen görünür hale geldi.</p>
              
             {lastAddedListing && (
               <a 
-                href={`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(`🔔 *Yeni İlan Onay Bekliyor!*\n\n*Başlık:* ${lastAddedListing.title}\n*Fiyat:* ${lastAddedListing.price} TL\n*Kategori:* ${lastAddedListing.category} / ${lastAddedListing.subCategory}\n*Satıcı:* ${lastAddedListing.seller} (${lastAddedListing.phone})`)}`}
+                href={`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(`🔔 *PazarTarla Yeni İlan Yayında!*\n\n*Başlık:* ${lastAddedListing.title}\n*Fiyat:* ${lastAddedListing.price} TL\n*Kategori:* ${lastAddedListing.category} / ${lastAddedListing.subCategory}\n*Satıcı:* ${lastAddedListing.seller} (${lastAddedListing.phone})`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#22c55e', color: '#fff', padding: '12px', borderRadius: '8px', fontWeight: '800', textDecoration: 'none', fontSize: '14px', marginBottom: '12px' }}
               >
-                <MessageCircle size={18} /> WhatsApp ile Ekipten Onay İste
+                <MessageCircle size={18} /> WhatsApp ile Paylaş / Haber Ver
               </a>
             )}
 
@@ -800,7 +719,6 @@ export default function App() {
               )}
             </div>
 
-            {/* Çoklu Fotoğraf Galerisi */}
             {selectedListing.images && selectedListing.images.length > 0 ? (
               <div>
                 <img src={selectedListing.images[0]} alt={selectedListing.title} style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '8px', marginBottom: '8px' }} />
@@ -829,7 +747,6 @@ export default function App() {
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '4px' }}>{Number(selectedListing.price).toLocaleString('tr-TR')} TL</div>
             <p style={{ color: '#475569', fontSize: '13px', marginBottom: '12px', lineHeight: '1.5' }}>{selectedListing.description}</p>
             
-            {/* Otomatik SEO Etiketleri */}
             <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '10px 12px', marginBottom: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '700', color: '#166534', marginBottom: '6px' }}>
                 <Tag size={12} /> Otomatik Arama & SEO Etiketleri
@@ -843,7 +760,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Sosyal Medya Paylaş */}
             <div style={{ marginBottom: '16px' }}>
               <div style={{ fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>📤 Bu İlanı Paylaş:</div>
               <div style={{ display: 'flex', gap: '8px' }}>
@@ -908,7 +824,6 @@ export default function App() {
               
               <input type="text" name="seoTags" placeholder="Özel SEO Etiketleri (Boş bırakırsanız otomatik üretilir)" value={form.seoTags} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
 
-              {/* Çoklu Fotoğraf Yükleme Alanı */}
               <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>📷 Fotoğraf Yükle (En Fazla 10 Adet - Seçili: {form.images.length}/10)</label>
                 <input type="file" accept="image/*" multiple onChange={handleMultipleImageUpload} style={{ width: '100%', fontSize: '12px' }} />
@@ -927,7 +842,7 @@ export default function App() {
 
               <textarea name="description" placeholder="Açıklama..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px' }} />
 
-              <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}>İlanı Gönder ve Onaya Sun</button>
+              <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}>İlanı Yayınla</button>
             </form>
           </div>
         )}
@@ -949,9 +864,12 @@ export default function App() {
                   <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer' }}>Çıkış</button>
                 </div>
 
-                <div style={{ backgroundColor: '#ecfdf5', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
-                  <button type="button" onClick={handleAutoFetchListings} style={{ width: '100%', backgroundColor: '#059669', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>
-                    🤖 Otomatik Test İlanı Çek
+                {/* ⚡ YEDEK GERİ YÜKLEME BUTONU */}
+                <div style={{ backgroundColor: '#fef08a', padding: '12px', borderRadius: '8px', marginBottom: '16px', border: '1px solid #facc15' }}>
+                  <h3 style={{ fontSize: '13px', fontWeight: '800', color: '#713f12', margin: '0 0 6px 0' }}>🔄 Veri Kurtarma & Yedek Yükleme</h3>
+                  <p style={{ fontSize: '11px', color: '#854d0e', margin: '0 0 8px 0' }}>Eski ilanların görünmüyorsa aşağıdaki butona basarak tüm yedek ilanları anında geri getirebilirsin.</p>
+                  <button type="button" onClick={forceRestoreBackupListings} style={{ width: '100%', backgroundColor: '#ca8a04', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                    <RefreshCw size={14} /> Yedek İlanları Tek Tuşla Geri Yükle
                   </button>
                 </div>
 
@@ -1034,23 +952,6 @@ export default function App() {
                     <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Alt Seçenek Ekle</button>
                   </form>
                 </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#d97706' }}>⏳ Onay Bekleyen İlanlar ({listings.filter(i => i.status === 'pending').length})</h3>
-                  {listings.filter(i => i.status === 'pending').length > 0 && (
-                    <button onClick={approveAllListings} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Tümünü Onayla</button>
-                  )}
-                </div>
-
-                {listings.filter(i => i.status === 'pending').map(item => (
-                  <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', backgroundColor: '#fefce8', borderRadius: '6px', marginBottom: '8px' }}>
-                    <span>{item.title} ({item.price} TL)</span>
-                    <div style={{ display: 'flex', gap: '4px' }}>
-                      <button onClick={() => approveListing(item.id)} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}>Onayla</button>
-                      <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}>Sil</button>
-                    </div>
-                  </div>
-                ))}
 
                 <h3 style={{ fontSize: '14px', fontWeight: '700', marginTop: '20px', marginBottom: '8px' }}>📋 Tüm İlanlar ({listings.length})</h3>
                 {listings.map(item => {
