@@ -126,7 +126,7 @@ export default function App() {
     isFeatured: false
   });
 
-  // ⚡ OTOMATİK SEO ETİKETİ ÜRETİCİ FONKSİYON
+  // Otomatik SEO Üretici Fonksiyon
   const generateAutoSeoTags = (title, category, subCategory, location) => {
     const cleanWords = (str) => str ? str.toLowerCase().replace(/[^a-zğüşıöç0-9\s]/g, '').split(/\s+/).filter(w => w.length > 2) : [];
     const titleWords = cleanWords(title).slice(0, 4).join(', ');
@@ -145,7 +145,6 @@ export default function App() {
       if (res.ok) {
         const data = await res.json();
         if (data && data.length > 0) {
-          // Gelen ilanlara dinamik olarak eksikse otomatik SEO etiketi ekleyelim
           const enhancedData = data.map(item => ({
             ...item,
             seoTags: item.seoTags || generateAutoSeoTags(item.title, item.category, item.subCategory, item.location)
@@ -270,11 +269,11 @@ export default function App() {
       return;
     }
 
-    // ⚡ EĞER SEO KUTUSU BOŞSA OTOMATİK OLUŞTUR
     const finalSeoTags = form.seoTags.trim() 
       ? sanitizeInput(form.seoTags) 
       : generateAutoSeoTags(form.title, form.category, form.subCategory, form.location);
 
+    // ⚡ YALNIZCA VERİTABANINDA KESİN OLARAK BULUNAN KOLONLAR GÖNDERİLİYOR (Hata almamak için isFeatured kaldırıldı)
     const newEntry = {
       title: sanitizeInput(form.title),
       price: Number(form.price),
@@ -285,8 +284,7 @@ export default function App() {
       seller: sanitizeInput(form.seller),
       phone: sanitizeInput(form.phone),
       image: form.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
-      status: 'pending',
-      isFeatured: false
+      status: 'pending'
     };
 
     try {
@@ -328,8 +326,7 @@ export default function App() {
       seller: 'Can İnce',
       phone: '0535 768 1550',
       image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
-      status: 'approved',
-      isFeatured: true
+      status: 'approved'
     };
 
     try {
@@ -600,7 +597,6 @@ export default function App() {
 
         {activeTab === 'home' && (
           <div>
-            {/* REKLAM VER KUTUCUĞU */}
             <div style={{ backgroundColor: '#ecfdf5', border: '1.5px dashed #10b981', borderRadius: '12px', padding: '14px 16px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <div style={{ backgroundColor: '#d1fae5', padding: '8px', borderRadius: '8px', color: '#059669', flexShrink: 0 }}>
@@ -621,7 +617,6 @@ export default function App() {
               </a>
             </div>
 
-            {/* VİTRİN İLANLARI BÖLÜMÜ */}
             {featuredListings.length > 0 && (
               <div style={{ marginBottom: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', fontWeight: '800', fontSize: '14px', color: '#854d0e' }}>
@@ -716,7 +711,6 @@ export default function App() {
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '4px' }}>{Number(selectedListing.price).toLocaleString('tr-TR')} TL</div>
             <p style={{ color: '#475569', fontSize: '13px', marginBottom: '12px', lineHeight: '1.5' }}>{selectedListing.description}</p>
              
-            {/* OTOMATİK OLUŞTURULAN VEYA KAYITLI SEO ETİKETLERİ */}
             <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '10px 12px', marginBottom: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '700', color: '#166534', marginBottom: '6px' }}>
                 <Tag size={12} /> Arama & Otomatik SEO Etiketleri
@@ -730,7 +724,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* SOSYAL MEDYA PAYLAŞ BUTONLARI */}
             <div style={{ marginBottom: '16px' }}>
               <div style={{ fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>📤 Bu İlanı Paylaş:</div>
               <div style={{ display: 'flex', gap: '8px' }}>
@@ -821,7 +814,7 @@ export default function App() {
             ) : (
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                  <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>🛡️️ Tam Kontrol Paneli</h2>
+                  <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>🛡 Tam Kontrol Paneli</h2>
                   <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer' }}>Çıkış</button>
                 </div>
 
@@ -862,7 +855,6 @@ export default function App() {
                   </div>
                 )}
 
-                {/* YENİ ANA KATEGORİ EKLEME & SİLME BÖLÜMÜ */}
                 <div style={{ backgroundColor: '#f0fdf4', padding: '12px', borderRadius: '8px', border: '1px solid #bbf7d0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 8px 0' }}>📁 Ana Kategori Ekle / Sil</h3>
                   <form onSubmit={handleAddNewMainCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '10px' }}>
@@ -949,12 +941,10 @@ export default function App() {
         </div>
       </footer>
 
-      {/* SAĞ ALT KÖŞE: YÖNETİM PANELİ BUTONU */}
       <button onClick={() => changeTab('admin-page')} title="Yönetim Paneli" style={{ position: 'fixed', bottom: '20px', right: '20px', backgroundColor: '#1b3a2b', color: '#86efac', border: '2px solid #22c55e', borderRadius: '50%', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 999 }}>
         ⚙️
       </button>
 
-      {/* SAĞ ALT KÖŞE: KULAKLIKLI CANLI DESTEK ASİSTANI */}
       <div style={{ position: 'fixed', bottom: '76px', right: '20px', zIndex: 1000 }}>
         {!isChatOpen ? (
           <div onClick={() => setIsChatOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#ffffff', padding: '6px 12px 6px 6px', borderRadius: '30px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', border: '2px solid #22c55e', cursor: 'pointer' }}>
