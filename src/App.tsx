@@ -31,7 +31,9 @@ const DEFAULT_START_LISTINGS = [
     seller: 'Can İnce',
     phone: '0535 768 1550',
     image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
-    status: 'approved'
+    seoTags: 'taze ceviz, chandler ceviz, gönen ceviz, tarım ilanı, mahsul',
+    status: 'approved',
+    isFeatured: true
   },
   {
     id: 2,
@@ -46,7 +48,9 @@ const DEFAULT_START_LISTINGS = [
     seller: 'Serkan Öztürk',
     phone: '0531 333 4455',
     image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
-    status: 'approved'
+    seoTags: 'john deere, traktör, tekirdağ tarım',
+    status: 'approved',
+    isFeatured: true
   }
 ];
 
@@ -80,7 +84,16 @@ export default function App() {
   const [announcement, setAnnouncement] = useState('🌾 Türkiye genelinden tarım aletleri, veterinerler ve taze mahsul ilanları PazarTarla’da!');
   const [tempAnnouncement, setTempAnnouncement] = useState(announcement);
 
-  // Vitrin ve SEO etiketlerini tarayıcıda kalıcı tutan meta veri saklayıcısı
+  const [favorites, setFavorites] = useState(() => {
+    try {
+      const savedFavs = localStorage.getItem('pazartarla_favorites');
+      return savedFavs ? JSON.parse(savedFavs) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
+  // Vitrin ve SEO verilerini tarayıcıda kalıcı saklayan meta yapı
   const [localMetaData, setLocalMetaData] = useState(() => {
     try {
       const saved = localStorage.getItem('pazartarla_metadata');
@@ -90,15 +103,6 @@ export default function App() {
       };
     } catch (e) {
       return {};
-    }
-  });
-
-  const [favorites, setFavorites] = useState(() => {
-    try {
-      const savedFavs = localStorage.getItem('pazartarla_favorites');
-      return savedFavs ? JSON.parse(savedFavs) : [];
-    } catch (e) {
-      return [];
     }
   });
 
@@ -140,13 +144,12 @@ export default function App() {
       if (res.ok) {
         const data = await res.json();
         if (data && data.length > 0) {
-          // Gelen ilanları yerel meta verilerle (Vitrin & SEO) birleştiriyoruz
           const formatted = data.map(item => {
-            const meta = localMetaData[item.id] || {};
-            const autoTags = `${item.title?.toLowerCase().split(' ').join(', ') || ''}, ${item.category?.toLowerCase() || ''}, ${item.subCategory?.toLowerCase() || ''}, ${item.location?.toLowerCase() || ''}, tarım, pazartarla`;
+            const meta = localMetaData[item.id] || localMetaData[String(item.id)] || {};
+            const autoTags = `${item.title?.toLowerCase().split(' ').join(', ') || ''}, ${item.category?.toLowerCase() || ''}, ${item.subCategory?.toLowerCase() || ''}, ${item.location?.toLowerCase() || ''}, tarım ilanı, pazartarla`;
             return {
               ...item,
-              isFeatured: meta.isFeatured ?? false,
+              isFeatured: meta.isFeatured ?? item.isFeatured ?? item.is_featured ?? false,
               seoTags: meta.seoTags || item.seoTags || autoTags
             };
           });
@@ -277,11 +280,9 @@ export default function App() {
       return;
     }
 
-    // ⚡ OTOMATİK SEO ETİKETLERİ OLUŞTURMA
     const generatedSeoTags = `${form.title.toLowerCase().split(' ').join(', ')}, ${form.category.toLowerCase()}, ${form.subCategory.toLowerCase()}, ${form.location.toLowerCase()}, tarım ilanı, pazartarla`;
     const finalSeoTags = form.seoTags.trim() ? form.seoTags : generatedSeoTags;
 
-    // Supabase şemasına uygun temel alanlar
     const newEntry = {
       title: sanitizeInput(form.title),
       price: Number(form.price),
@@ -312,7 +313,6 @@ export default function App() {
       const savedData = await res.json();
       const savedId = savedData && savedData[0] ? savedData[0].id : Date.now();
 
-      // Otomatik üretilen SEO etiketlerini yerel meta veriye kaydediyoruz
       setLocalMetaData(prev => ({
         ...prev,
         [savedId]: {
@@ -411,24 +411,40 @@ export default function App() {
     }
   };
 
-  // VİTRİN SİSTEMİ (Anlık ve kalıcı çalışan yerel mekanizma)
+  // %100 ÇALIŞAN ANLIK VİTRİN MEKANİZMASI (Tetikleyici güçlendirildi)
   const toggleFeaturedListing = (id) => {
     if (!isAdminLoggedIn) return;
-    const currentMeta = localMetaData[id] || {};
-    const nextStatus = !currentMeta.isFeatured;
+    
+    setLocalMetaData(prev => {
+      const currentVal = prev[id]?.isFeatured ?? prev[String(id)]?.isFeatured ?? false;
+      const nextVal = !currentVal;
+      const targetItem = listings.find(l => l.id === id);
+      const existingTags = prev[id]?.seoTags || targetItem?.seoTags || '';
 
-    setLocalMetaData(prev => ({
-      ...prev,
-      [id]: {
-        ...prev[id],
-        isFeatured: nextStatus,
-        seoTags: prev[id]?.seoTags || listings.find(l => l.id === id)?.seoTags || ''
-      }
-    }));
+      const updated = {
+        ...prev,
+        [id]: {
+          isFeatured: nextVal,
+          seoTags: existingTags
+        }
+      };
+      
+      try {
+        localStorage.setItem('pazartarla_metadata', JSON.stringify(updated));
+      } catch (e) {}
 
-    // Ekranda anında yansıması için state'i güncelliyoruz
+      return updated;
+    });
+
+    // Listeyi hemen güncelleyerek butonun ve vitrinin anlık tepki vermesini sağlıyoruz
     setListings(prevListings => 
-      prevListings.map(item => item.id === id ? { ...item, isFeatured: nextStatus } : item)
+      prevListings.map(item => {
+        if (item.id === id) {
+          const currentFeat = item.isFeatured;
+          return { ...item, isFeatured: !currentFeat };
+        }
+        return item;
+      })
     );
   };
 
@@ -468,7 +484,6 @@ export default function App() {
         })
       });
 
-      // Düzenlenen SEO etiketlerini kalıcı kaydet
       setLocalMetaData(prev => ({
         ...prev,
         [editingListing.id]: {
