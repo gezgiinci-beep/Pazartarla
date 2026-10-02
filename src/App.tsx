@@ -31,7 +31,6 @@ const DEFAULT_START_LISTINGS = [
     seller: 'Can İnce',
     phone: '0535 768 1550',
     image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
-    images: ['https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800'],
     status: 'approved'
   },
   {
@@ -47,7 +46,6 @@ const DEFAULT_START_LISTINGS = [
     seller: 'Serkan Öztürk',
     phone: '0531 333 4455',
     image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
-    images: ['https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800'],
     status: 'approved'
   }
 ];
@@ -91,7 +89,7 @@ export default function App() {
     }
   });
 
-  // Vitrin, Çoklu Fotoğraf ve SEO Meta Verilerini Tarayıcıda Kalıcı Saklayan Yapı
+  // ⚡ Vitrin, Çoklu Fotoğraf ve SEO Verilerini Tarayıcıda Kalıcı Saklayan Yapı
   const [localMetaData, setLocalMetaData] = useState(() => {
     try {
       const saved = localStorage.getItem('pazartarla_metadata');
@@ -119,7 +117,7 @@ export default function App() {
 
   const [customCategoryInput, setCustomCategoryInput] = useState('');
 
-  // İlan Verme Form State (En fazla 10 fotoğraf destekli)
+  // ⚡ En fazla 10 fotoğraf destekli ilan verme formu
   const [form, setForm] = useState({
     title: '',
     price: '',
@@ -248,7 +246,7 @@ export default function App() {
     });
   };
 
-  // ⚡ EN FAZLA 10 FOTOĞRAF YÜKLEME (İlan Verme Formu)
+  // ⚡ En fazla 10 fotoğraf yükleme (İlan Verme)
   const handleMultipleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
@@ -286,7 +284,7 @@ export default function App() {
     }));
   };
 
-  // ⚡ EN FAZLA 10 FOTOĞRAF YÜKLEME (Düzenleme Formu)
+  // ⚡ En fazla 10 fotoğraf yükleme (Düzenleme)
   const handleEditMultipleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
@@ -324,7 +322,6 @@ export default function App() {
     }));
   };
 
-  // İlan Ekleme (Supabase uyumlu saf veri gönderimi + local meta kayıt)
   const handleDirectAdd = async (e) => {
     e.preventDefault();
     if (!form.title.trim() || !form.price || !form.phone.trim() || !form.seller.trim()) {
@@ -467,7 +464,7 @@ export default function App() {
     }
   };
 
-  // ⚡ ANLIK VE SORUNSUZ VİTRİN SİSTEMİ
+  // ⚡ Anlık ve sorunsuz vitrin mekanizması (Lokal hafıza tabanlı)
   const toggleFeaturedListing = (id) => {
     if (!isAdminLoggedIn) return;
     
@@ -838,7 +835,7 @@ export default function App() {
               )}
             </div>
 
-            {/* ÇOKLU FOTOĞRAF GALERİSİ */}
+            {/* Çoklu Fotoğraf Galerisi */}
             {selectedListing.images && selectedListing.images.length > 0 ? (
               <div>
                 <img src={selectedListing.images[0]} alt={selectedListing.title} style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '8px', marginBottom: '8px' }} />
@@ -867,7 +864,7 @@ export default function App() {
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '4px' }}>{Number(selectedListing.price).toLocaleString('tr-TR')} TL</div>
             <p style={{ color: '#475569', fontSize: '13px', marginBottom: '12px', lineHeight: '1.5' }}>{selectedListing.description}</p>
             
-            {/* OTOMATİK SEO ETİKETLERİ BÖLÜMÜ */}
+            {/* Otomatik SEO Etiketleri */}
             <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '10px 12px', marginBottom: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '700', color: '#166534', marginBottom: '6px' }}>
                 <Tag size={12} /> Otomatik Arama & SEO Etiketleri
@@ -881,7 +878,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* SOSYAL MEDYA PAYLAŞ BUTONLARI */}
+            {/* Sosyal Medya Paylaş */}
             <div style={{ marginBottom: '16px' }}>
               <div style={{ fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>📤 Bu İlanı Paylaş:</div>
               <div style={{ display: 'flex', gap: '8px' }}>
@@ -946,7 +943,7 @@ export default function App() {
               
               <input type="text" name="seoTags" placeholder="Özel SEO Etiketleri (Boş bırakırsanız otomatik üretilir)" value={form.seoTags} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
 
-              {/* ⚡ 10 ADETE KADAR ÇOKLU FOTOĞRAF YÜKLEME ALANI */}
+              {/* ⚡ 10 Adete Kadar Çoklu Fotoğraf Yükleme Alanı */}
               <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>📷 Fotoğraf Yükle (En Fazla 10 Adet - Seçili: {form.images.length}/10)</label>
                 <input type="file" accept="image/*" multiple onChange={handleMultipleImageUpload} style={{ width: '100%', fontSize: '12px' }} />
@@ -1035,7 +1032,7 @@ export default function App() {
                   </div>
                 )}
 
-                {/* YENİ ANA KATEGORİ EKLEME & SİLME BÖLÜMÜ */}
+                {/* Ana Kategori Yönetimi */}
                 <div style={{ backgroundColor: '#f0fdf4', padding: '12px', borderRadius: '8px', border: '1px solid #bbf7d0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 8px 0' }}>📁 Ana Kategori Ekle / Sil</h3>
                   <form onSubmit={handleAddNewMainCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '10px' }}>
@@ -1122,12 +1119,12 @@ export default function App() {
         </div>
       </footer>
 
-      {/* SAĞ ALT KÖŞE: YÖNETİM PANELİ BUTONU */}
+      {/* Sağ Alt Köşe: Yönetim Paneli Butonu */}
       <button onClick={() => changeTab('admin-page')} title="Yönetim Paneli" style={{ position: 'fixed', bottom: '20px', right: '20px', backgroundColor: '#1b3a2b', color: '#86efac', border: '2px solid #22c55e', borderRadius: '50%', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 999 }}>
         ⚙️
       </button>
 
-      {/* SAĞ ALT KÖŞE: KULAKLIKLI CANLI DESTEK ASİSTANI */}
+      {/* Sağ Alt Köşe: Canlı Destek Asistanı */}
       <div style={{ position: 'fixed', bottom: '76px', right: '20px', zIndex: 1000 }}>
         {!isChatOpen ? (
           <div onClick={() => setIsChatOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#ffffff', padding: '6px 12px 6px 6px', borderRadius: '30px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', border: '2px solid #22c55e', cursor: 'pointer' }}>
