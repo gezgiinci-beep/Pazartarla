@@ -31,7 +31,10 @@ const DEFAULT_START_LISTINGS = [
     seller: 'Can İnce',
     phone: '0535 768 1550',
     image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800',
-    status: 'approved'
+    images: ['https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800'],
+    seoTags: 'taze ceviz, chandler ceviz, gönen ceviz, tarım ilanı, mahsul',
+    status: 'approved',
+    isFeatured: true
   },
   {
     id: 2,
@@ -46,7 +49,10 @@ const DEFAULT_START_LISTINGS = [
     seller: 'Serkan Öztürk',
     phone: '0531 333 4455',
     image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800',
-    status: 'approved'
+    images: ['https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800'],
+    seoTags: 'john deere, traktör, tekirdağ tarım',
+    status: 'approved',
+    isFeatured: true
   }
 ];
 
@@ -80,7 +86,16 @@ export default function App() {
   const [announcement, setAnnouncement] = useState('🌾 Türkiye genelinden tarım aletleri, veterinerler ve taze mahsul ilanları PazarTarla’da!');
   const [tempAnnouncement, setTempAnnouncement] = useState(announcement);
 
-  // Vitrin ve SEO etiketlerini tarayıcıda kalıcı tutan meta veri saklayıcısı
+  const [favorites, setFavorites] = useState(() => {
+    try {
+      const savedFavs = localStorage.getItem('pazartarla_favorites');
+      return savedFavs ? JSON.parse(savedFavs) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
+  // Vitrin, Çoklu Fotoğraf ve SEO Etiketlerini Tarayıcıda Saklayan Kalıcı Meta Veri Sistemi
   const [localMetaData, setLocalMetaData] = useState(() => {
     try {
       const saved = localStorage.getItem('pazartarla_metadata');
@@ -90,15 +105,6 @@ export default function App() {
       };
     } catch (e) {
       return {};
-    }
-  });
-
-  const [favorites, setFavorites] = useState(() => {
-    try {
-      const savedFavs = localStorage.getItem('pazartarla_favorites');
-      return savedFavs ? JSON.parse(savedFavs) : [];
-    } catch (e) {
-      return [];
     }
   });
 
@@ -127,7 +133,7 @@ export default function App() {
     description: '',
     seller: '',
     phone: '',
-    image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
+    images: ['https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800'],
     seoTags: '',
     status: 'pending'
   });
@@ -140,14 +146,15 @@ export default function App() {
       if (res.ok) {
         const data = await res.json();
         if (data && data.length > 0) {
-          // Gelen ilanları yerel meta verilerle (Vitrin & SEO) birleştiriyoruz
           const formatted = data.map(item => {
             const meta = localMetaData[item.id] || {};
-            const autoTags = `${item.title?.toLowerCase().split(' ').join(', ') || ''}, ${item.category?.toLowerCase() || ''}, ${item.subCategory?.toLowerCase() || ''}, ${item.location?.toLowerCase() || ''}, tarım, pazartarla`;
+            const generatedSeo = `${item.title?.toLowerCase().split(' ').join(', ') || ''}, ${item.category?.toLowerCase() || ''}, ${item.subCategory?.toLowerCase() || ''}, ${item.location?.toLowerCase() || ''}, tarım ilanı, pazartarla`;
             return {
               ...item,
+              images: meta.images || (item.image ? [item.image] : ['https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800']),
+              image: item.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
               isFeatured: meta.isFeatured ?? false,
-              seoTags: meta.seoTags || item.seoTags || autoTags
+              seoTags: meta.seoTags || item.seoTags || generatedSeo
             };
           });
           setListings(formatted);
@@ -168,7 +175,7 @@ export default function App() {
     };
   }, []);
 
-  // Meta veriler her değiştiğinde tarayıcıya kaydet
+  // Meta veriler (Vitrin & SEO) her değiştiğinde tarayıcıya kalıcı kaydet
   useEffect(() => {
     try {
       localStorage.setItem('pazartarla_metadata', JSON.stringify(localMetaData));
@@ -244,30 +251,80 @@ export default function App() {
     });
   };
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
+  // 10 Adete Kadar Çoklu Fotoğraf Yükleme (Add Form)
+  const handleMultipleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    const currentCount = form.images.length;
+    if (currentCount + files.length > 10) {
+      alert('En fazla 10 adet fotoğraf yükleyebilirsiniz!');
+      return;
+    }
+
+    let loadedCount = 0;
+    const newImages = [...form.images];
+
+    files.forEach(file => {
       if (file.size > 2 * 1024 * 1024) {
-        alert('Dosya boyutu 2 MB sınırını aşamaz!');
+        alert(`"${file.name}" 2 MB sınırını aştığı için eklenmedi.`);
         return;
       }
       const reader = new FileReader();
-      reader.onloadend = () => setForm(prev => ({ ...prev, image: reader.result }));
+      reader.onloadend = () => {
+        newImages.push(reader.result);
+        loadedCount++;
+        if (loadedCount === files.length || newImages.length <= 10) {
+          setForm(prev => ({ ...prev, images: newImages.slice(0, 10) }));
+        }
+      };
       reader.readAsDataURL(file);
-    }
+    });
   };
 
-  const handleEditImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
+  const removeFormImage = (index) => {
+    setForm(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
+  };
+
+  // 10 Adete Kadar Çoklu Fotoğraf Yükleme (Edit Form)
+  const handleEditMultipleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    const currentCount = (editingListing.images || []).length;
+    if (currentCount + files.length > 10) {
+      alert('En fazla 10 adet fotoğraf yükleyebilirsiniz!');
+      return;
+    }
+
+    let loadedCount = 0;
+    const newImages = [...(editingListing.images || [])];
+
+    files.forEach(file => {
       if (file.size > 2 * 1024 * 1024) {
-        alert('Dosya boyutu 2 MB sınırını aşamaz!');
+        alert(`"${file.name}" 2 MB sınırını aştığı için eklenmedi.`);
         return;
       }
       const reader = new FileReader();
-      reader.onloadend = () => setEditingListing(prev => ({ ...prev, image: reader.result }));
+      reader.onloadend = () => {
+        newImages.push(reader.result);
+        loadedCount++;
+        if (loadedCount === files.length || newImages.length <= 10) {
+          setEditingListing(prev => ({ ...prev, images: newImages.slice(0, 10) }));
+        }
+      };
       reader.readAsDataURL(file);
-    }
+    });
+  };
+
+  const removeEditImage = (index) => {
+    setEditingListing(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
   };
 
   const handleDirectAdd = async (e) => {
@@ -277,11 +334,12 @@ export default function App() {
       return;
     }
 
-    // ⚡ OTOMATİK SEO ETİKETLERİ OLUŞTURMA
+    // ⚡ OTOMATİK SEO ETİKETLERİ ÜRETİMİ
     const generatedSeoTags = `${form.title.toLowerCase().split(' ').join(', ')}, ${form.category.toLowerCase()}, ${form.subCategory.toLowerCase()}, ${form.location.toLowerCase()}, tarım ilanı, pazartarla`;
     const finalSeoTags = form.seoTags.trim() ? form.seoTags : generatedSeoTags;
 
-    // Supabase şemasına uygun temel alanlar
+    const primaryImage = (form.images && form.images[0]) || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800';
+
     const newEntry = {
       title: sanitizeInput(form.title),
       price: Number(form.price),
@@ -291,7 +349,7 @@ export default function App() {
       description: sanitizeInput(form.description),
       seller: sanitizeInput(form.seller),
       phone: sanitizeInput(form.phone),
-      image: form.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800',
+      image: primaryImage,
       status: 'pending'
     };
 
@@ -312,10 +370,11 @@ export default function App() {
       const savedData = await res.json();
       const savedId = savedData && savedData[0] ? savedData[0].id : Date.now();
 
-      // Otomatik üretilen SEO etiketlerini yerel meta veriye kaydediyoruz
+      // Meta verilere (fotoğraflar ve SEO) kaydet
       setLocalMetaData(prev => ({
         ...prev,
         [savedId]: {
+          images: form.images,
           seoTags: finalSeoTags,
           isFeatured: false
         }
@@ -325,6 +384,7 @@ export default function App() {
       setLastAddedListing({
         ...newEntry,
         id: savedId,
+        images: form.images,
         seoTags: finalSeoTags
       });
       changeTab('success-wa');
@@ -364,6 +424,7 @@ export default function App() {
         setLocalMetaData(prev => ({
           ...prev,
           [newId]: {
+            images: ['https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800'],
             seoTags: 'new holland, traktör, balıkesir tarım, ikinci el traktör',
             isFeatured: true
           }
@@ -411,22 +472,26 @@ export default function App() {
     }
   };
 
-  // VİTRİN SİSTEMİ (Anlık ve kalıcı çalışan yerel mekanizma)
+  // VİTRİN SİSTEMİ (Anlık ve kalıcı çalışan yerel meta güncelleme)
   const toggleFeaturedListing = (id) => {
     if (!isAdminLoggedIn) return;
     const currentMeta = localMetaData[id] || {};
-    const nextStatus = !currentMeta.isFeatured;
+    const currentFeat = currentMeta.isFeatured || false;
+    const nextStatus = !currentFeat;
+
+    const targetItem = listings.find(l => l.id === id);
 
     setLocalMetaData(prev => ({
       ...prev,
       [id]: {
         ...prev[id],
         isFeatured: nextStatus,
-        seoTags: prev[id]?.seoTags || listings.find(l => l.id === id)?.seoTags || ''
+        images: prev[id]?.images || (targetItem?.images || [targetItem?.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800']),
+        seoTags: prev[id]?.seoTags || targetItem?.seoTags || ''
       }
     }));
 
-    // Ekranda anında yansıması için state'i güncelliyoruz
+    // Hemen state'i güncelle ki ekranda buton ve vitrin şeridi anında değişsin
     setListings(prevListings => 
       prevListings.map(item => item.id === id ? { ...item, isFeatured: nextStatus } : item)
     );
@@ -440,6 +505,7 @@ export default function App() {
     }
     setEditingListing({
       ...item,
+      images: item.images || (item.image ? [item.image] : []),
       seoTags: item.seoTags || ''
     });
     changeTab('admin-page');
@@ -452,6 +518,8 @@ export default function App() {
     e.preventDefault();
     if (!isAdminLoggedIn) return;
 
+    const primaryImage = (editingListing.images && editingListing.images[0]) || editingListing.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800';
+
     try {
       await fetch(`${SUPABASE_URL}/rest/v1/listings?id=eq.${editingListing.id}`, {
         method: 'PATCH',
@@ -463,16 +531,17 @@ export default function App() {
           subCategory: editingListing.subCategory,
           location: sanitizeInput(editingListing.location),
           description: sanitizeInput(editingListing.description),
-          image: editingListing.image,
+          image: primaryImage,
           status: 'approved'
         })
       });
 
-      // Düzenlenen SEO etiketlerini kalıcı kaydet
+      // Fotoğrafları ve SEO etiketlerini kalıcı olarak güncelle
       setLocalMetaData(prev => ({
         ...prev,
         [editingListing.id]: {
           ...prev[editingListing.id],
+          images: editingListing.images,
           seoTags: editingListing.seoTags
         }
       }));
@@ -673,13 +742,16 @@ export default function App() {
                   <Star size={16} fill="#eab308" color="#eab308" /> Vitrin İlanları
                 </div>
                 <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '4px' }}>
-                  {featuredListings.map(item => (
-                    <div key={`feat-${item.id}`} onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ minWidth: '160px', maxWidth: '160px', backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #fde047', cursor: 'pointer', overflow: 'hidden', flexShrink: 0, padding: '8px' }}>
-                      <img src={item.image} alt={item.title} style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '6px', marginBottom: '6px' }} />
-                      <div style={{ fontSize: '12px', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</div>
-                      <div style={{ fontSize: '13px', fontWeight: '800', color: '#1b3a2b', marginTop: '2px' }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
-                    </div>
-                  ))}
+                  {featuredListings.map(item => {
+                    const displayImg = (item.images && item.images[0]) || item.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800';
+                    return (
+                      <div key={`feat-${item.id}`} onClick={() => { setSelectedListing({ ...item, images: item.images || [displayImg] }); changeTab('detail'); }} style={{ minWidth: '160px', maxWidth: '160px', backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #fde047', cursor: 'pointer', overflow: 'hidden', flexShrink: 0, padding: '8px' }}>
+                        <img src={displayImg} alt={item.title} style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '6px', marginBottom: '6px' }} />
+                        <div style={{ fontSize: '12px', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</div>
+                        <div style={{ fontSize: '13px', fontWeight: '800', color: '#1b3a2b', marginTop: '2px' }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -732,16 +804,19 @@ export default function App() {
               <span>{filteredListings.length} sonuç</span>
             </div>
 
-            {filteredListings.map(item => (
-              <div key={item.id} onClick={() => { setSelectedListing(item); changeTab('detail'); }} style={{ backgroundColor: '#fff', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer', display: 'flex', gap: '10px', padding: '10px', marginBottom: '10px' }}>
-                <img src={item.image} alt={item.title} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '8px' }} />
-                <div style={{ flex: 1 }}>
-                  <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: '700' }}>{item.title}</h4>
-                  <div style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b' }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
-                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>📍 {item.location}</div>
+            {filteredListings.map(item => {
+              const displayImg = (item.images && item.images[0]) || item.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800';
+              return (
+                <div key={item.id} onClick={() => { setSelectedListing({ ...item, images: item.images || [displayImg] }); changeTab('detail'); }} style={{ backgroundColor: '#fff', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer', display: 'flex', gap: '10px', padding: '10px', marginBottom: '10px' }}>
+                  <img src={displayImg} alt={item.title} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '8px' }} />
+                  <div style={{ flex: 1 }}>
+                    <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: '700' }}>{item.title}</h4>
+                    <div style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b' }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
+                    <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>📍 {item.location}</div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -756,7 +831,31 @@ export default function App() {
               )}
             </div>
 
-            <img src={selectedListing.image} alt={selectedListing.title} style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '8px', marginBottom: '10px' }} />
+            {/* ÇOKLU FOTOĞRAF GALERİSİ */}
+            {selectedListing.images && selectedListing.images.length > 0 ? (
+              <div>
+                <img src={selectedListing.images[0]} alt={selectedListing.title} style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '8px', marginBottom: '8px' }} />
+                {selectedListing.images.length > 1 && (
+                  <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', marginBottom: '12px', paddingBottom: '4px' }}>
+                    {selectedListing.images.map((imgUrl, idx) => (
+                      <img 
+                        key={idx} 
+                        src={imgUrl} 
+                        alt={`Galeri ${idx}`} 
+                        onClick={() => {
+                          const updatedImgs = [imgUrl, ...selectedListing.images.filter((_, i) => i !== idx)];
+                          setSelectedListing({ ...selectedListing, images: updatedImgs });
+                        }} 
+                        style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px', cursor: 'pointer', border: idx === 0 ? '2px solid #22c55e' : '1px solid #cbd5e1', flexShrink: 0 }} 
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <img src={selectedListing.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800'} alt={selectedListing.title} style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '8px', marginBottom: '10px' }} />
+            )}
+
             <h2 style={{ fontSize: '18px', fontWeight: '800', margin: '8px 0' }}>{selectedListing.title}</h2>
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '4px' }}>{Number(selectedListing.price).toLocaleString('tr-TR')} TL</div>
             <p style={{ color: '#475569', fontSize: '13px', marginBottom: '12px', lineHeight: '1.5' }}>{selectedListing.description}</p>
@@ -840,10 +939,21 @@ export default function App() {
               
               <input type="text" name="seoTags" placeholder="Özel SEO Etiketleri (Boş bırakırsanız otomatik üretilir)" value={form.seoTags} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
 
-              <div style={{ backgroundColor: '#f8fafc', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>📷 Fotoğraf Yükle (Dosya Seç veya URL Yapıştır)</label>
-                <input type="file" accept="image/*" onChange={handleImageUpload} style={{ width: '100%', fontSize: '12px' }} />
-                <input type="text" name="image" placeholder="Veya Görsel URL'si yapıştır (https://...)" value={form.image.startsWith('data:') ? '' : form.image} onChange={handleFormChange} style={{ width: '100%', padding: '8px', fontSize: '12px', borderRadius: '4px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+              {/* 10 ADETE KADAR ÇOKLU FOTOĞRAF YÜKLEME ALANI */}
+              <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>📷 Fotoğraf Yükle (En Fazla 10 Adet - Seçili: {form.images.length}/10)</label>
+                <input type="file" accept="image/*" multiple onChange={handleMultipleImageUpload} style={{ width: '100%', fontSize: '12px' }} />
+                
+                {form.images.length > 0 && (
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
+                    {form.images.map((imgSrc, idx) => (
+                      <div key={idx} style={{ position: 'relative', width: '60px', height: '60px' }}>
+                        <img src={imgSrc} alt={`Önizleme ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                        <button type="button" onClick={() => removeFormImage(idx)} style={{ position: 'absolute', top: '-4px', right: '-4px', backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: '50%', width: '18px', height: '18px', fontSize: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <textarea name="description" placeholder="Açıklama..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px' }} />
@@ -894,9 +1004,19 @@ export default function App() {
                       <input type="text" name="seoTags" value={editingListing.seoTags || ''} onChange={handleEditFormChange} placeholder="SEO Etiketleri (virgülle ayırın)" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       
                       <div style={{ backgroundColor: '#fff', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        <label style={{ fontSize: '11px', fontWeight: '700', color: '#475569' }}>📷 Fotoğrafı Değiştir (Dosya veya URL)</label>
-                        <input type="file" accept="image/*" onChange={handleEditImageUpload} style={{ width: '100%', fontSize: '11px' }} />
-                        <input type="text" name="image" placeholder="Veya Görsel URL'si yapıştır" value={editingListing.image.startsWith('data:') ? '' : editingListing.image} onChange={handleEditFormChange} style={{ width: '100%', padding: '6px', fontSize: '11px', borderRadius: '4px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
+                        <label style={{ fontSize: '11px', fontWeight: '700', color: '#475569' }}>📷 Fotoğrafları Yönet (En Fazla 10 Adet)</label>
+                        <input type="file" accept="image/*" multiple onChange={handleEditMultipleImageUpload} style={{ width: '100%', fontSize: '11px' }} />
+                        
+                        {editingListing.images && editingListing.images.length > 0 && (
+                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
+                            {editingListing.images.map((imgSrc, idx) => (
+                              <div key={idx} style={{ position: 'relative', width: '50px', height: '50px' }}>
+                                <img src={imgSrc} alt={`Düzenle Önizleme ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px', border: '1px solid #cbd5e1' }} />
+                                <button type="button" onClick={() => removeEditImage(idx)} style={{ position: 'absolute', top: '-4px', right: '-4px', backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: '50%', width: '16px', height: '16px', fontSize: '9px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
 
                       <textarea name="description" value={editingListing.description} onChange={handleEditFormChange} placeholder="Açıklama" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '60px' }} />
@@ -973,7 +1093,7 @@ export default function App() {
                         <button onClick={() => toggleFeaturedListing(item.id)} style={{ backgroundColor: isFeat ? '#fef08a' : '#f1f5f9', color: '#854d0e', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>
                           {isFeat ? '⭐ Vitrinde' : '☆ Vitrin Yap'}
                         </button>
-                        <button onClick={() => { setEditingListing(item); if (editFormRef.current) editFormRef.current.scrollIntoView({ behavior: 'smooth' }); }} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Düzenle</button>
+                        <button onClick={() => { setEditingListing({ ...item, images: item.images || [item.image] }); if (editFormRef.current) editFormRef.current.scrollIntoView({ behavior: 'smooth' }); }} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Düzenle</button>
                         <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Sil</button>
                       </div>
                     </div>
