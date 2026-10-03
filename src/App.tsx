@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createClient } from '@supabase/supabase-js';
 
 import {
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus,
@@ -18,7 +19,26 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
     'Content-Type': 'application/json'
     };
 
-    const LISTING_META_MARKER = '\n__PAZARTARLA_META_V1__:';
+    const supabaseClient = SUPABASE_URL && SUPABASE_ANON_KEY
+      ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+      : null;
+
+    const isCurrentUserAdmin = async () => {
+      if (!supabaseClient) return false;
+      const { data, error } = await supabaseClient.rpc('is_listing_admin');
+      if (error) throw error;
+      return data === true;
+    };
+
+    const getAdminDbHeaders = async () => {
+      if (!supabaseClient) throw new Error('Supabase is not configured');
+      const { data, error } = await supabaseClient.auth.getSession();
+      if (error || !data.session) throw new Error('An authenticated admin session is required');
+      if (!(await isCurrentUserAdmin())) throw new Error('This account is not authorized');
+      return { ...dbHeaders, Authorization: 'Bearer ' + data.session.access_token };
+    };
+
+    const LISTING_META_MARKER = '\\n__PAZARTARLA_META_V1__:';
     const DEFAULT_LISTING_IMAGE = 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800';
 
     const parseListingMetadata = (rawValue, image) => {
@@ -128,7 +148,10 @@ export default function App() {
 
   const [selectedListing, setSelectedListing] = useState(null);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+  const [adminEmail, setAdminEmail] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
+  const [adminAuthError, setAdminAuthError] = useState('');
+  const [adminAuthLoading, setAdminAuthLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('Tüm kategoriler');
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
   const [openCategory, setOpenCategory] = useState('');
@@ -187,9 +210,36 @@ export default function App() {
     };
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowSplash(false), 3500);
-    fetchListings();
-    return () => clearTimeout(timer);
+    if (!supabaseClient) return;
+    let active = true;
+    const syncAdminState = async (session) => {
+      if (!session) {
+        if (active) setIsAdminLoggedIn(false);
+        return;
+      }
+      try {
+        const authorized = await isCurrentUserAdmin();
+        if (active) setIsAdminLoggedIn(authorized);
+      } catch (error) {
+        if (active) setIsAdminLoggedIn(false);
+      }
+    };
+
+    supabaseClient.auth.getSession().then(({ data, error }) => {
+      if (error) {
+        if (active) setIsAdminLoggedIn(false);
+        return;
+      }
+      void syncAdminState(data.session);
+    });
+    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((_event, session) => {
+      window.setTimeout(() => { void syncAdminState(session); }, 0);
+    });
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -421,7 +471,7 @@ export default function App() {
       try {
         const response = await fetch(SUPABASE_URL + '/rest/v1/listings?id=eq.' + encodeURIComponent(id), {
           method: 'PATCH',
-          headers: { ...dbHeaders, 'Prefer': 'return=representation' },
+          headers: { ...(await getAdminDbHeaders()), 'Prefer': 'return=representation' },
           body: JSON.stringify({ seotags: serializeListingTags(updatedListing) })
         });
         if (!response.ok) throw new Error('HTTP ' + response.status);
@@ -475,7 +525,7 @@ export default function App() {
       try {
         const response = await fetch(SUPABASE_URL + '/rest/v1/listings?id=eq.' + encodeURIComponent(updatedListing.id), {
           method: 'PATCH',
-          headers: { ...dbHeaders, 'Prefer': 'return=representation' },
+          headers: { ...(await getAdminDbHeaders()), 'Prefer': 'return=representation' },
           body: JSON.stringify({
             title: updatedListing.title,
             price: updatedListing.price,
@@ -510,7 +560,7 @@ export default function App() {
       try {
         const response = await fetch(SUPABASE_URL + '/rest/v1/listings?id=eq.' + encodeURIComponent(id), {
           method: 'DELETE',
-          headers: { ...dbHeaders, 'Prefer': 'return=representation' }
+          headers: { ...(await getAdminDbHeaders()), 'Prefer': 'return=representation' }
         });
         if (!response.ok) throw new Error('HTTP ' + response.status);
         if (response.status !== 204) {
@@ -571,16 +621,42 @@ export default function App() {
     alert('Seçenek silindi!');
   };
 
-  const handleAdminLogin = (e) => {
+  const handleAdminLogin = async (e) => {
     e.preventDefault();
-    const correctCode = '5' + '5' + '3' + '8';
-    if (adminPassword === correctCode) {
-      setIsAdminLoggedIn(true);
-      setAdminPassword('');
-    } else {
-      alert('Hatalı şifre!');
-      setAdminPassword('');
+    setAdminAuthError('');
+    const email = adminEmail.trim().toLowerCase();
+    if (!email || !adminPassword) {
+      setAdminAuthError('E-posta ve parola gerekli.');
+      return;
     }
+    if (!supabaseClient) {
+      setAdminAuthError('Giriş hizmeti yapılandırılmamış.');
+      return;
+    }
+
+    setAdminAuthLoading(true);
+    try {
+      const { error } = await supabaseClient.auth.signInWithPassword({ email, password: adminPassword });
+      if (error) throw error;
+      if (!(await isCurrentUserAdmin())) {
+        await supabaseClient.auth.signOut();
+        throw new Error('Not authorized');
+      }
+      setIsAdminLoggedIn(true);
+    } catch (error) {
+      console.error('Yönetici girişi başarısız.');
+      setIsAdminLoggedIn(false);
+      setAdminAuthError('Giriş başarısız veya bu hesap yönetici olarak yetkilendirilmemiş.');
+    } finally {
+      setAdminPassword('');
+      setAdminAuthLoading(false);
+    }
+  };
+
+  const handleAdminLogout = async () => {
+    if (supabaseClient) await supabaseClient.auth.signOut();
+    setIsAdminLoggedIn(false);
+    setAdminAuthError('');
   };
 
   const approvedListings = listings.filter(item => item.status === 'approved');
@@ -910,15 +986,18 @@ export default function App() {
               <div style={{ maxWidth: '320px', margin: '30px auto', textAlign: 'center' }}>
                 <h2 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '10px' }}>Yönetici Girişi</h2>
                 <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <input type="password" placeholder="Yönetici Şifresi" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', textAlign: 'center' }} />
-                  <button type="submit" style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Giriş Yap</button>
+                  <input type="email" autoComplete="username" placeholder="E-posta adresi" value={adminEmail} onChange={(e) => setAdminEmail(e.target.value)} required style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                  <input type="password" autoComplete="current-password" placeholder="Supabase parolası" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} required style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', textAlign: 'center' }} />
+                  {adminAuthError && <div role="alert" style={{ color: '#b91c1c', fontSize: '12px' }}>{adminAuthError}</div>}
+                  <button type="submit" disabled={adminAuthLoading} style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: adminAuthLoading ? 'wait' : 'pointer', opacity: adminAuthLoading ? 0.7 : 1 }}>{adminAuthLoading ? 'Giriş yapılıyor…' : 'Giriş Yap'}</button>
+                  <p style={{ margin: 0, color: '#64748b', fontSize: '11px' }}>Yalnızca Supabase’te yetkilendirilmiş hesaplar erişebilir.</p>
                 </form>
               </div>
             ) : (
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                   <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>🛡️ Tam Kontrol Paneli</h2>
-                  <button onClick={() => setIsAdminLoggedIn(false)} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer' }}>Çıkış</button>
+                  <button onClick={handleAdminLogout} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer' }}>Çıkış</button>
                 </div>
 
                 <div style={{ backgroundColor: '#fef08a', padding: '12px', borderRadius: '8px', marginBottom: '16px', border: '1px solid #facc15' }}>
