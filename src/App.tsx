@@ -113,7 +113,7 @@ export default function App() {
 
   const fetchListings = async () => {
     try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/listings?select=*`, {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/listings?select=*&status=eq.approved`, {
         headers: dbHeaders
       });
       if (res.ok) {
