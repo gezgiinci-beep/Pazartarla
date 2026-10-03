@@ -9,22 +9,79 @@ import {
 // ==========================================
 // SUPABASE BAĞLANTI AYARLARI
 // ==========================================
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://srbarfjzsfkmglsnmbtw.supabase.co';
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable__8tUtClK2adq_ORRuL5PQ_oft6c';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+    const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-const dbHeaders = {
-  'apikey': SUPABASE_ANON_KEY,
-  'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-  'Content-Type': 'application/json'
-};
+    const dbHeaders = {
+    'apikey': SUPABASE_ANON_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+    'Content-Type': 'application/json'
+    };
 
-const BACKUP_DEFAULT_LISTINGS = [
-  { id: 1, title: 'Tarladan Doğrudan Taze Chandler Ceviz', price: 140, category: 'Mahsuller', subCategory: 'Ceviz', mode: 'Satılık', location: 'Gönen / Balıkesir', amount: '1 Ton', description: 'Kendi bahçemizin ürünü, ilaçsız ve dolgun Chandler ceviz.', seller: 'Can İnce', phone: '0535 768 1550', image: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&q=80&w=800', status: 'approved', isFeatured: true },
-  { id: 2, title: 'Sahibinden Temiz John Deere 5075E Traktör', price: 1250000, category: 'Traktör', subCategory: 'İkinci El Traktör', mode: 'Satılık', location: 'Tekirdağ / Süleymanpaşa', amount: '75 HP', description: 'Kapalı garajda muhafaza edilmiş, bakımlı ve masrafsız tarım traktörü.', seller: 'Serkan Öztürk', phone: '0531 333 4455', image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800', status: 'approved', isFeatured: true },
-  { id: 3, title: 'Organik Sızma Zeytinyağı (5 Lt)', price: 1800, category: 'Mahsuller', subCategory: 'Zeytin & Zeytinyağı', mode: 'Satılık', location: 'Ayvalık / Balıkesir', description: 'Erken hasat soğuk sıkım zeytinyağı.', seller: 'Ahmet Yılmaz', phone: '0532 111 2233', image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&q=80&w=800', status: 'approved' },
-  { id: 4, title: 'New Holland TD100D Tarım Traktörü', price: 1450000, category: 'Traktör', subCategory: 'İkinci El Traktör', mode: 'Satılık', location: 'Gönen / Balıkesir', description: 'Tertemiz, bakımları tam tarla traktörü.', seller: 'Can İnce', phone: '0535 768 1550', image: 'https://images.unsplash.com/photo-1592841202223-ca33cfd81b6f?auto=format&fit=crop&q=80&w=800', status: 'approved' },
-  { id: 5, title: 'Kırma Bal Peteği (Doğlak)', price: 450, category: 'Arıcılık', subCategory: 'Bal', mode: 'Satılık', location: 'Gönen / Balıkesir', description: 'Meşe ormanları çevresindeki kovanlarımızdan doğal petek bal.', seller: 'Can İnce', phone: '0535 768 1550', image: 'https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&q=80&w=800', status: 'approved' }
-];
+    const LISTING_META_MARKER = '\n__PAZARTARLA_META_V1__:';
+    const DEFAULT_LISTING_IMAGE = 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800';
+
+    const parseListingMetadata = (rawValue, image) => {
+    const rawTags = typeof rawValue === 'string' ? rawValue : '';
+    const markerIndex = rawTags.lastIndexOf(LISTING_META_MARKER);
+    let seoTags = rawTags;
+    let metadata = {};
+
+    if (markerIndex >= 0) {
+      try {
+        metadata = JSON.parse(decodeURIComponent(rawTags.slice(markerIndex + LISTING_META_MARKER.length)));
+        seoTags = rawTags.slice(0, markerIndex);
+      } catch (error) {
+        metadata = {};
+      }
+    }
+
+    const fallbackImages = image ? [image] : [DEFAULT_LISTING_IMAGE];
+    const images = Array.isArray(metadata.images)
+      ? metadata.images.filter(value => typeof value === 'string' && value.trim())
+      : fallbackImages;
+
+    return {
+      seoTags: seoTags.trim(),
+      images: images.length ? images : fallbackImages,
+      isFeatured: metadata.isFeatured === true
+    };
+    };
+
+    const normalizeListing = (item) => {
+    const metadata = parseListingMetadata(item.seotags, item.image);
+    const autoTags = [
+      item.title?.toLowerCase().split(' ').join(', ') || '',
+      item.category?.toLowerCase() || '',
+      item.subCategory?.toLowerCase() || '',
+      item.location?.toLowerCase() || '',
+      'tarım ilanı',
+      'pazartarla'
+    ].filter(Boolean).join(', ');
+
+    return {
+      ...item,
+      images: metadata.images,
+      image: metadata.images[0] || item.image || DEFAULT_LISTING_IMAGE,
+      status: item.status || 'approved',
+      isFeatured: metadata.isFeatured,
+      seoTags: metadata.seoTags || autoTags
+    };
+    };
+
+    const serializeListingTags = (item) => {
+    const images = Array.isArray(item.images)
+      ? item.images.filter(value => typeof value === 'string' && value.trim())
+      : [];
+    const savedImages = images.length ? images : (item.image ? [item.image] : []);
+    const metadata = encodeURIComponent(JSON.stringify({
+      images: savedImages,
+      isFeatured: item.isFeatured === true
+    }));
+
+    return String(item.seoTags || '') + LISTING_META_MARKER + metadata;
+    };
+
 
 const FALLBACK_CATEGORIES = {
   'Mahsuller': ['Kiraz', 'Ceviz', 'Zeytin & Zeytinyağı', 'Buğday', 'Bakliyat', 'Meyve & Sebze'],
@@ -51,14 +108,9 @@ export default function App() {
   ]);
   const [chatInput, setChatInput] = useState('');
 
-  const [listings, setListings] = useState(() => {
-    try {
-      const localSaved = localStorage.getItem('pazartarla_all_listings');
-      return localSaved ? JSON.parse(localSaved) : BACKUP_DEFAULT_LISTINGS;
-    } catch (e) {
-      return BACKUP_DEFAULT_LISTINGS;
-    }
-  });
+  const [listings, setListings] = useState([]);
+  const [listingsLoading, setListingsLoading] = useState(true);
+  const [listingsError, setListingsError] = useState('');
 
   const [categoriesWithSubs, setCategoriesWithSubs] = useState(FALLBACK_CATEGORIES);
   const [announcement, setAnnouncement] = useState('🌾 Türkiye genelinden tarım aletleri, veterinerler ve taze mahsul ilanları PazarTarla\'da!');
@@ -73,14 +125,6 @@ export default function App() {
     }
   });
 
-  const [localMetaData, setLocalMetaData] = useState(() => {
-    try {
-      const saved = localStorage.getItem('pazartarla_metadata');
-      return saved ? JSON.parse(saved) : {};
-    } catch (e) {
-      return {};
-    }
-  });
 
   const [selectedListing, setSelectedListing] = useState(null);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
@@ -112,34 +156,35 @@ export default function App() {
   });
 
   const fetchListings = async () => {
-    try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/listings?select=*&status=eq.approved`, {
-        headers: dbHeaders
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data && Array.isArray(data) && data.length > 0) {
-          const formatted = data.map(item => {
-            const meta = localMetaData[item.id] || localMetaData[String(item.id)] || {};
-            const autoTags = `${item.title?.toLowerCase().split(' ').join(', ') || ''}, ${item.category?.toLowerCase() || ''}, ${item.subCategory?.toLowerCase() || ''}, ${item.location?.toLowerCase() || ''}, tarım ilanı, pazartarla`;
-            const itemImages = meta.images || (item.image ? [item.image] : ['https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800']);
-            return {
-              ...item,
-              images: itemImages,
-              image: itemImages[0],
-              status: item.status || 'approved',
-              isFeatured: meta.isFeatured ?? item.isFeatured ?? item.is_featured ?? false,
-              seoTags: meta.seoTags || item.seoTags || autoTags
-            };
-          });
-          setListings(formatted);
-          localStorage.setItem('pazartarla_all_listings', JSON.stringify(formatted));
-        }
+      setListingsLoading(true);
+
+      if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+        setListings([]);
+        setListingsError('Sunucu bağlantı ayarları eksik. İlanlar yüklenemedi.');
+        setListingsLoading(false);
+        return false;
       }
-    } catch (e) {
-      console.error('Veri çekme hatası, lokal hafıza kullanılıyor:', e);
-    }
-  };
+
+      try {
+        const url = SUPABASE_URL + '/rest/v1/listings?select=*&status=eq.approved&order=created_at.desc';
+        const response = await fetch(url, { headers: dbHeaders, cache: 'no-store' });
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+
+        const data = await response.json();
+        if (!Array.isArray(data)) throw new Error('Invalid listings response');
+
+        setListings(data.map(normalizeListing));
+        setListingsError('');
+        return true;
+      } catch (error) {
+        console.error('İlanlar sunucudan alınamadı:', error);
+        setListings([]);
+        setListingsError('İlanlar sunucudan yüklenemedi. Lütfen yeniden deneyin.');
+        return false;
+      } finally {
+        setListingsLoading(false);
+      }
+    };
 
   useEffect(() => {
     const timer = setTimeout(() => setShowSplash(false), 3500);
@@ -148,18 +193,27 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    try {
-      localStorage.setItem('pazartarla_metadata', JSON.stringify(localMetaData));
-    } catch (e) {}
-  }, [localMetaData]);
+      const refreshVisibleListings = () => {
+        if (document.visibilityState === 'visible') void fetchListings();
+      };
 
-  const forceRestoreBackupListings = () => {
-    if (!isAdminLoggedIn) return;
-    setListings(BACKUP_DEFAULT_LISTINGS);
-    localStorage.setItem('pazartarla_all_listings', JSON.stringify(BACKUP_DEFAULT_LISTINGS));
-    alert('🎉 Tüm yedek ilanlar başarıyla geri yüklendi!');
-  };
+      window.addEventListener('focus', refreshVisibleListings);
+      document.addEventListener('visibilitychange', refreshVisibleListings);
+      const interval = window.setInterval(refreshVisibleListings, 60_000);
 
+      return () => {
+        window.removeEventListener('focus', refreshVisibleListings);
+        document.removeEventListener('visibilitychange', refreshVisibleListings);
+        window.clearInterval(interval);
+      };
+    }, []);
+
+    const refreshCanonicalListings = async () => {
+      if (!isAdminLoggedIn) return;
+      const refreshed = await fetchListings();
+      alert(refreshed ? 'Sunucudaki ilanlar yenilendi.' : 'İlanlar sunucudan alınamadı. Lütfen tekrar deneyin.');
+    };
+    
   useEffect(() => {
     window.history.replaceState({ tab: 'home' }, '');
     const handlePopState = (event) => {
@@ -297,92 +351,91 @@ export default function App() {
   };
 
   const handleDirectAdd = async (e) => {
-    e.preventDefault();
-    if (!form.title.trim() || !form.price || !form.phone.trim() || !form.seller.trim()) {
-      alert('Lütfen zorunlu alanları eksiksiz doldurun.');
-      return;
-    }
-    const generatedSeoTags = `${form.title.toLowerCase().split(' ').join(', ')}, ${form.category.toLowerCase()}, ${form.subCategory.toLowerCase()}, ${form.location.toLowerCase()}, tarım ilanı, pazartarla`;
-    const finalSeoTags = form.seoTags.trim() ? form.seoTags : generatedSeoTags;
-    const primaryImage = (form.images && form.images[0]) || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800';
+      e.preventDefault();
+      if (!form.title.trim() || !form.price || !form.phone.trim() || !form.seller.trim()) {
+        alert('Lütfen zorunlu alanları eksiksiz doldurun.');
+        return;
+      }
+      const generatedSeoTags = form.title.toLowerCase().split(' ').join(', ') + ', ' + form.category.toLowerCase() + ', ' + form.subCategory.toLowerCase() + ', ' + form.location.toLowerCase() + ', tarım ilanı, pazartarla';
+      const finalSeoTags = form.seoTags.trim() ? form.seoTags : generatedSeoTags;
+      const primaryImage = (form.images && form.images[0]) || DEFAULT_LISTING_IMAGE;
 
-    const newEntry = {
-      id: Date.now(),
-      title: sanitizeInput(form.title),
-      price: Number(form.price),
-      category: form.category,
-      subCategory: form.subCategory,
-      location: sanitizeInput(form.location),
-      description: sanitizeInput(form.description),
-      seller: sanitizeInput(form.seller),
-      phone: sanitizeInput(form.phone),
-      image: primaryImage,
-      images: form.images,
-      status: 'approved',
-      seoTags: finalSeoTags,
-      isFeatured: false
+      const newEntry = {
+        id: Date.now(),
+        title: sanitizeInput(form.title),
+        price: Number(form.price),
+        category: form.category,
+        subCategory: form.subCategory,
+        mode: form.mode,
+        location: sanitizeInput(form.location),
+        description: sanitizeInput(form.description),
+        seller: sanitizeInput(form.seller),
+        phone: sanitizeInput(form.phone),
+        image: primaryImage,
+        images: form.images,
+        status: 'approved',
+        seoTags: finalSeoTags,
+        isFeatured: false
+      };
+
+      try {
+        const response = await fetch(SUPABASE_URL + '/rest/v1/listings', {
+          method: 'POST',
+          headers: { ...dbHeaders, 'Prefer': 'return=representation' },
+          body: JSON.stringify({
+            title: newEntry.title,
+            price: newEntry.price,
+            category: newEntry.category,
+            subCategory: newEntry.subCategory,
+            mode: newEntry.mode,
+            location: newEntry.location,
+            description: newEntry.description,
+            seller: newEntry.seller,
+            phone: newEntry.phone,
+            image: newEntry.image,
+            seotags: serializeListingTags(newEntry),
+            status: 'approved'
+          })
+        });
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        const rows = await response.json();
+        if (!Array.isArray(rows) || !rows[0]) throw new Error('Sunucu ilanı kaydetmedi.');
+
+        const savedListing = normalizeListing(rows[0]);
+        setListings(currentListings => [savedListing, ...currentListings]);
+        setListingsError('');
+        setLastAddedListing(savedListing);
+        changeTab('success-wa');
+      } catch (error) {
+        console.error('İlan kaydedilemedi:', error);
+        alert('İlan sunucuya kaydedilemedi. Lütfen bağlantınızı kontrol edip tekrar deneyin.');
+      }
     };
 
-    try {
-      await fetch(`${SUPABASE_URL}/rest/v1/listings`, {
-        method: 'POST',
-        headers: { ...dbHeaders, 'Prefer': 'return=representation' },
-        body: JSON.stringify({
-          title: newEntry.title,
-          price: newEntry.price,
-          category: newEntry.category,
-          subCategory: newEntry.subCategory,
-          location: newEntry.location,
-          description: newEntry.description,
-          seller: newEntry.seller,
-          phone: newEntry.phone,
-          image: newEntry.image,
-          status: 'approved'
-        })
-      });
-    } catch (err) {}
+  const toggleFeaturedListing = async (id) => {
+      if (!isAdminLoggedIn) return;
+      const target = listings.find(item => item.id === id);
+      if (!target) return;
 
-    const updatedListings = [newEntry, ...listings];
-    setListings(updatedListings);
-    localStorage.setItem('pazartarla_all_listings', JSON.stringify(updatedListings));
-    setLastAddedListing(newEntry);
-    changeTab('success-wa');
-  };
-
-  const toggleFeaturedListing = (id) => {
-    if (!isAdminLoggedIn) return;
-
-    setLocalMetaData(prev => {
-      const currentVal = prev[id]?.isFeatured ?? prev[String(id)]?.isFeatured ?? false;
-      const nextVal = !currentVal;
-      const targetItem = listings.find(l => l.id === id);
-      const existingTags = prev[id]?.seoTags || targetItem?.seoTags || '';
-      const existingImages = prev[id]?.images || targetItem?.images || [targetItem?.image];
-      const updated = {
-        ...prev,
-        [id]: {
-          isFeatured: nextVal,
-          seoTags: existingTags,
-          images: existingImages
-        }
-      };
+      const updatedListing = { ...target, isFeatured: !target.isFeatured };
       try {
-        localStorage.setItem('pazartarla_metadata', JSON.stringify(updated));
-      } catch (e) {}
-      return updated;
-    });
+        const response = await fetch(SUPABASE_URL + '/rest/v1/listings?id=eq.' + encodeURIComponent(id), {
+          method: 'PATCH',
+          headers: { ...dbHeaders, 'Prefer': 'return=representation' },
+          body: JSON.stringify({ seotags: serializeListingTags(updatedListing) })
+        });
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        const rows = await response.json();
+        if (!Array.isArray(rows) || !rows[0]) throw new Error('Sunucu vitrin durumunu kaydetmedi.');
 
-    setListings(prevListings => {
-      const updated = prevListings.map(item => {
-        if (item.id === id) {
-          return { ...item, isFeatured: !item.isFeatured };
-        }
-        return item;
-      });
-      localStorage.setItem('pazartarla_all_listings', JSON.stringify(updated));
-      return updated;
-    });
-  };
+        const savedListing = normalizeListing(rows[0]);
+        setListings(currentListings => currentListings.map(item => item.id === id ? savedListing : item));
+        setListingsError('');
+      } catch (error) {
+        console.error('Vitrin durumu kaydedilemedi:', error);
+        alert('Vitrin durumu sunucuya kaydedilemedi. Lütfen tekrar deneyin.');
+      }
+    };
 
   const startEditingFromDetail = (item) => {
     if (!isAdminLoggedIn) {
@@ -402,47 +455,76 @@ export default function App() {
   };
 
   const saveEditedListing = async (e) => {
-    e.preventDefault();
-    if (!isAdminLoggedIn) return;
-    const primaryImage = (editingListing.images && editingListing.images[0]) || editingListing.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800';
-    const updatedListings = listings.map(item => {
-      if (item.id === editingListing.id) {
-        return {
-          ...item,
-          title: sanitizeInput(editingListing.title),
-          price: Number(editingListing.price),
-          category: editingListing.category,
-          subCategory: editingListing.subCategory,
-          location: sanitizeInput(editingListing.location),
-          description: sanitizeInput(editingListing.description),
-          image: primaryImage,
-          images: editingListing.images,
-          seoTags: editingListing.seoTags
-        };
+      e.preventDefault();
+      if (!isAdminLoggedIn) return;
+
+      const primaryImage = (editingListing.images && editingListing.images[0]) || editingListing.image || DEFAULT_LISTING_IMAGE;
+      const updatedListing = {
+        ...editingListing,
+        title: sanitizeInput(editingListing.title),
+        price: Number(editingListing.price),
+        category: editingListing.category,
+        subCategory: editingListing.subCategory,
+        location: sanitizeInput(editingListing.location),
+        description: sanitizeInput(editingListing.description),
+        image: primaryImage,
+        images: editingListing.images && editingListing.images.length ? editingListing.images : [primaryImage],
+        seoTags: editingListing.seoTags || ''
+      };
+
+      try {
+        const response = await fetch(SUPABASE_URL + '/rest/v1/listings?id=eq.' + encodeURIComponent(updatedListing.id), {
+          method: 'PATCH',
+          headers: { ...dbHeaders, 'Prefer': 'return=representation' },
+          body: JSON.stringify({
+            title: updatedListing.title,
+            price: updatedListing.price,
+            category: updatedListing.category,
+            subCategory: updatedListing.subCategory,
+            location: updatedListing.location,
+            description: updatedListing.description,
+            image: updatedListing.image,
+            seotags: serializeListingTags(updatedListing)
+          })
+        });
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        const rows = await response.json();
+        if (!Array.isArray(rows) || !rows[0]) throw new Error('Sunucu ilanı güncellemedi.');
+
+        const savedListing = normalizeListing(rows[0]);
+        setListings(currentListings => currentListings.map(item => item.id === savedListing.id ? savedListing : item));
+        setListingsError('');
+        setEditingListing(null);
+        alert('İlan güncellendi!');
+        changeTab('home');
+      } catch (error) {
+        console.error('İlan güncellenemedi:', error);
+        alert('İlan sunucuya kaydedilemedi. Değişiklikler uygulanmadı; lütfen tekrar deneyin.');
       }
-      return item;
-    });
-    setListings(updatedListings);
-    localStorage.setItem('pazartarla_all_listings', JSON.stringify(updatedListings));
-    setEditingListing(null);
-    alert('İlan güncellendi!');
-    changeTab('home');
-  };
+    };
 
   const handleDeleteListing = async (id) => {
-    if (!isAdminLoggedIn) return;
-    if (window.confirm('Bu ilanı silmek istediğinize emin misiniz?')) {
-      const updatedListings = listings.filter(item => item.id !== id);
-      setListings(updatedListings);
-      localStorage.setItem('pazartarla_all_listings', JSON.stringify(updatedListings));
+      if (!isAdminLoggedIn) return;
+      if (!window.confirm('Bu ilanı silmek istediğinize emin misiniz?')) return;
+
       try {
-        await fetch(`${SUPABASE_URL}/rest/v1/listings?id=eq.${id}`, {
+        const response = await fetch(SUPABASE_URL + '/rest/v1/listings?id=eq.' + encodeURIComponent(id), {
           method: 'DELETE',
-          headers: dbHeaders
+          headers: { ...dbHeaders, 'Prefer': 'return=representation' }
         });
-      } catch (e) {}
-    }
-  };
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        if (response.status !== 204) {
+          const deletedRows = await response.json().catch(() => []);
+          if (Array.isArray(deletedRows) && deletedRows.length === 0) throw new Error('Sunucu ilanı silmedi.');
+        }
+
+        setListings(currentListings => currentListings.filter(item => item.id !== id));
+        setListingsError('');
+      } catch (error) {
+        console.error('İlan silinemedi:', error);
+        alert('İlan sunucudan silinemedi. Liste değiştirilmedi; lütfen tekrar deneyin.');
+      }
+    };
 
   const handleAddNewMainCategory = (e) => {
     e.preventDefault();
@@ -545,7 +627,16 @@ export default function App() {
       </header>
 
       <main style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '12px', flex: 1, boxSizing: 'border-box' }}>
-        {announcement && (
+          {listingsError && (
+            <div role="alert" style={{ backgroundColor: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca', borderRadius: '8px', padding: '10px 12px', marginBottom: '12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ flex: 1 }}>{listingsError}</span>
+              <button onClick={() => fetchListings()} style={{ border: 'none', borderRadius: '5px', padding: '6px 8px', backgroundColor: '#991b1b', color: '#fff', fontWeight: '700', cursor: 'pointer' }}>Yeniden Dene</button>
+            </div>
+          )}
+          {listingsLoading && listings.length === 0 && (
+            <div role="status" style={{ backgroundColor: '#fff', color: '#475569', borderRadius: '8px', padding: '12px', marginBottom: '12px', fontSize: '13px' }}>İlanlar yükleniyor...</div>
+          )}
+          {announcement && (
           <div style={{ backgroundColor: '#fef08a', color: '#713f12', padding: '10px 14px', borderRadius: '10px', marginBottom: '12px', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #facc15', overflow: 'hidden', whiteSpace: 'nowrap' }}>
             <Megaphone size={16} color="#854d0e" style={{ flexShrink: 0 }} />
             <style>{`
@@ -831,10 +922,10 @@ export default function App() {
                 </div>
 
                 <div style={{ backgroundColor: '#fef08a', padding: '12px', borderRadius: '8px', marginBottom: '16px', border: '1px solid #facc15' }}>
-                  <h3 style={{ fontSize: '13px', fontWeight: '800', color: '#713f12', margin: '0 0 6px 0' }}>🔄 Veri Kurtarma &amp; Yedek Yükleme</h3>
-                  <p style={{ fontSize: '11px', color: '#854d0e', margin: '0 0 8px 0' }}>Eski ilanların görünmüyorsa aşağıdaki butona basarak tüm yedek ilanları anında geri getirebilirsin.</p>
-                  <button type="button" onClick={forceRestoreBackupListings} style={{ width: '100%', backgroundColor: '#ca8a04', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                    <RefreshCw size={14} /> Yedek İlanları Tek Tuşla Geri Yükle
+                  <h3 style={{ fontSize: '13px', fontWeight: '800', color: '#713f12', margin: '0 0 6px 0' }}>🔄 Sunucudaki İlanları Yenile</h3>
+                  <p style={{ fontSize: '11px', color: '#854d0e', margin: '0 0 8px 0' }}>Bu işlem, güncel ilanları ortak veritabanından yeniden yükler.</p>
+                  <button type="button" onClick={refreshCanonicalListings} style={{ width: '100%', backgroundColor: '#ca8a04', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                    <RefreshCw size={14} /> Sunucudaki İlanları Yenile
                   </button>
                 </div>
 
