@@ -18,6 +18,9 @@ import FeaturedOfferNotice from './components/FeaturedOfferNotice';
 import FeaturedOfferManager from './components/FeaturedOfferManager';
 import TrafficDashboard from './components/TrafficDashboard';
 import TrafficPrivacy from './components/TrafficPrivacy';
+import ContactDepotManager from './components/ContactDepotManager';
+import ContactUnsubscribe from './components/ContactUnsubscribe';
+import { useContactDepot } from './hooks/useContactDepot';
 import { useTrafficAnalytics } from './hooks/useTrafficAnalytics';
 import { useTrafficReport } from './hooks/useTrafficReport';
 
@@ -197,6 +200,8 @@ export default function App() {
   const traffic = useTrafficAnalytics(activeTab, selectedListing?.id,
     `${activeTab}|${selectedCategory}|${selectedSubCategory}`, isAdminLoggedIn || !analyticsAuthReady);
   const trafficReport = useTrafficReport(isAdminLoggedIn && activeTab==='statistics', SUPABASE_URL, getAdminDbHeaders);
+  const contactDepot = useContactDepot(isAdminLoggedIn && activeTab==='contacts', SUPABASE_URL, getAdminDbHeaders);
+  const unsubscribeToken = new URLSearchParams(window.location.search).get('iletisim_cikis');
 
   const [form, setForm] = useState({
     title: '',
@@ -870,6 +875,12 @@ export default function App() {
           </div>
         )}
 
+        {unsubscribeToken && <ContactUnsubscribe token={unsubscribeToken} url={SUPABASE_URL} publicKey={SUPABASE_ANON_KEY} />}
+        {activeTab === 'contacts' && (
+          isAdminLoggedIn ? <ContactDepotManager state={contactDepot} onBack={()=>changeTab('admin-page')} /> :
+            <div role="alert"><p>Kişi deposu yalnızca yetkili yöneticilere açıktır.</p>
+              <button type="button" onClick={()=>changeTab('admin-page')}>Yönetici girişine git</button></div>
+        )}
         {activeTab === 'statistics' && (
           <div>
             <button type="button" onClick={()=>changeTab('admin-page')} style={{marginBottom:12}}>← Yönetim Paneline Dön</button>
@@ -1132,6 +1143,10 @@ export default function App() {
               </div>
               <textarea name="description" placeholder="Açıklama..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px' }} />
               {submissionError && <div role="alert" style={{ color: '#b91c1c', fontSize: '13px' }}>{submissionError}</div>}
+              <p style={{fontSize:11,color:'#475569'}}>
+                İlanın satıcı adı ve telefonu ile bilinen doğrulanmış hesap e-postası, yalnızca yöneticiye açık
+                iletişim deposunda kaydedilir. İlan vermek toplu mesaj izni değildir; mesaj izinleri ayrıca kayıt altına alınır.
+              </p>
               <button type="submit" disabled={submissionSaving || !submissionAccount.canSubmit || !siteSettings.settings || !!siteSettings.loadError}
                 style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', opacity: submissionSaving || !submissionAccount.canSubmit || !siteSettings.settings || !!siteSettings.loadError ? 0.6 : 1 }}>
                 {submissionSaving ? 'Onaya gönderiliyor…' : 'İlanı Onaya Gönder'}
@@ -1184,6 +1199,10 @@ export default function App() {
                   onRefresh={() => { void moderation.refresh(); }} />
 
                 <FeaturedOfferManager state={siteSettings} />
+                <button type="button" onClick={()=>changeTab('contacts')} data-testid="button-admin-contacts"
+                  style={{width:'100%',padding:14,margin:'16px 0',border:'1px solid #86efac',borderRadius:8,background:'#ecfdf5',color:'#166534',fontWeight:700,cursor:'pointer'}}>
+                  Kişi ve İletişim Deposu — SMS / E-posta / WhatsApp
+                </button>
                 <button type="button" onClick={()=>changeTab('statistics')} data-testid="button-admin-statistics"
                   style={{width:'100%',padding:14,margin:'16px 0',border:'1px solid #86efac',borderRadius:8,background:'#ecfdf5',color:'#166534',fontWeight:700,cursor:'pointer'}}>
                   Ziyaret İstatistikleri — Bölge, Süre ve Sıklık
