@@ -23,6 +23,7 @@ import ContactUnsubscribe from './components/ContactUnsubscribe';
 import { useContactDepot } from './hooks/useContactDepot';
 import { useTrafficAnalytics } from './hooks/useTrafficAnalytics';
 import { useTrafficReport } from './hooks/useTrafficReport';
+import './site-interactions.css';
 
 import {
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus,
@@ -808,7 +809,7 @@ export default function App() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f4f6f8', color: '#1e293b', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', boxSizing: 'border-box', position: 'relative' }}>
+    <div className="pt-site" style={{ minHeight: '100vh', backgroundColor: '#f4f6f8', color: '#1e293b', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', boxSizing: 'border-box', position: 'relative' }}>
       <header style={{ backgroundColor: '#1b3a2b', color: '#ffffff', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => { changeTab('home'); setSelectedCategory('Tüm kategoriler'); }}>
           <BrandLogo />
@@ -922,7 +923,7 @@ export default function App() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', fontWeight: '800', fontSize: '14px', color: '#854d0e' }}>
                   <Star size={16} fill="#eab308" color="#eab308" /> Vitrin İlanları
                 </div>
-                <div data-testid="featured-listings-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gridAutoFlow: 'row', gap: '10px', paddingBottom: '4px' }}>
+                <div className="pt-home-listings-grid" data-testid="featured-listings-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gridAutoFlow: 'row', gap: 'var(--pt-card-row-gap, 10px) var(--pt-card-column-gap, 10px)', paddingBottom: '4px' }}>
                   {featuredListings.map(item => {
                     const displayImg = (item.images && item.images[0]) || item.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800';
                     return (

@@ -61,6 +61,20 @@ test('additional featured listings are not truncated and empty state stays empty
   assert.equal((render(7).match(/<img /g) || []).length, 7);
   assert.equal(render(0), '');
 });
+test('mobile spacing and hover stay subtle without changing columns, palette or card layout',()=>{
+  const css=readFileSync(new URL('../src/site-interactions.css',import.meta.url),'utf8');
+  assert.match(source,/import '\.\/site-interactions\.css'/);
+  assert.match(render(6),/pt-home-listings-grid/);
+  assert.match(render(6),/var\(--pt-card-row-gap, 10px\) var\(--pt-card-column-gap, 10px\)/);
+  assert.match(css,/@media \(max-width: 480px\)/);
+  assert.match(css,/--pt-card-column-gap: 8px/);
+  assert.match(css,/--pt-card-row-gap: 14px/);
+  assert.match(css,/\(hover: hover\) and \(pointer: fine\)/);
+  assert.match(css,/:not\(:disabled\):not\(\[aria-disabled="true"\]\):hover/);
+  assert.match(css,/brightness\(0\.96\)/);
+  assert.match(css,/prefers-reduced-motion: reduce/);
+  assert.doesNotMatch(css,/grid-template-columns|background(-color)?\s*:|transform\s*:|transition:\s*all/);
+});
 test('monthly fee notice is outside the listing count gate and editable from admin',()=>{
   assert.match(notice,/150 TL/);
   assert.match(notice,/1 aylık/);
@@ -76,5 +90,6 @@ if (outputIndex !== -1) {
   const path = process.argv[outputIndex + 1];
   mkdirSync(dirname(path), { recursive: true });
   const offerCss=readFileSync(new URL('../src/components/featured-offer.css',import.meta.url),'utf8');
-  writeFileSync(path, `<!doctype html><html lang="tr"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,"><title>Vitrin yerleşim kontrolü</title><style>${offerCss}</style><body style="margin:0;background:#f4f6f8;font-family:system-ui,sans-serif"><main style="width:100%;max-width:600px;margin:0 auto;padding:12px;box-sizing:border-box">${notice}${render(6)}</main></body></html>`);
+  const interactionCss=readFileSync(new URL('../src/site-interactions.css',import.meta.url),'utf8');
+  writeFileSync(path, `<!doctype html><html lang="tr"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,"><title>Vitrin yerleşim kontrolü</title><style>${offerCss}\n${interactionCss}</style><body class="pt-site" style="margin:0;background:#f4f6f8;font-family:system-ui,sans-serif"><main style="width:100%;max-width:600px;margin:0 auto;padding:12px;box-sizing:border-box">${notice}${render(6)}</main></body></html>`);
 }

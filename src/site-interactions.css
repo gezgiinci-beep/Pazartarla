@@ -1,0 +1,26 @@
+/* Preserve existing button colors and dimensions; subtly shade them on hover. */
+.pt-site button {
+  transition: filter 180ms ease, box-shadow 180ms ease;
+}
+
+/* Touch devices do not get a persistent hover appearance after tapping. */
+@media (hover: hover) and (pointer: fine) {
+  .pt-site button:not(:disabled):not([aria-disabled="true"]):hover {
+    filter: brightness(0.96);
+    box-shadow: 0 2px 7px rgba(27, 58, 43, 0.14);
+  }
+}
+
+/* Keep three columns and the same cards; only refine mobile gutters. */
+@media (max-width: 480px) {
+  .pt-site .pt-home-listings-grid {
+    --pt-card-column-gap: 8px;
+    --pt-card-row-gap: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pt-site button {
+    transition: none;
+  }
+}
