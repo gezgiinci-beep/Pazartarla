@@ -60,10 +60,39 @@ try{
   assert.equal(reviewed.listing.status,'pending');assert.equal(reviewed.reapproval_required,false);
   await c.query("UPDATE public.listings SET status='approved' WHERE id=1");
   original=await get();assert.equal((await update({description:'Admin correction'},original.edit_token)).listing.status,'approved');
+  await as(owner);original=await get();
+  await update({title:'Owner resubmitted'},original.edit_token);
+  await denied(()=>c.query('SELECT public.get_listing_moderation_queue()'),'42501');
+  await denied(()=>c.query('SELECT public.update_listing_media(1,$1,$2)',[JSON.stringify({image:'Hijack'}),original.edit_token]),'42501');
+  await as(admin);
+  const queueBefore=(await c.query('SELECT public.get_listing_moderation_queue() q')).rows[0].q;
+  const galleryBefore=await get();
+  assert.equal(queueBefore.length,1);
+  await as(owner);original=await get();
+  await update({description:'Correction after administrator inspection'},original.edit_token);
+  await as(admin);
+  for(const decision of ['approved','rejected'])
+    await denied(()=>c.query('SELECT public.moderate_listing_snapshot(1,$1,$2)',[decision,queueBefore[0].edit_token]),'40001');
+  await denied(()=>c.query('SELECT public.update_listing_media(1,$1,$2)',
+    [JSON.stringify({image:'https://example.invalid/new-photo'}),galleryBefore.edit_token]),'40001');
+  const fresh=await get();
+  assert.equal(fresh.listing.description,'Correction after administrator inspection');
+  assert.equal(fresh.listing.image,before.image);
+  await denied(()=>c.query('SELECT public.update_listing_media(1,$1,$2)',
+    [JSON.stringify({title:'Unintended overwrite'}),fresh.edit_token]),'22023');
+  const gallerySaved=(await c.query('SELECT public.update_listing_media(1,$1,$2) r',
+    [JSON.stringify({image:'https://example.invalid/new-photo',seotags:'NEW GALLERY SEO'}),fresh.edit_token])).rows[0].r.listing;
+  assert.equal(gallerySaved.description,fresh.listing.description);
+  assert.equal(gallerySaved.price,fresh.listing.price);
+  assert.equal(gallerySaved.status,'pending');
+  const latestQueue=(await c.query('SELECT public.get_listing_moderation_queue() q')).rows[0].q;
+  const approved=(await c.query("SELECT public.moderate_listing_snapshot(1,'approved',$1) r",[latestQueue[0].edit_token])).rows[0].r.listing;
+  assert.equal(approved.status,'approved');
+  assert.equal(approved.description,fresh.listing.description);
   await c.query('RESET ROLE');await c.query("UPDATE public.listings SET expires_at=now()-interval '1 day'");
   await as(owner);await denied(get,'42501');
   await as(admin);await get();
-  console.log('Owner edit SQL passed: owner/admin only, anon/other/unverified denial, reapproval, no-op, token conflicts, protected ID/owner/dates/media, category validation and archive rules. No live connection.');
+  console.log('Owner edit SQL passed: authorization, reapproval, protected fields, stale moderation AND gallery interleavings rejected, fresh media-only save preserves owner corrections, fresh reviewed approval and archive rules. No live connection.');
 }catch(e){console.error('Owner edit test failed:',e.code||e.name,e.message);process.exitCode=1;}
 finally{
   if(c)await c.end();

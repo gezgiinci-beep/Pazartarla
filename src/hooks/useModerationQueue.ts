@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { isListingArchived } from '../lib/listingLifetime';
+import {readModerationRows,saveModerationSnapshot} from '../lib/moderationRequests';
 
 export function useModerationQueue(enabled: boolean, url: string, getHeaders: () => Promise<Record<string, string>>, normalize: (row: any) => any) {
   const [items, setItems] = useState<any[]>([]);
@@ -15,13 +16,13 @@ export function useModerationQueue(enabled: boolean, url: string, getHeaders: ()
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`${url}/rest/v1/listings?select=*&status=eq.pending&order=created_at.asc`, {
-        headers: await getHeaders(), cache: 'no-store',
+      const response = await fetch(`${url}/rest/v1/rpc/get_listing_moderation_queue`, {
+        method:'POST',body:'{}',headers: await getHeaders(), cache: 'no-store',
       });
       if (!response.ok) throw new Error('MODERATION_LOAD_FAILED');
       const rows = await response.json();
-      if (!Array.isArray(rows)) throw new Error('MODERATION_LOAD_FAILED');
-      if (active.current) setItems(rows.filter(row => !isListingArchived(row)).map(normalize));
+      const normalized=readModerationRows(rows,normalize);
+      if (active.current) setItems(normalized.filter(row => !isListingArchived(row)));
     } catch {
       if (active.current) setError('Bekleyen ilanlar yüklenemedi. Yönetici oturumunuzu kontrol edip yeniden deneyin.');
     } finally { if (active.current) setLoading(false); }
@@ -42,24 +43,17 @@ export function useModerationQueue(enabled: boolean, url: string, getHeaders: ()
     };
   }, [refresh, enabled]);
 
-  const decide = async (id: number, decision: 'approved' | 'rejected') => {
+  const decide = async (id: number, decision: 'approved' | 'rejected', token: string) => {
     if (!enabled || decisionInFlight.current) return false;
     decisionInFlight.current = true;
     setBusyId(id); setError('');
     try {
-      const response = await fetch(`${url}/rest/v1/listings?id=eq.${encodeURIComponent(id)}&status=eq.pending`, {
-        method: 'PATCH',
-        headers: { ...(await getHeaders()), Prefer: 'return=representation' },
-        body: JSON.stringify({ status: decision }),
-      });
-      if (!response.ok) throw new Error('MODERATION_SAVE_FAILED');
-      const rows = await response.json();
-      if (!Array.isArray(rows) || rows.length !== 1) throw new Error('MODERATION_SAVE_FAILED');
+      await saveModerationSnapshot(url,await getHeaders(),id,decision,token);
       if (active.current) setItems(current => current.filter(item => item.id !== id));
       await refresh();
       return true;
     } catch {
-      if (active.current) setError('Karar kaydedilemedi. İlan başka bir yönetici tarafından işlenmiş olabilir; listeyi yenileyin.');
+      if (active.current) setError('Karar kaydedilemedi. İlan değişmiş veya sunucu güncellemesi eksik olabilir; listeyi yenileyip güncel içeriği yeniden inceleyin.');
       return false;
     } finally {
       decisionInFlight.current = false;

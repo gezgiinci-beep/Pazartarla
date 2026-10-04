@@ -103,5 +103,71 @@ END; $$;
 REVOKE ALL ON FUNCTION public.update_listing_details(integer,jsonb,text) FROM PUBLIC,anon;
 GRANT EXECUTE ON FUNCTION public.update_listing_details(integer,jsonb,text) TO authenticated;
 -- Preserve admin-only direct UPDATE/DELETE RLS; members use only this bounded RPC.
+CREATE OR REPLACE FUNCTION public.get_listing_moderation_queue()
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path='' SET timezone='UTC' AS $$
+BEGIN
+  IF auth.uid() IS NULL OR NOT public.is_listing_admin() THEN
+    RAISE EXCEPTION USING ERRCODE='42501',MESSAGE='LISTING_EDIT_FORBIDDEN';
+  END IF;
+  RETURN (SELECT coalesce(jsonb_agg(jsonb_build_object('listing',to_jsonb(l),
+    'edit_token',encode(sha256(convert_to(to_jsonb(l)::text,'UTF8')),'hex'))
+    ORDER BY l.created_at,l.id),'[]'::jsonb)
+    FROM public.listings l WHERE l.status='pending' AND l.expires_at>clock_timestamp());
+END; $$;
+REVOKE ALL ON FUNCTION public.get_listing_moderation_queue() FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.get_listing_moderation_queue() TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.moderate_listing_snapshot(
+  p_listing_id integer,p_decision text,p_edit_token text)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path='' SET timezone='UTC' AS $$
+DECLARE item public.listings;
+BEGIN
+  IF auth.uid() IS NULL OR NOT public.is_listing_admin() THEN
+    RAISE EXCEPTION USING ERRCODE='42501',MESSAGE='LISTING_EDIT_FORBIDDEN';
+  END IF;
+  IF p_decision IS NULL OR p_decision NOT IN ('approved','rejected') THEN
+    RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='LISTING_EDIT_INVALID';
+  END IF;
+  SELECT * INTO item FROM public.listings WHERE id=p_listing_id FOR UPDATE;
+  IF NOT FOUND OR item.status IS DISTINCT FROM 'pending' OR item.expires_at IS NULL OR item.expires_at<=clock_timestamp()
+    OR p_edit_token IS DISTINCT FROM encode(sha256(convert_to(to_jsonb(item)::text,'UTF8')),'hex') THEN
+    RAISE EXCEPTION USING ERRCODE='40001',MESSAGE='LISTING_EDIT_CONFLICT';
+  END IF;
+  item:=jsonb_populate_record(item,jsonb_build_object('status',p_decision));
+  UPDATE public.listings SET status=item.status WHERE id=item.id RETURNING * INTO item;
+  RETURN jsonb_build_object('listing',to_jsonb(item));
+END; $$;
+REVOKE ALL ON FUNCTION public.moderate_listing_snapshot(integer,text,text) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.moderate_listing_snapshot(integer,text,text) TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.update_listing_media(
+  p_listing_id integer,p_changes jsonb,p_edit_token text)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path='' SET timezone='UTC' AS $$
+DECLARE item public.listings; key text;
+BEGIN
+  IF auth.uid() IS NULL OR NOT public.is_listing_admin() THEN
+    RAISE EXCEPTION USING ERRCODE='42501',MESSAGE='LISTING_EDIT_FORBIDDEN';
+  END IF;
+  IF p_changes IS NULL OR jsonb_typeof(p_changes)<>'object' THEN
+    RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='LISTING_EDIT_INVALID';
+  END IF;
+  FOR key IN SELECT jsonb_object_keys(p_changes) LOOP
+    IF key NOT IN ('image','seotags') OR jsonb_typeof(p_changes->key)<>'string'
+      OR length(p_changes->>key)>20000000 THEN
+      RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='LISTING_EDIT_FIELD_FORBIDDEN';
+    END IF;
+  END LOOP;
+  SELECT * INTO item FROM public.listings WHERE id=p_listing_id FOR UPDATE;
+  IF NOT FOUND OR p_edit_token IS DISTINCT FROM encode(sha256(convert_to(to_jsonb(item)::text,'UTF8')),'hex') THEN
+    RAISE EXCEPTION USING ERRCODE='40001',MESSAGE='LISTING_EDIT_CONFLICT';
+  END IF;
+  UPDATE public.listings SET
+    image=CASE WHEN p_changes ? 'image' THEN p_changes->>'image' ELSE item.image END,
+    seotags=CASE WHEN p_changes ? 'seotags' THEN p_changes->>'seotags' ELSE item.seotags END
+  WHERE id=item.id RETURNING * INTO item;
+  RETURN jsonb_build_object('listing',to_jsonb(item));
+END; $$;
+REVOKE ALL ON FUNCTION public.update_listing_media(integer,jsonb,text) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.update_listing_media(integer,jsonb,text) TO authenticated;
 NOTIFY pgrst,'reload schema';
 COMMIT;

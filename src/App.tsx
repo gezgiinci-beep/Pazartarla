@@ -4,6 +4,7 @@ import SubmissionAccountPanel from './components/SubmissionAccountPanel';
 import ModerationQueue from './components/ModerationQueue';
 import MySubmissions from './components/MySubmissions';
 import ListingEditor from './components/ListingEditor';
+import {editError} from './lib/listingEditor';
 import { useSubmissionAccount } from './hooks/useSubmissionAccount';
 import { useModerationQueue } from './hooks/useModerationQueue';
 import { useSiteSettings } from './hooks/useSiteSettings';
@@ -193,6 +194,7 @@ export default function App() {
   const [editingListing, setEditingListing] = useState(null);
   const [ownerEditingId, setOwnerEditingId] = useState(null);
   const [listingEditMessage, setListingEditMessage] = useState('');
+  const [gallerySaving, setGallerySaving] = useState(false);
   const [lastAddedListing, setLastAddedListing] = useState(null);
   const [customCategoryInput, setCustomCategoryInput] = useState('');
   const [submissionSaving, setSubmissionSaving] = useState(false);
@@ -585,8 +587,8 @@ export default function App() {
       }
     };
 
-  const moderateListing = async (id, decision) => {
-    if (await moderation.decide(id, decision)) {
+  const moderateListing = async (id, decision, token) => {
+    if (await moderation.decide(id, decision, token)) {
       await Promise.all([fetchListings(), submissionAccount.refresh()]);
     }
   };
@@ -596,41 +598,44 @@ export default function App() {
       const target = listings.find(item => item.id === id);
       if (!target) return;
 
-      const updatedListing = { ...target, isFeatured: !target.isFeatured };
       try {
-        const response = await fetch(SUPABASE_URL + '/rest/v1/listings?id=eq.' + encodeURIComponent(id), {
-          method: 'PATCH',
-          headers: { ...(await getAdminDbHeaders()), 'Prefer': 'return=representation' },
-          body: JSON.stringify({ seotags: serializeListingTags(updatedListing) })
+        const snapshot=await supabaseClient.rpc('get_listing_for_edit',{p_listing_id:id});
+        if(snapshot.error)throw snapshot.error;
+        if(snapshot.data?.listing?.id!==id || !/^[a-f0-9]{64}$/.test(snapshot.data.edit_token))throw new Error('Invalid snapshot');
+        const fresh=normalizeListing(snapshot.data.listing);
+        const updatedListing={...fresh,isFeatured:!fresh.isFeatured};
+        const {data,error}=await supabaseClient.rpc('update_listing_media',{
+          p_listing_id:id,p_edit_token:snapshot.data.edit_token,
+          p_changes:{seotags:serializeListingTags(updatedListing)}
         });
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        const rows = await response.json();
-        if (!Array.isArray(rows) || !rows[0]) throw new Error('Sunucu vitrin durumunu kaydetmedi.');
+        if(error)throw error;
+        if(data?.listing?.id!==id)throw new Error('Sunucu vitrin durumunu kaydetmedi.');
 
-        const savedListing = normalizeListing(rows[0]);
-        setListings(currentListings => currentListings.map(item => item.id === id ? savedListing : item));
+        const savedListing = normalizeListing(data.listing);
+        setListings(currentListings => savedListing.status==='approved'
+          ?currentListings.map(item => item.id === id ? savedListing : item)
+          :currentListings.filter(item=>item.id!==id));
         setListingsError('');
       } catch (error) {
         console.error('Vitrin durumu kaydedilemedi:', error);
-        alert('Vitrin durumu sunucuya kaydedilemedi. Lütfen tekrar deneyin.');
+        alert(editError(error));
       }
     };
 
-  const startEditingFromDetail = (item) => {
+  const startEditingFromDetail = async (item) => {
     if (!isAdminLoggedIn) {
       alert('Önce Yönetici Paneline giriş yapmalısınız.');
       changeTab('admin-page');
       return;
     }
-    setEditingListing({
-      ...item,
-      images: item.images || [item.image],
-      seoTags: item.seoTags || ''
-    });
-    changeTab('admin-page');
-    setTimeout(() => {
-      if (editFormRef.current) editFormRef.current.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
+    try {
+      const {data,error}=await supabaseClient.rpc('get_listing_for_edit',{p_listing_id:item.id});
+      if(error)throw error;
+      if(data?.listing?.id!==item.id || !/^[a-f0-9]{64}$/.test(data.edit_token))throw new Error('Invalid edit snapshot');
+      setEditingListing({...normalizeListing(data.listing),_editToken:data.edit_token});
+      changeTab('admin-page');
+      setTimeout(() => {if (editFormRef.current) editFormRef.current.scrollIntoView({behavior:'smooth'});},100);
+    }catch(error){alert(editError(error));}
   };
 
   const startOwnerEditing = (item) => {
@@ -659,7 +664,7 @@ export default function App() {
 
   const saveEditedListing = async (e) => {
       e.preventDefault();
-      if (!isAdminLoggedIn) return;
+      if (!isAdminLoggedIn || gallerySaving) return;
 
       const primaryImage = (editingListing.images && editingListing.images[0]) || editingListing.image || DEFAULT_LISTING_IMAGE;
       const updatedListing = {
@@ -676,34 +681,26 @@ export default function App() {
       };
 
       try {
-        const response = await fetch(SUPABASE_URL + '/rest/v1/listings?id=eq.' + encodeURIComponent(updatedListing.id), {
-          method: 'PATCH',
-          headers: { ...(await getAdminDbHeaders()), 'Prefer': 'return=representation' },
-          body: JSON.stringify({
-            title: updatedListing.title,
-            price: updatedListing.price,
-            category: updatedListing.category,
-            subCategory: updatedListing.subCategory,
-            location: updatedListing.location,
-            description: updatedListing.description,
-            image: updatedListing.image,
-            seotags: serializeListingTags(updatedListing)
-          })
+        setGallerySaving(true);
+        const {data,error} = await supabaseClient.rpc('update_listing_media',{
+          p_listing_id:updatedListing.id,p_edit_token:editingListing._editToken,
+          p_changes:{image:updatedListing.image,seotags:serializeListingTags(updatedListing)}
         });
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        const rows = await response.json();
-        if (!Array.isArray(rows) || !rows[0]) throw new Error('Sunucu ilanı güncellemedi.');
+        if (error) throw error;
+        if(data?.listing?.id!==updatedListing.id)throw new Error('Sunucu galeri değişikliğini doğrulamadı.');
 
-        const savedListing = normalizeListing(rows[0]);
-        setListings(currentListings => currentListings.map(item => item.id === savedListing.id ? savedListing : item));
+        const savedListing = normalizeListing(data.listing);
+        setListings(currentListings => savedListing.status==='approved'
+          ?currentListings.map(item => item.id === savedListing.id ? savedListing : item)
+          :currentListings.filter(item=>item.id!==savedListing.id));
         setListingsError('');
         setEditingListing(null);
-        alert('İlan güncellendi!');
+        alert('Galeri / SEO güncellendi. İlan metni ve fiyatı değiştirilmedi.');
         changeTab('home');
       } catch (error) {
         console.error('İlan güncellenemedi:', error);
-        alert('İlan sunucuya kaydedilemedi. Değişiklikler uygulanmadı; lütfen tekrar deneyin.');
-      }
+        alert(editError(error));
+      } finally {setGallerySaving(false);}
     };
 
   const handleDeleteListing = async (id) => {
@@ -1271,9 +1268,7 @@ export default function App() {
                   <div style={{ backgroundColor: '#f0fdf4', padding: '14px', borderRadius: '8px', border: '2px solid #22c55e', marginBottom: '20px' }}>
                     <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 10px 0' }}>✏ İlanı Düzenle</h3>
                     <form onSubmit={saveEditedListing} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <input type="text" name="title" value={editingListing.title} onChange={handleEditFormChange} placeholder="Başlık" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-                      <input type="number" name="price" value={editingListing.price} onChange={handleEditFormChange} placeholder="Fiyat" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-                      <input type="text" name="location" value={editingListing.location} onChange={handleEditFormChange} placeholder="Konum" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                      <p>Galeri / SEO: {editingListing.title}. Metin ve fiyat için ayrı “Düzenle” düğmesini kullanın.</p>
                       <input type="text" name="seoTags" value={editingListing.seoTags || ''} onChange={handleEditFormChange} placeholder="SEO Etiketleri (virgülle ayırın)" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       <div style={{ backgroundColor: '#fff', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <label style={{ fontSize: '11px', fontWeight: '700', color: '#475569' }}>📷 Fotoğrafları Yönet (En Fazla 10 Adet)</label>
@@ -1289,10 +1284,9 @@ export default function App() {
                           </div>
                         )}
                       </div>
-                      <textarea name="description" value={editingListing.description} onChange={handleEditFormChange} placeholder="Açıklama" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '60px' }} />
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <button type="submit" style={{ flex: 1, backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Kaydet</button>
-                        <button type="button" onClick={() => setEditingListing(null)} style={{ background: '#e2e8f0', border: 'none', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer' }}>İptal</button>
+                        <button type="submit" disabled={gallerySaving} style={{ flex: 1, backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>{gallerySaving?'Kaydediliyor…':'Galeri / SEO Kaydet'}</button>
+                        <button type="button" disabled={gallerySaving} onClick={() => setEditingListing(null)} style={{ background: '#e2e8f0', border: 'none', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer' }}>İptal</button>
                       </div>
                     </form>
                   </div>
