@@ -1,9 +1,49 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { validCategories, parseSiteSettings, readSiteSettings, writeSiteSettings, SettingsConflictError } from '../src/lib/siteSettings.ts';
+import { validCategories, validFeaturedOffer, parseSiteSettings, readSiteSettings, writeSiteSettings, SettingsConflictError } from '../src/lib/siteSettings.ts';
 
-const row = { id: 'public', announcement: 'Ortak duyuru', categories: { Mahsuller: ['Ceviz'] }, revision: 1 };
+const row = { id: 'public', announcement: 'Ortak duyuru', categories: { Mahsuller: ['Ceviz'] },
+  featured_offer: { monthly_price_try: 150, description: '1 aylık vitrin ilanı.' }, revision: 1 };
 const json = (value, status = 200) => new Response(JSON.stringify(value), { status });
+
+test('monthly offer validates bounded amounts, cents and editable description', () => {
+  assert.equal(validFeaturedOffer({ monthly_price_try: 150, description: '' }), true);
+  assert.equal(validFeaturedOffer({ monthly_price_try: 0.29, description: 'Bir ay' }), true);
+  for (const value of [null,{}, { monthly_price_try: -1, description: '' },
+    { monthly_price_try: 0, description: '' },{ monthly_price_try: '150', description: '' },
+    { monthly_price_try: 1.001, description: '' },{ monthly_price_try: 1.000000001, description: '' },
+    { monthly_price_try: Infinity, description: '' },{ monthly_price_try: 1000001, description: '' },
+    { monthly_price_try: 150, description: 'x'.repeat(401) },
+    { monthly_price_try: 150, description: '', extra: true }]) assert.equal(validFeaturedOffer(value),false);
+});
+
+test('offer save preserves other settings and fresh independent reads get the saved price', async () => {
+  let canonical = row;
+  const offer = { monthly_price_try: 235.5, description: '1 aylık vitrin yayını.' };
+  const request = async (_url, init) => {
+    if (init.method === 'PATCH') {
+      assert.deepEqual(JSON.parse(init.body), { featured_offer: offer });
+      canonical = {...canonical,featured_offer:offer,revision:canonical.revision+1};
+    }
+    return json([canonical]);
+  };
+  const saved = await writeSiteSettings('https://example.invalid', {},1,{featured_offer:offer},request);
+  assert.deepEqual(saved.categories,row.categories);
+  assert.equal(saved.announcement,row.announcement);
+  for (const key of ['normal-browser','fresh-incognito']) {
+    assert.deepEqual((await readSiteSettings('https://example.invalid',key,request)).featured_offer,offer);
+  }
+});
+
+test('unacknowledged, stale and invalid offer writes cannot claim success', async () => {
+  const offer={monthly_price_try:250,description:''};
+  await assert.rejects(writeSiteSettings('https://example.invalid',{},1,{featured_offer:offer},
+    async()=>json([{...row,revision:2}])),/doğrulamadı/);
+  await assert.rejects(writeSiteSettings('https://example.invalid',{},1,{featured_offer:offer},
+    async()=>json([])),SettingsConflictError);
+  await assert.rejects(writeSiteSettings('https://example.invalid',{},1,{featured_offer:{monthly_price_try:0,description:''}},
+    async()=>assert.fail('Invalid offer must not reach server')));
+});
 
 test('settings validate without treating an empty announcement as a missing record', () => {
   assert.equal(parseSiteSettings({ ...row, announcement: '' }).announcement, '');

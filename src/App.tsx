@@ -14,6 +14,8 @@ import { formatListingDate, isListingArchived } from './lib/listingLifetime';
 import { useListingArchive } from './hooks/useListingArchive';
 import BrandLogo from './components/BrandLogo';
 import OpeningSplash from './components/OpeningSplash';
+import FeaturedOfferNotice from './components/FeaturedOfferNotice';
+import FeaturedOfferManager from './components/FeaturedOfferManager';
 
 import {
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus,
@@ -142,6 +144,14 @@ export default function App() {
   const siteSettings = useSiteSettings(SUPABASE_URL, SUPABASE_ANON_KEY, getAdminDbHeaders);
   const categoriesWithSubs = siteSettings.settings?.categories || {};
   const announcement = siteSettings.settings?.announcement || '';
+  const requestFeaturedOffer = () => {
+    const offer = siteSettings.settings?.featured_offer;
+    if (!offer) return;
+    const amount = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 2 }).format(offer.monthly_price_try);
+    window.open(`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(
+      `Merhaba, PazarTarla'da 1 aylık vitrin ilanı vermek istiyorum. Güncel ücret ${amount} TL. Bilgi alabilir miyim?`
+    )}`, '_blank', 'noopener,noreferrer');
+  };
   const [tempAnnouncement, setTempAnnouncement] = useState('');
   const [announcementDirty, setAnnouncementDirty] = useState(false);
   const [announcementDraftRevision, setAnnouncementDraftRevision] = useState<number | undefined>();
@@ -875,12 +885,16 @@ export default function App() {
               </a>
             </div>
 
+            {siteSettings.settings && (
+              <FeaturedOfferNotice offer={siteSettings.settings.featured_offer} onRequest={requestFeaturedOffer} />
+            )}
+
             {featuredListings.length > 0 && (
               <div style={{ marginBottom: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', fontWeight: '800', fontSize: '14px', color: '#854d0e' }}>
                   <Star size={16} fill="#eab308" color="#eab308" /> Vitrin İlanları
                 </div>
-                <div data-testid="featured-listings-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '10px', paddingBottom: '4px' }}>
+                <div data-testid="featured-listings-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gridAutoFlow: 'row', gap: '10px', paddingBottom: '4px' }}>
                   {featuredListings.map(item => {
                     const displayImg = (item.images && item.images[0]) || item.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800';
                     return (
@@ -1060,6 +1074,9 @@ export default function App() {
               <button onClick={() => changeTab(isAdminLoggedIn ? 'admin-page' : 'home')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer' }}>{isAdminLoggedIn ? '← Yönetim Paneline Dön' : '← Vazgeç'}</button>
               <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>{submissionAccount.quota?.unlimited ? 'Yönetici İlanı Ekle — Sınırsız' : 'İlan Ver (En Fazla 10 Fotoğraf)'}</h2>
             </div>
+            {siteSettings.settings && (
+              <FeaturedOfferNotice offer={siteSettings.settings.featured_offer} onRequest={requestFeaturedOffer} />
+            )}
             <SubmissionAccountPanel session={submissionAccount.session} quota={submissionAccount.quota}
               loading={submissionAccount.loading} busy={submissionAccount.busy} error={submissionAccount.error}
               message={submissionAccount.message} onAuthenticate={submissionAccount.authenticate}
@@ -1148,6 +1165,8 @@ export default function App() {
                 <ModerationQueue items={moderation.items.filter(item => !isListingArchived(item, listingNow))} loading={moderation.loading}
                   error={moderation.error} busyId={moderation.busyId} onDecision={moderateListing}
                   onRefresh={() => { void moderation.refresh(); }} />
+
+                <FeaturedOfferManager state={siteSettings} />
 
                 <div style={{ backgroundColor: '#fef08a', padding: '12px', borderRadius: '8px', marginBottom: '16px', border: '1px solid #facc15' }}>
                   <h3 style={{ fontSize: '13px', fontWeight: '800', color: '#713f12', margin: '0 0 6px 0' }}>🔄 Sunucudaki İlanları Yenile</h3>

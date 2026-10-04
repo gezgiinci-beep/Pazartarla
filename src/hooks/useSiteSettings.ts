@@ -33,7 +33,7 @@ export function useSiteSettings(url: string, key: string, getAdminHeaders: () =>
       return row;
     } catch (error) {
       if (mounted.current && id === requestId.current) {
-        setLoadError(message(error, 'Duyuru ve kategoriler yüklenemedi. '));
+        setLoadError(message(error, 'Site ayarları yüklenemedi. '));
       }
       return null;
     } finally {

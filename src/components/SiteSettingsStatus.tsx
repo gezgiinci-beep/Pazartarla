@@ -4,7 +4,7 @@ export default function SiteSettingsStatus({
   state, admin = false
 }: { state: ReturnType<typeof useSiteSettings>; admin?: boolean }) {
   const error = state.loadError || (admin ? state.saveError : '');
-  const status = state.loading ? 'Duyuru ve kategoriler yükleniyor...' :
+  const status = state.loading ? 'Site ayarları yükleniyor...' :
     admin && state.saving ? 'Değişiklik sunucuya kaydediliyor...' :
     admin ? state.success : '';
   if (!error && !status) return null;
