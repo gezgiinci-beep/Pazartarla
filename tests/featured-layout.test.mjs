@@ -6,6 +6,7 @@ import { runInNewContext } from 'node:vm';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { transformWithEsbuild } from 'vite';
+import { formatListingDate } from '../src/lib/listingLifetime.ts';
 
 // Compile the actual featured-listings JSX, not a second implementation.
 const source = readFileSync(new URL('../src/App.tsx', import.meta.url), 'utf8');
@@ -18,12 +19,19 @@ const compiled = await transformWithEsbuild(
   'featured-fixture.tsx',
   { jsx: 'transform', jsxFactory: 'React.createElement' }
 );
-const context = { React, Star: () => null };
+const dateStart = source.indexOf('const ListingDate =');
+const dateEnd = source.indexOf('const normalizeListing', dateStart);
+const dateComponent = await transformWithEsbuild(
+  source.slice(dateStart, dateEnd).replace('const ListingDate =', 'var ListingDate ='),
+  'listing-date-fixture.tsx', { jsx: 'transform', jsxFactory: 'React.createElement' }
+);
+const context = { React, Star: () => null, formatListingDate };
+runInNewContext(dateComponent.code, context);
 runInNewContext(compiled.code, context);
 const photo = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="120"><rect width="200" height="120" fill="#d1fae5"/><path d="M0 95L65 35L110 80L150 40L200 100V120H0Z" fill="#166534"/></svg>');
 const render = count => renderToStaticMarkup(React.createElement(context.Featured, {
   featuredListings: Array.from({ length: count }, (_, i) => ({
-    id: i + 1, title: `Vitrin ilanı ${i + 1}`, images: [photo], price: (i + 1) * 1000
+    id: i + 1, title: `Vitrin ilanı ${i + 1}`, images: [photo], price: (i + 1) * 1000, created_at: '2026-10-04T00:00:00Z'
   })),
   setSelectedListing() {}, changeTab() {}
 }));
@@ -35,6 +43,7 @@ test('six featured listings render in a three-column grid without a horizontal c
   for (let i = 1; i <= 6; i++) assert.ok(html.includes(`alt="Vitrin ilanı ${i}"`));
   assert.doesNotMatch(html, /overflow-x:auto|min-width:160px|max-width:160px/);
   assert.equal((html.match(/min-width:0;box-sizing:border-box/g) || []).length, 6);
+  assert.equal((html.match(/04\.10\.2026/g) || []).length, 6);
 });
 test('additional featured listings are not truncated and empty state stays empty', () => {
   assert.equal((render(7).match(/<img /g) || []).length, 7);

@@ -10,6 +10,8 @@ import SiteSettingsStatus from './components/SiteSettingsStatus';
 import { useAdvertisements } from './hooks/useAdvertisements';
 import AdvertisementManager from './components/AdvertisementManager';
 import AdvertisementPlacement from './components/AdvertisementPlacement';
+import { formatListingDate, isListingArchived } from './lib/listingLifetime';
+import { useListingArchive } from './hooks/useListingArchive';
 
 import {
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus,
@@ -78,6 +80,12 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
     };
     };
 
+    const ListingDate = ({ value }) => (
+      <div style={{ fontSize: '10px', color: '#64748b', marginTop: '4px' }}>
+        İlan tarihi: <time dateTime={typeof value === 'string' && Number.isFinite(Date.parse(value)) ? value : undefined}>{formatListingDate(value)}</time>
+      </div>
+    );
+
     const normalizeListing = (item) => {
     const metadata = parseListingMetadata(item.seotags, item.image);
     const autoTags = [
@@ -127,6 +135,7 @@ export default function App() {
   const [listings, setListings] = useState([]);
   const [listingsLoading, setListingsLoading] = useState(true);
   const [listingsError, setListingsError] = useState('');
+  const [listingNow, setListingNow] = useState(Date.now);
 
   const siteSettings = useSiteSettings(SUPABASE_URL, SUPABASE_ANON_KEY, getAdminDbHeaders);
   const categoriesWithSubs = siteSettings.settings?.categories || {};
@@ -167,6 +176,7 @@ export default function App() {
   const submissionAccount = useSubmissionAccount(supabaseClient, SUPABASE_URL, SUPABASE_ANON_KEY, normalizeListing);
   const moderation = useModerationQueue(isAdminLoggedIn, SUPABASE_URL, getAdminDbHeaders, normalizeListing);
   const advertisements = useAdvertisements(supabaseClient, SUPABASE_URL, SUPABASE_ANON_KEY, isAdminLoggedIn, getAdminDbHeaders);
+  const listingArchive = useListingArchive(isAdminLoggedIn, SUPABASE_URL, getAdminDbHeaders);
 
   const [form, setForm] = useState({
     title: '',
@@ -249,6 +259,19 @@ export default function App() {
     const splashTimer = window.setTimeout(() => setShowSplash(false), 3500);
     void fetchListings();
     return () => window.clearTimeout(splashTimer);
+  }, []);
+  useEffect(() => {
+    const visible = () => {
+      if (document.visibilityState === 'visible') { setListingNow(Date.now()); void fetchListings(); }
+    };
+    // Check already-loaded expiry timestamps without repeatedly downloading galleries.
+    const timer = window.setInterval(() => setListingNow(Date.now()), 60_000);
+    window.addEventListener('focus', visible);
+    document.addEventListener('visibilitychange', visible);
+    return () => {
+      window.clearInterval(timer); window.removeEventListener('focus', visible);
+      document.removeEventListener('visibilitychange', visible);
+    };
   }, []);
 
   useEffect(() => {
@@ -742,7 +765,7 @@ export default function App() {
     setAdminAuthError('');
   };
 
-  const approvedListings = listings.filter(item => item.status === 'approved');
+  const approvedListings = listings.filter(item => item.status === 'approved' && !isListingArchived(item, listingNow));
   const featuredListings = approvedListings.filter(item => item.isFeatured === true);
   const regularApprovedListings = approvedListings.filter(item => !item.isFeatured);
 
@@ -871,6 +894,7 @@ export default function App() {
                         <img src={displayImg} alt={item.title} style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '6px', marginBottom: '6px' }} />
                         <div style={{ fontSize: '12px', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</div>
                         <div style={{ fontSize: '13px', fontWeight: '800', color: '#1b3a2b', marginTop: '2px' }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
+                        <ListingDate value={item.created_at} />
                       </div>
                     );
                   })}
@@ -932,6 +956,7 @@ export default function App() {
                     <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: '700' }}>{item.title}</h4>
                     <div style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b' }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
                     <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>📍 {item.location}</div>
+                    <ListingDate value={item.created_at} />
                   </div>
                 </div>
               );
@@ -939,7 +964,13 @@ export default function App() {
           </div>
         )}
 
-        {activeTab === 'detail' && selectedListing && (
+        {activeTab === 'detail' && selectedListing && !isAdminLoggedIn && isListingArchived(selectedListing, listingNow) && (
+          <div role="status" style={{ padding: '16px', background: '#fff', borderRadius: '12px' }}>
+            Bu ilanın 8 aylık yayın süresi doldu ve ilan arşive alındı.
+            <button type="button" onClick={() => changeTab('home')} style={{ display: 'block', marginTop: '12px' }}>Ana sayfaya dön</button>
+          </div>
+        )}
+        {activeTab === 'detail' && selectedListing && (isAdminLoggedIn || !isListingArchived(selectedListing, listingNow)) && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
               <button onClick={() => changeTab('results')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer' }}>← Listeye Dön</button>
@@ -973,6 +1004,8 @@ export default function App() {
               <img src={selectedListing.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800'} alt={selectedListing.title} style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '8px', marginBottom: '10px' }} />
             )}
             <h2 style={{ fontSize: '18px', fontWeight: '800', margin: '8px 0' }}>{selectedListing.title}</h2>
+            <ListingDate value={selectedListing.created_at} />
+            {isListingArchived(selectedListing, listingNow) && <p role="status" style={{ color: '#854d0e', fontSize: '12px' }}>Arşivde — yayın süresi {formatListingDate(selectedListing.expires_at)} tarihinde doldu. İlan kaydı ve fotoğrafları korunuyor.</p>}
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '4px' }}>{Number(selectedListing.price).toLocaleString('tr-TR')} TL</div>
             <p style={{ color: '#475569', fontSize: '13px', marginBottom: '12px', lineHeight: '1.5' }}>{selectedListing.description}</p>
 
@@ -1118,7 +1151,7 @@ export default function App() {
                   <Megaphone size={16} /> Reklam Yönetimi — Görsel / Video Yükle
                 </button>
 
-                <ModerationQueue items={moderation.items} loading={moderation.loading}
+                <ModerationQueue items={moderation.items.filter(item => !isListingArchived(item, listingNow))} loading={moderation.loading}
                   error={moderation.error} busyId={moderation.busyId} onDecision={moderateListing}
                   onRefresh={() => { void moderation.refresh(); }} />
 
@@ -1211,12 +1244,12 @@ export default function App() {
                   </fieldset>
                 </div>
 
-                <h3 style={{ fontSize: '14px', fontWeight: '700', marginTop: '20px', marginBottom: '8px' }}>📋 Tüm İlanlar ({listings.length})</h3>
-                {listings.map(item => {
+                <h3 style={{ fontSize: '14px', fontWeight: '700', marginTop: '20px', marginBottom: '8px' }}>📋 Yayındaki İlanlar ({approvedListings.length})</h3>
+                {approvedListings.map(item => {
                   const isFeat = item.isFeatured === true;
                   return (
                     <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '6px', marginBottom: '6px' }}>
-                      <span style={{ fontSize: '12px', fontWeight: '600' }}>{item.title}</span>
+                      <div><span style={{ fontSize: '12px', fontWeight: '600' }}>{item.title}</span><ListingDate value={item.created_at} /></div>
                       <div style={{ display: 'flex', gap: '4px' }}>
                         <button onClick={() => toggleFeaturedListing(item.id)} style={{ backgroundColor: isFeat ? '#fef08a' : '#f1f5f9', color: '#854d0e', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>
                           {isFeat ? '⭐ Vitrinde' : '☆ Vitrin Yap'}
@@ -1227,6 +1260,26 @@ export default function App() {
                     </div>
                   );
                 })}
+                <section aria-labelledby="listing-archive-heading" style={{ marginTop: '20px', padding: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                  <h3 id="listing-archive-heading" style={{ margin: '0 0 8px', fontSize: '14px' }}>İlan Arşivi</h3>
+                  <p style={{ fontSize: '12px', color: '#64748b' }}>İlanlar veriliş tarihinden 8 takvim ayı sonra otomatik olarak yayından kalkar. Kayıtları ve fotoğrafları silinmez. Düzenlemek veya onaylamak bu süreyi yenilemez.</p>
+                  <button type="button" onClick={() => { void listingArchive.refresh(); }} disabled={listingArchive.loading || listingArchive.busyId !== null}>Arşivi yenile</button>
+                  {listingArchive.loading && <p role="status">Arşiv yükleniyor…</p>}
+                  {listingArchive.error && <p role="alert" style={{ color: '#b91c1c' }}>{listingArchive.error}</p>}
+                  {!listingArchive.loading && !listingArchive.error && listingArchive.items.length === 0 && <p style={{ fontSize: '12px' }}>Henüz arşive alınmış ilan yok.</p>}
+                  {listingArchive.items.map(item => (
+                    <div key={item.id} style={{ padding: '10px 0', borderBottom: '1px solid #e2e8f0' }}>
+                      <strong style={{ fontSize: '12px' }}>{item.title}</strong>
+                      <ListingDate value={item.created_at} />
+                      <div style={{ fontSize: '11px', color: '#854d0e', margin: '4px 0' }}>Arşive alınma tarihi: {formatListingDate(item.expires_at)}</div>
+                      <button type="button" disabled={listingArchive.busyId !== null || listingArchive.loading} onClick={async () => {
+                        const row = await listingArchive.view(item.id);
+                        if (row) { setSelectedListing(normalizeListing(row)); changeTab('detail'); }
+                      }}>{listingArchive.busyId === item.id ? 'Açılıyor…' : 'İlanı görüntüle'}</button>
+                    </div>
+                  ))}
+                  {listingArchive.hasMore && <button type="button" disabled={listingArchive.loading || listingArchive.busyId !== null} onClick={() => { void listingArchive.loadMore(); }}>Daha eski ilanları yükle</button>}
+                </section>
               </div>
             )}
           </div>

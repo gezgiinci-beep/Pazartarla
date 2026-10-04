@@ -13,7 +13,9 @@
     "check:settings": "node --experimental-strip-types --test tests/site-settings.test.mjs",
     "check:settings-db": "node scripts/check-site-settings-database.mjs",
     "check:ads": "node --experimental-strip-types --test tests/advertisements.test.mjs",
-    "check:ads-db": "node scripts/check-advertisements-database.mjs"
+    "check:ads-db": "node scripts/check-advertisements-database.mjs",
+    "check:lifetime": "node --experimental-strip-types --test tests/listing-lifetime.test.mjs tests/featured-layout.test.mjs",
+    "check:lifetime-db": "node scripts/check-listing-lifetime-database.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",

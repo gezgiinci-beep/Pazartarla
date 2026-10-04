@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { isListingArchived } from '../lib/listingLifetime';
 
 export function useModerationQueue(enabled: boolean, url: string, getHeaders: () => Promise<Record<string, string>>, normalize: (row: any) => any) {
   const [items, setItems] = useState<any[]>([]);
@@ -20,7 +21,7 @@ export function useModerationQueue(enabled: boolean, url: string, getHeaders: ()
       if (!response.ok) throw new Error('MODERATION_LOAD_FAILED');
       const rows = await response.json();
       if (!Array.isArray(rows)) throw new Error('MODERATION_LOAD_FAILED');
-      if (active.current) setItems(rows.map(normalize));
+      if (active.current) setItems(rows.filter(row => !isListingArchived(row)).map(normalize));
     } catch {
       if (active.current) setError('Bekleyen ilanlar yüklenemedi. Yönetici oturumunuzu kontrol edip yeniden deneyin.');
     } finally { if (active.current) setLoading(false); }
