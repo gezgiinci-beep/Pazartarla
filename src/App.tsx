@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import SubmissionAccountPanel from './components/SubmissionAccountPanel';
 import ModerationQueue from './components/ModerationQueue';
 import MySubmissions from './components/MySubmissions';
+import ListingEditor from './components/ListingEditor';
 import { useSubmissionAccount } from './hooks/useSubmissionAccount';
 import { useModerationQueue } from './hooks/useModerationQueue';
 import { useSiteSettings } from './hooks/useSiteSettings';
@@ -190,6 +191,8 @@ export default function App() {
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
   const [selectedSubToRemove, setSelectedSubToRemove] = useState('');
   const [editingListing, setEditingListing] = useState(null);
+  const [ownerEditingId, setOwnerEditingId] = useState(null);
+  const [listingEditMessage, setListingEditMessage] = useState('');
   const [lastAddedListing, setLastAddedListing] = useState(null);
   const [customCategoryInput, setCustomCategoryInput] = useState('');
   const [submissionSaving, setSubmissionSaving] = useState(false);
@@ -630,6 +633,30 @@ export default function App() {
     }, 100);
   };
 
+  const startOwnerEditing = (item) => {
+    if (!submissionAccount.session || (!isAdminLoggedIn && item.submitted_by !== submissionAccount.session.user.id)) return;
+    setOwnerEditingId(item.id);
+    setListingEditMessage('');
+    changeTab('edit-listing');
+  };
+  useEffect(() => {
+    setOwnerEditingId(null);
+    setListingEditMessage('');
+  }, [submissionAccount.session?.user.id]);
+  const finishOwnerEdit = async (result) => {
+    const saved = normalizeListing(result.listing);
+    submissionAccount.applySaved(result.listing);
+    setSelectedListing(current => current?.id === saved.id ? saved : current);
+    setListings(current => saved.status === 'approved'
+      ? current.map(item => item.id === saved.id ? saved : item)
+      : current.filter(item => item.id !== saved.id));
+    setOwnerEditingId(null);
+    setListingEditMessage(!result.changed ? 'Değişiklik yapılmadı; ilanınız aynı kaldı.' :
+      result.reapproval_required ? 'İlan güncellendi ve yeniden yönetici onayına gönderildi.' : 'İlan güncellendi.');
+    changeTab('add');
+    await Promise.all([fetchListings(), submissionAccount.refresh(), moderation.refresh()]);
+  };
+
   const saveEditedListing = async (e) => {
       e.preventDefault();
       if (!isAdminLoggedIn) return;
@@ -1012,10 +1039,12 @@ export default function App() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
               <button onClick={() => changeTab('results')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer' }}>← Listeye Dön</button>
               {isAdminLoggedIn && (
-                <button onClick={() => startEditingFromDetail(selectedListing)} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: '700', fontSize: '12px', cursor: 'pointer' }}>
+                <button onClick={() => startOwnerEditing(selectedListing)} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: '700', fontSize: '12px', cursor: 'pointer' }}>
                   ✏️ Bu İlanı Düzenle
                 </button>
               )}
+              {!isAdminLoggedIn && submissionAccount.session && submissionAccount.session.user.id === selectedListing.submitted_by &&
+                <button type="button" onClick={()=>startOwnerEditing(selectedListing)}>İlanı Düzenle / Güncelle</button>}
             </div>
             {selectedListing.images && selectedListing.images.length > 0 ? (
               <div>
@@ -1097,6 +1126,14 @@ export default function App() {
           </div>
         )}
 
+        {activeTab === 'edit-listing' && submissionAccount.session && ownerEditingId !== null && (
+          <ListingEditor key={`${submissionAccount.session.user.id}:${ownerEditingId}`} client={supabaseClient}
+            itemId={ownerEditingId} userId={submissionAccount.session.user.id} isAdmin={isAdminLoggedIn}
+            categories={siteSettings.settings?.categories} onSaved={finishOwnerEdit}
+            onCancel={()=>{setOwnerEditingId(null);changeTab('add');}} />
+        )}
+        {activeTab === 'edit-listing' && (!submissionAccount.session || ownerEditingId === null) &&
+          <div role="alert">Oturum değişti veya sona erdi. <button onClick={()=>changeTab('add')}>Hesabınıza dönün</button></div>}
         {activeTab === 'add' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
@@ -1111,9 +1148,10 @@ export default function App() {
               message={submissionAccount.message} onAuthenticate={submissionAccount.authenticate}
               onResend={submissionAccount.resend} onSignOut={submissionAccount.signOut}
               onRefresh={() => { void submissionAccount.refresh(); }} />
+            {listingEditMessage && <p role="status">{listingEditMessage}</p>}
             {submissionAccount.session && <MySubmissions items={submissionAccount.items}
               loading={submissionAccount.loading} error={submissionAccount.error}
-              onRefresh={() => { void submissionAccount.refresh(); }} />}
+              onRefresh={() => { void submissionAccount.refresh(); }} onEdit={startOwnerEditing} />}
             {submissionAccount.session && submissionAccount.quota?.email_verified && (
             <form onSubmit={handleDirectAdd} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <input type="text" name="seller" placeholder="Adınız Soyadınız *" value={form.seller} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
@@ -1308,7 +1346,8 @@ export default function App() {
                         <button onClick={() => toggleFeaturedListing(item.id)} style={{ backgroundColor: isFeat ? '#fef08a' : '#f1f5f9', color: '#854d0e', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>
                           {isFeat ? '⭐ Vitrinde' : '☆ Vitrin Yap'}
                         </button>
-                        <button onClick={() => { setEditingListing(item); if (editFormRef.current) editFormRef.current.scrollIntoView({ behavior: 'smooth' }); }} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Düzenle</button>
+                        <button onClick={() => startOwnerEditing(item)} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Düzenle</button>
+                        <button onClick={() => startEditingFromDetail(item)} type="button">Galeri / SEO</button>
                         <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Sil</button>
                       </div>
                     </div>

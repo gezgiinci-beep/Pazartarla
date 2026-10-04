@@ -5,6 +5,7 @@ export type MySubmissionsProps = {
   loading: boolean;
   error: string;
   onRefresh: () => void;
+  onEdit?: (item: any) => void;
 };
 
 const statusPresentation: Record<string, { label: string; background: string; color: string }> = {
@@ -37,7 +38,7 @@ function statusFor(value: unknown) {
   return statusPresentation[key] ?? { label: String(value ?? "Durum bilinmiyor"), background: "#edf0e9", color: "#526256" };
 }
 
-export default function MySubmissions({ items, loading, error, onRefresh }: MySubmissionsProps) {
+export default function MySubmissions({ items, loading, error, onRefresh, onEdit }: MySubmissionsProps) {
   return (
     <section aria-labelledby="my-submissions-title" data-testid="panel-my-submissions" style={{ width: "100%", boxSizing: "border-box", padding: 18, border: "1px solid #dce5dc", borderRadius: 12, background: "#f7f8f2", color: "#26392e", fontFamily: "inherit" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
@@ -84,6 +85,7 @@ export default function MySubmissions({ items, loading, error, onRefresh }: MySu
                 <span data-testid={`status-my-submission-${item.id ?? index}`} style={{ flex: "0 0 auto", padding: "6px 9px", borderRadius: 99, background: status.background, color: status.color, fontSize: 11, fontWeight: 800 }}>
                   {status.label}
                 </span>
+                {onEdit && <button type="button" style={buttonStyle} onClick={()=>onEdit(item)}>İlanı Düzenle / Güncelle</button>}
               </article>
             );
           })}

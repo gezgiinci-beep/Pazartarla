@@ -139,6 +139,10 @@ export function useSubmissionAccount(client: SupabaseClient | null, url: string,
 
   return {
     session, quota, items, loading, busy, error, message, refresh, authenticate, resend, signOut,
+    applySaved: (row: any) => {
+      if (row.submitted_by !== identity.current) return;
+      setItems(current => current.map(item => item.id === row.id ? normalize(row) : item));
+    },
     canSubmit: Boolean(session && quota?.email_verified && (quota.unlimited === true || (quota.remaining ?? 0) > 0) && !loading),
   };
 }
