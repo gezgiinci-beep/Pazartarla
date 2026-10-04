@@ -9,7 +9,9 @@
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "check:startup": "node scripts/check-startup.mjs",
-    "check:submissions": "node scripts/check-submission-database.mjs"
+    "check:submissions": "node scripts/check-submission-database.mjs",
+    "check:settings": "node --experimental-strip-types --test tests/site-settings.test.mjs",
+    "check:settings-db": "node scripts/check-site-settings-database.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",

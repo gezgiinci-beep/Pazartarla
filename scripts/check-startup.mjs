@@ -4,7 +4,7 @@ import { runInNewContext } from 'node:vm';
 
 const source = readFileSync(new URL('../src/App.tsx', import.meta.url), 'utf8');
 const startupEffect = [...source.matchAll(
-  /  useEffect\(\(\) => \{\n[\s\S]*?\n  \}, \[\]\);/g,
+  /  useEffect\(\(\) => \{\n(?:(?!\n  \}, \[)[\s\S])*?\n  \}, \[\]\);/g,
 )].map(match => match[0]).find(effect => effect.includes('setShowSplash(false)'));
 
 assert.ok(startupEffect, 'A mount effect must dismiss the splash screen.');

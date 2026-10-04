@@ -5,6 +5,8 @@ import ModerationQueue from './components/ModerationQueue';
 import MySubmissions from './components/MySubmissions';
 import { useSubmissionAccount } from './hooks/useSubmissionAccount';
 import { useModerationQueue } from './hooks/useModerationQueue';
+import { useSiteSettings } from './hooks/useSiteSettings';
+import SiteSettingsStatus from './components/SiteSettingsStatus';
 
 import {
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus,
@@ -108,20 +110,6 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
     };
 
 
-const FALLBACK_CATEGORIES = {
-  'Mahsuller': ['Kiraz', 'Ceviz', 'Zeytin & Zeytinyağı', 'Buğday', 'Bakliyat', 'Meyve & Sebze'],
-  'Canlı Hayvanlar': ['Büyükbaş', 'Küçükbaş', 'Kanatlı'],
-  'Hayvan Yemleri ve Ekipmanları': ['Yem Çeşitleri', 'Suluk / Yemlik'],
-  'Arıcılık': ['Bal', 'Polen', 'Arı Ekmeği', 'Arı Sütü', 'Kovan ve Ekipmanları'],
-  'Traktör': ['İkinci El Traktör', 'Sıfır Traktör', 'Ekipmanlar'],
-  'Biçerdöver': ['Biçerdöver'],
-  'Tarım Ekipmanları': ['Römork', 'İlaçlama Makinesi', 'Çapa Makinası', 'Pulluk', 'Kepçe & Yükleyici'],
-  'Tarım İşçileri': ['Hasat Ekibi', 'Budama Ekibi'],
-  'Uzmanlar': ['Veterinerler', 'Ziraatçiler'],
-  'Endüstriyel Çadırlar': ['Çadır Örtüsü', 'Depo Çadırı'],
-  'Geçici Konutlar': ['Konteyner', 'Çadır', 'Prefabrik']
-};
-
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState('home');
@@ -137,9 +125,12 @@ export default function App() {
   const [listingsLoading, setListingsLoading] = useState(true);
   const [listingsError, setListingsError] = useState('');
 
-  const [categoriesWithSubs, setCategoriesWithSubs] = useState(FALLBACK_CATEGORIES);
-  const [announcement, setAnnouncement] = useState('🌾 Türkiye genelinden tarım aletleri, veterinerler ve taze mahsul ilanları PazarTarla\'da!');
-  const [tempAnnouncement, setTempAnnouncement] = useState(announcement);
+  const siteSettings = useSiteSettings(SUPABASE_URL, SUPABASE_ANON_KEY, getAdminDbHeaders);
+  const categoriesWithSubs = siteSettings.settings?.categories || {};
+  const announcement = siteSettings.settings?.announcement || '';
+  const [tempAnnouncement, setTempAnnouncement] = useState('');
+  const [announcementDirty, setAnnouncementDirty] = useState(false);
+  const [announcementDraftRevision, setAnnouncementDraftRevision] = useState<number | undefined>();
 
   const [favorites, setFavorites] = useState(() => {
     try {
@@ -161,7 +152,8 @@ export default function App() {
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
   const [openCategory, setOpenCategory] = useState('');
 
-  const [newCategoryName, setNewCategoryName] = useState('Mahsuller');
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [mainCategoryToRemove, setMainCategoryToRemove] = useState('');
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
   const [selectedSubToRemove, setSelectedSubToRemove] = useState('');
   const [editingListing, setEditingListing] = useState(null);
@@ -186,6 +178,37 @@ export default function App() {
     seoTags: '',
     status: 'pending'
   });
+
+  useEffect(() => {
+    if (!announcementDirty) {
+      setTempAnnouncement(announcement);
+      setAnnouncementDraftRevision(siteSettings.settings?.revision);
+    }
+  }, [announcement, announcementDirty, siteSettings.settings?.revision]);
+
+  useEffect(() => {
+    if (!isAdminLoggedIn) setAnnouncementDirty(false);
+  }, [isAdminLoggedIn]);
+
+  useEffect(() => {
+    if (!siteSettings.settings) return;
+    const categories = siteSettings.settings.categories;
+    const first = Object.keys(categories)[0];
+    setNewCategoryName(current => Object.hasOwn(categories, current) ? current : first);
+    setMainCategoryToRemove(current => Object.hasOwn(categories, current) ? current : first);
+    setSelectedSubToRemove(current => (categories[newCategoryName] || []).includes(current) ? current : '');
+    if (selectedCategory !== 'Tüm kategoriler' && !Object.hasOwn(categories, selectedCategory)) {
+      setSelectedCategory('Tüm kategoriler');
+      setSelectedSubCategory('Tümü');
+    } else if (selectedSubCategory !== 'Tümü' && !(categories[selectedCategory] || []).includes(selectedSubCategory)) {
+      setSelectedSubCategory('Tümü');
+    }
+    setForm(current => {
+      const category = Object.hasOwn(categories, current.category) ? current.category : first;
+      const subCategory = categories[category].includes(current.subCategory) ? current.subCategory : categories[category][0];
+      return category === current.category && subCategory === current.subCategory ? current : { ...current, category, subCategory };
+    });
+  }, [siteSettings.settings, newCategoryName, selectedCategory, selectedSubCategory]);
 
   const fetchListings = async () => {
       setListingsLoading(true);
@@ -311,11 +334,14 @@ export default function App() {
     }, 1000);
   };
 
-  const saveAnnouncement = (e) => {
+  const saveAnnouncement = async (e) => {
     e.preventDefault();
     if (!isAdminLoggedIn) return;
-    setAnnouncement(tempAnnouncement);
-    alert('Duyuru başarıyla güncellendi!');
+    const saved = await siteSettings.save({ announcement: tempAnnouncement }, 'Duyuru sunucuya kaydedildi.', announcementDraftRevision);
+    if (saved) {
+      setTempAnnouncement(saved.announcement);
+      setAnnouncementDirty(false);
+    }
   };
 
   const sanitizeInput = (str) => {
@@ -419,6 +445,10 @@ export default function App() {
       e.preventDefault();
       if (submissionSaving) return;
       setSubmissionError('');
+      if (!siteSettings.settings || siteSettings.loading || siteSettings.loadError) {
+        setSubmissionError('Kategori ayarları yüklenemedi. Önce site ayarlarını yeniden yükleyin.');
+        return;
+      }
       if (!submissionAccount.canSubmit) {
         setSubmissionError('E-posta adresinizi doğrulayın ve ilan kotanızı kontrol edin. 24 saatte en fazla 3 ilan gönderebilirsiniz.');
         return;
@@ -618,49 +648,56 @@ export default function App() {
       }
     };
 
-  const handleAddNewMainCategory = (e) => {
+  const handleAddNewMainCategory = async (e) => {
     e.preventDefault();
     if (!isAdminLoggedIn) return;
     if (!customCategoryInput.trim()) return;
     const cat = customCategoryInput.trim();
-    if (categoriesWithSubs[cat]) {
+    if (Object.hasOwn(categoriesWithSubs, cat)) {
       alert('Bu kategori zaten mevcut!');
       return;
     }
-    setCategoriesWithSubs({ ...categoriesWithSubs, [cat]: ['Genel'] });
-    setCustomCategoryInput('');
-    alert(`"${cat}" ana kategorisi başarıyla eklendi!`);
-  };
-
-  const handleDeleteMainCategory = (catKey) => {
-    if (!isAdminLoggedIn) return;
-    if (window.confirm(`"${catKey}" kategorisini ve altındaki tüm seçenekleri silmek istediğinize emin misiniz?`)) {
-      const updated = { ...categoriesWithSubs };
-      delete updated[catKey];
-      setCategoriesWithSubs(updated);
-      alert('Kategori silindi!');
+    if (await siteSettings.save({ categories: { ...categoriesWithSubs, [cat]: ['Genel'] } }, `"${cat}" ana kategorisi sunucuya kaydedildi.`)) {
+      setCustomCategoryInput('');
     }
   };
 
-  const handleAddSubCategory = (e) => {
+  const handleDeleteMainCategory = async (catKey) => {
+    if (!isAdminLoggedIn) return;
+    if (!Object.hasOwn(categoriesWithSubs, catKey)) return;
+    if (Object.keys(categoriesWithSubs).length === 1) {
+      alert('İlan verilebilmesi için en az bir ana kategori kalmalı.');
+      return;
+    }
+    if (window.confirm(`"${catKey}" kategorisini ve altındaki tüm seçenekleri silmek istediğinize emin misiniz?`)) {
+      const updated = { ...categoriesWithSubs };
+      delete updated[catKey];
+      await siteSettings.save({ categories: updated }, 'Ana kategori sunucudan silindi.');
+    }
+  };
+
+  const handleAddSubCategory = async (e) => {
     e.preventDefault();
     if (!isAdminLoggedIn) return;
     const catName = newCategoryName;
+    if (!Object.hasOwn(categoriesWithSubs, catName)) return;
     const currentSubs = categoriesWithSubs[catName] || [];
     const newSubs = newSubCategoryName ? newSubCategoryName.split(',').map(s => s.trim()).filter(Boolean) : [];
+    if (!newSubs.length) return;
     const combined = Array.from(new Set([...currentSubs, ...newSubs]));
-    setCategoriesWithSubs({ ...categoriesWithSubs, [catName]: combined });
-    setNewSubCategoryName('');
-    alert('Alt seçenekler eklendi!');
+    if (await siteSettings.save({ categories: { ...categoriesWithSubs, [catName]: combined } }, 'Alt seçenekler sunucuya kaydedildi.')) {
+      setNewSubCategoryName('');
+    }
   };
 
-  const handleDeleteSubCategory = (catKey, subToDel) => {
+  const handleDeleteSubCategory = async (catKey, subToDel) => {
     if (!isAdminLoggedIn) return;
     const currentSubs = categoriesWithSubs[catKey] || [];
+    if (!currentSubs.includes(subToDel)) return;
     const updatedSubs = currentSubs.filter(sub => sub !== subToDel);
-    setCategoriesWithSubs({ ...categoriesWithSubs, [catKey]: updatedSubs.length ? updatedSubs : ['Genel'] });
-    setSelectedSubToRemove('');
-    alert('Seçenek silindi!');
+    if (await siteSettings.save({ categories: { ...categoriesWithSubs, [catKey]: updatedSubs.length ? updatedSubs : ['Genel'] } }, 'Alt seçenek sunucudan silindi.')) {
+      setSelectedSubToRemove('');
+    }
   };
 
   const handleAdminLogin = async (e) => {
@@ -745,6 +782,7 @@ export default function App() {
       </header>
 
       <main style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '12px', flex: 1, boxSizing: 'border-box' }}>
+          <SiteSettingsStatus state={siteSettings} />
           {listingsError && (
             <div role="alert" style={{ backgroundColor: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca', borderRadius: '8px', padding: '10px 12px', marginBottom: '12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ flex: 1 }}>{listingsError}</span>
@@ -1027,8 +1065,8 @@ export default function App() {
               </div>
               <textarea name="description" placeholder="Açıklama..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px' }} />
               {submissionError && <div role="alert" style={{ color: '#b91c1c', fontSize: '13px' }}>{submissionError}</div>}
-              <button type="submit" disabled={submissionSaving || !submissionAccount.canSubmit}
-                style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', opacity: submissionSaving || !submissionAccount.canSubmit ? 0.6 : 1 }}>
+              <button type="submit" disabled={submissionSaving || !submissionAccount.canSubmit || !siteSettings.settings || !!siteSettings.loadError}
+                style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', opacity: submissionSaving || !submissionAccount.canSubmit || !siteSettings.settings || !!siteSettings.loadError ? 0.6 : 1 }}>
                 {submissionSaving ? 'Onaya gönderiliyor…' : 'İlanı Onaya Gönder'}
               </button>
             </form>
@@ -1075,10 +1113,14 @@ export default function App() {
 
                 <div style={{ backgroundColor: '#fef9c3', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#854d0e', margin: '0 0 8px 0' }}>Duyuru Banner Yönetimi</h3>
+                  <SiteSettingsStatus state={siteSettings} admin />
+                  <fieldset disabled={!siteSettings.editable} style={{ border: 0, padding: 0, margin: 0 }}>
                   <form onSubmit={saveAnnouncement} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <input type="text" value={tempAnnouncement} onChange={(e) => setTempAnnouncement(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #facc15' }} />
+                    <input type="text" aria-label="Site duyurusu" maxLength={1000} value={tempAnnouncement} onChange={(e) => { setTempAnnouncement(e.target.value); setAnnouncementDirty(true); }} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #facc15' }} />
                     <button type="submit" style={{ backgroundColor: '#ca8a04', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Güncelle</button>
+                    <button type="button" onClick={() => { setTempAnnouncement(announcement); setAnnouncementDraftRevision(siteSettings.settings?.revision); setAnnouncementDirty(false); }} style={{ padding: '6px', cursor: 'pointer' }}>Sunucudaki duyuruyu al</button>
                   </form>
+                  </fieldset>
                 </div>
 
                 {editingListing && (
@@ -1114,23 +1156,25 @@ export default function App() {
 
                 <div style={{ backgroundColor: '#f0fdf4', padding: '12px', borderRadius: '8px', border: '1px solid #bbf7d0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166634', margin: '0 0 8px 0' }}>📁 Ana Kategori Ekle / Sil</h3>
+                  <SiteSettingsStatus state={siteSettings} admin />
+                  <fieldset disabled={!siteSettings.editable} style={{ border: 0, padding: 0, margin: 0 }}>
                   <form onSubmit={handleAddNewMainCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '10px' }}>
-                    <input type="text" placeholder="Yeni Ana Kategori Adı" value={customCategoryInput} onChange={(e) => setCustomCategoryInput(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                    <input type="text" required maxLength={100} placeholder="Yeni Ana Kategori Adı" value={customCategoryInput} onChange={(e) => setCustomCategoryInput(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                     <button type="submit" style={{ backgroundColor: '#166534', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Ana Kategori Ekle</button>
                   </form>
                   <div style={{ display: 'flex', gap: '6px' }}>
-                    <select id="mainCatDelSelect" style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #ef4444', backgroundColor: '#fef2f2' }}>
+                    <select aria-label="Silinecek ana kategori" value={mainCategoryToRemove} onChange={(e) => setMainCategoryToRemove(e.target.value)} style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #ef4444', backgroundColor: '#fef2f2' }}>
                       {Object.keys(categoriesWithSubs).map(cat => <option key={cat} value={cat}>{cat}</option>)}
                     </select>
-                    <button type="button" onClick={() => {
-                      const sel = document.getElementById('mainCatDelSelect').value;
-                      handleDeleteMainCategory(sel);
-                    }} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '0 10px', borderRadius: '6px', fontWeight: '700', fontSize: '11px', cursor: 'pointer' }}>Ana Kategoriyi Sil</button>
+                    <button type="button" onClick={() => handleDeleteMainCategory(mainCategoryToRemove)} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '0 10px', borderRadius: '6px', fontWeight: '700', fontSize: '11px', cursor: 'pointer' }}>Ana Kategoriyi Sil</button>
                   </div>
+                  </fieldset>
                 </div>
 
                 <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 8px 0' }}>Alt Seçenek Yönetimi</h3>
+                  <SiteSettingsStatus state={siteSettings} admin />
+                  <fieldset disabled={!siteSettings.editable} style={{ border: 0, padding: 0, margin: 0 }}>
                   <form onSubmit={handleAddSubCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <select value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff' }}>
                       {Object.keys(categoriesWithSubs).map(cat => <option key={cat} value={cat}>{cat}</option>)}
@@ -1140,11 +1184,12 @@ export default function App() {
                         <option value="">Silinecek seçeneği seç...</option>
                         {(categoriesWithSubs[newCategoryName] || []).map(sub => <option key={sub} value={sub}>{sub}</option>)}
                       </select>
-                      <button type="button" onClick={() => handleDeleteSubCategory(newCategoryName, selectedSubToRemove)} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '0 10px', borderRadius: '6px', fontWeight: '700', fontSize: '11px', cursor: 'pointer' }}>Sil</button>
+                      <button type="button" disabled={!selectedSubToRemove} onClick={() => handleDeleteSubCategory(newCategoryName, selectedSubToRemove)} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '0 10px', borderRadius: '6px', fontWeight: '700', fontSize: '11px', cursor: 'pointer' }}>Sil</button>
                     </div>
-                    <input type="text" placeholder="Yeni alt seçenekler (Virgülle ayırın)" value={newSubCategoryName} onChange={(e) => setNewSubCategoryName(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                    <input type="text" required placeholder="Yeni alt seçenekler (Virgülle ayırın)" value={newSubCategoryName} onChange={(e) => setNewSubCategoryName(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                     <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Alt Seçenek Ekle</button>
                   </form>
+                  </fieldset>
                 </div>
 
                 <h3 style={{ fontSize: '14px', fontWeight: '700', marginTop: '20px', marginBottom: '8px' }}>📋 Tüm İlanlar ({listings.length})</h3>
