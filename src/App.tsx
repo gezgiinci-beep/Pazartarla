@@ -12,11 +12,13 @@ import AdvertisementManager from './components/AdvertisementManager';
 import AdvertisementPlacement from './components/AdvertisementPlacement';
 import { formatListingDate, isListingArchived } from './lib/listingLifetime';
 import { useListingArchive } from './hooks/useListingArchive';
+import BrandLogo from './components/BrandLogo';
+import OpeningSplash from './components/OpeningSplash';
 
 import {
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus,
   Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, ChevronDown, X,
-  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag, Edit3, Sparkles, Megaphone, CheckCircle, Bot, RefreshCw
+  Car, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag, Edit3, Sparkles, Megaphone, CheckCircle, Bot, RefreshCw
 } from 'lucide-react';
 
 // ==========================================
@@ -256,7 +258,7 @@ export default function App() {
     };
 
   useEffect(() => {
-    const splashTimer = window.setTimeout(() => setShowSplash(false), 3500);
+    const splashTimer = window.setTimeout(() => setShowSplash(false), 1200);
     void fetchListings();
     return () => window.clearTimeout(splashTimer);
   }, []);
@@ -778,23 +780,15 @@ export default function App() {
       });
 
   if (showSplash) {
-    return (
-      <div style={{ position: 'fixed', inset: 0, backgroundColor: '#0f172a', color: '#f8fafc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '24px', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '32px', fontWeight: '700', margin: 0 }}>Türkiye'nin İlk ve Tek <br /><span style={{ color: '#2add9c' }}>Tarım Platformu</span></h1>
-      </div>
-    );
+    return <OpeningSplash />;
   }
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f4f6f8', color: '#1e293b', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', boxSizing: 'border-box', position: 'relative' }}>
       <header style={{ backgroundColor: '#1b3a2b', color: '#ffffff', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => { changeTab('home'); setSelectedCategory('Tüm kategoriler'); }}>
-          <div style={{ backgroundColor: '#22c55e', padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span>🌾</span>
-            <Tractor size={18} color="#fff" />
-          </div>
-          <div>
-            <h1 style={{ margin: 0, fontSize: '18px', fontWeight: '800' }}>PazarTarla</h1>
+          <BrandLogo />
+          <div className="pt-header-tagline" style={{ borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '10px' }}>
             <span style={{ fontSize: '10px', color: '#86efac' }}>Canlı Ortak Platform</span>
           </div>
         </div>

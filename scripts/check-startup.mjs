@@ -41,7 +41,7 @@ runInNewContext(startupEffect, {
 });
 
 assert.equal(listingFetches, 1, 'Listings must be loaded immediately on mount.');
-assert.equal(scheduledTimer?.delay, 3500);
+assert.equal(scheduledTimer?.delay, 1200, 'The introduction must finish in 1.2 seconds, not the old 3.5 seconds.');
 assert.equal(splashVisible, true);
 scheduledTimer.callback();
 assert.equal(splashVisible, false, 'The splash must close even while data is loading.');
