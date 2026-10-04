@@ -210,6 +210,12 @@ export default function App() {
     };
 
   useEffect(() => {
+    const splashTimer = window.setTimeout(() => setShowSplash(false), 3500);
+    void fetchListings();
+    return () => window.clearTimeout(splashTimer);
+  }, []);
+
+  useEffect(() => {
     if (!supabaseClient) return;
     let active = true;
     const syncAdminState = async (session) => {
