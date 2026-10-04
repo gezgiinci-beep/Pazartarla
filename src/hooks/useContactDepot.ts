@@ -1,6 +1,8 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {depotRpc,parseDepotPage,validateContact} from '../lib/contactDepot';
 import type {CampaignDraft,ContactDraft,DepotPage,MessageChannel} from '../lib/contactDepot';
+import {parseImportResults} from '../lib/contactImport';
+import type {ImportRow} from '../lib/contactImport';
 export function useContactDepot(enabled:boolean,url:string,getHeaders:()=>Promise<Record<string,string>>) {
   const [data,setData]=useState<DepotPage|null>(null);
   const [search,setSearch]=useState(''),[page,setPage]=useState(0),[archived,setArchived]=useState(false);
@@ -48,11 +50,26 @@ export function useContactDepot(enabled:boolean,url:string,getHeaders:()=>Promis
     return mutate('save_depot_contact',{p_id:draft.id,p_revision:draft.revision,p_name:draft.name,
       p_email:draft.email,p_phone:draft.phone},'Kişi kaydedildi.');
   }
+  async function processImport(rows:ImportRow[],save:boolean,requestId:string) {
+    if(!enabled)throw Error('Yetkili yönetici girişi gerekiyor.');
+    if(lock.current)throw Error('Devam eden işlemin bitmesini bekleyin.');
+    const current=scope.current;lock.current=true;setBusy(true);setError('');
+    try {
+      const args=save?{p_rows:rows,p_request_id:requestId}:{p_rows:rows};
+      const result=parseImportResults(await depotRpc(url,await getHeaders(),
+        save?'import_depot_contacts':'preview_depot_import',args),rows,save);
+      if(current!==scope.current)throw Error('Yönetici oturumu değişti. Kaydedilen kişileri yeniden giriş yapıp kontrol edin.');
+      return result;
+    }catch(e){
+      if(current===scope.current)setError(e instanceof Error?e.message:'İçe aktarım tamamlanamadı.');
+      throw e;
+    }finally{lock.current=false;setBusy(false);}
+  }
   return {data,loading,busy,error,notice,search,page,archived,refresh,
     searchContacts(value:string){setSearch(value);setPage(0);},
     setPage,
     showArchived(value:boolean){setArchived(value);setPage(0);},
-    saveContact,
+    saveContact,processImport,
     archiveContact:(id:string,revision:number,value:boolean)=>mutate('archive_depot_contact',
       {p_id:id,p_revision:revision,p_archived:value},value?'Kişi arşivlendi; mesaj izinleri kapatıldı.':'Kişi yeniden aktif. Önceki kapalı izinler açılmadı.'),
     savePermission:(id:string,revision:number,channel:MessageChannel,grant:boolean,evidence:string)=>mutate(

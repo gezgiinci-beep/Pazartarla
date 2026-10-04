@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import type { useContactDepot } from '../hooks/useContactDepot';
+import ContactBulkImport from './ContactBulkImport';
 import {
   CHANNELS,
   channelLabel,
@@ -86,6 +87,7 @@ export default function ContactDepotManager({ state, onBack }: ContactDepotManag
   } | null>(null);
   const [cancelTarget, setCancelTarget] = useState<Campaign | null>(null);
   const [campaignOpen, setCampaignOpen] = useState(false);
+  const [bulkImportOpen, setBulkImportOpen] = useState(false);
   const [campaignError, setCampaignError] = useState('');
   const [campaignDraft, setCampaignDraft] = useState<CampaignDraft>({
     name: '',
@@ -230,6 +232,9 @@ export default function ContactDepotManager({ state, onBack }: ContactDepotManag
           <p className="pt-depot__lede">İlan sahiplerinden oluşan merkezi rehber. İzin kayıtları ayrı tutulur; kayıtlı olmak, mesaj izni anlamına gelmez.</p>
         </div>
         <div className="pt-depot__intro-actions">
+          <button type="button" className="pt-depot__button pt-depot__button--quiet" onClick={() => setBulkImportOpen(true)} aria-expanded={bulkImportOpen} aria-controls="pt-bulk-title">
+            {bulkImportOpen ? 'Toplu aktarım açık' : 'Dosyadan aktar'}
+          </button>
           <button type="button" className="pt-depot__button pt-depot__button--quiet" onClick={() => void refresh()} disabled={loading} data-testid="button-depot-refresh">
             <span className={loading ? 'pt-depot__refresh-mark is-turning' : 'pt-depot__refresh-mark'} aria-hidden="true">↻</span>
             {loading ? 'Yenileniyor' : 'Yenile'}
@@ -250,6 +255,8 @@ export default function ContactDepotManager({ state, onBack }: ContactDepotManag
 
       {notice && <div className="pt-depot__notice" role="status" data-testid="status-depot-notice"><span aria-hidden="true">✓</span>{notice}</div>}
       {error && <div className="pt-depot__error" role="alert" data-testid="status-depot-error"><strong>İşlem tamamlanamadı</strong><span>{error}</span><button type="button" onClick={() => void refresh()} data-testid="button-depot-retry">Yeniden dene</button></div>}
+
+      {bulkImportOpen && <ContactBulkImport state={state} onClose={() => setBulkImportOpen(false)} />}
 
       <section className="pt-depot__channels" aria-labelledby="depot-channels-title">
         <div className="pt-depot__section-heading">

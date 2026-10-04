@@ -79,6 +79,7 @@ async function component(path) {
   const mod={exports:{}};
   runInNewContext(compiled.code,{React,module:mod,exports:mod.exports,require(p){
     if(p==='react')return React;if(p.endsWith('.css'))return {};
+    if(p==='./ContactBulkImport')return()=>null;
     if(p==='../lib/contactDepot')return depot;throw Error(p);
   }});
   return mod.exports.default;

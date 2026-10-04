@@ -69,6 +69,9 @@ export async function depotRpc(url:string,headers:Record<string,string>,name:str
       CONTACT_NO_RECIPIENTS:'Bu kanalda izinli ve aktif alıcı yok.',
       CONTACT_INVALID:'Girdiğiniz bilgileri kontrol edin.',
       CONTACT_INVALID_UNSUBSCRIBE:'Çıkış bağlantısı geçersiz. Size gönderilen bağlantıyı kontrol edin.',
+      CONTACT_IMPORT_SIZE:'İçe aktarım paketi çok büyük. Dosyayı küçültüp yeniden deneyin.',
+      CONTACT_IMPORT_INVALID:'İçe aktarım bilgileri geçersiz. Dosyayı yeniden seçin.',
+      CONTACT_IMPORT_CHANGED:'Bu aktarım kimliği farklı veriyle kullanılmış. Dosyayı yeniden seçin.',
     };
     if(messages[failure.message])throw Error(messages[failure.message]);
     if(response.status===401||response.status===403)throw Error(name==='unsubscribe_depot_contact'
