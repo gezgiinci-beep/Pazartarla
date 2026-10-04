@@ -3,9 +3,10 @@ import type { Session, SupabaseClient } from '@supabase/supabase-js';
 
 export type SubmissionQuota = {
   email_verified: boolean;
-  limit: number;
+  unlimited: boolean;
+  limit: number | null;
   used: number;
-  remaining: number;
+  remaining: number | null;
   next_available_at: string | null;
 };
 
@@ -138,6 +139,6 @@ export function useSubmissionAccount(client: SupabaseClient | null, url: string,
 
   return {
     session, quota, items, loading, busy, error, message, refresh, authenticate, resend, signOut,
-    canSubmit: Boolean(session && quota?.email_verified && quota.remaining > 0 && !loading),
+    canSubmit: Boolean(session && quota?.email_verified && (quota.unlimited === true || (quota.remaining ?? 0) > 0) && !loading),
   };
 }

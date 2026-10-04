@@ -4,9 +4,10 @@ export type SubmissionAccountPanelProps = {
   session: any | null;
   quota: {
     email_verified: boolean;
-    limit: number;
+    unlimited: boolean;
+    limit: number | null;
     used: number;
-    remaining: number;
+    remaining: number | null;
     next_available_at: string | null;
   } | null;
   loading: boolean;
@@ -217,14 +218,14 @@ export default function SubmissionAccountPanel({
               <>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "baseline", flexWrap: "wrap" }}>
                   <strong data-testid="text-quota-remaining" style={{ fontSize: 15 }}>
-                    {Math.max(0, quota.remaining)} / {Math.max(0, quota.limit)} gönderim hakkı kaldı
+                    {quota.unlimited ? 'Yönetici hesabı: Sınırsız ilan' : `${Math.max(0, quota.remaining ?? 0)} / ${Math.max(0, quota.limit ?? 0)} gönderim hakkı kaldı`}
                   </strong>
                   <span style={{ fontSize: 12, color: palette.muted }}>Son 24 saat: {quota.used} gönderim</span>
                 </div>
-                <div style={{ height: 6, background: "#e8eee6", borderRadius: 99, marginTop: 10, overflow: "hidden" }}>
+                {!quota.unlimited && <div style={{ height: 6, background: "#e8eee6", borderRadius: 99, marginTop: 10, overflow: "hidden" }}>
                   <div style={{ width: `${Math.min(100, Math.max(0, quota.limit ? (quota.used / quota.limit) * 100 : 0))}%`, height: "100%", background: palette.green, borderRadius: 99 }} />
-                </div>
-                {quota.remaining <= 0 && (
+                </div>}
+                {!quota.unlimited && (quota.remaining ?? 0) <= 0 && (
                   <p data-testid="text-quota-reset" style={{ margin: "9px 0 0", color: palette.muted, fontSize: 12 }}>
                     Yeni gönderim hakkınızın açılacağı zaman: <strong>{dateTime(quota.next_available_at)}</strong>
                   </p>
@@ -314,7 +315,9 @@ export default function SubmissionAccountPanel({
       )}
 
       <div data-testid="text-submission-policy" style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${palette.line}`, color: palette.muted, fontSize: 12, lineHeight: 1.55 }}>
-        Son 24 saat içinde en fazla 3 gönderim yapılabilir. Onaylanmış, reddedilmiş veya silinmiş tüm gönderimler bu kayan kota sayılır. Her ilan, herkese görünmeden önce yönetici onayı bekler.
+        {quota?.unlimited
+          ? 'Yönetici hesabınızda günlük ilan sınırı yoktur. Yeni ilanları yönetim panelinden onaylayabilirsiniz.'
+          : 'Normal üyeler son 24 saat içinde en fazla 3 gönderim yapabilir. Onaylanmış, reddedilmiş veya silinmiş tüm gönderimler bu kayan kotaya sayılır. Her ilan, herkese görünmeden önce yönetici onayı bekler.'}
       </div>
     </section>
   );

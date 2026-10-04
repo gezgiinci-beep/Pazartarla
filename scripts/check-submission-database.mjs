@@ -58,6 +58,7 @@ try {
     assert.ok(caught.code === expected || caught.message === expected, 'Unexpected denial reason.');
   };
 
+  await client.query('DELETE FROM private.listing_admins WHERE email = $1', [account.email]);
   await asUser();
   await expectFailure(() => insert('approved'), 'LISTING_APPROVAL_REQUIRED');
   const ids = [];
@@ -99,6 +100,17 @@ try {
   assert.equal((await client.query("UPDATE public.listings SET status='approved' WHERE id=$1 RETURNING id", [ids[0]])).rowCount, 1);
   assert.equal((await client.query("UPDATE public.listings SET status='rejected' WHERE id=$1 RETURNING id", [ids[1]])).rowCount, 1);
   assert.equal((await client.query('DELETE FROM public.listings WHERE id=$1 RETURNING id', [ids[2]])).rowCount, 1);
+  for (let i = 0; i < 5; i++) {
+    assert.equal((await insert()).rows[0].status, 'pending');
+  }
+  const adminQuota = (await client.query('SELECT public.get_listing_submission_quota() AS q')).rows[0].q;
+  assert.equal(adminQuota.unlimited, true);
+  assert.equal(adminQuota.limit, null);
+  assert.equal(adminQuota.remaining, null);
+  await client.query('RESET ROLE');
+  await client.query('DELETE FROM private.listing_admins WHERE email = $1', [account.email]);
+  await asUser();
+  assert.equal((await client.query('SELECT public.get_listing_submission_quota() AS q')).rows[0].q.unlimited, false);
   await expectFailure(() => insert(), 'LISTING_DAILY_LIMIT_REACHED');
   await asAnon();
   assert.equal((await client.query('SELECT id FROM public.listings WHERE id = ANY($1::int[])', [ids])).rowCount, 1);
@@ -106,7 +118,7 @@ try {
   await client.query('ROLLBACK');
   began = false;
   assert.equal((await client.query('SELECT count(*)::int AS count FROM public.listings')).rows[0].count, before);
-  console.log('Database checks passed: verified identity, pending visibility, ownership, moderation, three-per-24h limit, retained quota, and rollback.');
+  console.log('Database checks passed: unlimited administrator submissions, limited member submissions, role revocation, verified identity, moderation, and rollback.');
 } catch (error) {
   // Do not expose emails, connection strings, or driver error details.
   console.error('Database check failed:', error.code || error.name || 'UNKNOWN');

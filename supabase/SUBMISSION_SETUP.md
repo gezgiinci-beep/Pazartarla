@@ -3,6 +3,9 @@
 Yeni ilanlar doğrulanmış e-posta hesabı gerektirir ve `pending` olarak
 kaydedilir. Kullanıcı başına kayan 24 saatlik dönemde en fazla 3 gönderim
 yapılabilir. Yönetici onayı, ret veya silme bu kotayı sıfırlamaz.
+Özel yönetici listesinde bulunan doğrulanmış yönetici hesapları bu
+günlük sınırdan muaftır ve yönetim panelindeki “Sınırsız İlan Ekle”
+düğmesini kullanabilir. Yeni ilanların onay akışı değiştirilmez.
 Mevcut onaylı ilanların içerikleri değiştirilmez.
 
 ## Veritabanı
@@ -12,6 +15,8 @@ Ardından `migrations/20261004_moderated_submissions.sql` dosyasını aynı
 Supabase projesinde bir bütün olarak uygulayın. Bu işlem mevcut onaylı
 ilanları değiştirmez; anonim gönderimi hemen engeller. Dolayısıyla yeni
 arayüz yayımlanıncaya kadar eski anonim ilan formu gönderim yapamaz.
+Sonrasında `migrations/20261004_unlimited_admin_submissions.sql`
+dosyasını uygulayın; yönetici muafiyeti bu ek migration ile etkinleşir.
 
 Sahiplik ve gönderim zamanı veritabanında atanır. Kota kaydı özel
 şemadadır ve istemciden okunamaz/değiştirilemez. Aynı hesabın eşzamanlı

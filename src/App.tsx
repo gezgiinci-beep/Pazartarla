@@ -986,8 +986,8 @@ export default function App() {
         {activeTab === 'add' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-              <button onClick={() => changeTab('home')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer' }}>← Vazgeç</button>
-              <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>İlan Ver (En Fazla 10 Fotoğraf)</h2>
+              <button onClick={() => changeTab(isAdminLoggedIn ? 'admin-page' : 'home')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer' }}>{isAdminLoggedIn ? '← Yönetim Paneline Dön' : '← Vazgeç'}</button>
+              <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>{submissionAccount.quota?.unlimited ? 'Yönetici İlanı Ekle — Sınırsız' : 'İlan Ver (En Fazla 10 Fotoğraf)'}</h2>
             </div>
             <SubmissionAccountPanel session={submissionAccount.session} quota={submissionAccount.quota}
               loading={submissionAccount.loading} busy={submissionAccount.busy} error={submissionAccount.error}
@@ -1055,6 +1055,11 @@ export default function App() {
                   <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>🛡️ Tam Kontrol Paneli</h2>
                   <button onClick={handleAdminLogout} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer' }}>Çıkış</button>
                 </div>
+
+                <button type="button" onClick={() => changeTab('add')}
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#166534', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', marginBottom: '16px' }}>
+                  <Plus size={16} /> Sınırsız İlan Ekle
+                </button>
 
                 <ModerationQueue items={moderation.items} loading={moderation.loading}
                   error={moderation.error} busyId={moderation.busyId} onDecision={moderateListing}
