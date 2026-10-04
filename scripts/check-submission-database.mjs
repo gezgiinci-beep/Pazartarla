@@ -1,26 +1,14 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { rootCertificates } from 'node:tls';
+import {testDatabaseConfig,assertTestEnvironment} from './safety/database-target.mjs';
 import pg from 'pg';
 
-const url = new URL(process.env.SUPABASE_DATABASE_URL);
-const project = 'srbarfjzsfkmglsnmbtw';
-assert.ok(url.hostname === `db.${project}.supabase.co`
-  || (url.hostname.endsWith('.pooler.supabase.com') && decodeURIComponent(url.username).endsWith(`.${project}`)),
-'Refusing to test another database.');
-for (const key of ['sslmode', 'sslrootcert', 'sslcert', 'sslkey', 'ssl']) url.searchParams.delete(key);
-const client = new pg.Client({
-  connectionString: url.toString(),
-  connectionTimeoutMillis: 12000,
-  ssl: {
-    ca: [...rootCertificates, readFileSync(process.env.SUPABASE_DATABASE_CA_FILE || '/tmp/pazartarla-supabase-ca.crt', 'utf8')],
-    rejectUnauthorized: true,
-  },
-});
+const client = new pg.Client(testDatabaseConfig());
 
 let began = false;
 try {
   await client.connect();
+  await assertTestEnvironment(client);
   await client.query('BEGIN');
   began = true;
   await client.query("SET LOCAL statement_timeout = '15s'");

@@ -4,7 +4,7 @@ import { runInNewContext } from 'node:vm';
 
 const source = readFileSync(new URL('../src/App.tsx', import.meta.url), 'utf8');
 const startupEffect = [...source.matchAll(
-  /  useEffect\(\(\) => \{\n[\s\S]*?\n  \}, \[\]\);/g,
+  /  useEffect\(\(\) => \{\n(?:(?!\n  \}, \[)[\s\S])*?\n  \}, \[\]\);/g,
 )].map(match => match[0]).find(effect => effect.includes('setShowSplash(false)'));
 
 assert.ok(startupEffect, 'A mount effect must dismiss the splash screen.');
@@ -41,7 +41,7 @@ runInNewContext(startupEffect, {
 });
 
 assert.equal(listingFetches, 1, 'Listings must be loaded immediately on mount.');
-assert.equal(scheduledTimer?.delay, 3500);
+assert.equal(scheduledTimer?.delay, 1200, 'The introduction must finish in 1.2 seconds, not the old 3.5 seconds.');
 assert.equal(splashVisible, true);
 scheduledTimer.callback();
 assert.equal(splashVisible, false, 'The splash must close even while data is loading.');

@@ -1,0 +1,18 @@
+name: Data safety
+on:
+  pull_request:
+  push:
+    branches: [main, agent/shared-site-settings-20261004]
+permissions:
+  contents: read
+jobs:
+  data-safety:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: node scripts/check-migration-safety.mjs
+      - run: node --test tests/data-safety.test.mjs
+        # Offline fixtures only. This job has NO database secrets.

@@ -3,13 +3,41 @@ import { createClient } from '@supabase/supabase-js';
 import SubmissionAccountPanel from './components/SubmissionAccountPanel';
 import ModerationQueue from './components/ModerationQueue';
 import MySubmissions from './components/MySubmissions';
+import ListingEditor from './components/ListingEditor';
+import {editError} from './lib/listingEditor';
 import { useSubmissionAccount } from './hooks/useSubmissionAccount';
 import { useModerationQueue } from './hooks/useModerationQueue';
+import { useSiteSettings } from './hooks/useSiteSettings';
+import SiteSettingsStatus from './components/SiteSettingsStatus';
+import { useAdvertisements } from './hooks/useAdvertisements';
+import AdvertisementManager from './components/AdvertisementManager';
+import AdvertisementPlacement from './components/AdvertisementPlacement';
+import SponsorPartners from './components/SponsorPartners';
+import MembershipPage from './components/MembershipPage';
+import MembershipAdmin from './components/MembershipAdmin';
+import MembershipNotice from './components/MembershipNotice';
+import Storefront from './components/Storefront';
+import {useStoreMembership} from './hooks/useStoreMembership';
+import {storeIdFromUrl} from './lib/storeMembership';
+import { formatListingDate, isListingArchived } from './lib/listingLifetime';
+import { useListingArchive } from './hooks/useListingArchive';
+import BrandLogo from './components/BrandLogo';
+import OpeningSplash from './components/OpeningSplash';
+import FeaturedOfferNotice from './components/FeaturedOfferNotice';
+import FeaturedOfferManager from './components/FeaturedOfferManager';
+import TrafficDashboard from './components/TrafficDashboard';
+import TrafficPrivacy from './components/TrafficPrivacy';
+import ContactDepotManager from './components/ContactDepotManager';
+import ContactUnsubscribe from './components/ContactUnsubscribe';
+import { useContactDepot } from './hooks/useContactDepot';
+import { useTrafficAnalytics } from './hooks/useTrafficAnalytics';
+import { useTrafficReport } from './hooks/useTrafficReport';
+import './site-interactions.css';
 
 import {
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus,
   Heart, Share2, ShieldCheck, CheckCircle2, ChevronRight, ChevronDown, X,
-  Car, Tractor, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag, Edit3, Sparkles, Megaphone, CheckCircle, Bot, RefreshCw
+  Car, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag, Edit3, Sparkles, Megaphone, CheckCircle, Bot, RefreshCw
 } from 'lucide-react';
 
 // ==========================================
@@ -73,6 +101,12 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
     };
     };
 
+    const ListingDate = ({ value }) => (
+      <div style={{ fontSize: '10px', color: '#64748b', marginTop: '4px' }}>
+        İlan tarihi: <time dateTime={typeof value === 'string' && Number.isFinite(Date.parse(value)) ? value : undefined}>{formatListingDate(value)}</time>
+      </div>
+    );
+
     const normalizeListing = (item) => {
     const metadata = parseListingMetadata(item.seotags, item.image);
     const autoTags = [
@@ -108,23 +142,10 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
     };
 
 
-const FALLBACK_CATEGORIES = {
-  'Mahsuller': ['Kiraz', 'Ceviz', 'Zeytin & Zeytinyağı', 'Buğday', 'Bakliyat', 'Meyve & Sebze'],
-  'Canlı Hayvanlar': ['Büyükbaş', 'Küçükbaş', 'Kanatlı'],
-  'Hayvan Yemleri ve Ekipmanları': ['Yem Çeşitleri', 'Suluk / Yemlik'],
-  'Arıcılık': ['Bal', 'Polen', 'Arı Ekmeği', 'Arı Sütü', 'Kovan ve Ekipmanları'],
-  'Traktör': ['İkinci El Traktör', 'Sıfır Traktör', 'Ekipmanlar'],
-  'Biçerdöver': ['Biçerdöver'],
-  'Tarım Ekipmanları': ['Römork', 'İlaçlama Makinesi', 'Çapa Makinası', 'Pulluk', 'Kepçe & Yükleyici'],
-  'Tarım İşçileri': ['Hasat Ekibi', 'Budama Ekibi'],
-  'Uzmanlar': ['Veterinerler', 'Ziraatçiler'],
-  'Endüstriyel Çadırlar': ['Çadır Örtüsü', 'Depo Çadırı'],
-  'Geçici Konutlar': ['Konteyner', 'Çadır', 'Prefabrik']
-};
-
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
-  const [activeTab, setActiveTab] = useState('home');
+  const [activeTab, setActiveTab] = useState(()=>storeIdFromUrl(window.location.href)?'store':'home');
+  const [storeId,setStoreId]=useState(()=>storeIdFromUrl(window.location.href));
   const editFormRef = useRef(null);
 
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -136,10 +157,22 @@ export default function App() {
   const [listings, setListings] = useState([]);
   const [listingsLoading, setListingsLoading] = useState(true);
   const [listingsError, setListingsError] = useState('');
+  const [listingNow, setListingNow] = useState(Date.now);
 
-  const [categoriesWithSubs, setCategoriesWithSubs] = useState(FALLBACK_CATEGORIES);
-  const [announcement, setAnnouncement] = useState('🌾 Türkiye genelinden tarım aletleri, veterinerler ve taze mahsul ilanları PazarTarla\'da!');
-  const [tempAnnouncement, setTempAnnouncement] = useState(announcement);
+  const siteSettings = useSiteSettings(SUPABASE_URL, SUPABASE_ANON_KEY, getAdminDbHeaders);
+  const categoriesWithSubs = siteSettings.settings?.categories || {};
+  const announcement = siteSettings.settings?.announcement || '';
+  const requestFeaturedOffer = () => {
+    const offer = siteSettings.settings?.featured_offer;
+    if (!offer) return;
+    const amount = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 2 }).format(offer.monthly_price_try);
+    window.open(`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(
+      `Merhaba, PazarTarla'da 1 aylık vitrin ilanı vermek istiyorum. Güncel ücret ${amount} TL. Bilgi alabilir miyim?`
+    )}`, '_blank', 'noopener,noreferrer');
+  };
+  const [tempAnnouncement, setTempAnnouncement] = useState('');
+  const [announcementDirty, setAnnouncementDirty] = useState(false);
+  const [announcementDraftRevision, setAnnouncementDraftRevision] = useState<number | undefined>();
 
   const [favorites, setFavorites] = useState(() => {
     try {
@@ -153,6 +186,7 @@ export default function App() {
 
   const [selectedListing, setSelectedListing] = useState(null);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+  const [analyticsAuthReady, setAnalyticsAuthReady] = useState(false);
   const [adminEmail, setAdminEmail] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   const [adminAuthError, setAdminAuthError] = useState('');
@@ -161,16 +195,28 @@ export default function App() {
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
   const [openCategory, setOpenCategory] = useState('');
 
-  const [newCategoryName, setNewCategoryName] = useState('Mahsuller');
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [mainCategoryToRemove, setMainCategoryToRemove] = useState('');
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
   const [selectedSubToRemove, setSelectedSubToRemove] = useState('');
   const [editingListing, setEditingListing] = useState(null);
+  const [ownerEditingId, setOwnerEditingId] = useState(null);
+  const [listingEditMessage, setListingEditMessage] = useState('');
+  const [gallerySaving, setGallerySaving] = useState(false);
   const [lastAddedListing, setLastAddedListing] = useState(null);
   const [customCategoryInput, setCustomCategoryInput] = useState('');
   const [submissionSaving, setSubmissionSaving] = useState(false);
   const [submissionError, setSubmissionError] = useState('');
   const submissionAccount = useSubmissionAccount(supabaseClient, SUPABASE_URL, SUPABASE_ANON_KEY, normalizeListing);
+  const storeMembership=useStoreMembership(supabaseClient,SUPABASE_URL,SUPABASE_ANON_KEY,submissionAccount.session,isAdminLoggedIn,storeId);
   const moderation = useModerationQueue(isAdminLoggedIn, SUPABASE_URL, getAdminDbHeaders, normalizeListing);
+  const advertisements = useAdvertisements(supabaseClient, SUPABASE_URL, SUPABASE_ANON_KEY, isAdminLoggedIn, getAdminDbHeaders);
+  const listingArchive = useListingArchive(isAdminLoggedIn, SUPABASE_URL, getAdminDbHeaders);
+  const traffic = useTrafficAnalytics(activeTab, selectedListing?.id,
+    `${activeTab}|${selectedCategory}|${selectedSubCategory}`, isAdminLoggedIn || !analyticsAuthReady);
+  const trafficReport = useTrafficReport(isAdminLoggedIn && activeTab==='statistics', SUPABASE_URL, getAdminDbHeaders);
+  const contactDepot = useContactDepot(isAdminLoggedIn && activeTab==='contacts', SUPABASE_URL, getAdminDbHeaders);
+  const unsubscribeToken = new URLSearchParams(window.location.search).get('iletisim_cikis');
 
   const [form, setForm] = useState({
     title: '',
@@ -186,6 +232,37 @@ export default function App() {
     seoTags: '',
     status: 'pending'
   });
+
+  useEffect(() => {
+    if (!announcementDirty) {
+      setTempAnnouncement(announcement);
+      setAnnouncementDraftRevision(siteSettings.settings?.revision);
+    }
+  }, [announcement, announcementDirty, siteSettings.settings?.revision]);
+
+  useEffect(() => {
+    if (!isAdminLoggedIn) setAnnouncementDirty(false);
+  }, [isAdminLoggedIn]);
+
+  useEffect(() => {
+    if (!siteSettings.settings) return;
+    const categories = siteSettings.settings.categories;
+    const first = Object.keys(categories)[0];
+    setNewCategoryName(current => Object.hasOwn(categories, current) ? current : first);
+    setMainCategoryToRemove(current => Object.hasOwn(categories, current) ? current : first);
+    setSelectedSubToRemove(current => (categories[newCategoryName] || []).includes(current) ? current : '');
+    if (selectedCategory !== 'Tüm kategoriler' && !Object.hasOwn(categories, selectedCategory)) {
+      setSelectedCategory('Tüm kategoriler');
+      setSelectedSubCategory('Tümü');
+    } else if (selectedSubCategory !== 'Tümü' && !(categories[selectedCategory] || []).includes(selectedSubCategory)) {
+      setSelectedSubCategory('Tümü');
+    }
+    setForm(current => {
+      const category = Object.hasOwn(categories, current.category) ? current.category : first;
+      const subCategory = categories[category].includes(current.subCategory) ? current.subCategory : categories[category][0];
+      return category === current.category && subCategory === current.subCategory ? current : { ...current, category, subCategory };
+    });
+  }, [siteSettings.settings, newCategoryName, selectedCategory, selectedSubCategory]);
 
   const fetchListings = async () => {
       setListingsLoading(true);
@@ -219,22 +296,36 @@ export default function App() {
     };
 
   useEffect(() => {
-    const splashTimer = window.setTimeout(() => setShowSplash(false), 3500);
+    const splashTimer = window.setTimeout(() => setShowSplash(false), 1200);
     void fetchListings();
     return () => window.clearTimeout(splashTimer);
+  }, []);
+  useEffect(() => {
+    const visible = () => {
+      if (document.visibilityState === 'visible') { setListingNow(Date.now()); void fetchListings(); }
+    };
+    // Check already-loaded expiry timestamps without repeatedly downloading galleries.
+    const timer = window.setInterval(() => setListingNow(Date.now()), 60_000);
+    window.addEventListener('focus', visible);
+    document.addEventListener('visibilitychange', visible);
+    return () => {
+      window.clearInterval(timer); window.removeEventListener('focus', visible);
+      document.removeEventListener('visibilitychange', visible);
+    };
   }, []);
 
   useEffect(() => {
     if (!supabaseClient) return;
     let active = true;
     const syncAdminState = async (session) => {
+      if (active) setAnalyticsAuthReady(false);
       if (!session) {
-        if (active) setIsAdminLoggedIn(false);
+        if (active) { setIsAdminLoggedIn(false);setAnalyticsAuthReady(true); }
         return;
       }
       try {
         const authorized = await isCurrentUserAdmin();
-        if (active) setIsAdminLoggedIn(authorized);
+        if (active) { setIsAdminLoggedIn(authorized);setAnalyticsAuthReady(true); }
       } catch (error) {
         if (active) setIsAdminLoggedIn(false);
       }
@@ -280,7 +371,7 @@ export default function App() {
     };
     
   useEffect(() => {
-    window.history.replaceState({ tab: 'home' }, '');
+    window.history.replaceState({ tab: storeIdFromUrl(window.location.href)?'store':'home' }, '');
     const handlePopState = (event) => {
       if (event.state && event.state.tab) {
         setActiveTab(event.state.tab);
@@ -293,9 +384,19 @@ export default function App() {
   }, []);
 
   const changeTab = (tabName) => {
-    window.history.pushState({ tab: tabName }, '');
+    const url=new URL(window.location.href);url.searchParams.delete('magaza');
+    window.history.pushState({ tab: tabName }, '',url);
+    setStoreId(null);
     setActiveTab(tabName);
   };
+  const openStore=(id:string)=>{
+    const url=new URL(window.location.href);url.searchParams.set('magaza',id);
+    window.history.pushState({tab:'store'},'',url);setStoreId(id);setActiveTab('store');
+  };
+  useEffect(()=>{
+    const syncStore=()=>{const id=storeIdFromUrl(window.location.href);setStoreId(id);if(id)setActiveTab('store');};
+    window.addEventListener('popstate',syncStore);return()=>window.removeEventListener('popstate',syncStore);
+  },[]);
 
   const handleSendMessage = (e) => {
     e.preventDefault();
@@ -311,11 +412,14 @@ export default function App() {
     }, 1000);
   };
 
-  const saveAnnouncement = (e) => {
+  const saveAnnouncement = async (e) => {
     e.preventDefault();
     if (!isAdminLoggedIn) return;
-    setAnnouncement(tempAnnouncement);
-    alert('Duyuru başarıyla güncellendi!');
+    const saved = await siteSettings.save({ announcement: tempAnnouncement }, 'Duyuru sunucuya kaydedildi.', announcementDraftRevision);
+    if (saved) {
+      setTempAnnouncement(saved.announcement);
+      setAnnouncementDirty(false);
+    }
   };
 
   const sanitizeInput = (str) => {
@@ -419,8 +523,12 @@ export default function App() {
       e.preventDefault();
       if (submissionSaving) return;
       setSubmissionError('');
+      if (!siteSettings.settings || siteSettings.loading || siteSettings.loadError) {
+        setSubmissionError('Kategori ayarları yüklenemedi. Önce site ayarlarını yeniden yükleyin.');
+        return;
+      }
       if (!submissionAccount.canSubmit) {
-        setSubmissionError('E-posta adresinizi doğrulayın ve ilan kotanızı kontrol edin. 24 saatte en fazla 3 ilan gönderebilirsiniz.');
+        setSubmissionError('E-posta adresinizi doğrulayın ve aşağıdaki güncel gönderim/aktif ilan kotanızı kontrol edin.');
         return;
       }
       if (!form.title.trim() || !form.price || !form.phone.trim() || !form.seller.trim()) {
@@ -487,7 +595,7 @@ export default function App() {
         changeTab('success-wa');
       } catch (error) {
         const reason = String(error?.message || '');
-        setSubmissionError(reason.includes('LISTING_DAILY_LIMIT_REACHED')
+        setSubmissionError(reason.includes('LISTING_MONTHLY_LIMIT_REACHED')?'Aylık paket ilan kotanız doldu. Yeni dönem için üyelik süresi sonunda ödeme ve yönetici onayı gerekir.':reason.includes('LISTING_ACTIVE_LIMIT_REACHED')?'Paketinizin aktif ilan kapasitesi dolu. Onay bekleyen ilanlar da yer ayırır; mevcut kayıtlarınız korunuyor.':reason.includes('LISTING_DAILY_LIMIT_REACHED')
           ? '24 saatlik 3 ilan sınırına ulaştınız. Kotanız yenilendiğinde tekrar gönderebilirsiniz.'
           : reason.includes('LISTING_VERIFIED_ACCOUNT_REQUIRED')
             ? 'İlan göndermek için doğrulanmış e-posta hesabınızla giriş yapın.'
@@ -498,8 +606,8 @@ export default function App() {
       }
     };
 
-  const moderateListing = async (id, decision) => {
-    if (await moderation.decide(id, decision)) {
+  const moderateListing = async (id, decision, token) => {
+    if (await moderation.decide(id, decision, token)) {
       await Promise.all([fetchListings(), submissionAccount.refresh()]);
     }
   };
@@ -509,46 +617,73 @@ export default function App() {
       const target = listings.find(item => item.id === id);
       if (!target) return;
 
-      const updatedListing = { ...target, isFeatured: !target.isFeatured };
       try {
-        const response = await fetch(SUPABASE_URL + '/rest/v1/listings?id=eq.' + encodeURIComponent(id), {
-          method: 'PATCH',
-          headers: { ...(await getAdminDbHeaders()), 'Prefer': 'return=representation' },
-          body: JSON.stringify({ seotags: serializeListingTags(updatedListing) })
+        const snapshot=await supabaseClient.rpc('get_listing_for_edit',{p_listing_id:id});
+        if(snapshot.error)throw snapshot.error;
+        if(snapshot.data?.listing?.id!==id || !/^[a-f0-9]{64}$/.test(snapshot.data.edit_token))throw new Error('Invalid snapshot');
+        const fresh=normalizeListing(snapshot.data.listing);
+        const updatedListing={...fresh,isFeatured:!fresh.isFeatured};
+        const {data,error}=await supabaseClient.rpc('update_listing_media',{
+          p_listing_id:id,p_edit_token:snapshot.data.edit_token,
+          p_changes:{seotags:serializeListingTags(updatedListing)}
         });
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        const rows = await response.json();
-        if (!Array.isArray(rows) || !rows[0]) throw new Error('Sunucu vitrin durumunu kaydetmedi.');
+        if(error)throw error;
+        if(data?.listing?.id!==id)throw new Error('Sunucu vitrin durumunu kaydetmedi.');
 
-        const savedListing = normalizeListing(rows[0]);
-        setListings(currentListings => currentListings.map(item => item.id === id ? savedListing : item));
+        const savedListing = normalizeListing(data.listing);
+        setListings(currentListings => savedListing.status==='approved'
+          ?currentListings.map(item => item.id === id ? savedListing : item)
+          :currentListings.filter(item=>item.id!==id));
         setListingsError('');
       } catch (error) {
         console.error('Vitrin durumu kaydedilemedi:', error);
-        alert('Vitrin durumu sunucuya kaydedilemedi. Lütfen tekrar deneyin.');
+        alert(editError(error));
       }
     };
 
-  const startEditingFromDetail = (item) => {
+  const startEditingFromDetail = async (item) => {
     if (!isAdminLoggedIn) {
       alert('Önce Yönetici Paneline giriş yapmalısınız.');
       changeTab('admin-page');
       return;
     }
-    setEditingListing({
-      ...item,
-      images: item.images || [item.image],
-      seoTags: item.seoTags || ''
-    });
-    changeTab('admin-page');
-    setTimeout(() => {
-      if (editFormRef.current) editFormRef.current.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
+    try {
+      const {data,error}=await supabaseClient.rpc('get_listing_for_edit',{p_listing_id:item.id});
+      if(error)throw error;
+      if(data?.listing?.id!==item.id || !/^[a-f0-9]{64}$/.test(data.edit_token))throw new Error('Invalid edit snapshot');
+      setEditingListing({...normalizeListing(data.listing),_editToken:data.edit_token});
+      changeTab('admin-page');
+      setTimeout(() => {if (editFormRef.current) editFormRef.current.scrollIntoView({behavior:'smooth'});},100);
+    }catch(error){alert(editError(error));}
+  };
+
+  const startOwnerEditing = (item) => {
+    if (!submissionAccount.session || (!isAdminLoggedIn && item.submitted_by !== submissionAccount.session.user.id)) return;
+    setOwnerEditingId(item.id);
+    setListingEditMessage('');
+    changeTab('edit-listing');
+  };
+  useEffect(() => {
+    setOwnerEditingId(null);
+    setListingEditMessage('');
+  }, [submissionAccount.session?.user.id]);
+  const finishOwnerEdit = async (result) => {
+    const saved = normalizeListing(result.listing);
+    submissionAccount.applySaved(result.listing);
+    setSelectedListing(current => current?.id === saved.id ? saved : current);
+    setListings(current => saved.status === 'approved'
+      ? current.map(item => item.id === saved.id ? saved : item)
+      : current.filter(item => item.id !== saved.id));
+    setOwnerEditingId(null);
+    setListingEditMessage(!result.changed ? 'Değişiklik yapılmadı; ilanınız aynı kaldı.' :
+      result.reapproval_required ? 'İlan güncellendi ve yeniden yönetici onayına gönderildi.' : 'İlan güncellendi.');
+    changeTab('add');
+    await Promise.all([fetchListings(), submissionAccount.refresh(), moderation.refresh()]);
   };
 
   const saveEditedListing = async (e) => {
       e.preventDefault();
-      if (!isAdminLoggedIn) return;
+      if (!isAdminLoggedIn || gallerySaving) return;
 
       const primaryImage = (editingListing.images && editingListing.images[0]) || editingListing.image || DEFAULT_LISTING_IMAGE;
       const updatedListing = {
@@ -565,34 +700,26 @@ export default function App() {
       };
 
       try {
-        const response = await fetch(SUPABASE_URL + '/rest/v1/listings?id=eq.' + encodeURIComponent(updatedListing.id), {
-          method: 'PATCH',
-          headers: { ...(await getAdminDbHeaders()), 'Prefer': 'return=representation' },
-          body: JSON.stringify({
-            title: updatedListing.title,
-            price: updatedListing.price,
-            category: updatedListing.category,
-            subCategory: updatedListing.subCategory,
-            location: updatedListing.location,
-            description: updatedListing.description,
-            image: updatedListing.image,
-            seotags: serializeListingTags(updatedListing)
-          })
+        setGallerySaving(true);
+        const {data,error} = await supabaseClient.rpc('update_listing_media',{
+          p_listing_id:updatedListing.id,p_edit_token:editingListing._editToken,
+          p_changes:{image:updatedListing.image,seotags:serializeListingTags(updatedListing)}
         });
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        const rows = await response.json();
-        if (!Array.isArray(rows) || !rows[0]) throw new Error('Sunucu ilanı güncellemedi.');
+        if (error) throw error;
+        if(data?.listing?.id!==updatedListing.id)throw new Error('Sunucu galeri değişikliğini doğrulamadı.');
 
-        const savedListing = normalizeListing(rows[0]);
-        setListings(currentListings => currentListings.map(item => item.id === savedListing.id ? savedListing : item));
+        const savedListing = normalizeListing(data.listing);
+        setListings(currentListings => savedListing.status==='approved'
+          ?currentListings.map(item => item.id === savedListing.id ? savedListing : item)
+          :currentListings.filter(item=>item.id!==savedListing.id));
         setListingsError('');
         setEditingListing(null);
-        alert('İlan güncellendi!');
+        alert('Galeri / SEO güncellendi. İlan metni ve fiyatı değiştirilmedi.');
         changeTab('home');
       } catch (error) {
         console.error('İlan güncellenemedi:', error);
-        alert('İlan sunucuya kaydedilemedi. Değişiklikler uygulanmadı; lütfen tekrar deneyin.');
-      }
+        alert(editError(error));
+      } finally {setGallerySaving(false);}
     };
 
   const handleDeleteListing = async (id) => {
@@ -618,49 +745,56 @@ export default function App() {
       }
     };
 
-  const handleAddNewMainCategory = (e) => {
+  const handleAddNewMainCategory = async (e) => {
     e.preventDefault();
     if (!isAdminLoggedIn) return;
     if (!customCategoryInput.trim()) return;
     const cat = customCategoryInput.trim();
-    if (categoriesWithSubs[cat]) {
+    if (Object.hasOwn(categoriesWithSubs, cat)) {
       alert('Bu kategori zaten mevcut!');
       return;
     }
-    setCategoriesWithSubs({ ...categoriesWithSubs, [cat]: ['Genel'] });
-    setCustomCategoryInput('');
-    alert(`"${cat}" ana kategorisi başarıyla eklendi!`);
-  };
-
-  const handleDeleteMainCategory = (catKey) => {
-    if (!isAdminLoggedIn) return;
-    if (window.confirm(`"${catKey}" kategorisini ve altındaki tüm seçenekleri silmek istediğinize emin misiniz?`)) {
-      const updated = { ...categoriesWithSubs };
-      delete updated[catKey];
-      setCategoriesWithSubs(updated);
-      alert('Kategori silindi!');
+    if (await siteSettings.save({ categories: { ...categoriesWithSubs, [cat]: ['Genel'] } }, `"${cat}" ana kategorisi sunucuya kaydedildi.`)) {
+      setCustomCategoryInput('');
     }
   };
 
-  const handleAddSubCategory = (e) => {
+  const handleDeleteMainCategory = async (catKey) => {
+    if (!isAdminLoggedIn) return;
+    if (!Object.hasOwn(categoriesWithSubs, catKey)) return;
+    if (Object.keys(categoriesWithSubs).length === 1) {
+      alert('İlan verilebilmesi için en az bir ana kategori kalmalı.');
+      return;
+    }
+    if (window.confirm(`"${catKey}" kategorisini ve altındaki tüm seçenekleri silmek istediğinize emin misiniz?`)) {
+      const updated = { ...categoriesWithSubs };
+      delete updated[catKey];
+      await siteSettings.save({ categories: updated }, 'Ana kategori sunucudan silindi.');
+    }
+  };
+
+  const handleAddSubCategory = async (e) => {
     e.preventDefault();
     if (!isAdminLoggedIn) return;
     const catName = newCategoryName;
+    if (!Object.hasOwn(categoriesWithSubs, catName)) return;
     const currentSubs = categoriesWithSubs[catName] || [];
     const newSubs = newSubCategoryName ? newSubCategoryName.split(',').map(s => s.trim()).filter(Boolean) : [];
+    if (!newSubs.length) return;
     const combined = Array.from(new Set([...currentSubs, ...newSubs]));
-    setCategoriesWithSubs({ ...categoriesWithSubs, [catName]: combined });
-    setNewSubCategoryName('');
-    alert('Alt seçenekler eklendi!');
+    if (await siteSettings.save({ categories: { ...categoriesWithSubs, [catName]: combined } }, 'Alt seçenekler sunucuya kaydedildi.')) {
+      setNewSubCategoryName('');
+    }
   };
 
-  const handleDeleteSubCategory = (catKey, subToDel) => {
+  const handleDeleteSubCategory = async (catKey, subToDel) => {
     if (!isAdminLoggedIn) return;
     const currentSubs = categoriesWithSubs[catKey] || [];
+    if (!currentSubs.includes(subToDel)) return;
     const updatedSubs = currentSubs.filter(sub => sub !== subToDel);
-    setCategoriesWithSubs({ ...categoriesWithSubs, [catKey]: updatedSubs.length ? updatedSubs : ['Genel'] });
-    setSelectedSubToRemove('');
-    alert('Seçenek silindi!');
+    if (await siteSettings.save({ categories: { ...categoriesWithSubs, [catKey]: updatedSubs.length ? updatedSubs : ['Genel'] } }, 'Alt seçenek sunucudan silindi.')) {
+      setSelectedSubToRemove('');
+    }
   };
 
   const handleAdminLogin = async (e) => {
@@ -701,7 +835,7 @@ export default function App() {
     setAdminAuthError('');
   };
 
-  const approvedListings = listings.filter(item => item.status === 'approved');
+  const approvedListings = listings.filter(item => item.status === 'approved' && !isListingArchived(item, listingNow));
   const featuredListings = approvedListings.filter(item => item.isFeatured === true);
   const regularApprovedListings = approvedListings.filter(item => !item.isFeatured);
 
@@ -714,23 +848,15 @@ export default function App() {
       });
 
   if (showSplash) {
-    return (
-      <div style={{ position: 'fixed', inset: 0, backgroundColor: '#0f172a', color: '#f8fafc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '24px', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '32px', fontWeight: '700', margin: 0 }}>Türkiye'nin İlk ve Tek <br /><span style={{ color: '#2add9c' }}>Tarım Platformu</span></h1>
-      </div>
-    );
+    return <OpeningSplash />;
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f4f6f8', color: '#1e293b', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', boxSizing: 'border-box', position: 'relative' }}>
+    <div className="pt-site" style={{ minHeight: '100vh', backgroundColor: '#f4f6f8', color: '#1e293b', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '100vw', boxSizing: 'border-box', position: 'relative' }}>
       <header style={{ backgroundColor: '#1b3a2b', color: '#ffffff', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => { changeTab('home'); setSelectedCategory('Tüm kategoriler'); }}>
-          <div style={{ backgroundColor: '#22c55e', padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span>🌾</span>
-            <Tractor size={18} color="#fff" />
-          </div>
-          <div>
-            <h1 style={{ margin: 0, fontSize: '18px', fontWeight: '800' }}>PazarTarla</h1>
+          <BrandLogo />
+          <div className="pt-header-tagline" style={{ borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '10px' }}>
             <span style={{ fontSize: '10px', color: '#86efac' }}>Canlı Ortak Platform</span>
           </div>
         </div>
@@ -745,6 +871,17 @@ export default function App() {
       </header>
 
       <main style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '12px', flex: 1, boxSizing: 'border-box' }}>
+          <nav aria-label="Mağaza menüsü" style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:12}}>
+            <button type="button" onClick={()=>changeTab('memberships')} data-testid="button-membership-menu" style={{border:'1px solid #86efac',borderRadius:8,padding:'9px 13px',background:'#ecfdf5',color:'#166534',fontWeight:700,cursor:'pointer'}}>Mağaza Paketleri</button>
+            {storeMembership.data?.mine?.store&&<button type="button" onClick={()=>openStore(storeMembership.data!.mine!.store!.id)} style={{border:'1px solid #dce5dc',borderRadius:8,padding:'9px 13px',background:'#fff',color:'#166534',cursor:'pointer'}}>Mağazam</button>}
+          </nav>
+          {activeTab==='memberships'&&<MembershipPage key={submissionAccount.session?.user.id||'public'} state={storeMembership} session={submissionAccount.session} onSignIn={()=>changeTab('add')} onStore={openStore} onSubmitted={()=>{void submissionAccount.refresh();}}/>}
+          {activeTab==='membership-admin'&&(isAdminLoggedIn?<MembershipAdmin state={storeMembership} onBack={()=>changeTab('admin-page')}/>:<p role="alert">Paket yönetimi için yönetici hesabıyla giriş yapın.</p>)}
+          {activeTab==='store'&&<Storefront key={storeId||'none'} state={storeMembership} normalize={normalizeListing} onBack={()=>changeTab('memberships')} onListing={row=>{
+            const owner=submissionAccount.items.find(x=>x.id===row.id)||listings.find(x=>x.id===row.id);
+            setSelectedListing({...row,submitted_by:owner?.submitted_by});changeTab('detail');
+          }}/>}
+          <SiteSettingsStatus state={siteSettings} />
           {listingsError && (
             <div role="alert" style={{ backgroundColor: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca', borderRadius: '8px', padding: '10px 12px', marginBottom: '12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ flex: 1 }}>{listingsError}</span>
@@ -792,8 +929,26 @@ export default function App() {
           </div>
         )}
 
+        {unsubscribeToken && <ContactUnsubscribe token={unsubscribeToken} url={SUPABASE_URL} publicKey={SUPABASE_ANON_KEY} />}
+        {activeTab === 'contacts' && (
+          isAdminLoggedIn ? <ContactDepotManager state={contactDepot} onBack={()=>changeTab('admin-page')} /> :
+            <div role="alert"><p>Kişi deposu yalnızca yetkili yöneticilere açıktır.</p>
+              <button type="button" onClick={()=>changeTab('admin-page')}>Yönetici girişine git</button></div>
+        )}
+        {activeTab === 'statistics' && (
+          <div>
+            <button type="button" onClick={()=>changeTab('admin-page')} style={{marginBottom:12}}>← Yönetim Paneline Dön</button>
+            {isAdminLoggedIn ? <TrafficDashboard state={trafficReport} /> :
+              <p role="alert">İstatistikler yalnızca yetkili yöneticilere açıktır. Yönetim panelinden giriş yapın.</p>}
+          </div>
+        )}
+
         {activeTab === 'home' && (
           <div>
+            <SponsorPartners state={advertisements} admin={isAdminLoggedIn} onManage={()=>changeTab('advertisements')} />
+            <MembershipNotice plans={storeMembership.data?.plans} onOpen={()=>changeTab('memberships')}/>
+            {advertisements.items.some(ad=>ad.is_active&&ad.media_type==='video')&&
+              <AdvertisementPlacement state={{...advertisements,items:advertisements.items.filter(ad=>ad.media_type==='video')}} admin={isAdminLoggedIn} onManage={() => changeTab('advertisements')} />}
             <div style={{ backgroundColor: '#ecfdf5', border: '1.5px dashed #10b981', borderRadius: '12px', padding: '14px 16px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <div style={{ backgroundColor: '#d1fae5', padding: '8px', borderRadius: '8px', color: '#059669', flexShrink: 0 }}>
@@ -806,27 +961,33 @@ export default function App() {
               </div>
               <a
                 href="https://api.whatsapp.com/send?phone=905357681550&text=Merhaba,%20PazarTarla%20ana%20sayfasında%20reklam%20vermek%20istiyorum.%20Bilgi%20alabilir%20miyim?"
+                onClick={(event) => { if (isAdminLoggedIn) { event.preventDefault(); changeTab('advertisements'); } }}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ backgroundColor: '#059669', color: '#fff', padding: '8px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}
               >
-                Reklam Ver
+                {isAdminLoggedIn ? 'Reklamları Yönet' : 'Reklam Ver'}
               </a>
             </div>
+
+            {siteSettings.settings && (
+              <FeaturedOfferNotice offer={siteSettings.settings.featured_offer} onRequest={requestFeaturedOffer} />
+            )}
 
             {featuredListings.length > 0 && (
               <div style={{ marginBottom: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', fontWeight: '800', fontSize: '14px', color: '#854d0e' }}>
                   <Star size={16} fill="#eab308" color="#eab308" /> Vitrin İlanları
                 </div>
-                <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '4px' }}>
+                <div className="pt-home-listings-grid" data-testid="featured-listings-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gridAutoFlow: 'row', gap: 'var(--pt-card-row-gap, 10px) var(--pt-card-column-gap, 10px)', paddingBottom: '4px' }}>
                   {featuredListings.map(item => {
                     const displayImg = (item.images && item.images[0]) || item.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800';
                     return (
-                      <div key={`feat-${item.id}`} onClick={() => { setSelectedListing({ ...item, images: item.images || [displayImg] }); changeTab('detail'); }} style={{ minWidth: '160px', maxWidth: '160px', backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #fde047', cursor: 'pointer', overflow: 'hidden', flexShrink: 0, padding: '8px' }}>
+                      <div key={`feat-${item.id}`} onClick={() => { setSelectedListing({ ...item, images: item.images || [displayImg] }); changeTab('detail'); }} style={{ minWidth: 0, boxSizing: 'border-box', backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #fde047', cursor: 'pointer', overflow: 'hidden', padding: '8px' }}>
                         <img src={displayImg} alt={item.title} style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '6px', marginBottom: '6px' }} />
                         <div style={{ fontSize: '12px', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</div>
                         <div style={{ fontSize: '13px', fontWeight: '800', color: '#1b3a2b', marginTop: '2px' }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
+                        <ListingDate value={item.created_at} />
                       </div>
                     );
                   })}
@@ -888,6 +1049,7 @@ export default function App() {
                     <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: '700' }}>{item.title}</h4>
                     <div style={{ fontSize: '15px', fontWeight: '800', color: '#1b3a2b' }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
                     <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>📍 {item.location}</div>
+                    <ListingDate value={item.created_at} />
                   </div>
                 </div>
               );
@@ -895,15 +1057,23 @@ export default function App() {
           </div>
         )}
 
-        {activeTab === 'detail' && selectedListing && (
+        {activeTab === 'detail' && selectedListing && !isAdminLoggedIn && isListingArchived(selectedListing, listingNow) && (
+          <div role="status" style={{ padding: '16px', background: '#fff', borderRadius: '12px' }}>
+            Bu ilanın 8 aylık yayın süresi doldu ve ilan arşive alındı.
+            <button type="button" onClick={() => changeTab('home')} style={{ display: 'block', marginTop: '12px' }}>Ana sayfaya dön</button>
+          </div>
+        )}
+        {activeTab === 'detail' && selectedListing && (isAdminLoggedIn || !isListingArchived(selectedListing, listingNow)) && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
               <button onClick={() => changeTab('results')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer' }}>← Listeye Dön</button>
               {isAdminLoggedIn && (
-                <button onClick={() => startEditingFromDetail(selectedListing)} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: '700', fontSize: '12px', cursor: 'pointer' }}>
+                <button onClick={() => startOwnerEditing(selectedListing)} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '6px 12px', borderRadius: '6px', fontWeight: '700', fontSize: '12px', cursor: 'pointer' }}>
                   ✏️ Bu İlanı Düzenle
                 </button>
               )}
+              {!isAdminLoggedIn && submissionAccount.session && submissionAccount.session.user.id === selectedListing.submitted_by &&
+                <button type="button" onClick={()=>startOwnerEditing(selectedListing)}>İlanı Düzenle / Güncelle</button>}
             </div>
             {selectedListing.images && selectedListing.images.length > 0 ? (
               <div>
@@ -929,6 +1099,8 @@ export default function App() {
               <img src={selectedListing.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800'} alt={selectedListing.title} style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '8px', marginBottom: '10px' }} />
             )}
             <h2 style={{ fontSize: '18px', fontWeight: '800', margin: '8px 0' }}>{selectedListing.title}</h2>
+            <ListingDate value={selectedListing.created_at} />
+            {isListingArchived(selectedListing, listingNow) && <p role="status" style={{ color: '#854d0e', fontSize: '12px' }}>Arşivde — yayın süresi {formatListingDate(selectedListing.expires_at)} tarihinde doldu. İlan kaydı ve fotoğrafları korunuyor.</p>}
             <div style={{ fontSize: '22px', fontWeight: '800', color: '#1b3a2b', marginBottom: '4px' }}>{Number(selectedListing.price).toLocaleString('tr-TR')} TL</div>
             <p style={{ color: '#475569', fontSize: '13px', marginBottom: '12px', lineHeight: '1.5' }}>{selectedListing.description}</p>
 
@@ -983,20 +1155,33 @@ export default function App() {
           </div>
         )}
 
+        {activeTab === 'edit-listing' && submissionAccount.session && ownerEditingId !== null && (
+          <ListingEditor key={`${submissionAccount.session.user.id}:${ownerEditingId}`} client={supabaseClient}
+            itemId={ownerEditingId} userId={submissionAccount.session.user.id} isAdmin={isAdminLoggedIn}
+            categories={siteSettings.settings?.categories} onSaved={finishOwnerEdit}
+            onCancel={()=>{setOwnerEditingId(null);changeTab('add');}} />
+        )}
+        {activeTab === 'edit-listing' && (!submissionAccount.session || ownerEditingId === null) &&
+          <div role="alert">Oturum değişti veya sona erdi. <button onClick={()=>changeTab('add')}>Hesabınıza dönün</button></div>}
         {activeTab === 'add' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
               <button onClick={() => changeTab(isAdminLoggedIn ? 'admin-page' : 'home')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer' }}>{isAdminLoggedIn ? '← Yönetim Paneline Dön' : '← Vazgeç'}</button>
               <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>{submissionAccount.quota?.unlimited ? 'Yönetici İlanı Ekle — Sınırsız' : 'İlan Ver (En Fazla 10 Fotoğraf)'}</h2>
             </div>
+            {siteSettings.settings && (
+              <FeaturedOfferNotice offer={siteSettings.settings.featured_offer} onRequest={requestFeaturedOffer} />
+            )}
+            <MembershipNotice compact plans={storeMembership.data?.plans} onOpen={()=>changeTab('memberships')}/>
             <SubmissionAccountPanel session={submissionAccount.session} quota={submissionAccount.quota}
               loading={submissionAccount.loading} busy={submissionAccount.busy} error={submissionAccount.error}
               message={submissionAccount.message} onAuthenticate={submissionAccount.authenticate}
               onResend={submissionAccount.resend} onSignOut={submissionAccount.signOut}
               onRefresh={() => { void submissionAccount.refresh(); }} />
+            {listingEditMessage && <p role="status">{listingEditMessage}</p>}
             {submissionAccount.session && <MySubmissions items={submissionAccount.items}
               loading={submissionAccount.loading} error={submissionAccount.error}
-              onRefresh={() => { void submissionAccount.refresh(); }} />}
+              onRefresh={() => { void submissionAccount.refresh(); }} onEdit={startOwnerEditing} />}
             {submissionAccount.session && submissionAccount.quota?.email_verified && (
             <form onSubmit={handleDirectAdd} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <input type="text" name="seller" placeholder="Adınız Soyadınız *" value={form.seller} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
@@ -1027,12 +1212,25 @@ export default function App() {
               </div>
               <textarea name="description" placeholder="Açıklama..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px' }} />
               {submissionError && <div role="alert" style={{ color: '#b91c1c', fontSize: '13px' }}>{submissionError}</div>}
-              <button type="submit" disabled={submissionSaving || !submissionAccount.canSubmit}
-                style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', opacity: submissionSaving || !submissionAccount.canSubmit ? 0.6 : 1 }}>
+              <p style={{fontSize:11,color:'#475569'}}>
+                İlanın satıcı adı ve telefonu ile bilinen doğrulanmış hesap e-postası, yalnızca yöneticiye açık
+                iletişim deposunda kaydedilir. İlan vermek toplu mesaj izni değildir; mesaj izinleri ayrıca kayıt altına alınır.
+              </p>
+              <button type="submit" disabled={submissionSaving || !submissionAccount.canSubmit || !siteSettings.settings || !!siteSettings.loadError}
+                style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', opacity: submissionSaving || !submissionAccount.canSubmit || !siteSettings.settings || !!siteSettings.loadError ? 0.6 : 1 }}>
                 {submissionSaving ? 'Onaya gönderiliyor…' : 'İlanı Onaya Gönder'}
               </button>
             </form>
             )}
+          </div>
+        )}
+
+        {activeTab === 'advertisements' && (
+          isAdminLoggedIn ? <AdvertisementManager state={advertisements} onBack={() => changeTab('admin-page')} /> :
+          <div style={{ background: '#fff', padding: '20px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <h2>Reklam yönetimi</h2>
+            <p>Reklam yüklemek için yetkili yönetici hesabınızla giriş yapın.</p>
+            <button type="button" onClick={() => changeTab('admin-page')}>Yönetici girişine git</button>
           </div>
         )}
 
@@ -1060,10 +1258,25 @@ export default function App() {
                   style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#166534', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', marginBottom: '16px' }}>
                   <Plus size={16} /> Sınırsız İlan Ekle
                 </button>
+                <button type="button" onClick={() => changeTab('advertisements')} data-testid="button-admin-advertisements"
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#ecfdf5', color: '#166534', border: '1px solid #86efac', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', marginBottom: '16px' }}>
+                  <Megaphone size={16} /> Sponsor / Reklam Yönetimi — Görsel / Video Yükle
+                </button>
 
-                <ModerationQueue items={moderation.items} loading={moderation.loading}
+                <ModerationQueue items={moderation.items.filter(item => !isListingArchived(item, listingNow))} loading={moderation.loading}
                   error={moderation.error} busyId={moderation.busyId} onDecision={moderateListing}
                   onRefresh={() => { void moderation.refresh(); }} />
+
+                <FeaturedOfferManager state={siteSettings} />
+                <button type="button" onClick={()=>changeTab('membership-admin')} data-testid="button-admin-memberships" style={{width:'100%',padding:14,margin:'16px 0',border:'1px solid #86efac',borderRadius:8,background:'#ecfdf5',color:'#166534',fontWeight:700,cursor:'pointer'}}>Mağaza Paketleri — Havale/EFT Onayları</button>
+                <button type="button" onClick={()=>changeTab('contacts')} data-testid="button-admin-contacts"
+                  style={{width:'100%',padding:14,margin:'16px 0',border:'1px solid #86efac',borderRadius:8,background:'#ecfdf5',color:'#166534',fontWeight:700,cursor:'pointer'}}>
+                  Kişi ve İletişim Deposu — SMS / E-posta / WhatsApp
+                </button>
+                <button type="button" onClick={()=>changeTab('statistics')} data-testid="button-admin-statistics"
+                  style={{width:'100%',padding:14,margin:'16px 0',border:'1px solid #86efac',borderRadius:8,background:'#ecfdf5',color:'#166534',fontWeight:700,cursor:'pointer'}}>
+                  Ziyaret İstatistikleri — Bölge, Süre ve Sıklık
+                </button>
 
                 <div style={{ backgroundColor: '#fef08a', padding: '12px', borderRadius: '8px', marginBottom: '16px', border: '1px solid #facc15' }}>
                   <h3 style={{ fontSize: '13px', fontWeight: '800', color: '#713f12', margin: '0 0 6px 0' }}>🔄 Sunucudaki İlanları Yenile</h3>
@@ -1075,19 +1288,21 @@ export default function App() {
 
                 <div style={{ backgroundColor: '#fef9c3', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#854d0e', margin: '0 0 8px 0' }}>Duyuru Banner Yönetimi</h3>
+                  <SiteSettingsStatus state={siteSettings} admin />
+                  <fieldset disabled={!siteSettings.editable} style={{ border: 0, padding: 0, margin: 0 }}>
                   <form onSubmit={saveAnnouncement} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <input type="text" value={tempAnnouncement} onChange={(e) => setTempAnnouncement(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #facc15' }} />
+                    <input type="text" aria-label="Site duyurusu" maxLength={1000} value={tempAnnouncement} onChange={(e) => { setTempAnnouncement(e.target.value); setAnnouncementDirty(true); }} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #facc15' }} />
                     <button type="submit" style={{ backgroundColor: '#ca8a04', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Güncelle</button>
+                    <button type="button" onClick={() => { setTempAnnouncement(announcement); setAnnouncementDraftRevision(siteSettings.settings?.revision); setAnnouncementDirty(false); }} style={{ padding: '6px', cursor: 'pointer' }}>Sunucudaki duyuruyu al</button>
                   </form>
+                  </fieldset>
                 </div>
 
                 {editingListing && (
                   <div style={{ backgroundColor: '#f0fdf4', padding: '14px', borderRadius: '8px', border: '2px solid #22c55e', marginBottom: '20px' }}>
                     <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166534', margin: '0 0 10px 0' }}>✏ İlanı Düzenle</h3>
                     <form onSubmit={saveEditedListing} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <input type="text" name="title" value={editingListing.title} onChange={handleEditFormChange} placeholder="Başlık" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-                      <input type="number" name="price" value={editingListing.price} onChange={handleEditFormChange} placeholder="Fiyat" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-                      <input type="text" name="location" value={editingListing.location} onChange={handleEditFormChange} placeholder="Konum" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                      <p>Galeri / SEO: {editingListing.title}. Metin ve fiyat için ayrı “Düzenle” düğmesini kullanın.</p>
                       <input type="text" name="seoTags" value={editingListing.seoTags || ''} onChange={handleEditFormChange} placeholder="SEO Etiketleri (virgülle ayırın)" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       <div style={{ backgroundColor: '#fff', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <label style={{ fontSize: '11px', fontWeight: '700', color: '#475569' }}>📷 Fotoğrafları Yönet (En Fazla 10 Adet)</label>
@@ -1103,10 +1318,9 @@ export default function App() {
                           </div>
                         )}
                       </div>
-                      <textarea name="description" value={editingListing.description} onChange={handleEditFormChange} placeholder="Açıklama" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '60px' }} />
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <button type="submit" style={{ flex: 1, backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Kaydet</button>
-                        <button type="button" onClick={() => setEditingListing(null)} style={{ background: '#e2e8f0', border: 'none', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer' }}>İptal</button>
+                        <button type="submit" disabled={gallerySaving} style={{ flex: 1, backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>{gallerySaving?'Kaydediliyor…':'Galeri / SEO Kaydet'}</button>
+                        <button type="button" disabled={gallerySaving} onClick={() => setEditingListing(null)} style={{ background: '#e2e8f0', border: 'none', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer' }}>İptal</button>
                       </div>
                     </form>
                   </div>
@@ -1114,23 +1328,25 @@ export default function App() {
 
                 <div style={{ backgroundColor: '#f0fdf4', padding: '12px', borderRadius: '8px', border: '1px solid #bbf7d0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#166634', margin: '0 0 8px 0' }}>📁 Ana Kategori Ekle / Sil</h3>
+                  <SiteSettingsStatus state={siteSettings} admin />
+                  <fieldset disabled={!siteSettings.editable} style={{ border: 0, padding: 0, margin: 0 }}>
                   <form onSubmit={handleAddNewMainCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '10px' }}>
-                    <input type="text" placeholder="Yeni Ana Kategori Adı" value={customCategoryInput} onChange={(e) => setCustomCategoryInput(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                    <input type="text" required maxLength={100} placeholder="Yeni Ana Kategori Adı" value={customCategoryInput} onChange={(e) => setCustomCategoryInput(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                     <button type="submit" style={{ backgroundColor: '#166534', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Ana Kategori Ekle</button>
                   </form>
                   <div style={{ display: 'flex', gap: '6px' }}>
-                    <select id="mainCatDelSelect" style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #ef4444', backgroundColor: '#fef2f2' }}>
+                    <select aria-label="Silinecek ana kategori" value={mainCategoryToRemove} onChange={(e) => setMainCategoryToRemove(e.target.value)} style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #ef4444', backgroundColor: '#fef2f2' }}>
                       {Object.keys(categoriesWithSubs).map(cat => <option key={cat} value={cat}>{cat}</option>)}
                     </select>
-                    <button type="button" onClick={() => {
-                      const sel = document.getElementById('mainCatDelSelect').value;
-                      handleDeleteMainCategory(sel);
-                    }} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '0 10px', borderRadius: '6px', fontWeight: '700', fontSize: '11px', cursor: 'pointer' }}>Ana Kategoriyi Sil</button>
+                    <button type="button" onClick={() => handleDeleteMainCategory(mainCategoryToRemove)} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '0 10px', borderRadius: '6px', fontWeight: '700', fontSize: '11px', cursor: 'pointer' }}>Ana Kategoriyi Sil</button>
                   </div>
+                  </fieldset>
                 </div>
 
                 <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
                   <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1b3a2b', margin: '0 0 8px 0' }}>Alt Seçenek Yönetimi</h3>
+                  <SiteSettingsStatus state={siteSettings} admin />
+                  <fieldset disabled={!siteSettings.editable} style={{ border: 0, padding: 0, margin: 0 }}>
                   <form onSubmit={handleAddSubCategory} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <select value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#fff' }}>
                       {Object.keys(categoriesWithSubs).map(cat => <option key={cat} value={cat}>{cat}</option>)}
@@ -1140,33 +1356,56 @@ export default function App() {
                         <option value="">Silinecek seçeneği seç...</option>
                         {(categoriesWithSubs[newCategoryName] || []).map(sub => <option key={sub} value={sub}>{sub}</option>)}
                       </select>
-                      <button type="button" onClick={() => handleDeleteSubCategory(newCategoryName, selectedSubToRemove)} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '0 10px', borderRadius: '6px', fontWeight: '700', fontSize: '11px', cursor: 'pointer' }}>Sil</button>
+                      <button type="button" disabled={!selectedSubToRemove} onClick={() => handleDeleteSubCategory(newCategoryName, selectedSubToRemove)} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '0 10px', borderRadius: '6px', fontWeight: '700', fontSize: '11px', cursor: 'pointer' }}>Sil</button>
                     </div>
-                    <input type="text" placeholder="Yeni alt seçenekler (Virgülle ayırın)" value={newSubCategoryName} onChange={(e) => setNewSubCategoryName(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                    <input type="text" required placeholder="Yeni alt seçenekler (Virgülle ayırın)" value={newSubCategoryName} onChange={(e) => setNewSubCategoryName(e.target.value)} style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                     <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>Alt Seçenek Ekle</button>
                   </form>
+                  </fieldset>
                 </div>
 
-                <h3 style={{ fontSize: '14px', fontWeight: '700', marginTop: '20px', marginBottom: '8px' }}>📋 Tüm İlanlar ({listings.length})</h3>
-                {listings.map(item => {
+                <h3 style={{ fontSize: '14px', fontWeight: '700', marginTop: '20px', marginBottom: '8px' }}>📋 Yayındaki İlanlar ({approvedListings.length})</h3>
+                {approvedListings.map(item => {
                   const isFeat = item.isFeatured === true;
                   return (
                     <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '6px', marginBottom: '6px' }}>
-                      <span style={{ fontSize: '12px', fontWeight: '600' }}>{item.title}</span>
+                      <div><span style={{ fontSize: '12px', fontWeight: '600' }}>{item.title}</span><ListingDate value={item.created_at} /></div>
                       <div style={{ display: 'flex', gap: '4px' }}>
                         <button onClick={() => toggleFeaturedListing(item.id)} style={{ backgroundColor: isFeat ? '#fef08a' : '#f1f5f9', color: '#854d0e', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>
                           {isFeat ? '⭐ Vitrinde' : '☆ Vitrin Yap'}
                         </button>
-                        <button onClick={() => { setEditingListing(item); if (editFormRef.current) editFormRef.current.scrollIntoView({ behavior: 'smooth' }); }} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Düzenle</button>
+                        <button onClick={() => startOwnerEditing(item)} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Düzenle</button>
+                        <button onClick={() => startEditingFromDetail(item)} type="button">Galeri / SEO</button>
                         <button onClick={() => handleDeleteListing(item.id)} style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Sil</button>
                       </div>
                     </div>
                   );
                 })}
+                <section aria-labelledby="listing-archive-heading" style={{ marginTop: '20px', padding: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+                  <h3 id="listing-archive-heading" style={{ margin: '0 0 8px', fontSize: '14px' }}>İlan Arşivi</h3>
+                  <p style={{ fontSize: '12px', color: '#64748b' }}>İlanlar veriliş tarihinden 8 takvim ayı sonra otomatik olarak yayından kalkar. Kayıtları ve fotoğrafları silinmez. Düzenlemek veya onaylamak bu süreyi yenilemez.</p>
+                  <button type="button" onClick={() => { void listingArchive.refresh(); }} disabled={listingArchive.loading || listingArchive.busyId !== null}>Arşivi yenile</button>
+                  {listingArchive.loading && <p role="status">Arşiv yükleniyor…</p>}
+                  {listingArchive.error && <p role="alert" style={{ color: '#b91c1c' }}>{listingArchive.error}</p>}
+                  {!listingArchive.loading && !listingArchive.error && listingArchive.items.length === 0 && <p style={{ fontSize: '12px' }}>Henüz arşive alınmış ilan yok.</p>}
+                  {listingArchive.items.map(item => (
+                    <div key={item.id} style={{ padding: '10px 0', borderBottom: '1px solid #e2e8f0' }}>
+                      <strong style={{ fontSize: '12px' }}>{item.title}</strong>
+                      <ListingDate value={item.created_at} />
+                      <div style={{ fontSize: '11px', color: '#854d0e', margin: '4px 0' }}>Arşive alınma tarihi: {formatListingDate(item.expires_at)}</div>
+                      <button type="button" disabled={listingArchive.busyId !== null || listingArchive.loading} onClick={async () => {
+                        const row = await listingArchive.view(item.id);
+                        if (row) { setSelectedListing(normalizeListing(row)); changeTab('detail'); }
+                      }}>{listingArchive.busyId === item.id ? 'Açılıyor…' : 'İlanı görüntüle'}</button>
+                    </div>
+                  ))}
+                  {listingArchive.hasMore && <button type="button" disabled={listingArchive.loading || listingArchive.busyId !== null} onClick={() => { void listingArchive.loadMore(); }}>Daha eski ilanları yükle</button>}
+                </section>
               </div>
             )}
           </div>
         )}
+        {!isAdminLoggedIn && <TrafficPrivacy state={traffic} />}
       </main>
 
       <footer style={{ backgroundColor: '#1b3a2b', color: '#94a3b8', padding: '20px 16px', textAlign: 'center', fontSize: '12px', marginTop: 'auto', borderTop: '1px solid #2d5a43' }}>

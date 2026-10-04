@@ -1,0 +1,46 @@
+name: Encrypted database and code backup
+on:
+  schedule:
+    - cron: '0 23 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: pazartarla-database-backup
+  cancel-in-progress: false
+jobs:
+  backup:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: database-backup
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: PostgreSQL 18 client and verified Supabase CA
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl --fail --silent --show-error https://www.postgresql.org/media/keys/ACCC4CF8.asc -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc
+          echo 'deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt noble-pgdg main' | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client-18
+          echo '/usr/lib/postgresql/18/bin' >> "$GITHUB_PATH"
+          curl --fail --silent --show-error https://supabase-downloads.s3-ap-southeast-1.amazonaws.com/prod/ssl/prod-ca-2021.crt -o "$RUNNER_TEMP/supabase-ca.crt"
+      - name: Backup (read-only database connection)
+        env:
+          SUPABASE_DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
+          PAZARTARLA_BACKUP_PUBLIC_KEY: ${{ vars.PAZARTARLA_BACKUP_PUBLIC_KEY }}
+          SUPABASE_DATABASE_CA_FILE: ${{ runner.temp }}/supabase-ca.crt
+          PAZARTARLA_BACKUP_DIRECTORY: ${{ runner.temp }}/pazartarla-backups
+        run: node scripts/backup-production.mjs
+      - name: Upload encrypted backups only
+        uses: actions/upload-artifact@v4
+        with:
+          name: pazartarla-encrypted-${{ github.run_id }}
+          path: ${{ runner.temp }}/pazartarla-backups/backup-*/*
+          if-no-files-found: error
+          retention-days: 30
+      - name: Clean runner copies
+        if: always()
+        run: rm -rf -- "$RUNNER_TEMP/pazartarla-backups"

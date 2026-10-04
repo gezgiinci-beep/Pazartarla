@@ -8,6 +8,8 @@ export type SubmissionQuota = {
   used: number;
   remaining: number | null;
   next_available_at: string | null;
+  period?:'rolling_day'|'membership_month';
+  monthly_remaining?:number;active_limit?:number;active_used?:number;pending_reserved?:number;plan_name?:string;membership_ends_at?:string;
 };
 
 export function useSubmissionAccount(client: SupabaseClient | null, url: string, key: string, normalize: (row: any) => any) {
@@ -139,6 +141,10 @@ export function useSubmissionAccount(client: SupabaseClient | null, url: string,
 
   return {
     session, quota, items, loading, busy, error, message, refresh, authenticate, resend, signOut,
+    applySaved: (row: any) => {
+      if (row.submitted_by !== identity.current) return;
+      setItems(current => current.map(item => item.id === row.id ? normalize(row) : item));
+    },
     canSubmit: Boolean(session && quota?.email_verified && (quota.unlimited === true || (quota.remaining ?? 0) > 0) && !loading),
   };
 }

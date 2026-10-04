@@ -5,7 +5,7 @@ export type ModerationQueueProps = {
   loading: boolean;
   error: string;
   busyId: number | null;
-  onDecision: (id: number, decision: "approved" | "rejected") => Promise<void>;
+  onDecision: (id: number, decision: "approved" | "rejected", token: string) => Promise<void>;
   onRefresh: () => void;
 };
 
@@ -60,10 +60,10 @@ function imageUrls(item: any): string[] {
 export default function ModerationQueue({ items, loading, error, busyId, onDecision, onRefresh }: ModerationQueueProps) {
   const [decisionError, setDecisionError] = useState("");
 
-  const decide = async (id: number, decision: "approved" | "rejected") => {
+  const decide = async (id: number, decision: "approved" | "rejected", token: string) => {
     setDecisionError("");
     try {
-      await onDecision(id, decision);
+      await onDecision(id, decision, token);
     } catch (caught) {
       setDecisionError(caught instanceof Error ? caught.message : "Karar kaydedilemedi. Lütfen yeniden deneyin.");
     }
@@ -122,10 +122,10 @@ export default function ModerationQueue({ items, loading, error, busyId, onDecis
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
-                    <button type="button" onClick={() => decide(id, "approved")} disabled={!Number.isFinite(id) || busyId !== null} data-testid={`button-approve-listing-${id}`} style={{ ...softButton, borderColor: colors.green, background: colors.green, color: "#fff", opacity: busyId !== null ? 0.6 : 1 }}>
+                    <button type="button" onClick={() => decide(id, "approved", item._editToken)} disabled={!Number.isFinite(id) || busyId !== null} data-testid={`button-approve-listing-${id}`} style={{ ...softButton, borderColor: colors.green, background: colors.green, color: "#fff", opacity: busyId !== null ? 0.6 : 1 }}>
                       {busy ? "Kaydediliyor…" : "Onayla"}
                     </button>
-                    <button type="button" onClick={() => decide(id, "rejected")} disabled={!Number.isFinite(id) || busyId !== null} data-testid={`button-reject-listing-${id}`} style={{ ...softButton, borderColor: "#e6c6c1", color: colors.red, opacity: busyId !== null ? 0.6 : 1 }}>
+                    <button type="button" onClick={() => decide(id, "rejected", item._editToken)} disabled={!Number.isFinite(id) || busyId !== null} data-testid={`button-reject-listing-${id}`} style={{ ...softButton, borderColor: "#e6c6c1", color: colors.red, opacity: busyId !== null ? 0.6 : 1 }}>
                       Reddet
                     </button>
                   </div>

@@ -1,5 +1,7 @@
 # Configure the listing administrator
 
+**Safety first:** DATA_PROTECTION.md overrides historical production apply/test instructions. Never replay historical migrations or run fixtures on live data.
+
 The policy migration creates an empty private allowlist. It does not store an administrator email in this public repository.
 
 1. In the Supabase dashboard, open the project's SQL Editor and run the migration in migrations/20261003_secure_listing_admin.sql.

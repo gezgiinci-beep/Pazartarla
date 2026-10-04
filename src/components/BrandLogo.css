@@ -1,0 +1,84 @@
+.pt-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #f7f1df;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.pt-brand__symbol {
+  width: 34px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.pt-wheat-ear {
+  width: 25px;
+  height: 37px;
+  overflow: visible;
+  transform-origin: 50% 90%;
+}
+
+.pt-wheat-stem {
+  fill: none;
+  stroke: #e8b94d;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+
+.pt-wheat-grain {
+  fill: #f2c64e;
+  stroke: #d9a833;
+  stroke-width: .45;
+  stroke-linejoin: round;
+}
+
+.pt-brand__name {
+  font-size: 19px;
+  line-height: 1;
+  font-weight: 850;
+  letter-spacing: -.055em;
+}
+
+.pt-brand__pazar { color: #f4efdf; }
+.pt-brand__tarla { color: #e7bd52; }
+
+.pt-brand--splash {
+  gap: 13px;
+  color: #f5efd9;
+}
+
+.pt-brand--splash .pt-brand__symbol {
+  width: 49px;
+  height: 59px;
+}
+
+.pt-brand--splash .pt-wheat-ear {
+  width: 39px;
+  height: 58px;
+}
+
+.pt-brand--splash .pt-brand__name {
+  font-size: clamp(37px, 8vw, 58px);
+  letter-spacing: -.065em;
+}
+
+.pt-brand--splash .pt-brand__pazar { color: #f4ebd1; }
+.pt-brand--splash .pt-brand__tarla { color: #e8bd4b; }
+
+@media (max-width: 380px) {
+  .pt-brand--header { gap: 5px; }
+  .pt-brand--header .pt-brand__symbol { width: 22px; height: 30px; }
+  .pt-brand--header .pt-wheat-ear { width: 20px; height: 30px; }
+  .pt-brand--header .pt-brand__name { font-size: 16px; }
+  .pt-brand--splash { gap: 8px; }
+  .pt-brand--splash .pt-brand__name { font-size: 36px; }
+}
+
+@media (max-width: 600px) {
+  .pt-header-tagline { display: none; }
+}
