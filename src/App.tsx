@@ -13,6 +13,12 @@ import { useAdvertisements } from './hooks/useAdvertisements';
 import AdvertisementManager from './components/AdvertisementManager';
 import AdvertisementPlacement from './components/AdvertisementPlacement';
 import SponsorPartners from './components/SponsorPartners';
+import MembershipPage from './components/MembershipPage';
+import MembershipAdmin from './components/MembershipAdmin';
+import MembershipNotice from './components/MembershipNotice';
+import Storefront from './components/Storefront';
+import {useStoreMembership} from './hooks/useStoreMembership';
+import {storeIdFromUrl} from './lib/storeMembership';
 import { formatListingDate, isListingArchived } from './lib/listingLifetime';
 import { useListingArchive } from './hooks/useListingArchive';
 import BrandLogo from './components/BrandLogo';
@@ -138,7 +144,8 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
-  const [activeTab, setActiveTab] = useState('home');
+  const [activeTab, setActiveTab] = useState(()=>storeIdFromUrl(window.location.href)?'store':'home');
+  const [storeId,setStoreId]=useState(()=>storeIdFromUrl(window.location.href));
   const editFormRef = useRef(null);
 
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -201,6 +208,7 @@ export default function App() {
   const [submissionSaving, setSubmissionSaving] = useState(false);
   const [submissionError, setSubmissionError] = useState('');
   const submissionAccount = useSubmissionAccount(supabaseClient, SUPABASE_URL, SUPABASE_ANON_KEY, normalizeListing);
+  const storeMembership=useStoreMembership(supabaseClient,SUPABASE_URL,SUPABASE_ANON_KEY,submissionAccount.session,isAdminLoggedIn,storeId);
   const moderation = useModerationQueue(isAdminLoggedIn, SUPABASE_URL, getAdminDbHeaders, normalizeListing);
   const advertisements = useAdvertisements(supabaseClient, SUPABASE_URL, SUPABASE_ANON_KEY, isAdminLoggedIn, getAdminDbHeaders);
   const listingArchive = useListingArchive(isAdminLoggedIn, SUPABASE_URL, getAdminDbHeaders);
@@ -363,7 +371,7 @@ export default function App() {
     };
     
   useEffect(() => {
-    window.history.replaceState({ tab: 'home' }, '');
+    window.history.replaceState({ tab: storeIdFromUrl(window.location.href)?'store':'home' }, '');
     const handlePopState = (event) => {
       if (event.state && event.state.tab) {
         setActiveTab(event.state.tab);
@@ -376,9 +384,19 @@ export default function App() {
   }, []);
 
   const changeTab = (tabName) => {
-    window.history.pushState({ tab: tabName }, '');
+    const url=new URL(window.location.href);url.searchParams.delete('magaza');
+    window.history.pushState({ tab: tabName }, '',url);
+    setStoreId(null);
     setActiveTab(tabName);
   };
+  const openStore=(id:string)=>{
+    const url=new URL(window.location.href);url.searchParams.set('magaza',id);
+    window.history.pushState({tab:'store'},'',url);setStoreId(id);setActiveTab('store');
+  };
+  useEffect(()=>{
+    const syncStore=()=>{const id=storeIdFromUrl(window.location.href);setStoreId(id);if(id)setActiveTab('store');};
+    window.addEventListener('popstate',syncStore);return()=>window.removeEventListener('popstate',syncStore);
+  },[]);
 
   const handleSendMessage = (e) => {
     e.preventDefault();
@@ -510,7 +528,7 @@ export default function App() {
         return;
       }
       if (!submissionAccount.canSubmit) {
-        setSubmissionError('E-posta adresinizi doğrulayın ve ilan kotanızı kontrol edin. 24 saatte en fazla 3 ilan gönderebilirsiniz.');
+        setSubmissionError('E-posta adresinizi doğrulayın ve aşağıdaki güncel gönderim/aktif ilan kotanızı kontrol edin.');
         return;
       }
       if (!form.title.trim() || !form.price || !form.phone.trim() || !form.seller.trim()) {
@@ -577,7 +595,7 @@ export default function App() {
         changeTab('success-wa');
       } catch (error) {
         const reason = String(error?.message || '');
-        setSubmissionError(reason.includes('LISTING_DAILY_LIMIT_REACHED')
+        setSubmissionError(reason.includes('LISTING_MONTHLY_LIMIT_REACHED')?'Aylık paket ilan kotanız doldu. Yeni dönem için üyelik süresi sonunda ödeme ve yönetici onayı gerekir.':reason.includes('LISTING_ACTIVE_LIMIT_REACHED')?'Paketinizin aktif ilan kapasitesi dolu. Onay bekleyen ilanlar da yer ayırır; mevcut kayıtlarınız korunuyor.':reason.includes('LISTING_DAILY_LIMIT_REACHED')
           ? '24 saatlik 3 ilan sınırına ulaştınız. Kotanız yenilendiğinde tekrar gönderebilirsiniz.'
           : reason.includes('LISTING_VERIFIED_ACCOUNT_REQUIRED')
             ? 'İlan göndermek için doğrulanmış e-posta hesabınızla giriş yapın.'
@@ -853,6 +871,16 @@ export default function App() {
       </header>
 
       <main style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '12px', flex: 1, boxSizing: 'border-box' }}>
+          <nav aria-label="Mağaza menüsü" style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:12}}>
+            <button type="button" onClick={()=>changeTab('memberships')} data-testid="button-membership-menu" style={{border:'1px solid #86efac',borderRadius:8,padding:'9px 13px',background:'#ecfdf5',color:'#166534',fontWeight:700,cursor:'pointer'}}>Mağaza Paketleri</button>
+            {storeMembership.data?.mine?.store&&<button type="button" onClick={()=>openStore(storeMembership.data!.mine!.store!.id)} style={{border:'1px solid #dce5dc',borderRadius:8,padding:'9px 13px',background:'#fff',color:'#166534',cursor:'pointer'}}>Mağazam</button>}
+          </nav>
+          {activeTab==='memberships'&&<MembershipPage key={submissionAccount.session?.user.id||'public'} state={storeMembership} session={submissionAccount.session} onSignIn={()=>changeTab('add')} onStore={openStore} onSubmitted={()=>{void submissionAccount.refresh();}}/>}
+          {activeTab==='membership-admin'&&(isAdminLoggedIn?<MembershipAdmin state={storeMembership} onBack={()=>changeTab('admin-page')}/>:<p role="alert">Paket yönetimi için yönetici hesabıyla giriş yapın.</p>)}
+          {activeTab==='store'&&<Storefront key={storeId||'none'} state={storeMembership} normalize={normalizeListing} onBack={()=>changeTab('memberships')} onListing={row=>{
+            const owner=submissionAccount.items.find(x=>x.id===row.id)||listings.find(x=>x.id===row.id);
+            setSelectedListing({...row,submitted_by:owner?.submitted_by});changeTab('detail');
+          }}/>}
           <SiteSettingsStatus state={siteSettings} />
           {listingsError && (
             <div role="alert" style={{ backgroundColor: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca', borderRadius: '8px', padding: '10px 12px', marginBottom: '12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -918,6 +946,7 @@ export default function App() {
         {activeTab === 'home' && (
           <div>
             <SponsorPartners state={advertisements} admin={isAdminLoggedIn} onManage={()=>changeTab('advertisements')} />
+            <MembershipNotice plans={storeMembership.data?.plans} onOpen={()=>changeTab('memberships')}/>
             {advertisements.items.some(ad=>ad.is_active&&ad.media_type==='video')&&
               <AdvertisementPlacement state={{...advertisements,items:advertisements.items.filter(ad=>ad.media_type==='video')}} admin={isAdminLoggedIn} onManage={() => changeTab('advertisements')} />}
             <div style={{ backgroundColor: '#ecfdf5', border: '1.5px dashed #10b981', borderRadius: '12px', padding: '14px 16px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
@@ -1143,6 +1172,7 @@ export default function App() {
             {siteSettings.settings && (
               <FeaturedOfferNotice offer={siteSettings.settings.featured_offer} onRequest={requestFeaturedOffer} />
             )}
+            <MembershipNotice compact plans={storeMembership.data?.plans} onOpen={()=>changeTab('memberships')}/>
             <SubmissionAccountPanel session={submissionAccount.session} quota={submissionAccount.quota}
               loading={submissionAccount.loading} busy={submissionAccount.busy} error={submissionAccount.error}
               message={submissionAccount.message} onAuthenticate={submissionAccount.authenticate}
@@ -1238,6 +1268,7 @@ export default function App() {
                   onRefresh={() => { void moderation.refresh(); }} />
 
                 <FeaturedOfferManager state={siteSettings} />
+                <button type="button" onClick={()=>changeTab('membership-admin')} data-testid="button-admin-memberships" style={{width:'100%',padding:14,margin:'16px 0',border:'1px solid #86efac',borderRadius:8,background:'#ecfdf5',color:'#166534',fontWeight:700,cursor:'pointer'}}>Mağaza Paketleri — Havale/EFT Onayları</button>
                 <button type="button" onClick={()=>changeTab('contacts')} data-testid="button-admin-contacts"
                   style={{width:'100%',padding:14,margin:'16px 0',border:'1px solid #86efac',borderRadius:8,background:'#ecfdf5',color:'#166534',fontWeight:700,cursor:'pointer'}}>
                   Kişi ve İletişim Deposu — SMS / E-posta / WhatsApp

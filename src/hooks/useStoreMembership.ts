@@ -1,0 +1,41 @@
+import {useCallback,useEffect,useRef,useState} from 'react';
+import type {Session,SupabaseClient} from '@supabase/supabase-js';
+import {parseStoreData,storeRpc} from '../lib/storeMembership';
+import type {StoreData} from '../lib/storeMembership';
+export function useStoreMembership(client:SupabaseClient|null,url:string,key:string,session:Session|null,admin:boolean,storeId:string|null){
+  const [data,setData]=useState<StoreData|null>(null),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false);
+  const [error,setError]=useState(''),[actionError,setActionError]=useState(''),[message,setMessage]=useState('');
+  const generation=useRef(0),readSequence=useRef(0),locked=useRef(false);
+  const headers=useCallback(async()=>{
+    if(!client)return {apikey:key};
+    const {data,error}=await client.auth.getSession();
+    if(error)throw Error('Oturum doğrulanamadı.');
+    if(data.session?.user.id!==session?.user.id)throw Error('Oturum değişti. Yeni oturumun yüklenmesini bekleyip yeniden deneyin.');
+    return {apikey:key,...(data.session?{Authorization:'Bearer '+data.session.access_token}:{})};
+  },[client,key,session?.user.id,session?.access_token]);
+  const refresh=useCallback(async()=>{
+    const n=generation.current,sequence=++readSequence.current;
+    try{const next=parseStoreData(await storeRpc(url,await headers(),'get_store_membership_data',{p_store_id:storeId}));if(generation.current===n&&readSequence.current===sequence){setData(next);setError('');}}
+    catch(e){if(generation.current===n&&readSequence.current===sequence)setError(e instanceof Error?e.message:'Mağazalar yüklenemedi.');}
+    finally{if(generation.current===n&&readSequence.current===sequence)setLoading(false);}
+  },[url,headers,storeId]);
+  useEffect(()=>{
+    ++generation.current;setData(null);setLoading(true);setBusy(false);setError('');setActionError('');setMessage('');void refresh();
+    const visible=()=>{if(document.visibilityState==='visible'&&!locked.current)void refresh();};
+    const timer=setInterval(visible,60000);window.addEventListener('focus',visible);document.addEventListener('visibilitychange',visible);
+    return()=>{++generation.current;clearInterval(timer);window.removeEventListener('focus',visible);document.removeEventListener('visibilitychange',visible);};
+  },[refresh,admin]);
+  const action=async(action:string,id:string|null,revision:number|null,payload:Record<string,unknown>)=>{
+    if(locked.current)return false;
+    locked.current=true;const n=generation.current;setBusy(true);setActionError('');setMessage('');
+    try{
+      const result=await storeRpc(url,await headers(),'manage_store_membership',{p_action:action,p_id:id,p_revision:revision,p_payload:payload});
+      if(!result||result.ok!==true)throw Error('İşlem sunucudan doğrulanamadı.');
+      if(generation.current!==n)return false;
+      setMessage(action==='request'?'Talebiniz kaydedildi. Paketiniz, ödeme doğrulanıp yönetici onayı verildiğinde açılır.':'Değişiklik sunucudan doğrulandı.');
+      await refresh();return true;
+    }catch(e){if(generation.current===n){setActionError(e instanceof Error?e.message:'İşlem tamamlanamadı.');await refresh();}return false;}
+    finally{locked.current=false;if(generation.current===n)setBusy(false);}
+  };
+  return {data,loading,busy,error,actionError,message,refresh,action};
+}
