@@ -7,6 +7,9 @@ import { useSubmissionAccount } from './hooks/useSubmissionAccount';
 import { useModerationQueue } from './hooks/useModerationQueue';
 import { useSiteSettings } from './hooks/useSiteSettings';
 import SiteSettingsStatus from './components/SiteSettingsStatus';
+import { useAdvertisements } from './hooks/useAdvertisements';
+import AdvertisementManager from './components/AdvertisementManager';
+import AdvertisementPlacement from './components/AdvertisementPlacement';
 
 import {
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus,
@@ -163,6 +166,7 @@ export default function App() {
   const [submissionError, setSubmissionError] = useState('');
   const submissionAccount = useSubmissionAccount(supabaseClient, SUPABASE_URL, SUPABASE_ANON_KEY, normalizeListing);
   const moderation = useModerationQueue(isAdminLoggedIn, SUPABASE_URL, getAdminDbHeaders, normalizeListing);
+  const advertisements = useAdvertisements(supabaseClient, SUPABASE_URL, SUPABASE_ANON_KEY, isAdminLoggedIn, getAdminDbHeaders);
 
   const [form, setForm] = useState({
     title: '',
@@ -832,6 +836,7 @@ export default function App() {
 
         {activeTab === 'home' && (
           <div>
+            <AdvertisementPlacement state={advertisements} admin={isAdminLoggedIn} onManage={() => changeTab('advertisements')} />
             <div style={{ backgroundColor: '#ecfdf5', border: '1.5px dashed #10b981', borderRadius: '12px', padding: '14px 16px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <div style={{ backgroundColor: '#d1fae5', padding: '8px', borderRadius: '8px', color: '#059669', flexShrink: 0 }}>
@@ -844,11 +849,12 @@ export default function App() {
               </div>
               <a
                 href="https://api.whatsapp.com/send?phone=905357681550&text=Merhaba,%20PazarTarla%20ana%20sayfasında%20reklam%20vermek%20istiyorum.%20Bilgi%20alabilir%20miyim?"
+                onClick={(event) => { if (isAdminLoggedIn) { event.preventDefault(); changeTab('advertisements'); } }}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ backgroundColor: '#059669', color: '#fff', padding: '8px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}
               >
-                Reklam Ver
+                {isAdminLoggedIn ? 'Reklamları Yönet' : 'Reklam Ver'}
               </a>
             </div>
 
@@ -1074,6 +1080,15 @@ export default function App() {
           </div>
         )}
 
+        {activeTab === 'advertisements' && (
+          isAdminLoggedIn ? <AdvertisementManager state={advertisements} onBack={() => changeTab('admin-page')} /> :
+          <div style={{ background: '#fff', padding: '20px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <h2>Reklam yönetimi</h2>
+            <p>Reklam yüklemek için yetkili yönetici hesabınızla giriş yapın.</p>
+            <button type="button" onClick={() => changeTab('admin-page')}>Yönetici girişine git</button>
+          </div>
+        )}
+
         {activeTab === 'admin-page' && (
           <div ref={editFormRef} style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
             {!isAdminLoggedIn ? (
@@ -1097,6 +1112,10 @@ export default function App() {
                 <button type="button" onClick={() => changeTab('add')}
                   style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#166534', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', marginBottom: '16px' }}>
                   <Plus size={16} /> Sınırsız İlan Ekle
+                </button>
+                <button type="button" onClick={() => changeTab('advertisements')} data-testid="button-admin-advertisements"
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#ecfdf5', color: '#166534', border: '1px solid #86efac', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', marginBottom: '16px' }}>
+                  <Megaphone size={16} /> Reklam Yönetimi — Görsel / Video Yükle
                 </button>
 
                 <ModerationQueue items={moderation.items} loading={moderation.loading}

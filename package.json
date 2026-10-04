@@ -11,7 +11,9 @@
     "check:startup": "node scripts/check-startup.mjs",
     "check:submissions": "node scripts/check-submission-database.mjs",
     "check:settings": "node --experimental-strip-types --test tests/site-settings.test.mjs",
-    "check:settings-db": "node scripts/check-site-settings-database.mjs"
+    "check:settings-db": "node scripts/check-site-settings-database.mjs",
+    "check:ads": "node --experimental-strip-types --test tests/advertisements.test.mjs",
+    "check:ads-db": "node scripts/check-advertisements-database.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
