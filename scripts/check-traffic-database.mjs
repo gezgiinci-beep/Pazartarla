@@ -1,16 +1,11 @@
 import assert from 'node:assert/strict';
-import {readFileSync,writeFileSync} from 'node:fs';
-import {rootCertificates} from 'node:tls';
+import {readFileSync} from 'node:fs';
+import {testDatabaseConfig,assertTestEnvironment} from './safety/database-target.mjs';
 import {randomUUID} from 'node:crypto';
 import pg from 'pg';
-const u=new URL(process.env.SUPABASE_DATABASE_URL);
-assert.ok(u.hostname==='db.srbarfjzsfkmglsnmbtw.supabase.co' ||
-  (u.hostname.endsWith('.pooler.supabase.com')&&decodeURIComponent(u.username).endsWith('.srbarfjzsfkmglsnmbtw')));
-for(const k of ['sslmode','sslrootcert','sslcert','sslkey','ssl'])u.searchParams.delete(k);
-const client=new pg.Client({connectionString:u.toString(),connectionTimeoutMillis:12000,
-  ssl:{ca:[...rootCertificates,readFileSync(process.env.SUPABASE_DATABASE_CA_FILE||'/tmp/pazartarla-supabase-ca.crt','utf8')],rejectUnauthorized:true}});
+const client=new pg.Client(testDatabaseConfig());
 try {
-  await client.connect();await client.query('BEGIN');
+  await client.connect();await assertTestEnvironment(client);await client.query('BEGIN');
   await client.query("SET LOCAL statement_timeout='15s'");
   const sql=readFileSync(new URL('../supabase/migrations/20261004_traffic_analytics.sql',import.meta.url),'utf8');
   await client.query(sql.replace(/^BEGIN;/,'').replace(/COMMIT;\s*$/,''));
@@ -89,16 +84,6 @@ try {
   await client.query('RESET ROLE');
   assert.equal((await client.query('SELECT 1 FROM private.traffic_views WHERE view_id=$1',[rows[0][0]])).rowCount,0);
   await client.query('ROLLBACK');
-  if(process.argv.includes('--apply')) {
-    await client.query(sql);
-    await client.query('BEGIN');
-    await role('authenticated',{role:'authenticated',sub:admin.id,email:admin.email});
-    const report=(await client.query('SELECT public.get_traffic_report(7) report')).rows[0].report;
-    await client.query('RESET ROLE');
-    await client.query('ROLLBACK');
-    writeFileSync('/tmp/pazartarla-empty-traffic-report.json',JSON.stringify(report));
-    console.log('Additive analytics migration applied; actual aggregate report exported for isolated UI verification.');
-  }
   console.log('Traffic DB checks passed: private reports, public bounded/idempotent collection, time caps, region/frequency/share calculations, period boundaries and retention. All fixture events rolled back.');
 }catch(e){console.error('Traffic DB checks failed:',e.code||e.name);
   if(e.code==='42601')console.error(e.message,'SQL position:',e.position||e.internalPosition);

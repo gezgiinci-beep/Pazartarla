@@ -1,0 +1,7 @@
+# Enable required code-owner reviews on protected release/default branches.
+/supabase/ @gezgiinci-beep
+/scripts/safety/ @gezgiinci-beep
+/scripts/migrate-safe.mjs @gezgiinci-beep
+/scripts/backup-production.mjs @gezgiinci-beep
+/scripts/decrypt-backup.mjs @gezgiinci-beep
+/.github/ @gezgiinci-beep

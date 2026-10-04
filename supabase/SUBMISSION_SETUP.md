@@ -1,5 +1,7 @@
 # Üyelik, ilan kotası ve yönetici onayı
 
+**Öncelikli güvenlik talimatı:** DATA_PROTECTION.md eski canlı uygulama/test talimatlarının yerini alır. Tarihî migrasyonları canlıda tekrar uygulamayın; canlıda test kayıtları çalıştırmayın.
+
 Yeni ilanlar doğrulanmış e-posta hesabı gerektirir ve `pending` olarak
 kaydedilir. Kullanıcı başına kayan 24 saatlik dönemde en fazla 3 gönderim
 yapılabilir. Yönetici onayı, ret veya silme bu kotayı sıfırlamaz.

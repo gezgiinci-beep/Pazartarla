@@ -1,17 +1,12 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {rootCertificates} from 'node:tls';
+import {testDatabaseConfig,assertTestEnvironment} from './safety/database-target.mjs';
 import {randomUUID} from 'node:crypto';
 import pg from 'pg';
-const url=new URL(process.env.SUPABASE_DATABASE_URL);
-assert.ok(url.hostname==='db.srbarfjzsfkmglsnmbtw.supabase.co'||
-  (url.hostname.endsWith('.pooler.supabase.com')&&decodeURIComponent(url.username).endsWith('.srbarfjzsfkmglsnmbtw')));
-for(const k of ['sslmode','sslrootcert','sslcert','sslkey','ssl'])url.searchParams.delete(k);
-const client=new pg.Client({connectionString:url.toString(),connectionTimeoutMillis:12000,
-  ssl:{ca:[...rootCertificates,readFileSync(process.env.SUPABASE_DATABASE_CA_FILE||'/tmp/pazartarla-supabase-ca.crt','utf8')],rejectUnauthorized:true}});
+const client=new pg.Client(testDatabaseConfig());
 let phase='schema';
 try {
-  await client.connect();await client.query('BEGIN');
+  await client.connect();await assertTestEnvironment(client);await client.query('BEGIN');
   const sql=readFileSync(new URL('../supabase/migrations/20261004_contact_depot.sql',import.meta.url),'utf8');
   await client.query(sql.replace(/^BEGIN;/,'').replace(/COMMIT;\s*$/,''));
   const admin=(await client.query(`SELECT u.id,lower(u.email) email FROM auth.users u JOIN private.listing_admins a
@@ -124,7 +119,6 @@ try {
   assert.equal((await client.query('SELECT status FROM private.depot_deliveries WHERE id=$1',[claimed[0].id])).rows[0].status,'unknown');
   await adminRole();await client.query('SELECT public.cancel_depot_campaign($1)',[work]);
   await client.query('ROLLBACK');
-  if(process.argv.includes('--apply')){phase='apply';await client.query(sql);console.log('Contact depot additive migration/backfill applied. Existing listings/media/auth unchanged; all providers remain disabled.');}
   console.log('Contact DB checks passed: admin-only access, auto capture, manual CRUD, conflicts, explicit consent, destination-wide opt-out, deduplication, archive, blocked providers and non-replayed worker leases. All fixture data rolled back; no messages sent.');
 }catch(e){console.error('Contact DB check failed:',phase,e.code||e.name);
   if(e.code==='42601')console.error(e.message,e.position||e.internalPosition);

@@ -1,16 +1,12 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {rootCertificates} from 'node:tls';
+import {testDatabaseConfig,assertTestEnvironment} from './safety/database-target.mjs';
 import {randomUUID} from 'node:crypto';
 import pg from 'pg';
-const url=new URL(process.env.SUPABASE_DATABASE_URL);
-assert.ok(url.hostname==='db.srbarfjzsfkmglsnmbtw.supabase.co'||(url.hostname.endsWith('.pooler.supabase.com')&&decodeURIComponent(url.username).endsWith('.srbarfjzsfkmglsnmbtw')));
-for(const k of ['sslmode','sslrootcert','sslcert','sslkey','ssl'])url.searchParams.delete(k);
-const client=new pg.Client({connectionString:url.toString(),connectionTimeoutMillis:12000,
-  ssl:{ca:[...rootCertificates,readFileSync(process.env.SUPABASE_DATABASE_CA_FILE||'/tmp/pazartarla-supabase-ca.crt','utf8')],rejectUnauthorized:true}});
+const client=new pg.Client(testDatabaseConfig());
 let phase='schema';
 try {
-  await client.connect();await client.query('BEGIN');
+  await client.connect();await assertTestEnvironment(client);await client.query('BEGIN');
   const sql=readFileSync(new URL('../supabase/migrations/20261004_contact_bulk_import.sql',import.meta.url),'utf8');
   await client.query(sql.replace(/^BEGIN;/,'').replace(/COMMIT;\s*$/,''));
   const admin=(await client.query(`SELECT u.id,lower(u.email) email FROM auth.users u JOIN private.listing_admins a ON a.email=lower(u.email) WHERE u.email_confirmed_at IS NOT NULL LIMIT 1`)).rows[0];
@@ -81,7 +77,6 @@ try {
   await client.query('RESET ROLE');
   assert.equal((await client.query('SELECT count(*)::int n FROM private.depot_sources WHERE listing_id=$1',[listing])).rows[0].n,1);
   await client.query('ROLLBACK');
-  if(process.argv.includes('--apply')){phase='apply';await client.query(sql);console.log('Additive import migration applied; no real contact files imported or messages sent.');}
   console.log('Import DB checks passed: admin-only access, non-writing preview, email OR phone duplicates including archive, no overwrite, unknown permissions, safe replay, conflicts/races, batch bounds/rollback and existing listing capture. All fixtures rolled back.');
 }catch(e){console.error('Import DB check failed:',phase,e.code||e.name);
   if(e.code==='42601')console.error(e.message,e.position||e.internalPosition);

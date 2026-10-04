@@ -1,5 +1,7 @@
 # Administrator traffic statistics
 
+**Safety first:** DATA_PROTECTION.md overrides historical production apply/test instructions. Never replay historical migrations or run fixtures on live data. `--apply` is no longer supported.
+
 Apply `migrations/20261004_traffic_analytics.sql` before releasing the frontend.
 This only adds analytics tables/functions; listings, photos, settings, auth,
 administrator identities and other storage are not modified.

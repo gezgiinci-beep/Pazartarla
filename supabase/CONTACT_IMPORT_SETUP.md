@@ -1,6 +1,8 @@
 # Bulk contact import
 
-Apply `20261004_contact_bulk_import.sql` after the contact-depot migration.
+Historical migration: `20261004_contact_bulk_import.sql` follows the contact-depot migration.
+Do not replay it on production. See **DATA_PROTECTION.md** for the mandatory
+backup, reviewed migration and isolated-test workflow; it overrides older apply instructions.
 Additive private receipts/indexes and guarded RPCs preserve existing listing
 approval, quota, ownership, photos, contacts and consent records. A separate
 contact-field listing trigger participates in the existing directory mutation
@@ -43,8 +45,8 @@ contacts without overwrite. Completed import refreshes the shared directory.
 
 Verification:
 - `node --experimental-strip-types --test tests/contact-import.test.mjs tests/contact-depot.test.mjs`
-- `node scripts/check-contact-import-database.mjs` rollback-only; `--apply` commits
-  only additive schema after the checks. No real files/messages are submitted.
+- `node scripts/check-contact-import-database.mjs` runs rollback-only on an explicitly
+  marked isolated test project. Live targets and `--apply` are refused.
 - `tests/bulk-browser.html` is a **synthetic** component harness, not an auth
   bypass or production entry. Optional `?fail_after_commit=1` simulates lost batch
   acknowledgement. Real administrator sign-in must be verified separately;

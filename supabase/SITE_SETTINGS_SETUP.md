@@ -1,5 +1,7 @@
 # Shared announcement and category settings
 
+**Safety first:** DATA_PROTECTION.md overrides historical production apply/test instructions. Never replay historical migrations or run fixtures on live data.
+
 Apply `migrations/20261004_shared_site_settings.sql` after the existing admin migration.
 It adds one `public.site_settings` record and uses the existing database-admin allowlist.
 It does not change listings, account verification, or listing quotas.

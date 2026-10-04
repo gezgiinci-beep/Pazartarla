@@ -1,19 +1,12 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { rootCertificates } from 'node:tls';
+import {testDatabaseConfig,assertTestEnvironment} from './safety/database-target.mjs';
 import pg from 'pg';
 
-const url = new URL(process.env.SUPABASE_DATABASE_URL);
-const ref = 'srbarfjzsfkmglsnmbtw';
-assert.ok(url.hostname === `db.${ref}.supabase.co` || (
-  url.hostname.endsWith('.pooler.supabase.com') && decodeURIComponent(url.username).endsWith(`.${ref}`)
-), 'Refusing another database.');
-for (const k of ['sslmode', 'sslrootcert', 'sslcert', 'sslkey', 'ssl']) url.searchParams.delete(k);
-const c = new pg.Client({ connectionString: url.toString(), connectionTimeoutMillis: 12000,
-  ssl: { ca: [...rootCertificates, readFileSync(process.env.SUPABASE_DATABASE_CA_FILE || '/tmp/pazartarla-supabase-ca.crt','utf8')], rejectUnauthorized: true } });
+const c = new pg.Client(testDatabaseConfig());
 let stage = 'setup';
 try {
-  await c.connect(); await c.query('BEGIN'); await c.query("SET LOCAL statement_timeout='15s'");
+  await c.connect(); await assertTestEnvironment(c); await c.query('BEGIN'); await c.query("SET LOCAL statement_timeout='15s'");
   const before = (await c.query('SELECT count(*)::int AS n FROM public.advertisements')).rows[0].n;
   const admin = (await c.query(`SELECT u.id,lower(u.email) AS email FROM auth.users u
     JOIN private.listing_admins a ON a.email=lower(u.email) WHERE u.email_confirmed_at IS NOT NULL LIMIT 1`)).rows[0];

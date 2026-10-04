@@ -1,5 +1,7 @@
 # Listing dates and eight-month archive
 
+**Safety first:** DATA_PROTECTION.md overrides historical production apply/test instructions. Never replay historical migrations or run fixtures on live data.
+
 Apply `migrations/20261004_listing_expiry.sql` to the existing external Supabase
 database before releasing the updated frontend. No rows or image files are deleted.
 

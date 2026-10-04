@@ -1,5 +1,7 @@
 # Advertisement management
 
+**Safety first:** DATA_PROTECTION.md overrides historical production apply/test instructions. Never replay historical migrations or run fixtures on live data.
+
 Apply `migrations/20261004_advertisements.sql` after the existing administrator
 migration. It adds advertisement metadata and a dedicated Supabase Storage bucket,
 without changing listings, accounts, or shared announcement/category settings.

@@ -1,5 +1,7 @@
 # Featured listing notice
 
+**Safety first:** DATA_PROTECTION.md overrides historical production apply/test instructions. Never replay historical migrations or run fixtures on live data.
+
 Apply `migrations/20261004_featured_offer.sql` to the existing external Supabase
 database before releasing the frontend. This extends the singleton shared
 `site_settings` record; it does not alter listings, images, announcements or

@@ -78,6 +78,8 @@ currently exists in the www Vercel project; public key cannot run worker RPCs.
 ## Verification
 `node --experimental-strip-types --test tests/contact-depot.test.mjs`
 `node scripts/check-contact-depot-database.mjs` — rollback-only checks, no transport.
-`--apply` explicitly commits the additive schema/backfill only after checks pass.
+`--apply` is no longer supported. Database tests require an explicitly marked,
+separate test project. See **DATA_PROTECTION.md** for the mandatory backup and
+reviewed production migration process; it overrides older setup instructions.
 All fixture listing/contact/campaign/consent events are rolled back. Production
 publication of the frontend still needs separate approval for the www project.
