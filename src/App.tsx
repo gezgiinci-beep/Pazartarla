@@ -1,5 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import SubmissionAccountPanel from './components/SubmissionAccountPanel';
+import ModerationQueue from './components/ModerationQueue';
+import MySubmissions from './components/MySubmissions';
+import { useSubmissionAccount } from './hooks/useSubmissionAccount';
+import { useModerationQueue } from './hooks/useModerationQueue';
 
 import {
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus,
@@ -162,6 +167,10 @@ export default function App() {
   const [editingListing, setEditingListing] = useState(null);
   const [lastAddedListing, setLastAddedListing] = useState(null);
   const [customCategoryInput, setCustomCategoryInput] = useState('');
+  const [submissionSaving, setSubmissionSaving] = useState(false);
+  const [submissionError, setSubmissionError] = useState('');
+  const submissionAccount = useSubmissionAccount(supabaseClient, SUPABASE_URL, SUPABASE_ANON_KEY, normalizeListing);
+  const moderation = useModerationQueue(isAdminLoggedIn, SUPABASE_URL, getAdminDbHeaders, normalizeListing);
 
   const [form, setForm] = useState({
     title: '',
@@ -175,7 +184,7 @@ export default function App() {
     phone: '',
     images: ['https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800'],
     seoTags: '',
-    status: 'approved'
+    status: 'pending'
   });
 
   const fetchListings = async () => {
@@ -408,6 +417,12 @@ export default function App() {
 
   const handleDirectAdd = async (e) => {
       e.preventDefault();
+      if (submissionSaving) return;
+      setSubmissionError('');
+      if (!submissionAccount.canSubmit) {
+        setSubmissionError('E-posta adresinizi doğrulayın ve ilan kotanızı kontrol edin. 24 saatte en fazla 3 ilan gönderebilirsiniz.');
+        return;
+      }
       if (!form.title.trim() || !form.price || !form.phone.trim() || !form.seller.trim()) {
         alert('Lütfen zorunlu alanları eksiksiz doldurun.');
         return;
@@ -429,15 +444,18 @@ export default function App() {
         phone: sanitizeInput(form.phone),
         image: primaryImage,
         images: form.images,
-        status: 'approved',
+        status: 'pending',
         seoTags: finalSeoTags,
         isFeatured: false
       };
 
       try {
+        setSubmissionSaving(true);
+        const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+        if (sessionError || !sessionData.session) throw new Error('LISTING_VERIFIED_ACCOUNT_REQUIRED');
         const response = await fetch(SUPABASE_URL + '/rest/v1/listings', {
           method: 'POST',
-          headers: { ...dbHeaders, 'Prefer': 'return=representation' },
+          headers: { ...dbHeaders, Authorization: 'Bearer ' + sessionData.session.access_token, 'Prefer': 'return=representation' },
           body: JSON.stringify({
             title: newEntry.title,
             price: newEntry.price,
@@ -450,23 +468,41 @@ export default function App() {
             phone: newEntry.phone,
             image: newEntry.image,
             seotags: serializeListingTags(newEntry),
-            status: 'approved'
+            status: 'pending'
           })
         });
-        if (!response.ok) throw new Error('HTTP ' + response.status);
+        if (!response.ok) {
+          const problem = await response.json().catch(() => ({}));
+          throw new Error(problem.message || ('HTTP ' + response.status));
+        }
         const rows = await response.json();
         if (!Array.isArray(rows) || !rows[0]) throw new Error('Sunucu ilanı kaydetmedi.');
 
         const savedListing = normalizeListing(rows[0]);
-        setListings(currentListings => [savedListing, ...currentListings]);
         setListingsError('');
         setLastAddedListing(savedListing);
+        await submissionAccount.refresh();
+        if (isAdminLoggedIn) await moderation.refresh();
+        setForm(current => ({ ...current, title: '', price: '', description: '', seoTags: '', images: [DEFAULT_LISTING_IMAGE], status: 'pending' }));
         changeTab('success-wa');
       } catch (error) {
-        console.error('İlan kaydedilemedi:', error);
-        alert('İlan sunucuya kaydedilemedi. Lütfen bağlantınızı kontrol edip tekrar deneyin.');
+        const reason = String(error?.message || '');
+        setSubmissionError(reason.includes('LISTING_DAILY_LIMIT_REACHED')
+          ? '24 saatlik 3 ilan sınırına ulaştınız. Kotanız yenilendiğinde tekrar gönderebilirsiniz.'
+          : reason.includes('LISTING_VERIFIED_ACCOUNT_REQUIRED')
+            ? 'İlan göndermek için doğrulanmış e-posta hesabınızla giriş yapın.'
+            : 'İlan onaya gönderilemedi. Formunuz korunuyor; bağlantınızı ve kotanızı kontrol edip yeniden deneyin.');
+        await submissionAccount.refresh();
+      } finally {
+        setSubmissionSaving(false);
       }
     };
+
+  const moderateListing = async (id, decision) => {
+    if (await moderation.decide(id, decision)) {
+      await Promise.all([fetchListings(), submissionAccount.refresh()]);
+    }
+  };
 
   const toggleFeaturedListing = async (id) => {
       if (!isAdminLoggedIn) return;
@@ -740,16 +776,16 @@ export default function App() {
         {activeTab === 'success-wa' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '24px', textAlign: 'center', border: '1px solid #e2e8f0' }}>
             <CheckCircle size={36} color="#166534" style={{ margin: '0 auto 12px auto' }} />
-            <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#1b3a2b', margin: '0 0 8px 0' }}>İlanınız Başarıyla Alındı ve Yayınlandı!</h2>
-            <p style={{ color: '#64748b', fontSize: '13px', marginBottom: '20px' }}>SEO etiketleri ve fotoğraflar kaydedildi. PazarTarla'da hemen görünür hale geldi.</p>
+            <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#1b3a2b', margin: '0 0 8px 0' }}>İlanınız Onay İçin Alındı</h2>
+            <p style={{ color: '#64748b', fontSize: '13px', marginBottom: '20px' }}>İlanınız henüz yayında değil. Yönetici onayından sonra herkes tarafından görülebilecek. Durumunu İlan Ver bölümündeki gönderimlerinizden takip edebilirsiniz.</p>
             {lastAddedListing && (
               <a
-                href={`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(`🔔 *PazarTarla Yeni İlan Yayında!*\n\n*Başlık:* ${lastAddedListing.title}\n*Fiyat:* ${lastAddedListing.price} TL\n*Kategori:* ${lastAddedListing.category} / ${lastAddedListing.subCategory}\n*Satıcı:* ${lastAddedListing.seller} (${lastAddedListing.phone})`)}`}
+                href={`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(`PazarTarla ilanım yönetici onayını bekliyor.\n\nBaşlık: ${lastAddedListing.title}\nFiyat: ${lastAddedListing.price} TL\nKategori: ${lastAddedListing.category} / ${lastAddedListing.subCategory}\nSatıcı: ${lastAddedListing.seller} (${lastAddedListing.phone})`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#22c55e', color: '#fff', padding: '12px', borderRadius: '8px', fontWeight: '800', textDecoration: 'none', fontSize: '14px', marginBottom: '12px' }}
               >
-                <MessageCircle size={18} /> WhatsApp ile Paylaş / Haber Ver
+                <MessageCircle size={18} /> Yöneticiye Haber Ver
               </a>
             )}
             <button onClick={() => changeTab('home')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '700', cursor: 'pointer' }}>← Ana Sayfaya Dön</button>
@@ -953,6 +989,15 @@ export default function App() {
               <button onClick={() => changeTab('home')} style={{ background: 'none', border: 'none', color: '#64748b', fontWeight: '600', cursor: 'pointer' }}>← Vazgeç</button>
               <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>İlan Ver (En Fazla 10 Fotoğraf)</h2>
             </div>
+            <SubmissionAccountPanel session={submissionAccount.session} quota={submissionAccount.quota}
+              loading={submissionAccount.loading} busy={submissionAccount.busy} error={submissionAccount.error}
+              message={submissionAccount.message} onAuthenticate={submissionAccount.authenticate}
+              onResend={submissionAccount.resend} onSignOut={submissionAccount.signOut}
+              onRefresh={() => { void submissionAccount.refresh(); }} />
+            {submissionAccount.session && <MySubmissions items={submissionAccount.items}
+              loading={submissionAccount.loading} error={submissionAccount.error}
+              onRefresh={() => { void submissionAccount.refresh(); }} />}
+            {submissionAccount.session && submissionAccount.quota?.email_verified && (
             <form onSubmit={handleDirectAdd} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <input type="text" name="seller" placeholder="Adınız Soyadınız *" value={form.seller} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               <input type="text" name="phone" placeholder="Telefon Numaranız *" value={form.phone} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
@@ -981,8 +1026,13 @@ export default function App() {
                 )}
               </div>
               <textarea name="description" placeholder="Açıklama..." value={form.description} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', height: '80px' }} />
-              <button type="submit" style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}>İlanı Yayınla</button>
+              {submissionError && <div role="alert" style={{ color: '#b91c1c', fontSize: '13px' }}>{submissionError}</div>}
+              <button type="submit" disabled={submissionSaving || !submissionAccount.canSubmit}
+                style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', opacity: submissionSaving || !submissionAccount.canSubmit ? 0.6 : 1 }}>
+                {submissionSaving ? 'Onaya gönderiliyor…' : 'İlanı Onaya Gönder'}
+              </button>
             </form>
+            )}
           </div>
         )}
 
@@ -1005,6 +1055,10 @@ export default function App() {
                   <h2 style={{ fontSize: '16px', fontWeight: '800', margin: 0 }}>🛡️ Tam Kontrol Paneli</h2>
                   <button onClick={handleAdminLogout} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', cursor: 'pointer' }}>Çıkış</button>
                 </div>
+
+                <ModerationQueue items={moderation.items} loading={moderation.loading}
+                  error={moderation.error} busyId={moderation.busyId} onDecision={moderateListing}
+                  onRefresh={() => { void moderation.refresh(); }} />
 
                 <div style={{ backgroundColor: '#fef08a', padding: '12px', borderRadius: '8px', marginBottom: '16px', border: '1px solid #facc15' }}>
                   <h3 style={{ fontSize: '13px', fontWeight: '800', color: '#713f12', margin: '0 0 6px 0' }}>🔄 Sunucudaki İlanları Yenile</h3>
