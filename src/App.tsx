@@ -16,6 +16,10 @@ import BrandLogo from './components/BrandLogo';
 import OpeningSplash from './components/OpeningSplash';
 import FeaturedOfferNotice from './components/FeaturedOfferNotice';
 import FeaturedOfferManager from './components/FeaturedOfferManager';
+import TrafficDashboard from './components/TrafficDashboard';
+import TrafficPrivacy from './components/TrafficPrivacy';
+import { useTrafficAnalytics } from './hooks/useTrafficAnalytics';
+import { useTrafficReport } from './hooks/useTrafficReport';
 
 import {
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus,
@@ -168,6 +172,7 @@ export default function App() {
 
   const [selectedListing, setSelectedListing] = useState(null);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+  const [analyticsAuthReady, setAnalyticsAuthReady] = useState(false);
   const [adminEmail, setAdminEmail] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   const [adminAuthError, setAdminAuthError] = useState('');
@@ -189,6 +194,9 @@ export default function App() {
   const moderation = useModerationQueue(isAdminLoggedIn, SUPABASE_URL, getAdminDbHeaders, normalizeListing);
   const advertisements = useAdvertisements(supabaseClient, SUPABASE_URL, SUPABASE_ANON_KEY, isAdminLoggedIn, getAdminDbHeaders);
   const listingArchive = useListingArchive(isAdminLoggedIn, SUPABASE_URL, getAdminDbHeaders);
+  const traffic = useTrafficAnalytics(activeTab, selectedListing?.id,
+    `${activeTab}|${selectedCategory}|${selectedSubCategory}`, isAdminLoggedIn || !analyticsAuthReady);
+  const trafficReport = useTrafficReport(isAdminLoggedIn && activeTab==='statistics', SUPABASE_URL, getAdminDbHeaders);
 
   const [form, setForm] = useState({
     title: '',
@@ -290,13 +298,14 @@ export default function App() {
     if (!supabaseClient) return;
     let active = true;
     const syncAdminState = async (session) => {
+      if (active) setAnalyticsAuthReady(false);
       if (!session) {
-        if (active) setIsAdminLoggedIn(false);
+        if (active) { setIsAdminLoggedIn(false);setAnalyticsAuthReady(true); }
         return;
       }
       try {
         const authorized = await isCurrentUserAdmin();
-        if (active) setIsAdminLoggedIn(authorized);
+        if (active) { setIsAdminLoggedIn(authorized);setAnalyticsAuthReady(true); }
       } catch (error) {
         if (active) setIsAdminLoggedIn(false);
       }
@@ -861,6 +870,14 @@ export default function App() {
           </div>
         )}
 
+        {activeTab === 'statistics' && (
+          <div>
+            <button type="button" onClick={()=>changeTab('admin-page')} style={{marginBottom:12}}>← Yönetim Paneline Dön</button>
+            {isAdminLoggedIn ? <TrafficDashboard state={trafficReport} /> :
+              <p role="alert">İstatistikler yalnızca yetkili yöneticilere açıktır. Yönetim panelinden giriş yapın.</p>}
+          </div>
+        )}
+
         {activeTab === 'home' && (
           <div>
             <AdvertisementPlacement state={advertisements} admin={isAdminLoggedIn} onManage={() => changeTab('advertisements')} />
@@ -1167,6 +1184,10 @@ export default function App() {
                   onRefresh={() => { void moderation.refresh(); }} />
 
                 <FeaturedOfferManager state={siteSettings} />
+                <button type="button" onClick={()=>changeTab('statistics')} data-testid="button-admin-statistics"
+                  style={{width:'100%',padding:14,margin:'16px 0',border:'1px solid #86efac',borderRadius:8,background:'#ecfdf5',color:'#166534',fontWeight:700,cursor:'pointer'}}>
+                  Ziyaret İstatistikleri — Bölge, Süre ve Sıklık
+                </button>
 
                 <div style={{ backgroundColor: '#fef08a', padding: '12px', borderRadius: '8px', marginBottom: '16px', border: '1px solid #facc15' }}>
                   <h3 style={{ fontSize: '13px', fontWeight: '800', color: '#713f12', margin: '0 0 6px 0' }}>🔄 Sunucudaki İlanları Yenile</h3>
@@ -1297,6 +1318,7 @@ export default function App() {
             )}
           </div>
         )}
+        {!isAdminLoggedIn && <TrafficPrivacy state={traffic} />}
       </main>
 
       <footer style={{ backgroundColor: '#1b3a2b', color: '#94a3b8', padding: '20px 16px', textAlign: 'center', fontSize: '12px', marginTop: 'auto', borderTop: '1px solid #2d5a43' }}>
