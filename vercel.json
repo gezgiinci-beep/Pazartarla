@@ -1,7 +1,21 @@
 {
-  "crons": [{ "path": "/api/traffic", "schedule": "0 0 * * *" }],
+  "crons": [
+    {
+      "path": "/api/traffic",
+      "schedule": "0 0 * * *"
+    }
+  ],
   "routes": [
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/index.html" }
-  ]
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "framework": "vite",
+  "installCommand": "pnpm install --frozen-lockfile --ignore-workspace",
+  "buildCommand": "pnpm run build",
+  "outputDirectory": "dist"
 }
