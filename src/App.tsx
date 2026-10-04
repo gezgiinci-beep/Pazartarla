@@ -5,6 +5,7 @@ import ModerationQueue from './components/ModerationQueue';
 import MySubmissions from './components/MySubmissions';
 import ListingEditor from './components/ListingEditor';
 import {editError} from './lib/listingEditor';
+import {deleteAdminListing} from './lib/adminListingRequests';
 import { useSubmissionAccount } from './hooks/useSubmissionAccount';
 import { useModerationQueue } from './hooks/useModerationQueue';
 import { useSiteSettings } from './hooks/useSiteSettings';
@@ -727,15 +728,7 @@ export default function App() {
       if (!window.confirm('Bu ilanı silmek istediğinize emin misiniz?')) return;
 
       try {
-        const response = await fetch(SUPABASE_URL + '/rest/v1/listings?id=eq.' + encodeURIComponent(id), {
-          method: 'DELETE',
-          headers: { ...(await getAdminDbHeaders()), 'Prefer': 'return=representation' }
-        });
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        if (response.status !== 204) {
-          const deletedRows = await response.json().catch(() => []);
-          if (Array.isArray(deletedRows) && deletedRows.length === 0) throw new Error('Sunucu ilanı silmedi.');
-        }
+        await deleteAdminListing(SUPABASE_URL, await getAdminDbHeaders(), id);
 
         setListings(currentListings => currentListings.filter(item => item.id !== id));
         setListingsError('');

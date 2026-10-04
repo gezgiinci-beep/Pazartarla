@@ -2,6 +2,7 @@
   "name": "pazartarla",
   "private": true,
   "version": "1.0.0",
+  "packageManager": "pnpm@10.26.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,6 +11,7 @@
     "preview": "vite preview",
     "check:startup": "node scripts/check-startup.mjs",
     "check:submissions": "node scripts/check-submission-database.mjs",
+    "check:admin": "node --experimental-strip-types --test tests/admin-listings.test.mjs && node scripts/check-admin-listings-local.mjs",
     "check:settings": "node --experimental-strip-types --test tests/site-settings.test.mjs",
     "check:settings-db": "node scripts/check-site-settings-database.mjs",
     "check:ads": "node --experimental-strip-types --test tests/advertisements.test.mjs",
@@ -32,6 +34,5 @@
     "@vitejs/plugin-react": "^4.2.1",
     "pg": "^8.16.3",
     "vite": "^5.0.8"
-  },
-  "packageManager": "pnpm@10.26.1"
+  }
 }
