@@ -105,7 +105,7 @@
 .pt-ad-row-head { justify-content: space-between; gap: 8px; }
 .pt-ad-row-title { overflow: hidden; margin: 0; color: var(--ad-forest); font-size: 13px; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
 .pt-ad-row-link { display: block; overflow: hidden; margin-top: 5px; color: #66776b; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; text-decoration: none; }
-.pt-ad-actions { gap: 6px; margin-top: 9px; }
+.pt-ad-actions { gap: 6px; margin-top: 9px; flex-wrap: wrap; }
 .pt-ad-small-button { display: inline-flex; align-items: center; gap: 5px; min-height: 29px; padding: 5px 8px; border: 1px solid #dce5da; border-radius: 7px; background: #fff; color: #425649; font-size: 10px; font-weight: 750; }
 .pt-ad-empty { display: grid; justify-items: center; gap: 7px; padding: 26px 12px; border: 1px dashed #d4e0d1; border-radius: 10px; color: var(--ad-muted); text-align: center; }
 .pt-ad-empty strong { color: var(--ad-forest); font-size: 13px; }

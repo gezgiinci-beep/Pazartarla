@@ -23,6 +23,7 @@ export default function AdvertisementManager({ state, onBack }: Props) {
   const [formError, setFormError] = useState('');
   const [previewUrl, setPreviewUrl] = useState('');
   const [mediaFailures, setMediaFailures] = useState<string[]>([]);
+  useEffect(()=>{setMediaFailures([]);},[items]);
 
   useEffect(() => {
     if (!draft.file) {
@@ -115,8 +116,8 @@ export default function AdvertisementManager({ state, onBack }: Props) {
           <div className="pt-ad-mark" aria-hidden="true"><ImageIcon size={20} /></div>
           <div>
             <p className="pt-ad-kicker">PazarTarla · Tanıtım alanı</p>
-            <h1 className="pt-ad-title" id="pt-ad-manager-title">Reklam yönetimi</h1>
-            <p className="pt-ad-intro">Görsel ve video tanıtımlarını buradan yayınlayıp düzenleyin.</p>
+            <h1 className="pt-ad-title" id="pt-ad-manager-title">Sponsor ve reklam yönetimi</h1>
+            <p className="pt-ad-intro">Aktif logo ve banner görselleri ana sayfadaki Sponsorlar / Çözüm Ortaklarımız alanında da görünür. Görsel, hedef bağlantı ve yayın durumunu buradan yönetin.</p>
           </div>
         </div>
         <button className="pt-ad-button" type="button" onClick={onBack} disabled={busy} data-testid="button-back-advertisements">
@@ -129,7 +130,7 @@ export default function AdvertisementManager({ state, onBack }: Props) {
           <RefreshCw size={14} /> Listeyi yenile
         </button>
         <button className="pt-ad-button" type="button" onClick={resetDraft} disabled={busy} data-testid="button-new-advertisement">
-          <Plus size={14} /> Yeni reklam
+          <Plus size={14} /> Yeni sponsor / reklam
         </button>
         {warning && state.canCleanup && (
           <button className="pt-ad-button" type="button" onClick={() => { void retryCleanup(); }} disabled={busy} data-testid="button-retry-ad-cleanup">
@@ -168,9 +169,9 @@ export default function AdvertisementManager({ state, onBack }: Props) {
               <span className="pt-ad-help">Tıklayan ziyaretçi bu adrese gider. Yalnızca http/https adresleri kabul edilir.</span>
             </label>
 
-            {!isEditing && (
+            {(
               <div className="pt-ad-field">
-                <span>Görsel veya video</span>
+                <span>{isEditing?'Görseli / videoyu değiştir (isteğe bağlı)':'Sponsor logosu, banner veya video'}</span>
                 <label className="pt-ad-upload" htmlFor="pt-ad-file">
                   <UploadCloud size={21} aria-hidden="true" />
                   <strong>{draft.file ? draft.file.name : 'Dosya seçmek için dokunun'}</strong>
@@ -193,7 +194,7 @@ export default function AdvertisementManager({ state, onBack }: Props) {
             {isEditing && (
               <div className="pt-ad-feedback">
                 {draft.existing?.media_type === 'video' ? <Film size={15} /> : <ImageIcon size={15} />}
-                <span>Mevcut medya korunur. Bu düzenlemede dosya değiştirilemez.</span>
+                <span>Dosya seçmezseniz mevcut medya korunur. Yeni dosya ancak sunucu kaydı doğrulandıktan sonra eski medyanın yerini alır.</span>
               </div>
             )}
 

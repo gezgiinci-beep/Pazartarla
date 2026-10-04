@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { AD_BUCKET, AdConflictError, adFields, adFile, adMediaUrl, mutateAd, readAd, readAds } from '../lib/advertisements';
 import type { Advertisement, AdvertisementDraft } from '../lib/advertisements';
+import {replaceAdAsset} from '../lib/adReplacement';
+import {optimizeAdImage} from '../lib/adImage';
 
 const explain = (e: unknown) => e instanceof Error ? e.message : 'Bağlantı kesildi. Lütfen yeniden deneyin.';
 export function useAdvertisements(
@@ -20,6 +22,7 @@ export function useAdvertisements(
   const locked = useRef(false);
   const cleanup = useRef<string[]>([]);
   const pending = useRef<{ id: string; path: string; file: File } | null>(null);
+  const replacement = useRef<Parameters<typeof replaceAdAsset>[1]['current']>(null);
   const headers = useCallback(async () => admin ? getAdminHeaders() : { apikey: key }, [admin, key, getAdminHeaders]);
   const refresh = useCallback(async () => {
     if (locked.current) return;
@@ -52,7 +55,9 @@ export function useAdvertisements(
   const mediaUrl = (ad: Advertisement) => adMediaUrl(url, ad);
   const removeFile = async (path: string) => {
     if (!client) throw new Error('Dosya depolama bağlantısı eksik.');
-    const { error } = await client.storage.from(AD_BUCKET).remove([path]);
+    let error: unknown;
+    try {({error}=await client.storage.from(AD_BUCKET).remove([path]));}
+    catch(cause){error=cause;}
     if (error) {
       cleanup.current = Array.from(new Set([...cleanup.current, path]));
       if (mounted.current) setWarning('Reklam kaydı işlendi fakat kullanılmayan dosya silinemedi. Dosya temizliğini yeniden deneyin.');
@@ -96,21 +101,34 @@ export function useAdvertisements(
         }
       }
       let row: Advertisement;
-      if (input.existing) {
+      let obsoletePath='';
+      if (input.existing && input.file) {
+        const result=await replaceAdAsset(input,replacement,{
+          read:id=>readAd(url,authHeaders!,id),
+          prepare:optimizeAdImage,
+          upload:async(path,file)=>{
+            const result=await client.storage.from(AD_BUCKET).upload(path,file,{contentType:file.type,cacheControl:'3600',upsert:false});
+            if(result.error)throw new Error('Yeni görsel yüklenemedi. Mevcut görsel korunuyor.');
+          },
+          patch:(ad,values)=>mutateAd(url,authHeaders!,'PATCH',ad.id,ad.revision,values),
+          orphan:path=>{cleanup.current=Array.from(new Set([...cleanup.current,path]));setWarning('Kullanılmayan yüklemeyi dosya temizliğiyle kaldırabilirsiniz.');},
+        });
+        row=result.row;obsoletePath=result.obsoletePath;
+      } else if (input.existing) {
         row = await mutateAd(url, authHeaders, 'PATCH', input.existing.id, input.existing.revision, fields);
       } else {
         if (!input.file) throw new Error('Bir görsel veya video seçin.');
-        const kind = adFile(input.file);
         if (!uploaded) {
+          const prepared=await optimizeAdImage(input.file),kind=adFile(prepared);
           uploaded = input.id + '/' + crypto.randomUUID() + '.' + kind.extension;
-          const result = await client.storage.from(AD_BUCKET).upload(uploaded, input.file, {
-            contentType: input.file.type, cacheControl: '3600', upsert: false
+          const result = await client.storage.from(AD_BUCKET).upload(uploaded, prepared, {
+            contentType: prepared.type, cacheControl: '3600', upsert: false
           });
           if (result.error) { uploaded = ''; throw new Error('Dosya yüklenemedi. Bağlantınızı ve depolama izinlerini kontrol edin.'); }
           pending.current = { id: input.id, path: uploaded, file: input.file };
         }
         row = await mutateAd(url, authHeaders, 'POST', input.id, undefined, {
-          ...fields, id: input.id, media_path: uploaded, media_type: kind.media_type
+          ...fields, id: input.id, media_path: uploaded, media_type: /\.(mp4|webm)$/.test(uploaded)?'video':'image'
         });
       }
       acknowledged = row; pending.current = null;
@@ -119,6 +137,7 @@ export function useAdvertisements(
         setSuccess(input.existing ? 'Reklam güncellendi.' : 'Dosya yüklendi ve reklam kaydedildi.');
         if (!cleanup.current.length) setWarning('');
       }
+      if(obsoletePath)await removeFile(obsoletePath);
       return row;
     } catch (e) {
       // A lost response may still represent a committed insert. Never delete a referenced upload.
@@ -146,6 +165,7 @@ export function useAdvertisements(
         }
       }
       if (mounted.current) setSaveError('Reklam kaydedilemedi. ' + explain(e));
+      if (mounted.current && replacement.current) setWarning('Görsel kaydının sonucu belirsiz. Eski dosya silinmedi; aynı taslak ve dosyayla yeniden deneyin.');
       if (e instanceof AdConflictError) { locked.current = false; void refresh(); }
       return null;
     } finally {
