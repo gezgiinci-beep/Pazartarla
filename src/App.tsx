@@ -291,7 +291,7 @@ export default function App() {
         if (!Array.isArray(data)) throw new Error('Invalid listings response');
 
         if (!listingRefresh.current.canApply(readTicket)) return false;
-        setListings(data.map(normalizeListing));
+        setListings(listingRefresh.current.reconcile(data).map(normalizeListing));
         setListingsError('');
         return true;
       } catch (error) {
@@ -639,6 +639,7 @@ export default function App() {
 
       try {
         const savedListing = normalizeListing(await setListingFeatured(supabaseClient,id,!target.isFeatured));
+        listingRefresh.current.rememberFeatured(id, savedListing.isFeatured);
         setListings(currentListings => savedListing.status==='approved'
           ?currentListings.map(item => item.id === id ? savedListing : item)
           :currentListings.filter(item=>item.id!==id));
@@ -842,7 +843,10 @@ export default function App() {
     setIsAdminLoggedIn(false);
     setAdminAuthError('');
     if (supabaseClient) {
-      try { await supabaseClient.auth.signOut(); }
+      try {
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) throw error;
+      }
       catch { setAdminAuthError('Panel kilitlendi; oturumu sonlandırmak için bağlantınızı kontrol edin.'); }
     }
   };

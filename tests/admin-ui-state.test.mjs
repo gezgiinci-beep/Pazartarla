@@ -37,3 +37,17 @@ test('multiple writes stay isolated and reads resume after failure cleanup',()=>
   assert.equal(guard.canApply(guard.startRead()),true);
   assert.equal(guard.beginWrite(7),true);
 });
+test('a confirmed save survives stale post-save reads until the backend confirms it',()=>{
+  let time=0;const guard=createListingRefreshGuard(()=>time);
+  const old={id:7,is_featured:false,seotags:'KEEP',image:'KEEP'};
+  guard.rememberFeatured(7,true);
+  assert.deepEqual(guard.reconcile([old]),[{...old,is_featured:true}]);
+  assert.deepEqual(guard.reconcile([old]),[{...old,is_featured:true}]);
+  const current={...old,is_featured:true};
+  assert.deepEqual(guard.reconcile([current]),[current]);
+  assert.deepEqual(guard.reconcile([old]),[old],'a later remote change can be displayed');
+  guard.rememberFeatured(7,true);time=60_000;
+  assert.deepEqual(guard.reconcile([old]),[old],'confirmation window cannot mask changes forever');
+  guard.rememberFeatured(7,true);guard.rememberFeatured(7,false);
+  assert.deepEqual(guard.reconcile([current]),[old],'the latest confirmed removal wins');
+});
