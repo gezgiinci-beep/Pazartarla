@@ -18,6 +18,7 @@ import SponsorPartners from './components/SponsorPartners';
 import MembershipPage from './components/MembershipPage';
 import MembershipAdmin from './components/MembershipAdmin';
 import MembershipNotice from './components/MembershipNotice';
+import TrialPromotion from './components/TrialPromotion';
 import Storefront from './components/Storefront';
 import {useStoreMembership} from './hooks/useStoreMembership';
 import {storeIdFromUrl} from './lib/storeMembership';
@@ -148,6 +149,7 @@ export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState(()=>storeIdFromUrl(window.location.href)?'store':'home');
   const [storeId,setStoreId]=useState(()=>storeIdFromUrl(window.location.href));
+  const [membershipPreferredPlan,setMembershipPreferredPlan]=useState('');
   const editFormRef = useRef(null);
 
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -857,7 +859,7 @@ export default function App() {
             <button type="button" onClick={()=>changeTab('memberships')} data-testid="button-membership-menu" style={{border:'1px solid #86efac',borderRadius:8,padding:'9px 13px',background:'#ecfdf5',color:'#166534',fontWeight:700,cursor:'pointer'}}>Mağaza Paketleri</button>
             {storeMembership.data?.mine?.store&&<button type="button" onClick={()=>openStore(storeMembership.data!.mine!.store!.id)} style={{border:'1px solid #dce5dc',borderRadius:8,padding:'9px 13px',background:'#fff',color:'#166534',cursor:'pointer'}}>Mağazam</button>}
           </nav>
-          {activeTab==='memberships'&&<MembershipPage key={submissionAccount.session?.user.id||'public'} state={storeMembership} session={submissionAccount.session} onSignIn={()=>changeTab('add')} onStore={openStore} onSubmitted={()=>{void submissionAccount.refresh();}}/>}
+          {activeTab==='memberships'&&<MembershipPage key={submissionAccount.session?.user.id||'public'} initialPlanId={membershipPreferredPlan} state={storeMembership} session={submissionAccount.session} onSignIn={()=>changeTab('add')} onStore={openStore} onSubmitted={()=>{void submissionAccount.refresh();}}/>}
           {activeTab==='membership-admin'&&(isAdminLoggedIn?<MembershipAdmin state={storeMembership} session={submissionAccount.session} authorized={isAdminLoggedIn} onBack={()=>changeTab('admin-page')}/>:<p role="alert">Paket yönetimi için yönetici hesabıyla giriş yapın.</p>)}
           {activeTab==='store'&&<Storefront key={storeId||'none'} state={storeMembership} normalize={normalizeListing} onBack={()=>changeTab('memberships')} onListing={row=>{
             const owner=submissionAccount.items.find(x=>x.id===row.id)||listings.find(x=>x.id===row.id);
@@ -928,6 +930,9 @@ export default function App() {
         {activeTab === 'home' && (
           <div>
             <SponsorPartners state={advertisements} admin={isAdminLoggedIn} onManage={()=>changeTab('advertisements')} />
+            <TrialPromotion ready={!!storeMembership.data?.plans.some(plan=>plan.id==='trial-30-days')}
+              used={!!storeMembership.data?.mine?.trial_used}
+              onOpenTrial={()=>{setMembershipPreferredPlan('trial-30-days');changeTab('memberships');}}/>
             <MembershipNotice plans={storeMembership.data?.plans} onOpen={()=>changeTab('memberships')}/>
             {advertisements.items.some(ad=>ad.is_active&&ad.media_type==='video')&&
               <AdvertisementPlacement state={{...advertisements,items:advertisements.items.filter(ad=>ad.media_type==='video')}} admin={isAdminLoggedIn} onManage={() => changeTab('advertisements')} />}

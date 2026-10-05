@@ -9,8 +9,8 @@ export type SubmissionAccountPanelProps = {
     used: number;
     remaining: number | null;
     next_available_at: string | null;
-    period?:'rolling_day'|'membership_month';
-    monthly_remaining?:number;active_limit?:number;active_used?:number;pending_reserved?:number;plan_name?:string;membership_ends_at?:string;
+    period?:'rolling_day'|'membership_month'|'membership_year'|'membership_trial';
+    monthly_remaining?:number|null;active_limit?:number|null;active_used?:number;pending_reserved?:number;plan_name?:string;membership_ends_at?:string;
   } | null;
   loading: boolean;
   busy: boolean;
@@ -220,9 +220,10 @@ export default function SubmissionAccountPanel({
               <>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "baseline", flexWrap: "wrap" }}>
                   <strong data-testid="text-quota-remaining" style={{ fontSize: 15 }}>
-                     {quota.unlimited ? 'Yönetici hesabı: Sınırsız ilan' : quota.period==='membership_month'?`${quota.plan_name}: Bu dönem ${quota.monthly_remaining} / ${quota.limit} yeni ilan hakkı kaldı`:`${Math.max(0, quota.remaining ?? 0)} / ${Math.max(0, quota.limit ?? 0)} gönderim hakkı kaldı`}
+                     {(quota.period==='membership_year'||quota.period==='membership_trial')&&quota.unlimited?`${quota.plan_name}: Sınırsız ilan ve listeleme`:
+                       quota.unlimited ? 'Yönetici hesabı: Sınırsız ilan' : quota.period==='membership_month'?`${quota.plan_name}: Bu dönem ${quota.monthly_remaining} / ${quota.limit} yeni ilan hakkı kaldı`:`${Math.max(0, quota.remaining ?? 0)} / ${Math.max(0, quota.limit ?? 0)} gönderim hakkı kaldı`}
                   </strong>
-                   <span style={{ fontSize: 12, color: palette.muted }}>{quota.period==='membership_month'?'Üyelik dönemi':'Son 24 saat'}: {quota.used} gönderim</span>
+                   <span style={{ fontSize: 12, color: palette.muted }}>{quota.period==='membership_trial'?'Deneme dönemi':quota.period==='membership_month'||quota.period==='membership_year'?'Üyelik dönemi':'Son 24 saat'}: {quota.used} gönderim</span>
                 </div>
                 {!quota.unlimited && <div style={{ height: 6, background: "#e8eee6", borderRadius: 99, marginTop: 10, overflow: "hidden" }}>
                   <div style={{ width: `${Math.min(100, Math.max(0, quota.limit ? (quota.used / quota.limit) * 100 : 0))}%`, height: "100%", background: palette.green, borderRadius: 99 }} />
@@ -233,6 +234,8 @@ export default function SubmissionAccountPanel({
                   </p>
                 )}
                  {quota.period==='membership_month'&&<p style={{fontSize:12,lineHeight:1.6}}>Aktif ilan: {quota.active_used} / {quota.active_limit} · Onay bekleyen kapasite: {quota.pending_reserved}.<br/>Dönem sonu: {dateTime(quota.membership_ends_at)}. Günlük 3 ilan sınırı uygulanmaz.</p>}
+                 {quota.period==='membership_year'&&<p style={{fontSize:12,lineHeight:1.6}}>Aktif ilan: {quota.active_used} · Onay bekleyen: {quota.pending_reserved}. İlan ve listeleme kotaları sınırsızdır.<br/>Yıllık üyelik sonu: {dateTime(quota.membership_ends_at)}. Günlük 3 ilan sınırı uygulanmaz; yönetici onayı ve ilan yayın süresi değişmez.</p>}
+                 {quota.period==='membership_trial'&&<p style={{fontSize:12,lineHeight:1.6}}>Aktif ilan: {quota.active_used} · Onay bekleyen: {quota.pending_reserved}.<br/>Ücretsiz deneme sonu: {dateTime(quota.membership_ends_at)}. Ödeme ve otomatik ücretlendirme yoktur; ilan onayı ve yayın süresi değişmez.</p>}
                </>
             ) : (
               <div role="status" data-testid="status-quota-unavailable" style={{ color: palette.muted, fontSize: 13 }}>
