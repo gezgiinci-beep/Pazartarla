@@ -25,6 +25,9 @@ import { formatListingDate, isListingArchived } from './lib/listingLifetime';
 import { useListingArchive } from './hooks/useListingArchive';
 import BrandLogo from './components/BrandLogo';
 import OpeningSplash from './components/OpeningSplash';
+import {useOffers} from './hooks/useOffers';
+import OfferMarketplace from './components/OfferMarketplace';
+import OfferListingControls from './components/OfferListingControls';
 import FeaturedOfferNotice from './components/FeaturedOfferNotice';
 import FeaturedOfferManager from './components/FeaturedOfferManager';
 import TrafficDashboard from './components/TrafficDashboard';
@@ -146,7 +149,7 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
-  const [activeTab, setActiveTab] = useState(()=>storeIdFromUrl(window.location.href)?'store':'home');
+  const [activeTab, setActiveTab] = useState(()=>storeIdFromUrl(window.location.href)?'store':new URLSearchParams(window.location.search).get('teklifler')==='1'?'offers':'home');
   const [storeId,setStoreId]=useState(()=>storeIdFromUrl(window.location.href));
   const editFormRef = useRef(null);
 
@@ -209,7 +212,19 @@ export default function App() {
   const [customCategoryInput, setCustomCategoryInput] = useState('');
   const [submissionSaving, setSubmissionSaving] = useState(false);
   const [submissionError, setSubmissionError] = useState('');
+  const [formOfferRequested,setFormOfferRequested]=useState(false);
+  const [submissionWarning,setSubmissionWarning]=useState('');
+  const postOfferAuthTarget=useRef<number|'offers'|null>(null);
   const submissionAccount = useSubmissionAccount(supabaseClient, SUPABASE_URL, SUPABASE_ANON_KEY, normalizeListing);
+  const offers=useOffers(supabaseClient,submissionAccount.session);
+  const offerFormIdentity=useRef(submissionAccount.session?.user.id);
+  useEffect(()=>{
+    const id=submissionAccount.session?.user.id;
+    if(offerFormIdentity.current&&offerFormIdentity.current!==id){
+      setFormOfferRequested(false);setSubmissionWarning('');postOfferAuthTarget.current=null;
+    }
+    offerFormIdentity.current=id;
+  },[submissionAccount.session?.user.id]);
   const storeMembership=useStoreMembership(supabaseClient,SUPABASE_URL,SUPABASE_ANON_KEY,submissionAccount.session,isAdminLoggedIn,storeId);
   const moderation = useModerationQueue(isAdminLoggedIn, SUPABASE_URL, getAdminDbHeaders, normalizeListing);
   const advertisements = useAdvertisements(supabaseClient, SUPABASE_URL, SUPABASE_ANON_KEY, isAdminLoggedIn, getAdminDbHeaders);
@@ -387,18 +402,36 @@ export default function App() {
 
   const changeTab = (tabName) => {
     const url=new URL(window.location.href);url.searchParams.delete('magaza');
+    url.searchParams.delete('teklifler');if(tabName==='offers')url.searchParams.set('teklifler','1');
     window.history.pushState({ tab: tabName }, '',url);
     setStoreId(null);
     setActiveTab(tabName);
   };
   const openStore=(id:string)=>{
     const url=new URL(window.location.href);url.searchParams.set('magaza',id);
+    url.searchParams.delete('teklifler');
     window.history.pushState({tab:'store'},'',url);setStoreId(id);setActiveTab('store');
   };
   useEffect(()=>{
-    const syncStore=()=>{const id=storeIdFromUrl(window.location.href);setStoreId(id);if(id)setActiveTab('store');};
+    const syncStore=()=>{const id=storeIdFromUrl(window.location.href);setStoreId(id);if(id)setActiveTab('store');else if(new URLSearchParams(window.location.search).get('teklifler')==='1')setActiveTab('offers');};
     window.addEventListener('popstate',syncStore);return()=>window.removeEventListener('popstate',syncStore);
   },[]);
+  const openOfferListing=(row)=>{
+    setSelectedListing({...row,images:row.images||[row.image||DEFAULT_LISTING_IMAGE]});
+    changeTab('detail');
+  };
+  const signInForOffers=()=>{
+    setFormOfferRequested(false);
+    postOfferAuthTarget.current=activeTab==='detail'&&selectedListing?selectedListing.id:'offers';
+    changeTab('add');
+  };
+  const createOfferListing=()=>{setFormOfferRequested(true);changeTab('add');};
+  useEffect(()=>{
+    if(!submissionAccount.session||postOfferAuthTarget.current===null)return;
+    const target=postOfferAuthTarget.current;postOfferAuthTarget.current=null;
+    const row=target!=='offers'&&(selectedListing?.id===target?selectedListing:listings.find(item=>item.id===target));
+    if(row)openOfferListing(row);else changeTab('offers');
+  },[submissionAccount.session?.user.id]);
 
   const handleSendMessage = (e) => {
     e.preventDefault();
@@ -524,6 +557,11 @@ export default function App() {
   const handleDirectAdd = async (e) => {
       e.preventDefault();
       if (submissionSaving) return;
+      if(formOfferRequested&&(offers.loading||offers.error)){
+        setSubmissionError('Teklif altyapısı hazır değil. Normal ilan göndermek için teklif seçeneğini kaldırın.');
+        return;
+      }
+      const enableOffersForSubmission=formOfferRequested;
       setSubmissionError('');
       if (!siteSettings.settings || siteSettings.loading || siteSettings.loadError) {
         setSubmissionError('Kategori ayarları yüklenemedi. Önce site ayarlarını yeniden yükleyin.');
@@ -591,9 +629,15 @@ export default function App() {
         const savedListing = normalizeListing(rows[0]);
         setListingsError('');
         setLastAddedListing(savedListing);
+        setSubmissionWarning('');
+        if(enableOffersForSubmission){
+          const enabled=await offers.toggle(savedListing.id,true);
+          if(!enabled)setSubmissionWarning('İlanınız kaydedildi; teklif alma açılamadı. İlanı tekrar göndermeyin. Gönderimlerim bölümünden bu ilanın teklif ayarını yeniden açabilirsiniz.');
+        }
         await submissionAccount.refresh();
         if (isAdminLoggedIn) await moderation.refresh();
         setForm(current => ({ ...current, title: '', price: '', description: '', seoTags: '', images: [DEFAULT_LISTING_IMAGE], status: 'pending' }));
+        setFormOfferRequested(false);
         changeTab('success-wa');
       } catch (error) {
         const reason = String(error?.message || '');
@@ -854,12 +898,16 @@ export default function App() {
 
       <main style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '12px', flex: 1, boxSizing: 'border-box' }}>
           <nav aria-label="Mağaza menüsü" style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:12}}>
+            <button type="button" onClick={()=>changeTab('offers')} data-testid="button-offers-menu" style={{border:'1px solid #b89d5b',borderRadius:8,padding:'9px 13px',background:'#fff8e5',color:'#244735',fontWeight:700,cursor:'pointer'}}>Teklif Pazarı</button>
             <button type="button" onClick={()=>changeTab('memberships')} data-testid="button-membership-menu" style={{border:'1px solid #86efac',borderRadius:8,padding:'9px 13px',background:'#ecfdf5',color:'#166534',fontWeight:700,cursor:'pointer'}}>Mağaza Paketleri</button>
             {storeMembership.data?.mine?.store&&<button type="button" onClick={()=>openStore(storeMembership.data!.mine!.store!.id)} style={{border:'1px solid #dce5dc',borderRadius:8,padding:'9px 13px',background:'#fff',color:'#166534',cursor:'pointer'}}>Mağazam</button>}
           </nav>
           {activeTab==='memberships'&&<MembershipPage key={submissionAccount.session?.user.id||'public'} state={storeMembership} session={submissionAccount.session} onSignIn={()=>changeTab('add')} onStore={openStore} onSubmitted={()=>{void submissionAccount.refresh();}}/>}
           {activeTab==='membership-admin'&&(isAdminLoggedIn?<MembershipAdmin state={storeMembership} session={submissionAccount.session} authorized={isAdminLoggedIn} onBack={()=>changeTab('admin-page')}/>:<p role="alert">Paket yönetimi için yönetici hesabıyla giriş yapın.</p>)}
-          {activeTab==='store'&&<Storefront key={storeId||'none'} state={storeMembership} normalize={normalizeListing} onBack={()=>changeTab('memberships')} onListing={row=>{
+          {activeTab==='offers'&&<OfferMarketplace key={submissionAccount.session?.user.id||'public'} state={offers}
+            listings={listings} ownListings={submissionAccount.items} session={submissionAccount.session}
+            onOpenListing={openOfferListing} onSignIn={signInForOffers} onCreateListing={createOfferListing} onBack={()=>changeTab('home')}/>}
+          {activeTab==='store'&&<Storefront key={storeId||'none'} state={storeMembership} normalize={normalizeListing} offerIds={offers.error?[]:offers.catalogIds} onBack={()=>changeTab('memberships')} onListing={row=>{
             const owner=submissionAccount.items.find(x=>x.id===row.id)||listings.find(x=>x.id===row.id);
             setSelectedListing({...row,submitted_by:owner?.submitted_by});changeTab('detail');
           }}/>}
@@ -897,6 +945,7 @@ export default function App() {
             <CheckCircle size={36} color="#166534" style={{ margin: '0 auto 12px auto' }} />
             <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#1b3a2b', margin: '0 0 8px 0' }}>İlanınız Onay İçin Alındı</h2>
             <p style={{ color: '#64748b', fontSize: '13px', marginBottom: '20px' }}>İlanınız henüz yayında değil. Yönetici onayından sonra herkes tarafından görülebilecek. Durumunu İlan Ver bölümündeki gönderimlerinizden takip edebilirsiniz.</p>
+            {submissionWarning&&<p role="alert" data-testid="status-offer-listing-partial-save" style={{color:'#92400e'}}>{submissionWarning}</p>}
             {lastAddedListing && (
               <a
                 href={`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(`PazarTarla ilanım yönetici onayını bekliyor.\n\nBaşlık: ${lastAddedListing.title}\nFiyat: ${lastAddedListing.price} TL\nKategori: ${lastAddedListing.category} / ${lastAddedListing.subCategory}\nSatıcı: ${lastAddedListing.seller} (${lastAddedListing.phone})`)}`}
@@ -1134,6 +1183,8 @@ export default function App() {
             <a href={`tel:${selectedListing.phone}`} style={{ width: '100%', backgroundColor: '#1b3a2b', color: '#fff', padding: '12px', borderRadius: '8px', textAlign: 'center', fontWeight: '700', textDecoration: 'none', display: 'block', boxSizing: 'border-box' }}>
               📞 {selectedListing.phone} ({selectedListing.seller})
             </a>
+            <OfferListingControls key={`${submissionAccount.session?.user.id||'public'}:${selectedListing.id}`} listing={selectedListing}
+              state={offers} session={submissionAccount.session} onSignIn={signInForOffers} onViewOffers={()=>changeTab('offers')}/>
           </div>
         )}
 
@@ -1163,9 +1214,17 @@ export default function App() {
             {listingEditMessage && <p role="status">{listingEditMessage}</p>}
             {submissionAccount.session && <MySubmissions items={submissionAccount.items}
               loading={submissionAccount.loading} error={submissionAccount.error}
-              onRefresh={() => { void submissionAccount.refresh(); }} onEdit={startOwnerEditing} />}
+              offers={offers} onViewOffers={()=>changeTab('offers')}
+              onRefresh={() => { void submissionAccount.refresh();void offers.refresh(); }} onEdit={startOwnerEditing} />}
             {submissionAccount.session && submissionAccount.quota?.email_verified && (
             <form onSubmit={handleDirectAdd} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <label style={{display:'flex',alignItems:'center',gap:8,padding:12,background:'#fff8e5',borderRadius:8}}>
+                <input type="checkbox" checked={formOfferRequested} disabled={submissionSaving||(!formOfferRequested&&(offers.loading||!!offers.error))}
+                  onChange={event=>setFormOfferRequested(event.target.checked)} data-testid="switch-create-offer-listing"/>
+                Teklife açık ilan oluştur
+              </label>
+              {formOfferRequested&&<p style={{fontSize:12}}>İlan onaylandığında Teklif Pazarı'nda da görünür. Teklif alma seçeneğini daha sonra yalnız bu ilan için kapatabilirsiniz.</p>}
+              {formOfferRequested&&offers.error&&<p role="alert">{offers.error} Normal ilan göndermek için teklif seçeneğini kaldırın.</p>}
               <input type="text" name="seller" placeholder="Adınız Soyadınız *" value={form.seller} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               <input type="text" name="phone" placeholder="Telefon Numaranız *" value={form.phone} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               <input type="text" name="title" placeholder="İlan Başlığı * (Otomatik SEO için önemlidir)" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
@@ -1198,7 +1257,7 @@ export default function App() {
                 İlanın satıcı adı ve telefonu ile bilinen doğrulanmış hesap e-postası, yalnızca yöneticiye açık
                 iletişim deposunda kaydedilir. İlan vermek toplu mesaj izni değildir; mesaj izinleri ayrıca kayıt altına alınır.
               </p>
-              <button type="submit" disabled={submissionSaving || !submissionAccount.canSubmit || !siteSettings.settings || !!siteSettings.loadError}
+              <button type="submit" disabled={submissionSaving || (formOfferRequested&&(offers.loading||!!offers.error)) || !submissionAccount.canSubmit || !siteSettings.settings || !!siteSettings.loadError}
                 style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', opacity: submissionSaving || !submissionAccount.canSubmit || !siteSettings.settings || !!siteSettings.loadError ? 0.6 : 1 }}>
                 {submissionSaving ? 'Onaya gönderiliyor…' : 'İlanı Onaya Gönder'}
               </button>

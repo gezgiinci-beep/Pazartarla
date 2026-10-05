@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import type { OffersState } from '../hooks/useOffers';
 
 export type MySubmissionsProps = {
   items: any[];
@@ -6,6 +7,8 @@ export type MySubmissionsProps = {
   error: string;
   onRefresh: () => void;
   onEdit?: (item: any) => void;
+  offers?: OffersState;
+  onViewOffers?: () => void;
 };
 
 const statusPresentation: Record<string, { label: string; background: string; color: string }> = {
@@ -38,7 +41,7 @@ function statusFor(value: unknown) {
   return statusPresentation[key] ?? { label: String(value ?? "Durum bilinmiyor"), background: "#edf0e9", color: "#526256" };
 }
 
-export default function MySubmissions({ items, loading, error, onRefresh, onEdit }: MySubmissionsProps) {
+export default function MySubmissions({ items, loading, error, onRefresh, onEdit, offers, onViewOffers }: MySubmissionsProps) {
   return (
     <section aria-labelledby="my-submissions-title" data-testid="panel-my-submissions" style={{ width: "100%", boxSizing: "border-box", padding: 18, border: "1px solid #dce5dc", borderRadius: 12, background: "#f7f8f2", color: "#26392e", fontFamily: "inherit" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
@@ -57,6 +60,8 @@ export default function MySubmissions({ items, loading, error, onRefresh, onEdit
           {error}
         </div>
       )}
+      {offers?.actionError && <p role="alert" style={{color:'#9e3d35'}}>{offers.actionError}</p>}
+      {offers && !offers.loading && offers.error && <p role="status" style={{color:'#795d20',fontSize:12}}>Teklif ayarları: {offers.error} Normal ilan işlemleriniz etkilenmez.</p>}
 
       {loading ? (
         <div role="status" data-testid="status-my-submissions-loading" style={{ display: "grid", gap: 8, marginTop: 15 }}>
@@ -86,6 +91,15 @@ export default function MySubmissions({ items, loading, error, onRefresh, onEdit
                   {status.label}
                 </span>
                 {onEdit && <button type="button" style={buttonStyle} onClick={()=>onEdit(item)}>İlanı Düzenle / Güncelle</button>}
+                {offers && offers.ownerIds.includes(Number(item.id)) && (
+                  <label style={{display:'flex',alignItems:'center',gap:8,minHeight:44,fontSize:12,fontWeight:700}}>
+                    <input type="checkbox" role="switch" checked={!!offers.settings[Number(item.id)]}
+                      disabled={offers.busy||offers.loading||!!offers.error||(!offers.settings[Number(item.id)]&&(!['pending','approved'].includes(item.status)||new Date(item.expires_at).getTime()<=Date.now()))}
+                      onChange={event=>void offers.toggle(Number(item.id),event.target.checked)}
+                      data-testid={`switch-my-submission-offers-${item.id}`}/>
+                    Bu ilanda teklif {offers.settings[Number(item.id)]?'açık':'kapalı'}
+                  </label>
+                )}
               </article>
             );
           })}
@@ -95,6 +109,7 @@ export default function MySubmissions({ items, loading, error, onRefresh, onEdit
       <div data-testid="text-my-submissions-policy" style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid #dce5dc", color: "#64756a", fontSize: 12, lineHeight: 1.55 }}>
         Her ilan, herkese görünmeden önce yönetici onayı almalıdır. Onaylanmış, reddedilmiş veya silinmiş tüm gönderimler kayan 24 saatlik gönderim kotasına dahildir.
       </div>
+      {onViewOffers && <button type="button" onClick={onViewOffers} style={{...buttonStyle,marginTop:12}} data-testid="button-my-submission-offers">Gelen ve verdiğim teklifler</button>}
     </section>
   );
 }
