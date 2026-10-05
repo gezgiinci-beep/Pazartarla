@@ -38,8 +38,9 @@ Yıllık/deneme seçenekleri sunucu kataloğunda yoksa seçilemez.
 
 ## Canlı aktivasyon: şu anda BLOKELİ
 
-Bu çalışmada beklenen repo dışı yedek dizini ve CA dosyası bulunmadı;
-`PAZARTARLA_BACKUP_PUBLIC_KEY` Secret'ı da yapılandırılmış görünmüyor.
+Bu çalışmada beklenen repo dışı yedek dizini ve CA dosyası bulunmadı.
+Açık/public anahtar normal ortam değişkeninde yapılandırılmıştır; Secret
+olarak bulunmaması anahtarın eksik olduğu anlamına gelmez.
 Erişilebilir şifreli DB+kod arşivi, hash receipt'i ve başarılı kurtarma provası
 kanıtı yok. Eski başarı raporu dosyaların bugün erişilebilirliğini kanıtlamaz.
 Supabase'in hiçbir yedeği olmadığı sonucu çıkarılmaz.
