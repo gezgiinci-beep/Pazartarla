@@ -3,6 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 import SubmissionAccountPanel from './components/SubmissionAccountPanel';
 import ModerationQueue from './components/ModerationQueue';
 import MySubmissions from './components/MySubmissions';
+import RemoteListingImages from './components/RemoteListingImages';
+import {persistListingImages} from './lib/listingMedia.mjs';
 import ListingEditor from './components/ListingEditor';
 import {editError} from './lib/listingEditor';
 import {setListingFeatured, featuredError} from './lib/listingFeatured.mjs';
@@ -22,7 +24,6 @@ import Storefront from './components/Storefront';
 import {useStoreMembership} from './hooks/useStoreMembership';
 import {storeIdFromUrl} from './lib/storeMembership';
 import {listingIdFromUrl, listingShareUrl, listingShareText, findSharedListing} from './lib/listingShare';
-import {copyListingImage} from './lib/listingImageClipboard';
 import { formatListingDate, isListingArchived } from './lib/listingLifetime';
 import { useListingArchive } from './hooks/useListingArchive';
 import BrandLogo from './components/BrandLogo';
@@ -190,9 +191,6 @@ export default function App() {
 
 
   const [selectedListing, setSelectedListing] = useState(null);
-  const [photoCopyBusy,setPhotoCopyBusy]=useState(false);
-  const [photoCopyMessage,setPhotoCopyMessage]=useState('');
-  const [photoCopyError,setPhotoCopyError]=useState('');
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [analyticsAuthReady, setAnalyticsAuthReady] = useState(false);
   const [adminEmail, setAdminEmail] = useState('');
@@ -214,6 +212,8 @@ export default function App() {
   const [lastAddedListing, setLastAddedListing] = useState(null);
   const [customCategoryInput, setCustomCategoryInput] = useState('');
   const [submissionSaving, setSubmissionSaving] = useState(false);
+  const [formImageImporting, setFormImageImporting] = useState(false);
+  const [editImageImporting, setEditImageImporting] = useState(false);
   const [submissionError, setSubmissionError] = useState('');
   const submissionAccount = useSubmissionAccount(supabaseClient, SUPABASE_URL, SUPABASE_ANON_KEY, normalizeListing);
   const storeMembership=useStoreMembership(supabaseClient,SUPABASE_URL,SUPABASE_ANON_KEY,submissionAccount.session,isAdminLoggedIn,storeId);
@@ -240,6 +240,32 @@ export default function App() {
     seoTags: '',
     status: 'pending'
   });
+  const photoTargets = useRef({form, editingListing});
+  photoTargets.current = {form, editingListing};
+  const appendImportedPhotos = async (target: 'form' | 'editingListing', images: string[]) => {
+    const original = photoTargets.current[target];
+    if (!original || (original.images || []).length + images.length > 10) {
+      throw new Error('En fazla 10 fotoğraf ekleyebilirsiniz.');
+    }
+    if (!supabaseClient) throw new Error('Fotoğraf depolama bağlantısı yapılandırılmamış.');
+    const {data, error} = await supabaseClient.auth.getSession();
+    if (error || !data.session) throw new Error('Fotoğraf eklemek için hesabınızla giriş yapın.');
+    let saved;
+    try {
+      saved = await persistListingImages(images, {client: supabaseClient, baseUrl: SUPABASE_URL, userId: data.session.user.id});
+    } catch {
+      throw new Error('Fotoğraf site depolamasına yüklenemedi. Formunuz korunuyor; bağlantınızı ve hesabınızın yükleme iznini kontrol edin.');
+    }
+    const current = photoTargets.current[target];
+    if (!current || (target === 'editingListing' && current.id !== original.id)) {
+      throw new Error('Düzenleme kapandı. Fotoğrafı açık olan ilanda yeniden ekleyin.');
+    }
+    const combined = [...(current.images || []), ...saved.images];
+    if (combined.length > 10) throw new Error('En fazla 10 fotoğraf ekleyebilirsiniz.');
+    photoTargets.current[target] = {...current, images: combined};
+    if (target === 'form') setForm(prev => ({...prev, images: combined}));
+    else setEditingListing(prev => prev?.id === current.id ? {...prev, images: combined} : prev);
+  };
 
   useEffect(() => {
     if (!announcementDirty) {
@@ -384,7 +410,6 @@ export default function App() {
       const id=listingIdFromUrl(window.location.href);
       setLinkedListingId(id);
       setSelectedListing(null);
-      setPhotoCopyMessage('');setPhotoCopyError('');
       if(id){setActiveTab('detail');return;}
       if (event.state && event.state.tab) {
         setActiveTab(event.state.tab);
@@ -418,7 +443,6 @@ export default function App() {
     url.searchParams.delete('magaza');url.searchParams.set('ilan',String(row.id));
     window.history.pushState({tab:'detail'},'',url);
     setLinkedListingId(null);setStoreId(null);setSelectedListing(row);setActiveTab('detail');
-    setPhotoCopyMessage('');setPhotoCopyError('');
   };
   useEffect(()=>{
     if(!linkedListingId||listingsLoading||listingsError)return;
@@ -427,18 +451,6 @@ export default function App() {
   const copyListingShare=async(text:string,message:string)=>{
     try{await navigator.clipboard.writeText(text);alert(message);}
     catch{alert('Kopyalanamadı. Aşağıda görünen ilan bağlantısını elle kopyalayabilirsiniz.');}
-  };
-  const copyDisplayedPhoto=async(photoUrl:string)=>{
-    if(photoCopyBusy)return;
-    setPhotoCopyBusy(true);setPhotoCopyMessage('');setPhotoCopyError('');
-    try{
-      await copyListingImage(photoUrl);
-      setPhotoCopyMessage('Fotoğraf panoya kopyalandı. Yapıştırarak paylaşabilirsiniz.');
-    }catch(error){
-      setPhotoCopyError(error instanceof Error?error.message:'Fotoğraf panoya kopyalanamadı.');
-    }finally{
-      setPhotoCopyBusy(false);
-    }
   };
 
   const handleSendMessage = (e) => {
@@ -564,7 +576,7 @@ export default function App() {
 
   const handleDirectAdd = async (e) => {
       e.preventDefault();
-      if (submissionSaving) return;
+      if (submissionSaving || formImageImporting) return;
       setSubmissionError('');
       if (!siteSettings.settings || siteSettings.loading || siteSettings.loadError) {
         setSubmissionError('Kategori ayarları yüklenemedi. Önce site ayarlarını yeniden yükleyin.');
@@ -714,7 +726,7 @@ export default function App() {
 
   const saveEditedListing = async (e) => {
       e.preventDefault();
-      if (!isAdminLoggedIn || gallerySaving) return;
+      if (!isAdminLoggedIn || gallerySaving || editImageImporting) return;
 
       const primaryImage = (editingListing.images && editingListing.images[0]) || editingListing.image || DEFAULT_LISTING_IMAGE;
       const updatedListing = {
@@ -1119,7 +1131,6 @@ export default function App() {
                         onClick={() => {
                           const updatedImgs = [imgUrl, ...selectedListing.images.filter((_, i) => i !== idx)];
                           setSelectedListing({ ...selectedListing, images: updatedImgs });
-                          setPhotoCopyMessage('');setPhotoCopyError('');
                         }}
                         style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px', cursor: 'pointer', border: idx === 0 ? '2px solid #22c55e' : '1px solid #cbd5e1', flexShrink: 0 }}
                       />
@@ -1130,15 +1141,6 @@ export default function App() {
             ) : (
               <img src={selectedListing.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800'} alt={selectedListing.title} style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '8px', marginBottom: '10px' }} />
             )}
-            <div style={{display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap',marginBottom:'12px'}}>
-              <button type="button" disabled={photoCopyBusy} onClick={()=>void copyDisplayedPhoto(selectedListing.images?.[0] || selectedListing.image || DEFAULT_LISTING_IMAGE)}
-                style={{display:'inline-flex',alignItems:'center',gap:'6px',padding:'8px 10px',border:'1px solid #cbd5e1',borderRadius:'6px',background:'#fff',color:'#1b3a2b',cursor:photoCopyBusy?'wait':'pointer'}}>
-                <Copy size={15} aria-hidden="true" /> {photoCopyBusy?'Fotoğraf kopyalanıyor…':'Fotoğrafı kopyala'}
-              </button>
-              {selectedListing.images?.length>1&&<small>Diğer fotoğrafları seçip ayrı ayrı kopyalayabilirsiniz.</small>}
-              {photoCopyMessage&&<span role="status" style={{fontSize:'12px',color:'#166534'}}>{photoCopyMessage}</span>}
-              {photoCopyError&&<span role="alert" style={{fontSize:'12px',color:'#b91c1c'}}>{photoCopyError} Fotoğrafı basılı tutup kopyalamayı da deneyebilirsiniz.</span>}
-            </div>
             <h2 style={{ fontSize: '18px', fontWeight: '800', margin: '8px 0' }}>{selectedListing.title}</h2>
             <ListingDate value={selectedListing.created_at} />
             {isListingArchived(selectedListing, listingNow) && <p role="status" style={{ color: '#854d0e', fontSize: '12px' }}>Arşivde — yayın süresi {formatListingDate(selectedListing.expires_at)} tarihinde doldu. İlan kaydı ve fotoğrafları korunuyor.</p>}
@@ -1239,7 +1241,9 @@ export default function App() {
               <input type="text" name="seoTags" placeholder="Özel SEO Etiketleri (Boş bırakırsanız otomatik üretilir)" value={form.seoTags} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>📷 Fotoğraf Yükle (En Fazla 10 Adet - Seçili: {form.images.length}/10)</label>
-                <input type="file" accept="image/*" multiple onChange={handleMultipleImageUpload} style={{ width: '100%', fontSize: '12px' }} />
+                <input type="file" accept="image/*" multiple disabled={submissionSaving || formImageImporting} onChange={handleMultipleImageUpload} style={{ width: '100%', fontSize: '12px' }} />
+                <RemoteListingImages disabled={submissionSaving} count={form.images.length} onBusyChange={setFormImageImporting}
+                  onAdd={images => appendImportedPhotos('form', images)} />
                 {form.images.length > 0 && (
                   <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
                     {form.images.map((imgSrc, idx) => (
@@ -1257,7 +1261,7 @@ export default function App() {
                 İlanın satıcı adı ve telefonu ile bilinen doğrulanmış hesap e-postası, yalnızca yöneticiye açık
                 iletişim deposunda kaydedilir. İlan vermek toplu mesaj izni değildir; mesaj izinleri ayrıca kayıt altına alınır.
               </p>
-              <button type="submit" disabled={submissionSaving || !submissionAccount.canSubmit || !siteSettings.settings || !!siteSettings.loadError}
+              <button type="submit" disabled={submissionSaving || formImageImporting || !submissionAccount.canSubmit || !siteSettings.settings || !!siteSettings.loadError}
                 style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', opacity: submissionSaving || !submissionAccount.canSubmit || !siteSettings.settings || !!siteSettings.loadError ? 0.6 : 1 }}>
                 {submissionSaving ? 'Onaya gönderiliyor…' : 'İlanı Onaya Gönder'}
               </button>
@@ -1347,7 +1351,9 @@ export default function App() {
                       <input type="text" name="seoTags" value={editingListing.seoTags || ''} onChange={handleEditFormChange} placeholder="SEO Etiketleri (virgülle ayırın)" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       <div style={{ backgroundColor: '#fff', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <label style={{ fontSize: '11px', fontWeight: '700', color: '#475569' }}>📷 Fotoğrafları Yönet (En Fazla 10 Adet)</label>
-                        <input type="file" accept="image/*" multiple onChange={handleEditMultipleImageUpload} style={{ width: '100%', fontSize: '11px' }} />
+                        <input type="file" accept="image/*" multiple disabled={gallerySaving || editImageImporting} onChange={handleEditMultipleImageUpload} style={{ width: '100%', fontSize: '11px' }} />
+                        <RemoteListingImages key={editingListing.id} disabled={gallerySaving} count={(editingListing.images || []).length} onBusyChange={setEditImageImporting}
+                          onAdd={images => appendImportedPhotos('editingListing', images)} />
                         {editingListing.images && editingListing.images.length > 0 && (
                           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
                             {editingListing.images.map((imgSrc, idx) => (
@@ -1360,8 +1366,8 @@ export default function App() {
                         )}
                       </div>
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <button type="submit" disabled={gallerySaving} style={{ flex: 1, backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>{gallerySaving?'Kaydediliyor…':'Galeri / SEO Kaydet'}</button>
-                        <button type="button" disabled={gallerySaving} onClick={() => setEditingListing(null)} style={{ background: '#e2e8f0', border: 'none', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer' }}>İptal</button>
+                        <button type="submit" disabled={gallerySaving || editImageImporting} style={{ flex: 1, backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>{gallerySaving?'Kaydediliyor…':'Galeri / SEO Kaydet'}</button>
+                        <button type="button" disabled={gallerySaving || editImageImporting} onClick={() => setEditingListing(null)} style={{ background: '#e2e8f0', border: 'none', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer' }}>İptal</button>
                       </div>
                     </form>
                   </div>

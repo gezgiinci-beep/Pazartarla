@@ -72,8 +72,6 @@ test('opening another listing updates the URL and clears the old incoming link/s
     setLinkedListingId: value => { state.linked = value; },
     setStoreId: value => { state.store = value; },
     setSelectedListing: value => { state.selected = value; },
-    setPhotoCopyMessage: () => {},
-    setPhotoCopyError: () => {},
     setActiveTab: value => { state.tab = value; },
   };
   runInNewContext(open + '\nopenListing(row);', context);
@@ -99,8 +97,6 @@ test('browser back/forward restores the requested listing and does not reuse the
       removeEventListener() {} },
     setLinkedListingId: value => { state.id = value; },
     setSelectedListing: value => { state.selected = value; },
-    setPhotoCopyMessage: () => {},
-    setPhotoCopyError: () => {},
     setActiveTab: value => { state.tab = value; },
   };
   runInNewContext(effect, context);
