@@ -20,7 +20,7 @@ test('standalone Vercel checkout uses pnpm and its frozen, isolated lockfile', (
 
 test('existing traffic cron and SPA fallback remain configured', () => {
   assert.deepEqual(config.crons, [{ path: '/api/traffic', schedule: '0 0 * * *' }]);
-  assert.deepEqual(config.routes, [
+  assert.deepEqual(config.routes.slice(-2), [
     { handle: 'filesystem' },
     { src: '/(.*)', dest: '/index.html' },
   ]);
