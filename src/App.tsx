@@ -858,7 +858,7 @@ export default function App() {
             {storeMembership.data?.mine?.store&&<button type="button" onClick={()=>openStore(storeMembership.data!.mine!.store!.id)} style={{border:'1px solid #dce5dc',borderRadius:8,padding:'9px 13px',background:'#fff',color:'#166534',cursor:'pointer'}}>Mağazam</button>}
           </nav>
           {activeTab==='memberships'&&<MembershipPage key={submissionAccount.session?.user.id||'public'} state={storeMembership} session={submissionAccount.session} onSignIn={()=>changeTab('add')} onStore={openStore} onSubmitted={()=>{void submissionAccount.refresh();}}/>}
-          {activeTab==='membership-admin'&&(isAdminLoggedIn?<MembershipAdmin state={storeMembership} onBack={()=>changeTab('admin-page')}/>:<p role="alert">Paket yönetimi için yönetici hesabıyla giriş yapın.</p>)}
+          {activeTab==='membership-admin'&&(isAdminLoggedIn?<MembershipAdmin state={storeMembership} session={submissionAccount.session} authorized={isAdminLoggedIn} onBack={()=>changeTab('admin-page')}/>:<p role="alert">Paket yönetimi için yönetici hesabıyla giriş yapın.</p>)}
           {activeTab==='store'&&<Storefront key={storeId||'none'} state={storeMembership} normalize={normalizeListing} onBack={()=>changeTab('memberships')} onListing={row=>{
             const owner=submissionAccount.items.find(x=>x.id===row.id)||listings.find(x=>x.id===row.id);
             setSelectedListing({...row,submitted_by:owner?.submitted_by});changeTab('detail');

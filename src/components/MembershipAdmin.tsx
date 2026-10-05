@@ -1,30 +1,37 @@
 import { useState, type FormEvent } from 'react';
 import type { StoreRequest } from '../lib/storeMembership';
 import { useStoreMembership } from '../hooks/useStoreMembership';
+import { membershipAccess } from '../lib/membershipAccess';
 import './membership.css';
 
-type Props = { state: ReturnType<typeof useStoreMembership>; onBack: () => void };
+type Props = { state: ReturnType<typeof useStoreMembership>; session: any | null; authorized: boolean; onBack: () => void };
 const date = (value: string) => new Intl.DateTimeFormat('tr-TR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
 
-export default function MembershipAdmin({ state, onBack }: Props) {
+export default function MembershipAdmin({ state, session, authorized, onBack }: Props) {
   const [references, setReferences] = useState<Record<string, string>>({});
   const [confirming, setConfirming] = useState<StoreRequest | null>(null);
+  const canManage = authorized && membershipAccess(session).verified;
   const requests = state.data?.requests ?? [];
   const pending = requests.filter(row => row.status === 'pending');
   const processed = requests.filter(row => row.status !== 'pending');
   const approve = async (event: FormEvent) => {
     event.preventDefault();
-    if (!confirming) return;
+    if (!canManage || !confirming) return;
     const reference = (references[confirming.id] || '').trim();
     if (reference.length < 6 || reference.length > 120) return;
     const ok = await state.action('approve', confirming.id, confirming.revision, { payment_confirmed: true, payment_reference: reference });
     if (ok) { setReferences(current => { const next = { ...current }; delete next[confirming.id]; return next; }); setConfirming(null); }
   };
   const reject = async (request: StoreRequest) => {
+    if (!canManage) return;
     if (!window.confirm(`${request.store_name} mağaza talebini reddetmek istiyor musunuz?`)) return;
     await state.action('reject', request.id, request.revision, {});
   };
   const retry = () => { void state.refresh(); };
+  if (!canManage) return <main className="pt-membership" data-testid="membership-admin-login-required">
+    <p className="pt-member-alert" role="alert">Mağaza ödeme ve başvuru yönetimi için yönetici hesabıyla giriş yapın.</p>
+    <button type="button" className="pt-button pt-button-secondary" onClick={onBack}>Giriş ekranına dön</button>
+  </main>;
   return <main className="pt-membership pt-admin">
     <button className="pt-text-button pt-back" type="button" onClick={onBack}>← Panele dön</button>
     <header className="pt-admin-heading"><p className="pt-member-kicker">YÖNETİCİ · MAĞAZA ÜYELİKLERİ</p><h1>Ödeme ve başvuru incelemesi</h1><p>Ödemeyi bankada gerçekten doğrulamadan üyeliği onaylamayın.</p></header>
