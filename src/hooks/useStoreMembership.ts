@@ -1,6 +1,6 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
 import type {Session,SupabaseClient} from '@supabase/supabase-js';
-import {parseStoreData,storeRpc} from '../lib/storeMembership';
+import {parseStoreData,storeRpc,getStoreMembershipData} from '../lib/storeMembership';
 import {membershipContextKey,membershipDataForContext,type MembershipSnapshot} from '../lib/membershipAccess';
 export function useStoreMembership(client:SupabaseClient|null,url:string,key:string,session:Session|null,admin:boolean,storeId:string|null){
   const context=membershipContextKey(session?.user.id,admin,storeId);
@@ -11,6 +11,7 @@ export function useStoreMembership(client:SupabaseClient|null,url:string,key:str
   const [error,setError]=useState(''),[actionError,setActionError]=useState(''),[message,setMessage]=useState('');
   const generation=useRef(0),readSequence=useRef(0),locked=useRef(false);
   const headers=useCallback(async()=>{
+    if(typeof key!=='string'||!key.trim())throw Error('Mağaza sunucusu için tarayıcı anahtarı eksik: VITE_SUPABASE_ANON_KEY veya SUPABASE_PUBLISHABLE_KEY ayarını kontrol edip siteyi yeniden derleyin.');
     if(!client)return {apikey:key};
     const {data,error}=await client.auth.getSession();
     if(error)throw Error('Oturum doğrulanamadı.');
@@ -19,7 +20,7 @@ export function useStoreMembership(client:SupabaseClient|null,url:string,key:str
   },[client,key,session?.user.id,session?.access_token]);
   const refresh=useCallback(async()=>{
     const n=generation.current,sequence=++readSequence.current;
-    try{const next=parseStoreData(await storeRpc(url,await headers(),'get_store_membership_data',{p_store_id:storeId}));if(currentContext.current===context&&generation.current===n&&readSequence.current===sequence){setSnapshot({context,data:next});setError('');}}
+    try{const next=parseStoreData(await getStoreMembershipData(url,await headers(),storeId));if(currentContext.current===context&&generation.current===n&&readSequence.current===sequence){setSnapshot({context,data:next});setError('');}}
     catch(e){if(currentContext.current===context&&generation.current===n&&readSequence.current===sequence)setError(e instanceof Error?e.message:'Mağazalar yüklenemedi.');}
     finally{if(currentContext.current===context&&generation.current===n&&readSequence.current===sequence)setLoading(false);}
   },[url,headers,storeId,context]);
@@ -33,10 +34,11 @@ export function useStoreMembership(client:SupabaseClient|null,url:string,key:str
     if(locked.current||currentContext.current!==context)return false;
     locked.current=true;const n=generation.current;setBusy(true);setActionError('');setMessage('');
     try{
-      const result=await storeRpc(url,await headers(),'manage_store_membership',{p_action:action,p_id:id,p_revision:revision,p_payload:payload});
+      const result=await storeRpc(url,await headers(),action==='trial_start'?'start_store_trial':'manage_store_membership',{p_action:action,p_id:id,p_revision:revision,p_payload:payload});
       if(!result||result.ok!==true)throw Error('İşlem sunucudan doğrulanamadı.');
       if(currentContext.current!==context||generation.current!==n)return false;
-      setMessage(action==='request'?'Talebiniz kaydedildi. Paketiniz, ödeme doğrulanıp yönetici onayı verildiğinde açılır.':'Değişiklik sunucudan doğrulandı.');
+      setMessage(action==='trial_start'?'30 günlük ücretsiz denemeniz başladı. Süre sonunda otomatik ücretlendirme yapılmaz.':
+        action==='request'?'Talebiniz kaydedildi. Paketiniz, ödeme doğrulanıp yönetici onayı verildiğinde açılır.':'Değişiklik sunucudan doğrulandı.');
       await refresh();return true;
     }catch(e){if(currentContext.current===context&&generation.current===n){setActionError(e instanceof Error?e.message:'İşlem tamamlanamadı.');await refresh();}return false;}
     finally{locked.current=false;if(currentContext.current===context&&generation.current===n)setBusy(false);}

@@ -8,8 +8,8 @@ export type SubmissionQuota = {
   used: number;
   remaining: number | null;
   next_available_at: string | null;
-  period?:'rolling_day'|'membership_month';
-  monthly_remaining?:number;active_limit?:number;active_used?:number;pending_reserved?:number;plan_name?:string;membership_ends_at?:string;
+  period?:'rolling_day'|'membership_month'|'membership_year'|'membership_trial';
+  monthly_remaining?:number|null;active_limit?:number|null;active_used?:number;pending_reserved?:number;plan_name?:string;membership_ends_at?:string;
 };
 
 export function useSubmissionAccount(client: SupabaseClient | null, url: string, key: string, normalize: (row: any) => any) {
