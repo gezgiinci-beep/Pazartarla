@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import { createAdminAccessGate, createListingRefreshGuard } from './lib/adminUiState.mjs';
 import SubmissionAccountPanel from './components/SubmissionAccountPanel';
 import ModerationQueue from './components/ModerationQueue';
 import MySubmissions from './components/MySubmissions';
@@ -188,6 +189,9 @@ export default function App() {
 
   const [selectedListing, setSelectedListing] = useState(null);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+  const adminAccess = useRef(createAdminAccessGate());
+  const listingRefresh = useRef(createListingRefreshGuard());
+  const [featuredBusyIds, setFeaturedBusyIds] = useState<number[]>([]);
   const [analyticsAuthReady, setAnalyticsAuthReady] = useState(false);
   const [adminEmail, setAdminEmail] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
@@ -267,6 +271,8 @@ export default function App() {
   }, [siteSettings.settings, newCategoryName, selectedCategory, selectedSubCategory]);
 
   const fetchListings = async () => {
+      const readTicket = listingRefresh.current.startRead();
+      if (readTicket === null) return false;
       setListingsLoading(true);
 
       if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
@@ -284,16 +290,18 @@ export default function App() {
         const data = await response.json();
         if (!Array.isArray(data)) throw new Error('Invalid listings response');
 
+        if (!listingRefresh.current.canApply(readTicket)) return false;
         setListings(data.map(normalizeListing));
         setListingsError('');
         return true;
       } catch (error) {
+        if (!listingRefresh.current.canApply(readTicket)) return false;
         console.error('İlanlar sunucudan alınamadı:', error);
         setListings([]);
         setListingsError('İlanlar sunucudan yüklenemedi. Lütfen yeniden deneyin.');
         return false;
       } finally {
-        setListingsLoading(false);
+        if (listingRefresh.current.canApply(readTicket)) setListingsLoading(false);
       }
     };
 
@@ -321,15 +329,22 @@ export default function App() {
     let active = true;
     const syncAdminState = async (session) => {
       if (active) setAnalyticsAuthReady(false);
-      if (!session) {
+      if (!adminAccess.current.allows(session)) {
+        if (adminAccess.current.granted) adminAccess.current.clear();
         if (active) { setIsAdminLoggedIn(false);setAnalyticsAuthReady(true); }
         return;
       }
+      const ticket = adminAccess.current.generation;
       try {
         const authorized = await isCurrentUserAdmin();
-        if (active) { setIsAdminLoggedIn(authorized);setAnalyticsAuthReady(true); }
+        if (active && ticket === adminAccess.current.generation && adminAccess.current.allows(session)) {
+          if (!authorized) adminAccess.current.clear();
+          setIsAdminLoggedIn(authorized);setAnalyticsAuthReady(true);
+        }
       } catch (error) {
-        if (active) setIsAdminLoggedIn(false);
+        if (active && ticket === adminAccess.current.generation) {
+          adminAccess.current.clear();setIsAdminLoggedIn(false);setAnalyticsAuthReady(true);
+        }
       }
     };
 
@@ -618,6 +633,9 @@ export default function App() {
       if (!isAdminLoggedIn) return;
       const target = listings.find(item => item.id === id);
       if (!target) return;
+      if (!listingRefresh.current.beginWrite(id)) return;
+      setListingsLoading(false);
+      setFeaturedBusyIds(ids => [...ids, id]);
 
       try {
         const savedListing = normalizeListing(await setListingFeatured(supabaseClient,id,!target.isFeatured));
@@ -628,6 +646,9 @@ export default function App() {
       } catch (error) {
         console.error('Vitrin durumu kaydedilemedi:', error);
         alert(featuredError(error));
+      } finally {
+        listingRefresh.current.endWrite(id);
+        setFeaturedBusyIds(ids => ids.filter(value => value !== id));
       }
     };
 
@@ -793,13 +814,18 @@ export default function App() {
     }
 
     setAdminAuthLoading(true);
+    const loginTicket = adminAccess.current.clear();
+    setIsAdminLoggedIn(false);
     try {
-      const { error } = await supabaseClient.auth.signInWithPassword({ email, password: adminPassword });
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: adminPassword });
       if (error) throw error;
       if (!(await isCurrentUserAdmin())) {
         await supabaseClient.auth.signOut();
         throw new Error('Not authorized');
       }
+      const current = await supabaseClient.auth.getSession();
+      if (current.error || current.data.session?.user?.id !== data.user?.id ||
+          !adminAccess.current.grant(data.user?.id, loginTicket)) throw new Error('Session changed');
       setIsAdminLoggedIn(true);
     } catch (error) {
       console.error('Yönetici girişi başarısız.');
@@ -812,9 +838,13 @@ export default function App() {
   };
 
   const handleAdminLogout = async () => {
-    if (supabaseClient) await supabaseClient.auth.signOut();
+    adminAccess.current.clear();
     setIsAdminLoggedIn(false);
     setAdminAuthError('');
+    if (supabaseClient) {
+      try { await supabaseClient.auth.signOut(); }
+      catch { setAdminAuthError('Panel kilitlendi; oturumu sonlandırmak için bağlantınızı kontrol edin.'); }
+    }
   };
 
   const approvedListings = listings.filter(item => item.status === 'approved' && !isListingArchived(item, listingNow));
@@ -1353,8 +1383,8 @@ export default function App() {
                     <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '6px', marginBottom: '6px' }}>
                       <div><span style={{ fontSize: '12px', fontWeight: '600' }}>{item.title}</span><ListingDate value={item.created_at} /></div>
                       <div style={{ display: 'flex', gap: '4px' }}>
-                        <button onClick={() => toggleFeaturedListing(item.id)} style={{ backgroundColor: isFeat ? '#fef08a' : '#f1f5f9', color: '#854d0e', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>
-                          {isFeat ? '⭐ Vitrinde' : '☆ Vitrin Yap'}
+                        <button type="button" disabled={featuredBusyIds.includes(item.id)} aria-busy={featuredBusyIds.includes(item.id)} onClick={() => toggleFeaturedListing(item.id)} style={{ backgroundColor: isFeat ? '#fef08a' : '#f1f5f9', color: '#854d0e', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>
+                          {featuredBusyIds.includes(item.id) ? 'Kaydediliyor…' : isFeat ? '⭐ Vitrinde' : '☆ Vitrin Yap'}
                         </button>
                         <button onClick={() => startOwnerEditing(item)} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Düzenle</button>
                         <button onClick={() => startEditingFromDetail(item)} type="button">Galeri / SEO</button>
