@@ -51,7 +51,16 @@ export function parseSiteSettings(value: unknown): SiteSettings {
 }
 
 function endpoint(url: string) {
-  return url.replace(/\/$/, '') + '/rest/v1/site_settings?id=eq.public&select=id,announcement,categories,featured_offer,revision';
+  if (typeof url !== 'string' || !url.trim()) {
+    throw new Error('Sunucu bağlantı ayarları eksik: VITE_SUPABASE_URL tanımlanmalı. Ayarlar düzeltildikten sonra site yeniden derlenip yayımlanmalı.');
+  }
+  let address: URL;
+  try { address = new URL(url.trim()); }
+  catch { throw new Error('Sunucu bağlantı adresi geçersiz: VITE_SUPABASE_URL ayarını kontrol edin.'); }
+  if (!['https:', 'http:'].includes(address.protocol) || address.username || address.password || address.search || address.hash) {
+    throw new Error('Sunucu bağlantı adresi geçersiz: VITE_SUPABASE_URL ayarını kontrol edin.');
+  }
+  return url.trim().replace(/\/$/, '') + '/rest/v1/site_settings?id=eq.public&select=id,announcement,categories,featured_offer,revision';
 }
 
 async function requireOk(response: Response) {
@@ -66,7 +75,11 @@ async function requireOk(response: Response) {
 }
 
 export async function readSiteSettings(url: string, key: string, request = fetch): Promise<SiteSettings> {
-  const response = await request(endpoint(url), {
+  const target = endpoint(url);
+  if (typeof key !== 'string' || !key.trim()) {
+    throw new Error('Sunucu bağlantı ayarları eksik: tarayıcı için VITE_SUPABASE_ANON_KEY tanımlanmalı. Gizli servis anahtarı kullanılmamalı.');
+  }
+  const response = await request(target, {
     headers: { apikey: key },
     cache: 'no-store',
     signal: AbortSignal.timeout(15_000)

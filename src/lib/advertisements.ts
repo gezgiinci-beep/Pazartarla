@@ -58,7 +58,7 @@ export function parseAd(value: unknown): Advertisement {
   return row;
 }
 export function adMediaUrl(url: string, ad: Advertisement) {
-  return url.replace(/\/$/, '') + '/storage/v1/object/public/' + AD_BUCKET + '/' +
+  return baseUrl(url) + '/storage/v1/object/public/' + AD_BUCKET + '/' +
     ad.media_path.split('/').map(encodeURIComponent).join('/');
 }
 async function checked(response: Response) {
@@ -68,7 +68,19 @@ async function checked(response: Response) {
   if (response.status === 409) throw new AdConflictError();
   throw new Error('Reklam sunucusu işlemi tamamlayamadı (HTTP ' + response.status + '). Lütfen tekrar deneyin.');
 }
-function endpoint(url: string) { return url.replace(/\/$/, '') + '/rest/v1/advertisements'; }
+function baseUrl(url: string) {
+  if (typeof url !== 'string' || !url.trim()) {
+    throw new Error('Sunucu bağlantı ayarları eksik: VITE_SUPABASE_URL tanımlanmalı. Ayarlar düzeltildikten sonra site yeniden derlenip yayımlanmalı.');
+  }
+  let address: URL;
+  try { address = new URL(url.trim()); }
+  catch { throw new Error('Sunucu bağlantı adresi geçersiz: VITE_SUPABASE_URL ayarını kontrol edin.'); }
+  if (!['https:', 'http:'].includes(address.protocol) || address.username || address.password || address.search || address.hash) {
+    throw new Error('Sunucu bağlantı adresi geçersiz: VITE_SUPABASE_URL ayarını kontrol edin.');
+  }
+  return url.trim().replace(/\/+$/, '');
+}
+function endpoint(url: string) { return baseUrl(url) + '/rest/v1/advertisements'; }
 const select = 'id,title,target_url,media_path,media_type,is_active,revision,created_at';
 export async function readAds(url: string, headers: Record<string, string>, request = fetch): Promise<Advertisement[]> {
   const response = await request(endpoint(url) + '?select=' + select + '&order=created_at.desc', {
