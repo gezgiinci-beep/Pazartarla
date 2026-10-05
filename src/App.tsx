@@ -22,6 +22,7 @@ import Storefront from './components/Storefront';
 import {useStoreMembership} from './hooks/useStoreMembership';
 import {storeIdFromUrl} from './lib/storeMembership';
 import {listingIdFromUrl, listingShareUrl, listingShareText, findSharedListing} from './lib/listingShare';
+import {copyListingImage} from './lib/listingImageClipboard';
 import { formatListingDate, isListingArchived } from './lib/listingLifetime';
 import { useListingArchive } from './hooks/useListingArchive';
 import BrandLogo from './components/BrandLogo';
@@ -189,6 +190,9 @@ export default function App() {
 
 
   const [selectedListing, setSelectedListing] = useState(null);
+  const [photoCopyBusy,setPhotoCopyBusy]=useState(false);
+  const [photoCopyMessage,setPhotoCopyMessage]=useState('');
+  const [photoCopyError,setPhotoCopyError]=useState('');
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [analyticsAuthReady, setAnalyticsAuthReady] = useState(false);
   const [adminEmail, setAdminEmail] = useState('');
@@ -380,6 +384,7 @@ export default function App() {
       const id=listingIdFromUrl(window.location.href);
       setLinkedListingId(id);
       setSelectedListing(null);
+      setPhotoCopyMessage('');setPhotoCopyError('');
       if(id){setActiveTab('detail');return;}
       if (event.state && event.state.tab) {
         setActiveTab(event.state.tab);
@@ -413,6 +418,7 @@ export default function App() {
     url.searchParams.delete('magaza');url.searchParams.set('ilan',String(row.id));
     window.history.pushState({tab:'detail'},'',url);
     setLinkedListingId(null);setStoreId(null);setSelectedListing(row);setActiveTab('detail');
+    setPhotoCopyMessage('');setPhotoCopyError('');
   };
   useEffect(()=>{
     if(!linkedListingId||listingsLoading||listingsError)return;
@@ -421,6 +427,18 @@ export default function App() {
   const copyListingShare=async(text:string,message:string)=>{
     try{await navigator.clipboard.writeText(text);alert(message);}
     catch{alert('Kopyalanamadı. Aşağıda görünen ilan bağlantısını elle kopyalayabilirsiniz.');}
+  };
+  const copyDisplayedPhoto=async(photoUrl:string)=>{
+    if(photoCopyBusy)return;
+    setPhotoCopyBusy(true);setPhotoCopyMessage('');setPhotoCopyError('');
+    try{
+      await copyListingImage(photoUrl);
+      setPhotoCopyMessage('Fotoğraf panoya kopyalandı. Yapıştırarak paylaşabilirsiniz.');
+    }catch(error){
+      setPhotoCopyError(error instanceof Error?error.message:'Fotoğraf panoya kopyalanamadı.');
+    }finally{
+      setPhotoCopyBusy(false);
+    }
   };
 
   const handleSendMessage = (e) => {
@@ -1101,6 +1119,7 @@ export default function App() {
                         onClick={() => {
                           const updatedImgs = [imgUrl, ...selectedListing.images.filter((_, i) => i !== idx)];
                           setSelectedListing({ ...selectedListing, images: updatedImgs });
+                          setPhotoCopyMessage('');setPhotoCopyError('');
                         }}
                         style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px', cursor: 'pointer', border: idx === 0 ? '2px solid #22c55e' : '1px solid #cbd5e1', flexShrink: 0 }}
                       />
@@ -1111,6 +1130,15 @@ export default function App() {
             ) : (
               <img src={selectedListing.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800'} alt={selectedListing.title} style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '8px', marginBottom: '10px' }} />
             )}
+            <div style={{display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap',marginBottom:'12px'}}>
+              <button type="button" disabled={photoCopyBusy} onClick={()=>void copyDisplayedPhoto(selectedListing.images?.[0] || selectedListing.image || DEFAULT_LISTING_IMAGE)}
+                style={{display:'inline-flex',alignItems:'center',gap:'6px',padding:'8px 10px',border:'1px solid #cbd5e1',borderRadius:'6px',background:'#fff',color:'#1b3a2b',cursor:photoCopyBusy?'wait':'pointer'}}>
+                <Copy size={15} aria-hidden="true" /> {photoCopyBusy?'Fotoğraf kopyalanıyor…':'Fotoğrafı kopyala'}
+              </button>
+              {selectedListing.images?.length>1&&<small>Diğer fotoğrafları seçip ayrı ayrı kopyalayabilirsiniz.</small>}
+              {photoCopyMessage&&<span role="status" style={{fontSize:'12px',color:'#166534'}}>{photoCopyMessage}</span>}
+              {photoCopyError&&<span role="alert" style={{fontSize:'12px',color:'#b91c1c'}}>{photoCopyError} Fotoğrafı basılı tutup kopyalamayı da deneyebilirsiniz.</span>}
+            </div>
             <h2 style={{ fontSize: '18px', fontWeight: '800', margin: '8px 0' }}>{selectedListing.title}</h2>
             <ListingDate value={selectedListing.created_at} />
             {isListingArchived(selectedListing, listingNow) && <p role="status" style={{ color: '#854d0e', fontSize: '12px' }}>Arşivde — yayın süresi {formatListingDate(selectedListing.expires_at)} tarihinde doldu. İlan kaydı ve fotoğrafları korunuyor.</p>}
