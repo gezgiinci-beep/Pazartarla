@@ -20,6 +20,7 @@ import MembershipAdmin from './components/MembershipAdmin';
 import MembershipNotice from './components/MembershipNotice';
 import TrialPromotion from './components/TrialPromotion';
 import AboutPage, { AboutNotice } from './components/AboutPage';
+import DemoMarketplace from './components/DemoMarketplace';
 import Storefront from './components/Storefront';
 import {useStoreMembership} from './hooks/useStoreMembership';
 import {storeIdFromUrl} from './lib/storeMembership';
@@ -909,6 +910,7 @@ export default function App() {
           </nav>
           {activeTab==='about'&&<AboutPage onBack={()=>changeTab('home')} onPackages={()=>changeTab('memberships')} annualReady={!!storeMembership.data?.plans.some(plan=>plan.id==='package-3')}/>}
           {activeTab==='memberships'&&<MembershipPage key={submissionAccount.session?.user.id||'public'} initialPlanId={membershipPreferredPlan} state={storeMembership} session={submissionAccount.session} onSignIn={()=>changeTab('add')} onStore={openStore} onSubmitted={()=>{void submissionAccount.refresh();}}/>}
+          {activeTab==='memberships'&&<DemoMarketplace variant="stores"/>}
           {activeTab==='membership-admin'&&(isAdminLoggedIn?<MembershipAdmin state={storeMembership} session={submissionAccount.session} authorized={isAdminLoggedIn} onBack={()=>changeTab('admin-page')}/>:<p role="alert">Paket yönetimi için yönetici hesabıyla giriş yapın.</p>)}
           {activeTab==='offers'&&<OfferMarketplace key={submissionAccount.session?.user.id||'public'} state={offers}
             listings={listings} ownListings={submissionAccount.items} session={submissionAccount.session}
@@ -1456,6 +1458,7 @@ export default function App() {
             )}
           </div>
         )}
+        {activeTab==='home'&&<DemoMarketplace />}
         {!isAdminLoggedIn && <TrafficPrivacy state={traffic} />}
       </main>
 
