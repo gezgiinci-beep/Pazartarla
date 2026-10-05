@@ -1,0 +1,36 @@
+.pt-demo-root{--pt-demo-forest:#244735;--pt-demo-leaf:#557653;--pt-demo-wheat:#b89d5b;--pt-demo-card:#fffef9;--pt-demo-ink:#2e3b32;--pt-demo-muted:#6d786d;--pt-demo-line:#dce2d5;width:100%;max-width:600px;min-width:0;margin:14px auto;box-sizing:border-box;color:var(--pt-demo-ink);font-family:inherit;overflow-wrap:anywhere}
+.pt-demo-root *,.pt-demo-root *::before,.pt-demo-root *::after{box-sizing:border-box}
+.pt-demo-notice{margin:0 0 14px;padding:12px 14px;border:1px solid #d3ddcb;border-left:4px solid var(--pt-demo-wheat);background:linear-gradient(120deg,#edf0e5,#faf8ef);font-size:12px;line-height:1.55;color:var(--pt-demo-muted)}
+.pt-demo-badge{display:inline-flex;align-items:center;width:fit-content;padding:3px 8px;color:#5f4d17;background:#efe4bd;font-size:10px;font-weight:850;letter-spacing:.08em;white-space:nowrap}
+.pt-demo-head{margin:0 0 10px}
+.pt-demo-kicker{margin:0 0 4px;color:var(--pt-demo-leaf);font-size:10px;font-weight:850;letter-spacing:.15em}
+.pt-demo-title{margin:0;color:var(--pt-demo-forest);font-size:clamp(18px,4.5vw,23px);line-height:1.2;letter-spacing:-.025em}
+.pt-demo-stores{display:grid;gap:8px;margin-bottom:16px}
+.pt-demo-store{display:flex;gap:11px;align-items:center;min-width:0;width:100%;padding:9px;border:1px solid var(--pt-demo-line);background:var(--pt-demo-card);color:inherit;font:inherit;text-align:left;cursor:pointer;transition:border-color .16s ease,transform .16s ease}
+.pt-demo-store:hover{border-color:var(--pt-demo-leaf);transform:translateY(-1px)}
+.pt-demo-store.is-active{border-color:var(--pt-demo-forest);box-shadow:inset 0 0 0 1px var(--pt-demo-forest)}
+.pt-demo-store img{width:64px;height:64px;flex:0 0 auto;object-fit:cover;background:#edf0e6}
+.pt-demo-store-copy{display:grid;gap:4px;min-width:0;flex:1}
+.pt-demo-store-copy strong{color:var(--pt-demo-forest);font-size:14px}
+.pt-demo-store-copy small{color:var(--pt-demo-muted);font-size:11px;line-height:1.4}
+.pt-demo-filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.pt-demo-chip{min-height:36px;padding:6px 12px;border:1px solid #cbd7c8;border-radius:99px;background:var(--pt-demo-card);color:var(--pt-demo-forest);font:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:background-color .16s ease}
+.pt-demo-chip[aria-pressed=true]{background:var(--pt-demo-forest);border-color:var(--pt-demo-forest);color:#fff}
+.pt-demo-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.pt-demo-listing{display:flex;flex-direction:column;min-width:0;padding:0;overflow:hidden;border:1px solid var(--pt-demo-line);background:var(--pt-demo-card);color:inherit;font:inherit;text-align:left;cursor:pointer;transition:transform .16s ease,border-color .16s ease}
+.pt-demo-listing:hover{transform:translateY(-2px);border-color:var(--pt-demo-leaf)}
+.pt-demo-listing img{display:block;width:100%;height:120px;object-fit:cover;background:#edf0e6}
+.pt-demo-listing-copy{display:grid;gap:5px;padding:10px;min-width:0}
+.pt-demo-listing-copy strong{color:var(--pt-demo-forest);font-size:13px;line-height:1.35}
+.pt-demo-listing-copy span{color:var(--pt-demo-muted);font-size:11px}
+.pt-demo-listing-copy b{color:var(--pt-demo-forest);font-size:12px}
+.pt-demo-back{min-height:36px;margin:0 0 10px -4px;padding:6px 8px;border:0;background:none;color:var(--pt-demo-forest);font:inherit;font-size:12px;font-weight:750;cursor:pointer}
+.pt-demo-detail{padding:14px;border:1px solid var(--pt-demo-line);background:var(--pt-demo-card);margin-bottom:16px}
+.pt-demo-detail img{display:block;width:100%;max-height:260px;object-fit:cover;margin:10px 0;background:#edf0e6}
+.pt-demo-detail h3{margin:8px 0 4px;color:var(--pt-demo-forest);font-size:20px;line-height:1.2}
+.pt-demo-detail p{margin:8px 0;color:var(--pt-demo-muted);font-size:13px;line-height:1.6}
+.pt-demo-price{color:var(--pt-demo-forest);font-size:18px;font-weight:800}
+.pt-demo-empty{padding:16px;border:1px dashed #cbd6c5;background:#f3f4eb;color:var(--pt-demo-muted);font-size:13px}
+.pt-demo-root button:focus-visible{outline:3px solid var(--pt-demo-wheat);outline-offset:2px}
+@media (max-width:420px){.pt-demo-grid{gap:8px}.pt-demo-listing img{height:98px}.pt-demo-store img{width:52px;height:52px}}
+@media (prefers-reduced-motion:reduce){.pt-demo-root *{transition-duration:.01ms!important;animation-duration:.01ms!important}.pt-demo-root *:hover{transform:none!important}}

@@ -1,0 +1,77 @@
+{
+  "usage": "Demo / Örnek ürünler için temsili Unsplash stok fotoğrafları; gerçek satış ürünlerinin fotoğrafı değildir. Premium fotoğraf kullanılmaz.",
+  "photos": [
+    {
+      "bytes": 86572,
+      "group": 0,
+      "index": 0,
+      "path": "external/pazartarla/src/assets/demo/0-0.webp",
+      "source": "https://images.unsplash.com/photo-1584353781226-579f0ab7c770?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTF8fHdob2xlJTIwZ3JhaW58ZW58MHx8MHx8fDA=",
+      "title": "brown and white rice grains"
+    },
+    {
+      "bytes": 178066,
+      "group": 0,
+      "index": 1,
+      "path": "external/pazartarla/src/assets/demo/0-1.webp",
+      "source": "https://images.unsplash.com/photo-1663025293688-322e16b6cb66?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8d2hlYXQlMjBzZWVkc3xlbnwwfHwwfHx8MA==",
+      "title": "a close up of grains"
+    },
+    {
+      "bytes": 115356,
+      "group": 0,
+      "index": 2,
+      "path": "external/pazartarla/src/assets/demo/0-2.webp",
+      "source": "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8d2hlYXQlMjBncmFpbnxlbnwwfHwwfHx8MA==",
+      "title": "brown grains"
+    },
+    {
+      "bytes": 150928,
+      "group": 1,
+      "index": 0,
+      "path": "external/pazartarla/src/assets/demo/1-0.webp",
+      "source": "https://images.unsplash.com/photo-1560594030-41f72a9fb96f?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fHdhbG51dHN8ZW58MHx8MHx8fDA=",
+      "title": "green fruits"
+    },
+    {
+      "bytes": 72460,
+      "group": 1,
+      "index": 1,
+      "path": "external/pazartarla/src/assets/demo/1-1.webp",
+      "source": "https://images.unsplash.com/photo-1471194395574-d150d0e0a97f?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA==",
+      "title": "pear tree with fruits"
+    },
+    {
+      "bytes": 213740,
+      "group": 1,
+      "index": 2,
+      "path": "external/pazartarla/src/assets/demo/1-2.webp",
+      "source": "https://images.unsplash.com/photo-1576179635013-b8b32825f892?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA==",
+      "title": "closeup photo of red apple fruits"
+    },
+    {
+      "bytes": 77198,
+      "group": 2,
+      "index": 0,
+      "path": "external/pazartarla/src/assets/demo/2-0.webp",
+      "source": "https://images.unsplash.com/photo-1696441567861-6761b9e503a6?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fGZhcm0lMjBlcXVpcG1lbnR8ZW58MHx8MHx8fDA=",
+      "title": "a tractor is driving through a field of hay"
+    },
+    {
+      "bytes": 77198,
+      "group": 2,
+      "index": 1,
+      "path": "external/pazartarla/src/assets/demo/2-1.webp",
+      "source": "https://images.unsplash.com/photo-1696441567861-6761b9e503a6?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fGZhcm0lMjBlcXVpcG1lbnR8ZW58MHx8MHx8fDA=",
+      "title": "a tractor is driving through a field of hay"
+    },
+    {
+      "bytes": 148574,
+      "group": 2,
+      "index": 2,
+      "path": "external/pazartarla/src/assets/demo/2-2.webp",
+      "source": "https://images.unsplash.com/photo-1615811361523-6bd03d7748e7?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8ZmFybSUyMG1hY2hpbmVyeXxlbnwwfHwwfHx8MA==",
+      "title": "green and white tractor on green grass field during daytime"
+    }
+  ]
+}
