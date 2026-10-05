@@ -19,6 +19,7 @@ import MembershipPage from './components/MembershipPage';
 import MembershipAdmin from './components/MembershipAdmin';
 import MembershipNotice from './components/MembershipNotice';
 import TrialPromotion from './components/TrialPromotion';
+import AboutPage, { AboutNotice } from './components/AboutPage';
 import Storefront from './components/Storefront';
 import {useStoreMembership} from './hooks/useStoreMembership';
 import {storeIdFromUrl} from './lib/storeMembership';
@@ -150,7 +151,7 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
-  const [activeTab, setActiveTab] = useState(()=>storeIdFromUrl(window.location.href)?'store':new URLSearchParams(window.location.search).get('teklifler')==='1'?'offers':'home');
+  const [activeTab, setActiveTab] = useState(()=>storeIdFromUrl(window.location.href)?'store':new URLSearchParams(window.location.search).get('hakkimizda')==='1'?'about':new URLSearchParams(window.location.search).get('teklifler')==='1'?'offers':'home');
   const [storeId,setStoreId]=useState(()=>storeIdFromUrl(window.location.href));
   const [membershipPreferredPlan,setMembershipPreferredPlan]=useState('');
   const editFormRef = useRef(null);
@@ -404,18 +405,19 @@ export default function App() {
 
   const changeTab = (tabName) => {
     const url=new URL(window.location.href);url.searchParams.delete('magaza');
+    url.searchParams.delete('hakkimizda');if(tabName==='about')url.searchParams.set('hakkimizda','1');
     url.searchParams.delete('teklifler');if(tabName==='offers')url.searchParams.set('teklifler','1');
     window.history.pushState({ tab: tabName }, '',url);
     setStoreId(null);
     setActiveTab(tabName);
   };
   const openStore=(id:string)=>{
-    const url=new URL(window.location.href);url.searchParams.set('magaza',id);
+    const url=new URL(window.location.href);url.searchParams.delete('hakkimizda');url.searchParams.set('magaza',id);
     url.searchParams.delete('teklifler');
     window.history.pushState({tab:'store'},'',url);setStoreId(id);setActiveTab('store');
   };
   useEffect(()=>{
-    const syncStore=()=>{const id=storeIdFromUrl(window.location.href);setStoreId(id);if(id)setActiveTab('store');else if(new URLSearchParams(window.location.search).get('teklifler')==='1')setActiveTab('offers');};
+    const syncStore=()=>{const id=storeIdFromUrl(window.location.href);setStoreId(id);if(id)setActiveTab('store');else if(new URLSearchParams(window.location.search).get('teklifler')==='1')setActiveTab('offers');else if(new URLSearchParams(window.location.search).get('hakkimizda')==='1')setActiveTab('about');};
     window.addEventListener('popstate',syncStore);return()=>window.removeEventListener('popstate',syncStore);
   },[]);
   const openOfferListing=(row)=>{
@@ -900,10 +902,12 @@ export default function App() {
 
       <main style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '12px', flex: 1, boxSizing: 'border-box' }}>
           <nav aria-label="Mağaza menüsü" style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:12}}>
+            <button type="button" onClick={()=>changeTab('about')} data-testid="button-about-menu" style={{border:'1px solid #d3ddcb',borderRadius:8,padding:'9px 13px',background:'#fffef9',color:'#244735',fontWeight:700,cursor:'pointer'}}>Hakkımızda</button>
             <button type="button" onClick={()=>changeTab('offers')} data-testid="button-offers-menu" style={{border:'1px solid #b89d5b',borderRadius:8,padding:'9px 13px',background:'#fff8e5',color:'#244735',fontWeight:700,cursor:'pointer'}}>Teklif Pazarı</button>
             <button type="button" onClick={()=>changeTab('memberships')} data-testid="button-membership-menu" style={{border:'1px solid #86efac',borderRadius:8,padding:'9px 13px',background:'#ecfdf5',color:'#166534',fontWeight:700,cursor:'pointer'}}>Mağaza Paketleri</button>
             {storeMembership.data?.mine?.store&&<button type="button" onClick={()=>openStore(storeMembership.data!.mine!.store!.id)} style={{border:'1px solid #dce5dc',borderRadius:8,padding:'9px 13px',background:'#fff',color:'#166534',cursor:'pointer'}}>Mağazam</button>}
           </nav>
+          {activeTab==='about'&&<AboutPage onBack={()=>changeTab('home')} onPackages={()=>changeTab('memberships')} annualReady={!!storeMembership.data?.plans.some(plan=>plan.id==='package-3')}/>}
           {activeTab==='memberships'&&<MembershipPage key={submissionAccount.session?.user.id||'public'} initialPlanId={membershipPreferredPlan} state={storeMembership} session={submissionAccount.session} onSignIn={()=>changeTab('add')} onStore={openStore} onSubmitted={()=>{void submissionAccount.refresh();}}/>}
           {activeTab==='membership-admin'&&(isAdminLoggedIn?<MembershipAdmin state={storeMembership} session={submissionAccount.session} authorized={isAdminLoggedIn} onBack={()=>changeTab('admin-page')}/>:<p role="alert">Paket yönetimi için yönetici hesabıyla giriş yapın.</p>)}
           {activeTab==='offers'&&<OfferMarketplace key={submissionAccount.session?.user.id||'public'} state={offers}
@@ -979,6 +983,7 @@ export default function App() {
         {activeTab === 'home' && (
           <div>
             <SponsorPartners state={advertisements} admin={isAdminLoggedIn} onManage={()=>changeTab('advertisements')} />
+            <AboutNotice onRead={()=>changeTab('about')}/>
             <TrialPromotion ready={!!storeMembership.data?.plans.some(plan=>plan.id==='trial-30-days')}
               used={!!storeMembership.data?.mine?.trial_used}
               onOpenTrial={()=>{setMembershipPreferredPlan('trial-30-days');changeTab('memberships');}}/>
