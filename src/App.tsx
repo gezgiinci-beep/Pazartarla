@@ -5,6 +5,7 @@ import ModerationQueue from './components/ModerationQueue';
 import MySubmissions from './components/MySubmissions';
 import ListingEditor from './components/ListingEditor';
 import {editError} from './lib/listingEditor';
+import {setListingFeatured, featuredError} from './lib/listingFeatured.mjs';
 import {deleteAdminListing} from './lib/adminListingRequests';
 import { useSubmissionAccount } from './hooks/useSubmissionAccount';
 import { useModerationQueue } from './hooks/useModerationQueue';
@@ -124,7 +125,7 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
       images: metadata.images,
       image: metadata.images[0] || item.image || DEFAULT_LISTING_IMAGE,
       status: item.status || 'approved',
-      isFeatured: metadata.isFeatured,
+      isFeatured: typeof item.is_featured === 'boolean' ? item.is_featured : metadata.isFeatured,
       seoTags: metadata.seoTags || autoTags
     };
     };
@@ -619,26 +620,14 @@ export default function App() {
       if (!target) return;
 
       try {
-        const snapshot=await supabaseClient.rpc('get_listing_for_edit',{p_listing_id:id});
-        if(snapshot.error)throw snapshot.error;
-        if(snapshot.data?.listing?.id!==id || !/^[a-f0-9]{64}$/.test(snapshot.data.edit_token))throw new Error('Invalid snapshot');
-        const fresh=normalizeListing(snapshot.data.listing);
-        const updatedListing={...fresh,isFeatured:!fresh.isFeatured};
-        const {data,error}=await supabaseClient.rpc('update_listing_media',{
-          p_listing_id:id,p_edit_token:snapshot.data.edit_token,
-          p_changes:{seotags:serializeListingTags(updatedListing)}
-        });
-        if(error)throw error;
-        if(data?.listing?.id!==id)throw new Error('Sunucu vitrin durumunu kaydetmedi.');
-
-        const savedListing = normalizeListing(data.listing);
+        const savedListing = normalizeListing(await setListingFeatured(supabaseClient,id,!target.isFeatured));
         setListings(currentListings => savedListing.status==='approved'
           ?currentListings.map(item => item.id === id ? savedListing : item)
           :currentListings.filter(item=>item.id!==id));
         setListingsError('');
       } catch (error) {
         console.error('Vitrin durumu kaydedilemedi:', error);
-        alert(editError(error));
+        alert(featuredError(error));
       }
     };
 
