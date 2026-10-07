@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { Offer, OffersState } from '../hooks/useOffers';
+import OfferExamples from './OfferExamples';
 import './offers.css';
 
 type Props = {
@@ -116,7 +117,7 @@ export default function OfferMarketplace({ state, listings, ownListings, session
           {state.loading ? (
             <div className="pt-o-grid" role="status" aria-label="Yükleniyor">{[0, 1, 2, 3].map(i => <div key={i} className="pt-o-skel" />)}</div>
           ) : state.error ? null : catalog.length === 0 ? (
-            <div className="pt-o-empty" data-testid="status-offers-catalog-empty">Şu anda teklife açık onaylı ilan yok. Satıcılar ilan detayından teklif almayı açtığında burada görünür.</div>
+            <div className="pt-o-empty" data-testid="status-offers-catalog-empty">Şu anda teklife açık gerçek onaylı ilan yok. Satıcılar ilan detayından teklif almayı açtığında burada görünür.</div>
           ) : (
             <div className="pt-o-grid">
               {catalog.map((item, i) => {
@@ -136,6 +137,7 @@ export default function OfferMarketplace({ state, listings, ownListings, session
               })}
             </div>
           )}
+          <OfferExamples />
         </section>
       )}
 

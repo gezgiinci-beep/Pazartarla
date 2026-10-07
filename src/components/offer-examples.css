@@ -1,0 +1,8 @@
+.pt-offer-examples{margin-top:18px}
+.pt-offer-demo-banner{margin:0 0 14px;padding:16px 20px;background:#fff4d9;border:1px solid #d7bf80;border-radius:12px;color:#594719;font-size:13px;line-height:1.6}
+.pt-offer-demo-banner p{margin:6px 0 0}
+.pt-offer-demo-dialog{--o-line:#dce2d5;--o-forest:#244735;--o-wheat:#b89d5b;width:min(94vw,520px);max-height:90vh;overflow:auto;border:1px solid #dce2d5;border-radius:16px;padding:20px;background:#fffef9;color:#244735;box-sizing:border-box}
+.pt-offer-demo-dialog::backdrop{background:rgba(20,38,27,.65)}
+.pt-offer-demo-dialog>img{display:block;width:100%;height:auto;max-height:230px;object-fit:contain;border-radius:10px;margin:12px 0}
+.pt-offer-demo-dialog h2{font-size:22px;line-height:1.3}
+.pt-offer-demo-dialog p{font-size:14px;line-height:1.6;margin:10px 0}

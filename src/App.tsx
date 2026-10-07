@@ -24,6 +24,7 @@ import DemoMarketplace from './components/DemoMarketplace';
 import Storefront from './components/Storefront';
 import {useStoreMembership} from './hooks/useStoreMembership';
 import {storeIdFromUrl} from './lib/storeMembership';
+import {findSharedListing, listingIdFromUrl, listingPhotoAddress, listingShareText, listingShareUrl} from './lib/listingShare';
 import { formatListingDate, isListingArchived } from './lib/listingLifetime';
 import { useListingArchive } from './hooks/useListingArchive';
 import BrandLogo from './components/BrandLogo';
@@ -152,7 +153,8 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
-  const [activeTab, setActiveTab] = useState(()=>storeIdFromUrl(window.location.href)?'store':new URLSearchParams(window.location.search).get('hakkimizda')==='1'?'about':new URLSearchParams(window.location.search).get('teklifler')==='1'?'offers':'home');
+  const [activeTab, setActiveTab] = useState(()=>listingIdFromUrl(window.location.href)?'detail':storeIdFromUrl(window.location.href)?'store':new URLSearchParams(window.location.search).get('hakkimizda')==='1'?'about':new URLSearchParams(window.location.search).get('teklifler')==='1'?'offers':'home');
+  const [linkedListingId,setLinkedListingId]=useState(()=>listingIdFromUrl(window.location.href));
   const [storeId,setStoreId]=useState(()=>storeIdFromUrl(window.location.href));
   const [membershipPreferredPlan,setMembershipPreferredPlan]=useState('');
   const editFormRef = useRef(null);
@@ -392,39 +394,83 @@ export default function App() {
     };
     
   useEffect(() => {
-    window.history.replaceState({ tab: storeIdFromUrl(window.location.href)?'store':'home' }, '');
-    const handlePopState = (event) => {
-      if (event.state && event.state.tab) {
-        setActiveTab(event.state.tab);
-      } else {
-        setActiveTab('home');
-      }
+    const readTabFromUrl = () => {
+      if (listingIdFromUrl(window.location.href)) return 'detail';
+      if (storeIdFromUrl(window.location.href)) return 'store';
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('hakkimizda') === '1') return 'about';
+      if (params.get('teklifler') === '1') return 'offers';
+      return 'home';
+    };
+    window.history.replaceState({ ...window.history.state, tab: readTabFromUrl() }, '');
+    const handlePopState = () => {
+      const listingId = listingIdFromUrl(window.location.href);
+      const nextStoreId = storeIdFromUrl(window.location.href);
+      setLinkedListingId(listingId);
+      setStoreId(nextStoreId);
+      setSelectedListing(null);
+      setActiveTab(readTabFromUrl());
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   const changeTab = (tabName) => {
-    const url=new URL(window.location.href);url.searchParams.delete('magaza');
+    const url=new URL(window.location.href);url.searchParams.delete('magaza');url.searchParams.delete('ilan');
     url.searchParams.delete('hakkimizda');if(tabName==='about')url.searchParams.set('hakkimizda','1');
     url.searchParams.delete('teklifler');if(tabName==='offers')url.searchParams.set('teklifler','1');
     window.history.pushState({ tab: tabName }, '',url);
+    setLinkedListingId(null);
     setStoreId(null);
     setActiveTab(tabName);
   };
   const openStore=(id:string)=>{
-    const url=new URL(window.location.href);url.searchParams.delete('hakkimizda');url.searchParams.set('magaza',id);
+    const url=new URL(window.location.href);url.searchParams.delete('hakkimizda');url.searchParams.delete('ilan');url.searchParams.set('magaza',id);
     url.searchParams.delete('teklifler');
-    window.history.pushState({tab:'store'},'',url);setStoreId(id);setActiveTab('store');
+    window.history.pushState({tab:'store'},'',url);setLinkedListingId(null);setStoreId(id);setActiveTab('store');
+  };
+  const openListing=(row)=>{
+    const shareUrl = listingShareUrl(row.id);
+    const listingId = new URL(shareUrl).searchParams.get('ilan');
+    const url=new URL(window.location.href);
+    url.searchParams.delete('magaza');
+    url.searchParams.delete('hakkimizda');
+    url.searchParams.delete('teklifler');
+    url.searchParams.set('ilan',listingId);
+    const listing={...row,images:row.images||[row.image||DEFAULT_LISTING_IMAGE]};
+    window.history.pushState({tab:'detail'},'',url);
+    setLinkedListingId(null);
+    setStoreId(null);
+    setSelectedListing(listing);
+    setActiveTab('detail');
   };
   useEffect(()=>{
-    const syncStore=()=>{const id=storeIdFromUrl(window.location.href);setStoreId(id);if(id)setActiveTab('store');else if(new URLSearchParams(window.location.search).get('teklifler')==='1')setActiveTab('offers');else if(new URLSearchParams(window.location.search).get('hakkimizda')==='1')setActiveTab('about');};
-    window.addEventListener('popstate',syncStore);return()=>window.removeEventListener('popstate',syncStore);
-  },[]);
+    if(!linkedListingId||listingsLoading)return;
+    setSelectedListing(listingsError?null:findSharedListing(listings,linkedListingId));
+  },[linkedListingId,listings,listingsLoading,listingsError]);
   const openOfferListing=(row)=>{
-    setSelectedListing({...row,images:row.images||[row.image||DEFAULT_LISTING_IMAGE]});
-    changeTab('detail');
+    openListing(row);
   };
+  const copyListingShare=async(text:string,message:string)=>{
+    try{
+      if(!navigator.clipboard?.writeText)throw new Error('Clipboard unavailable');
+      await navigator.clipboard.writeText(text);
+      alert(message);
+    }catch{
+      alert('Kopyalanamadı. Görünen bağlantıyı seçip elle kopyalayabilirsiniz.');
+    }
+  };
+  const copyPhotoAddress=async(address:string|null)=>{
+    if(!address)return;
+    try{
+      if(!navigator.clipboard?.writeText)throw new Error('Clipboard unavailable');
+      await navigator.clipboard.writeText(address);
+      alert('Fotoğraf adresi kopyalandı.');
+    }catch{
+      alert('Fotoğraf adresi kopyalanamadı. Görünen adresi seçip elle kopyalayabilirsiniz.');
+    }
+  };
+  const selectedPhotoAddress=selectedListing?listingPhotoAddress(selectedListing,window.location.href):null;
   const signInForOffers=()=>{
     setFormOfferRequested(false);
     postOfferAuthTarget.current=activeTab==='detail'&&selectedListing?selectedListing.id:'offers';
@@ -917,7 +963,7 @@ export default function App() {
             onOpenListing={openOfferListing} onSignIn={signInForOffers} onCreateListing={createOfferListing} onBack={()=>changeTab('home')}/>}
           {activeTab==='store'&&<Storefront key={storeId||'none'} state={storeMembership} normalize={normalizeListing} offerIds={offers.error?[]:offers.catalogIds} onBack={()=>changeTab('memberships')} onListing={row=>{
             const owner=submissionAccount.items.find(x=>x.id===row.id)||listings.find(x=>x.id===row.id);
-            setSelectedListing({...row,submitted_by:owner?.submitted_by});changeTab('detail');
+            openListing({...row,submitted_by:owner?.submitted_by});
           }}/>}
           <SiteSettingsStatus state={siteSettings} />
           {listingsError && (
@@ -1026,7 +1072,7 @@ export default function App() {
                   {featuredListings.map(item => {
                     const displayImg = (item.images && item.images[0]) || item.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800';
                     return (
-                      <div key={`feat-${item.id}`} onClick={() => { setSelectedListing({ ...item, images: item.images || [displayImg] }); changeTab('detail'); }} style={{ minWidth: 0, boxSizing: 'border-box', backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #fde047', cursor: 'pointer', overflow: 'hidden', padding: '8px' }}>
+                      <div key={`feat-${item.id}`} onClick={() => openListing({ ...item, images: item.images || [displayImg] })} style={{ minWidth: 0, boxSizing: 'border-box', backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #fde047', cursor: 'pointer', overflow: 'hidden', padding: '8px' }}>
                         <img src={displayImg} alt={item.title} style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '6px', marginBottom: '6px' }} />
                         <div style={{ fontSize: '12px', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</div>
                         <div style={{ fontSize: '13px', fontWeight: '800', color: '#1b3a2b', marginTop: '2px' }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
@@ -1086,7 +1132,7 @@ export default function App() {
             {filteredListings.map(item => {
               const displayImg = (item.images && item.images[0]) || item.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800';
               return (
-                <div key={item.id} onClick={() => { setSelectedListing({ ...item, images: item.images || [displayImg] }); changeTab('detail'); }} style={{ backgroundColor: '#fff', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer', display: 'flex', gap: '10px', padding: '10px', marginBottom: '10px' }}>
+                <div key={item.id} onClick={() => openListing({ ...item, images: item.images || [displayImg] })} style={{ backgroundColor: '#fff', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer', display: 'flex', gap: '10px', padding: '10px', marginBottom: '10px' }}>
                   <img src={displayImg} alt={item.title} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '8px' }} />
                   <div style={{ flex: 1 }}>
                     <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: '700' }}>{item.title}</h4>
@@ -1100,6 +1146,12 @@ export default function App() {
           </div>
         )}
 
+        {activeTab === 'detail' && linkedListingId && !selectedListing && (
+          <div role="status" style={{ padding: '16px', background: '#fff', borderRadius: '12px' }}>
+            {listingsLoading ? 'Paylaşılan ilan yükleniyor…' : listingsError ? 'İlanlar şu anda yüklenemiyor. Lütfen daha sonra yeniden deneyin.' : 'Paylaşılan ilan bulunamadı.'}
+            <button type="button" onClick={() => changeTab('home')} style={{ display: 'block', marginTop: '12px' }}>Ana sayfaya dön</button>
+          </div>
+        )}
         {activeTab === 'detail' && selectedListing && !isAdminLoggedIn && isListingArchived(selectedListing, listingNow) && (
           <div role="status" style={{ padding: '16px', background: '#fff', borderRadius: '12px' }}>
             Bu ilanın 8 aylık yayın süresi doldu ve ilan arşive alındı.
@@ -1141,6 +1193,15 @@ export default function App() {
             ) : (
               <img src={selectedListing.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800'} alt={selectedListing.title} style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '8px', marginBottom: '10px' }} />
             )}
+            <div style={{ margin: '0 0 12px', padding: '10px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+              <label htmlFor="listing-photo-address" style={{ display: 'block', fontSize: '12px', fontWeight: '700', marginBottom: '6px' }}>Fotoğraf adresi</label>
+              {selectedPhotoAddress ? (
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <input id="listing-photo-address" aria-label="Fotoğraf adresi" readOnly value={selectedPhotoAddress} onFocus={event=>event.currentTarget.select()} style={{ flex: '1 1 220px', minWidth: 0, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px' }} />
+                  <button type="button" onClick={()=>void copyPhotoAddress(selectedPhotoAddress)} style={{ padding: '8px 10px', border: '1px solid #cbd5e1', borderRadius: '6px', background: '#fff', cursor: 'pointer' }}>Fotoğraf adresini kopyala</button>
+                </div>
+              ) : <p role="status" style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>Bu fotoğrafın kopyalanabilir bir web adresi yok.</p>}
+            </div>
             <h2 style={{ fontSize: '18px', fontWeight: '800', margin: '8px 0' }}>{selectedListing.title}</h2>
             <ListingDate value={selectedListing.created_at} />
             {isListingArchived(selectedListing, listingNow) && <p role="status" style={{ color: '#854d0e', fontSize: '12px' }}>Arşivde — yayın süresi {formatListingDate(selectedListing.expires_at)} tarihinde doldu. İlan kaydı ve fotoğrafları korunuyor.</p>}
@@ -1164,7 +1225,7 @@ export default function App() {
               <div style={{ fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>📤 Bu İlanı Paylaş:</div>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <a
-                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`🌾 *PazarTarla İlanı*\n*${selectedListing.title}*\nFiyat: ${Number(selectedListing.price).toLocaleString('tr-TR')} TL\nKonum: ${selectedListing.location}\nİncelemek için tıkla`)}`}
+                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(listingShareText(selectedListing))}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ flex: 1, backgroundColor: '#22c55e', color: '#fff', padding: '8px 10px', borderRadius: '6px', textAlign: 'center', fontWeight: '700', textDecoration: 'none', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
@@ -1172,7 +1233,7 @@ export default function App() {
                   <MessageCircle size={14} /> WhatsApp
                 </a>
                 <a
-                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
+                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(listingShareUrl(selectedListing.id))}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ flex: 1, backgroundColor: '#1877f2', color: '#fff', padding: '8px 10px', borderRadius: '6px', textAlign: 'center', fontWeight: '700', textDecoration: 'none', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
@@ -1181,14 +1242,16 @@ export default function App() {
                 </a>
                 <button
                   onClick={() => {
-                    const shareText = `PazarTarla'da harika bir tarım ilanı: ${selectedListing.title} - ${Number(selectedListing.price).toLocaleString('tr-TR')} TL (${selectedListing.location})`;
-                    navigator.clipboard.writeText(shareText);
-                    alert('📋 İlan bilgileri panoya kopyalandı! Instagram hikayenizde veya mesajınızda doğrudan yapıştırıp paylaşabilirsiniz.');
+                    void copyListingShare(listingShareText(selectedListing), 'İlan bilgileri ve bağlantısı kopyalandı. Instagram hikâyesinde Bağlantı etiketiyle veya mesajda paylaşabilirsiniz.');
                   }}
                   style={{ flex: 1, backgroundColor: '#e1306c', color: '#fff', border: 'none', padding: '8px 10px', borderRadius: '6px', textAlign: 'center', fontWeight: '700', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
                 >
                   <ImageIcon size={14} /> Instagram
                 </button>
+              </div>
+              <div style={{ marginTop: '10px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <a href={listingShareUrl(selectedListing.id)} target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', overflowWrap: 'anywhere', flex: '1 1 180px' }}>{listingShareUrl(selectedListing.id)}</a>
+                <button type="button" onClick={()=>void copyListingShare(listingShareUrl(selectedListing.id), 'İlan bağlantısı kopyalandı.')} style={{ padding: '8px', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer' }}>Bağlantıyı kopyala</button>
               </div>
             </div>
 
@@ -1448,7 +1511,7 @@ export default function App() {
                       <div style={{ fontSize: '11px', color: '#854d0e', margin: '4px 0' }}>Arşive alınma tarihi: {formatListingDate(item.expires_at)}</div>
                       <button type="button" disabled={listingArchive.busyId !== null || listingArchive.loading} onClick={async () => {
                         const row = await listingArchive.view(item.id);
-                        if (row) { setSelectedListing(normalizeListing(row)); changeTab('detail'); }
+                        if (row) openListing(normalizeListing(row));
                       }}>{listingArchive.busyId === item.id ? 'Açılıyor…' : 'İlanı görüntüle'}</button>
                     </div>
                   ))}
