@@ -46,3 +46,14 @@ test('listing detail exposes copyable photo and listing addresses and embeds the
   assert.ok(source.includes('Bağlantıyı kopyala'));
   assert.ok(source.includes('navigator.clipboard.writeText(address)'));
 });
+
+const shareShell = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+const sharePreviewImage = readFileSync(new URL('../public/pazartarla-share-v1.png', import.meta.url));
+
+test('WhatsApp share shell exposes the PazarTarla logo preview and preserves the exact listing URL', () => {
+  assert.ok(shareShell.includes('<meta property="og:site_name" content="PazarTarla" />'));
+  assert.ok(shareShell.includes('<meta property="og:image" content="https://www.pazartarla.com.tr/pazartarla-share-v1.png" />'));
+  assert.ok(shareShell.includes('<meta name="twitter:card" content="summary_large_image" />'));
+  assert.equal(sharePreviewImage.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+  assert.equal(listingShareUrl(42), 'https://www.pazartarla.com.tr/?ilan=42');
+});
