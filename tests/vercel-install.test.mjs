@@ -8,9 +8,11 @@ const config = JSON.parse(readFileSync(new URL('../vercel.json', import.meta.url
 test('standalone Vercel checkout uses pnpm and its frozen, isolated lockfile', () => {
   assert.equal(manifest.packageManager, 'pnpm@10.26.1');
   assert.equal(config.installCommand, 'pnpm install --frozen-lockfile --ignore-workspace');
-  assert.equal(config.buildCommand, 'pnpm run build');
-  assert.equal(config.outputDirectory, 'dist');
-  assert.equal(config.framework, 'vite');
+  assert.deepEqual(config.builds, [
+    { src: 'package.json', use: '@vercel/static-build', config: { distDir: 'dist' } },
+    { src: 'api/index.js', use: '@vercel/node' },
+  ]);
+  assert.equal(config.builds.filter(build => build.use === '@vercel/node').length, 1);
   for (const section of ['dependencies', 'devDependencies', 'optionalDependencies']) {
     for (const [name, version] of Object.entries(manifest[section] ?? {})) {
       assert.doesNotMatch(version, /^(workspace|catalog):/, `${name} must resolve in a standalone checkout`);

@@ -59,15 +59,15 @@ test('unknown or nested paths cannot fall through to an auth handler', async () 
   }
 });
 
-test('Vercel rewrites auth paths to the consolidated function before SPA fallback', async () => {
+test('Vercel routes every API path through the consolidated function before SPA fallback', async () => {
   const configPath = fileURLToPath(new URL('../vercel.json', import.meta.url));
   const config = JSON.parse(await readFile(configPath, 'utf8'));
   const routes = config.routes;
-  const authIndex = routes.findIndex(route =>
-    route.src === '/api/auth/(.*)' && route.dest === '/api/auth-router?action=$1');
+  const apiIndex = routes.findIndex(route =>
+    route.src === '/api/(.*)' && route.dest === '/api/index?__route=$1');
   const filesystemIndex = routes.findIndex(route => route.handle === 'filesystem');
-  assert.ok(authIndex >= 0);
-  assert.ok(filesystemIndex > authIndex);
+  assert.ok(apiIndex >= 0);
+  assert.ok(filesystemIndex > apiIndex);
 });
 
 test('consolidated Vercel function dispatches the rewritten auth action query', async () => {
