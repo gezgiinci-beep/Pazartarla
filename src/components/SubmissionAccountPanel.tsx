@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type FormEvent } from "react";
+import { useEffect, useState, type CSSProperties, type FormEvent } from "react";
 
 export type SubmissionAccountPanelProps = {
   session: any | null;
@@ -9,8 +9,8 @@ export type SubmissionAccountPanelProps = {
     used: number;
     remaining: number | null;
     next_available_at: string | null;
-    period?:'rolling_day'|'membership_month';
-    monthly_remaining?:number;active_limit?:number;active_used?:number;pending_reserved?:number;plan_name?:string;membership_ends_at?:string;
+    period?:'rolling_day'|'membership_month'|'membership_year'|'membership_trial';
+    monthly_remaining?:number|null;active_limit?:number|null;active_used?:number;pending_reserved?:number;plan_name?:string;membership_ends_at?:string;
   } | null;
   loading: boolean;
   busy: boolean;
@@ -18,6 +18,11 @@ export type SubmissionAccountPanelProps = {
   message: string;
   onAuthenticate: (mode: "login" | "signup", email: string, password: string) => Promise<void>;
   onResend: (email: string) => Promise<void>;
+  isTursoAuth: boolean;
+  passwordResetToken: string | null;
+  onRequestPasswordReset: (email: string) => Promise<void>;
+  onResetPassword: (password: string) => Promise<void>;
+  onCancelPasswordReset: () => void;
   onSignOut: () => Promise<void>;
   onRefresh: () => void;
 };
@@ -80,22 +85,41 @@ export default function SubmissionAccountPanel({
   message,
   onAuthenticate,
   onResend,
+  isTursoAuth,
+  passwordResetToken,
+  onRequestPasswordReset,
+  onResetPassword,
+  onCancelPasswordReset,
   onSignOut,
   onRefresh,
 }: SubmissionAccountPanelProps) {
-  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [mode, setMode] = useState<"login" | "signup" | "forgot" | "reset">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [localError, setLocalError] = useState("");
   const [actionError, setActionError] = useState("");
   const [resending, setResending] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const signedInEmail = sessionEmail(session);
   const verificationEmail = email.trim() || signedInEmail;
-  const isVerified = quota?.email_verified === true;
+  const isVerified = quota?.email_verified === true || Boolean(session?.user?.email_confirmed_at);
+
+  useEffect(() => {
+    if (passwordResetToken) {
+      setMode("reset");
+      setLocalError("");
+      setActionError("");
+    } else if (mode === "reset") {
+      setMode("login");
+      setPassword("");
+      setPasswordConfirmation("");
+    }
+  }, [mode, passwordResetToken]);
 
   const submitAuth = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (mode !== "login" && mode !== "signup") return;
     setLocalError("");
     setActionError("");
     const cleanEmail = email.trim();
@@ -134,6 +158,36 @@ export default function SubmissionAccountPanel({
     } finally {
       setResending(false);
     }
+  };
+
+  const requestPasswordReset = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setLocalError("");
+    setActionError("");
+    if (!email.trim()) {
+      setLocalError("Parola yenileme bağlantısı için e-posta adresinizi girin.");
+      return;
+    }
+    await onRequestPasswordReset(email.trim());
+  };
+
+  const submitPasswordReset = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setLocalError("");
+    setActionError("");
+    if (!passwordResetToken) {
+      setLocalError("Yenileme bağlantısı eksik veya geçersiz. Yeni bağlantı isteyin.");
+      return;
+    }
+    if (new TextEncoder().encode(password).length < 8 || new TextEncoder().encode(password).length > 72) {
+      setLocalError("Yeni parola en az 8 karakter olmalı ve 72 baytı aşmamalı.");
+      return;
+    }
+    if (password !== passwordConfirmation) {
+      setLocalError("Parola ve parola tekrarı aynı olmalı.");
+      return;
+    }
+    await onResetPassword(password);
   };
 
   const signOut = async () => {
@@ -181,7 +235,45 @@ export default function SubmissionAccountPanel({
         </div>
       )}
 
-      {session ? (
+      {mode === "reset" && passwordResetToken ? (
+        <form onSubmit={submitPasswordReset} style={{ display: "grid", gap: 10, marginTop: 15 }}>
+          <p style={{ margin: 0, color: palette.muted, fontSize: 13, lineHeight: 1.55 }}>
+            Parola yenileme bağlantısı açıldı. Yeni parolanızı belirleyin. Bu işlem mevcut oturumları kapatır ve sizi otomatik olarak giriş yaptırmaz.
+          </p>
+          <label style={{ display: "grid", gap: 5, color: palette.muted, fontSize: 12, fontWeight: 700 }}>
+            Yeni parola
+            <input
+              type="password"
+              autoComplete="new-password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              minLength={8}
+              required
+              data-testid="input-reset-password"
+              style={inputStyle}
+            />
+          </label>
+          <label style={{ display: "grid", gap: 5, color: palette.muted, fontSize: 12, fontWeight: 700 }}>
+            Yeni parolayı tekrar yazın
+            <input
+              type="password"
+              autoComplete="new-password"
+              value={passwordConfirmation}
+              onChange={(event) => setPasswordConfirmation(event.target.value)}
+              minLength={8}
+              required
+              data-testid="input-reset-password-confirm"
+              style={inputStyle}
+            />
+          </label>
+          <button type="submit" disabled={busy} data-testid="button-reset-password" style={{ ...buttonStyle(true), justifySelf: "start", opacity: busy ? 0.65 : 1 }}>
+            {busy ? "Parola yenileniyor…" : "Yeni parolayı kaydet"}
+          </button>
+          <button type="button" onClick={onCancelPasswordReset} data-testid="button-cancel-password-reset" style={{ ...buttonStyle(), justifySelf: "start" }}>
+            Girişe dön
+          </button>
+        </form>
+      ) : session ? (
         <div style={{ marginTop: 16 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
             <div>
@@ -216,13 +308,14 @@ export default function SubmissionAccountPanel({
           </div>
 
           <div style={{ marginTop: 14, border: `1px solid ${palette.line}`, borderRadius: 9, padding: 13, background: "#fff" }}>
-            {quota ? (
+              {quota ? (
               <>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "baseline", flexWrap: "wrap" }}>
                   <strong data-testid="text-quota-remaining" style={{ fontSize: 15 }}>
-                     {quota.unlimited ? 'Yönetici hesabı: Sınırsız ilan' : quota.period==='membership_month'?`${quota.plan_name}: Bu dönem ${quota.monthly_remaining} / ${quota.limit} yeni ilan hakkı kaldı`:`${Math.max(0, quota.remaining ?? 0)} / ${Math.max(0, quota.limit ?? 0)} gönderim hakkı kaldı`}
+                     {(quota.period==='membership_year'||quota.period==='membership_trial')&&quota.unlimited?`${quota.plan_name}: Sınırsız ilan ve listeleme`:
+                       quota.unlimited ? 'Yönetici hesabı: Sınırsız ilan' : quota.period==='membership_month'?`${quota.plan_name}: Bu dönem ${quota.monthly_remaining} / ${quota.limit} yeni ilan hakkı kaldı`:`${Math.max(0, quota.remaining ?? 0)} / ${Math.max(0, quota.limit ?? 0)} gönderim hakkı kaldı`}
                   </strong>
-                   <span style={{ fontSize: 12, color: palette.muted }}>{quota.period==='membership_month'?'Üyelik dönemi':'Son 24 saat'}: {quota.used} gönderim</span>
+                   <span style={{ fontSize: 12, color: palette.muted }}>{quota.period==='membership_trial'?'Deneme dönemi':quota.period==='membership_month'||quota.period==='membership_year'?'Üyelik dönemi':'Son 24 saat'}: {quota.used} gönderim</span>
                 </div>
                 {!quota.unlimited && <div style={{ height: 6, background: "#e8eee6", borderRadius: 99, marginTop: 10, overflow: "hidden" }}>
                   <div style={{ width: `${Math.min(100, Math.max(0, quota.limit ? (quota.used / quota.limit) * 100 : 0))}%`, height: "100%", background: palette.green, borderRadius: 99 }} />
@@ -233,6 +326,8 @@ export default function SubmissionAccountPanel({
                   </p>
                 )}
                  {quota.period==='membership_month'&&<p style={{fontSize:12,lineHeight:1.6}}>Aktif ilan: {quota.active_used} / {quota.active_limit} · Onay bekleyen kapasite: {quota.pending_reserved}.<br/>Dönem sonu: {dateTime(quota.membership_ends_at)}. Günlük 3 ilan sınırı uygulanmaz.</p>}
+                 {quota.period==='membership_year'&&<p style={{fontSize:12,lineHeight:1.6}}>Aktif ilan: {quota.active_used} · Onay bekleyen: {quota.pending_reserved}. İlan ve listeleme kotaları sınırsızdır.<br/>Yıllık üyelik sonu: {dateTime(quota.membership_ends_at)}. Günlük 3 ilan sınırı uygulanmaz; yönetici onayı ve ilan yayın süresi değişmez.</p>}
+                 {quota.period==='membership_trial'&&<p style={{fontSize:12,lineHeight:1.6}}>Aktif ilan: {quota.active_used} · Onay bekleyen: {quota.pending_reserved}.<br/>Ücretsiz deneme sonu: {dateTime(quota.membership_ends_at)}. Ödeme ve otomatik ücretlendirme yoktur; ilan onayı ve yayın süresi değişmez.</p>}
                </>
             ) : (
               <div role="status" data-testid="status-quota-unavailable" style={{ color: palette.muted, fontSize: 13 }}>
@@ -240,20 +335,25 @@ export default function SubmissionAccountPanel({
               </div>
             )}
           </div>
+          {session?.backend === "turso" && (
+            <p role="status" data-testid="status-turso-listings-not-migrated" style={{ color: palette.amberInk, background: palette.amber, borderRadius: 8, padding: 11, fontSize: 12, lineHeight: 1.5 }}>
+              Bu test geçişinde hesap ve mağaza üyeliği Turso’ya bağlıdır. İlan kotası, ilan gönderme ve teklif işlemleri henüz taşınmadığı için burada kullanılamaz.
+            </p>
+          )}
         </div>
       ) : (
         <div style={{ marginTop: 15 }}>
           <p style={{ margin: "0 0 12px", color: palette.muted, fontSize: 13, lineHeight: 1.55 }}>
             İlan göndermek ve gönderimlerinizi takip etmek için giriş yapın ya da hesap oluşturun. Yeni hesaplarda e-posta doğrulaması gerekir.
           </p>
-          <div role="tablist" aria-label="Hesap işlemi" style={{ display: "flex", gap: 6, padding: 4, borderRadius: 9, background: "#eaf0e8", width: "fit-content", maxWidth: "100%" }}>
+          {(mode === "login" || mode === "signup") && <div role="tablist" aria-label="Hesap işlemi" style={{ display: "flex", gap: 6, padding: 4, borderRadius: 9, background: "#eaf0e8", width: "fit-content", maxWidth: "100%" }}>
             {(["login", "signup"] as const).map((choice) => (
               <button
                 type="button"
                 role="tab"
                 aria-selected={mode === choice}
                 key={choice}
-                onClick={() => { setMode(choice); setLocalError(""); setActionError(""); }}
+                onClick={() => { setMode(choice); setLocalError(""); setActionError(""); setPassword(""); }}
                 data-testid={`tab-auth-${choice}`}
                 style={{
                   ...buttonStyle(mode === choice),
@@ -264,7 +364,35 @@ export default function SubmissionAccountPanel({
                 {choice === "login" ? "Giriş yap" : "Hesap oluştur"}
               </button>
             ))}
-          </div>
+          </div>}
+          {mode === "forgot" ? (
+            <form onSubmit={requestPasswordReset} style={{ display: "grid", gap: 10, marginTop: 12 }}>
+              <p style={{ margin: 0, color: palette.muted, fontSize: 13, lineHeight: 1.55 }}>
+                E-posta adresinizi girin. Hesap uygunsa parola yenileme bağlantısı gönderilir.
+              </p>
+              <label style={{ display: "grid", gap: 5, color: palette.muted, fontSize: 12, fontWeight: 700 }}>
+                E-posta adresi
+                <input
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="ornek@eposta.com"
+                  required
+                  data-testid="input-reset-email"
+                  style={inputStyle}
+                />
+              </label>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <button type="submit" disabled={busy} data-testid="button-request-password-reset" style={{ ...buttonStyle(true), opacity: busy ? 0.65 : 1 }}>
+                  {busy ? "İstek gönderiliyor…" : "Yenileme bağlantısı iste"}
+                </button>
+                <button type="button" onClick={() => setMode("login")} data-testid="button-back-to-login" style={buttonStyle()}>
+                  Girişe dön
+                </button>
+              </div>
+            </form>
+          ) : (
           <form onSubmit={submitAuth} style={{ display: "grid", gap: 10, marginTop: 12 }}>
             <label style={{ display: "grid", gap: 5, color: palette.muted, fontSize: 12, fontWeight: 700 }}>
               E-posta adresi
@@ -297,12 +425,19 @@ export default function SubmissionAccountPanel({
               {busy ? "İşleniyor…" : mode === "login" ? "Hesabınıza giriş yapın" : "Hesap oluşturun"}
             </button>
           </form>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
+          )}
+          {(mode === "login" || mode === "signup") && <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
             <span style={{ color: palette.muted, fontSize: 12 }}>Doğrulama e-postasını yeniden mi göndermek istiyorsunuz?</span>
             <button type="button" onClick={resendVerification} disabled={busy || resending} data-testid="button-resend-verification" style={{ ...buttonStyle(), padding: "7px 10px", fontSize: 12, opacity: busy || resending ? 0.6 : 1 }}>
               {resending ? "Gönderiliyor…" : "E-postayı yeniden gönder"}
             </button>
-          </div>
+          </div>}
+          {isTursoAuth && mode === "login" && (
+            <button type="button" onClick={() => { setMode("forgot"); setLocalError(""); setActionError(""); }}
+              data-testid="button-forgot-password" style={{ ...buttonStyle(), marginTop: 10 }}>
+              Parolamı unuttum
+            </button>
+          )}
         </div>
       )}
 

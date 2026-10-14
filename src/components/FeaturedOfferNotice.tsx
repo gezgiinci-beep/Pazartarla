@@ -7,13 +7,14 @@ function formatTry(amount: number) {
 
 export default function FeaturedOfferNotice({
   offer,
-  onRequest
+  onRequest,
+  expandable = false
 }: {
   offer: FeaturedOffer;
   onRequest?: () => void;
+  expandable?: boolean;
 }) {
-  return (
-    <section className="pto-notice" aria-labelledby="pto-notice-title" data-testid="featured-offer-notice">
+  const content=<>
       <div className="pto-notice__ornament" aria-hidden="true">
         <span className="pto-notice__sun" />
         <span className="pto-notice__ridge pto-notice__ridge--back" />
@@ -43,6 +44,19 @@ export default function FeaturedOfferNotice({
           )}
         </div>
       </div>
-    </section>
-  );
+    </>;
+
+  if (expandable) {
+    return <details className="pto-notice is-expandable" data-testid="featured-offer-notice">
+      <summary className="pto-notice__summary" data-testid="featured-offer-toggle">
+        <span className="pto-notice__eyebrow"><span /> PAZARTARLA VİTRİNİ</span>
+        <span className="pto-notice__summary-title">Ürününüzü daha çok kişiye gösterin.</span>
+        <span className="pto-notice__summary-copy">{formatTry(offer.monthly_price_try)} · 1 aylık öne çıkarma</span>
+        <span className="pto-notice__summary-action">Ayrıntıları göster</span>
+      </summary>
+      <div className="pto-notice__expanded">{content}</div>
+    </details>;
+  }
+
+  return <section className="pto-notice" aria-labelledby="pto-notice-title" data-testid="featured-offer-notice">{content}</section>;
 }

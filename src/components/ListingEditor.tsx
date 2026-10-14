@@ -1,7 +1,9 @@
 import {useEffect,useRef,useState} from 'react';
 import {EDIT_FIELDS,listingDraft,listingChanges,editError} from '../lib/listingEditor';
 
-export default function ListingEditor({client,itemId,userId,isAdmin,categories,onSaved,onCancel}: any) {
+const API_BASE=(import.meta.env.BASE_URL||'/').replace(/\/$/,'');
+
+export default function ListingEditor({client,itemId,userId,isAdmin,categories,onSaved,onCancel,isTursoAuth=false}: any) {
   const [original,setOriginal]=useState<any>(null);
   const [token,setToken]=useState('');
   const [draft,setDraft]=useState<Record<string,string>>({});
@@ -13,8 +15,18 @@ export default function ListingEditor({client,itemId,userId,isAdmin,categories,o
     const current=++generation.current;
     setLoading(true);setError('');
     try {
-      const {data,error:failure}=await client.rpc('get_listing_for_edit',{p_listing_id:itemId});
-      if (failure) throw failure;
+      let data:any;
+      if(isTursoAuth){
+        const response=await fetch(`${API_BASE}/api/listing-owner?id=${encodeURIComponent(itemId)}`,{
+          credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'},
+        });
+        data=await response.json().catch(()=>({}));
+        if(!response.ok)throw new Error(String(data?.error||'LISTING_EDIT_FORBIDDEN'));
+      }else{
+        const {data:payload,error:failure}=await client.rpc('get_listing_for_edit',{p_listing_id:itemId});
+        if(failure)throw failure;
+        data=payload;
+      }
       if (!data?.listing || String(data.listing.id)!==String(itemId) || !/^[a-f0-9]{64}$/.test(data.edit_token))
         throw new Error('Invalid listing response');
       if (current!==generation.current) return;
@@ -29,10 +41,22 @@ export default function ListingEditor({client,itemId,userId,isAdmin,categories,o
     setSaving(true);setError('');
     try {
       const changes=listingChanges(original,draft);
-      const {data,error:failure}=await client.rpc('update_listing_details',{
-        p_listing_id:original.id,p_changes:changes,p_edit_token:token,
-      });
-      if(failure)throw failure;
+      let data:any;
+      if(isTursoAuth){
+        const response=await fetch(`${API_BASE}/api/listing-owner`,{
+          method:'POST',credentials:'same-origin',cache:'no-store',
+          headers:{'Content-Type':'application/json',Accept:'application/json'},
+          body:JSON.stringify({action:'edit',id:original.id,changes,edit_token:token}),
+        });
+        data=await response.json().catch(()=>({}));
+        if(!response.ok)throw new Error(String(data?.error||'LISTING_EDIT_FAILED'));
+      }else{
+        const {data:payload,error:failure}=await client.rpc('update_listing_details',{
+          p_listing_id:original.id,p_changes:changes,p_edit_token:token,
+        });
+        if(failure)throw failure;
+        data=payload;
+      }
       if(!data?.listing || String(data.listing.id)!==String(original.id) ||
         typeof data.reapproval_required!=='boolean'||typeof data.changed!=='boolean')
         throw new Error('Invalid save acknowledgement');

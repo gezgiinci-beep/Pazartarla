@@ -1,0 +1,15 @@
+.pt-about,.pt-about-notice{--f:#244735;--l:#557653;--w:#b89d5b;--p:#f7f6ef;--c:#fffef9;--i:#2e3b32;--m:#6d786d;--ln:#dce2d5}
+.pt-about{width:100%;max-width:680px;margin:0 auto;padding:clamp(18px,4vw,28px);box-sizing:border-box;color:var(--i);background:var(--p);overflow-wrap:anywhere}
+.pt-about *{box-sizing:border-box}
+.pt-about-back{border:1px solid var(--ln);background:var(--c);color:var(--f);padding:9px 14px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;min-height:44px}
+.pt-about-article{margin-top:16px;padding:clamp(18px,4vw,30px);background:var(--c);border:1px solid var(--ln);border-top:3px solid var(--w)}
+.pt-about h1{margin:0 0 16px;color:var(--f);font-size:clamp(23px,6vw,32px);line-height:1.15;letter-spacing:-.03em}
+.pt-about h2{margin:26px 0 8px;color:var(--f);font-size:clamp(18px,4.5vw,22px);line-height:1.25}
+.pt-about p{margin:0 0 14px;font-size:15px;line-height:1.7}
+.pt-about-pending{margin-top:16px;padding:12px 14px;border:1px solid var(--w);background:#f4efdc;font-size:13px;line-height:1.5}
+.pt-about-pending p{margin:0;font-size:13px}
+.pt-about-cta{margin-top:18px;border:0;background:var(--f);color:#fff;padding:12px 18px;font:inherit;font-weight:700;cursor:pointer;min-height:44px}
+.pt-about-notice{display:block;margin:12px 0;padding:14px 16px;border:1px solid var(--ln);border-left:4px solid var(--l);background:var(--c);color:var(--i);overflow-wrap:anywhere}
+.pt-about-notice strong{display:block;color:var(--f);font-size:14px;line-height:1.4}
+.pt-about-notice button{margin-top:10px;border:0;background:none;padding:6px 0;color:var(--l);font:inherit;font-size:13px;font-weight:800;cursor:pointer;min-height:44px}
+.pt-about button:focus-visible,.pt-about-notice button:focus-visible{outline:2px solid var(--w);outline-offset:2px}

@@ -33,6 +33,10 @@ runInNewContext(startupEffect, {
   setShowSplash(value) {
     splashVisible = value;
   },
+  listingRetryAt: { current: 0 },
+  listings: [],
+  setListingsLoading() {},
+  setListingsError() {},
   fetchListings() {
     listingFetches += 1;
     // An unresolved request must not prevent the splash from closing.

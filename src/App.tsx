@@ -1,39 +1,57 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import { createAdminAccessGate, createListingRefreshGuard } from './lib/adminUiState.mjs';
 import SubmissionAccountPanel from './components/SubmissionAccountPanel';
 import ModerationQueue from './components/ModerationQueue';
 import MySubmissions from './components/MySubmissions';
+import RemoteListingImages from './components/RemoteListingImages';
 import ListingEditor from './components/ListingEditor';
 import {editError} from './lib/listingEditor';
+import {setListingFeatured, featuredError} from './lib/listingFeatured.mjs';
 import {deleteAdminListing} from './lib/adminListingRequests';
 import { useSubmissionAccount } from './hooks/useSubmissionAccount';
 import { useModerationQueue } from './hooks/useModerationQueue';
 import { useSiteSettings } from './hooks/useSiteSettings';
+import { AUTOMATIC_REFRESH_INTERVAL_MS, automaticRefreshDue } from './lib/refreshPolicy.mjs';
+import { backoffDelayMs, readCachedValue, readRetryAt, writeCachedValue, writeRetryAt } from './lib/publicReadResilience.mjs';
+import { listingSeoMetadataUrl, readPublicListings } from './lib/publicListingRequests.mjs';
+import { readListingSeoFromApi, readPublicListingsFromApi } from './lib/tursoListings.mjs';
 import SiteSettingsStatus from './components/SiteSettingsStatus';
 import { useAdvertisements } from './hooks/useAdvertisements';
 import AdvertisementManager from './components/AdvertisementManager';
 import AdvertisementPlacement from './components/AdvertisementPlacement';
 import SponsorPartners from './components/SponsorPartners';
+import PlatformIntroduction from './components/PlatformIntroduction';
 import MembershipPage from './components/MembershipPage';
 import MembershipAdmin from './components/MembershipAdmin';
 import MembershipNotice from './components/MembershipNotice';
+import TrialPromotion from './components/TrialPromotion';
+import AboutPage from './components/AboutPage';
 import Storefront from './components/Storefront';
 import {useStoreMembership} from './hooks/useStoreMembership';
-import {storeIdFromUrl} from './lib/storeMembership';
+import {useOffers} from './hooks/useOffers';
+import OfferMarketplace from './components/OfferMarketplace';
+import OfferListingControls from './components/OfferListingControls';
+import {storeUrl} from './lib/storeMembership';
+import {readPublicNavigation} from './lib/publicNavigation.mjs';
+import {listingIdFromUrl, listingShareUrl, listingShareText, listingPhotoAddress, findSharedListing} from './lib/listingShare';
 import { formatListingDate, isListingArchived } from './lib/listingLifetime';
 import { useListingArchive } from './hooks/useListingArchive';
 import BrandLogo from './components/BrandLogo';
+import HomeMenuDrawer, { type HomeMenuAction } from './components/HomeMenuDrawer';
+import DiscoveryBar from './components/DiscoveryBar';
+import RegionDialog from './components/RegionDialog';
+import { PROVINCES, locationOptions, matchesLocation, matchesSearch, sortListings, type SortKey } from './lib/locationFilter';
 import OpeningSplash from './components/OpeningSplash';
 import FeaturedOfferNotice from './components/FeaturedOfferNotice';
 import FeaturedOfferManager from './components/FeaturedOfferManager';
 import TrafficDashboard from './components/TrafficDashboard';
-import TrafficPrivacy from './components/TrafficPrivacy';
 import ContactDepotManager from './components/ContactDepotManager';
 import ContactUnsubscribe from './components/ContactUnsubscribe';
 import { useContactDepot } from './hooks/useContactDepot';
-import { useTrafficAnalytics } from './hooks/useTrafficAnalytics';
 import { useTrafficReport } from './hooks/useTrafficReport';
 import './site-interactions.css';
+import { DEFAULT_LISTING_IMAGE, readListingMedia, persistListingImages, persistTursoListingImages, assertSavedMedia, listingFilePreviews } from './lib/listingMedia.mjs';
 
 import {
   Search, SlidersHorizontal, MapPin, Phone, MessageCircle, Plus,
@@ -41,11 +59,58 @@ import {
   Car, Wrench, ArrowRight, Bell, User, Filter, AlertCircle, Trash2, Settings, Lock, Check, Mail, Globe, Copy, HelpCircle, Users, Image as ImageIcon, Bug, Shield, Package, ArrowLeft, Menu, ArrowUpDown, LayoutList, Star, Send, ShieldAlert, FolderPlus, Tag, Edit3, Sparkles, Megaphone, CheckCircle, Bot, RefreshCw
 } from 'lucide-react';
 
+const PUBLIC_LISTINGS_CACHE_KEY = 'pazartarla-public-listings-v1';
+const PUBLIC_LISTINGS_RETRY_KEY = 'pazartarla-public-listings-retry-at-v1';
+const PUBLIC_LISTINGS_CACHE_TTL_MS = 6 * 60 * 60_000;
+
+function publicBrowserStorage() {
+  try { return window.localStorage; } catch { return null; }
+}
+
+function readPublicListingsCache() {
+  return readCachedValue(publicBrowserStorage(), PUBLIC_LISTINGS_CACHE_KEY, PUBLIC_LISTINGS_CACHE_TTL_MS,
+    value => Array.isArray(value) && value.length <= 2_000 &&
+      value.every(item => item && Number.isSafeInteger(Number(item.id)) && typeof item.title === 'string'));
+}
+
+function cacheableImage(value: unknown) {
+  return typeof value === 'string' && value.length > 0 && !/^(?:data:|blob:)/i.test(value);
+}
+
+function savePublicListingsCache(items: any[]) {
+  const safeItems = items.map(item => ({
+    ...item,
+    image: cacheableImage(item.image) ? item.image : DEFAULT_LISTING_IMAGE,
+    images: Array.isArray(item.images) ? item.images.filter(cacheableImage) : [],
+    ...(Array.isArray(item.gallery_paths)
+      ? { gallery_paths: item.gallery_paths.filter(cacheableImage) }
+      : typeof item.gallery_paths === 'string' && /^(?:data:|blob:)/i.test(item.gallery_paths)
+        ? { gallery_paths: '[]' }
+        : {}),
+  }));
+  writeCachedValue(publicBrowserStorage(), PUBLIC_LISTINGS_CACHE_KEY, safeItems, Date.now(), 2_000_000);
+}
+
 // ==========================================
 // SUPABASE BAĞLANTI AYARLARI
 // ==========================================
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
     const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    const USE_TURSO_PUBLIC_LISTINGS = import.meta.env.VITE_LISTINGS_BACKEND === 'turso';
+    const USE_TURSO_PUBLIC_ADVERTISEMENTS = import.meta.env.VITE_PUBLIC_ADVERTISEMENTS_BACKEND === 'turso';
+    const SITE_SETTINGS_BACKEND = import.meta.env.VITE_SETTINGS_BACKEND === 'turso' ? 'turso' : 'supabase';
+    const PUBLIC_SETTINGS_READ_BACKEND = import.meta.env.VITE_PUBLIC_SETTINGS_READ_BACKEND === 'turso'
+      ? 'turso'
+      : SITE_SETTINGS_BACKEND;
+    const TURSO_AUTH_ENABLED = import.meta.env.VITE_AUTH_BACKEND === 'turso';
+    const API_BASE = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
+
+    function hasTursoAuthAction() {
+      if (!TURSO_AUTH_ENABLED) return false;
+      const params = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+      return ['verify', 'reset'].includes(params.get('auth_action') || '') &&
+        /^[A-Za-z0-9_-]{43}$/.test(params.get('token') || '');
+    }
 
     const dbHeaders = {
     'apikey': SUPABASE_ANON_KEY,
@@ -58,6 +123,16 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
       : null;
 
     const isCurrentUserAdmin = async () => {
+      if (TURSO_AUTH_ENABLED) {
+        const response = await fetch(`${API_BASE}/api/auth/session`, {
+          credentials: 'same-origin',
+          cache: 'no-store',
+          signal: AbortSignal.timeout(10_000),
+        });
+        if (!response.ok) throw new Error('Yönetici oturumu doğrulanamadı.');
+        const session = await response.json();
+        return session?.is_admin === true;
+      }
       if (!supabaseClient) return false;
       const { data, error } = await supabaseClient.rpc('is_listing_admin');
       if (error) throw error;
@@ -65,41 +140,15 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
     };
 
     const getAdminDbHeaders = async () => {
+      if (TURSO_AUTH_ENABLED) {
+        if (!(await isCurrentUserAdmin())) throw new Error('Bu hesap yönetici yetkisine sahip değil.');
+        return {};
+      }
       if (!supabaseClient) throw new Error('Supabase is not configured');
       const { data, error } = await supabaseClient.auth.getSession();
       if (error || !data.session) throw new Error('An authenticated admin session is required');
       if (!(await isCurrentUserAdmin())) throw new Error('This account is not authorized');
       return { ...dbHeaders, Authorization: 'Bearer ' + data.session.access_token };
-    };
-
-    const LISTING_META_MARKER = '\\n__PAZARTARLA_META_V1__:';
-    const DEFAULT_LISTING_IMAGE = 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800';
-
-    const parseListingMetadata = (rawValue, image) => {
-    const rawTags = typeof rawValue === 'string' ? rawValue : '';
-    const markerIndex = rawTags.lastIndexOf(LISTING_META_MARKER);
-    let seoTags = rawTags;
-    let metadata = {};
-
-    if (markerIndex >= 0) {
-      try {
-        metadata = JSON.parse(decodeURIComponent(rawTags.slice(markerIndex + LISTING_META_MARKER.length)));
-        seoTags = rawTags.slice(0, markerIndex);
-      } catch (error) {
-        metadata = {};
-      }
-    }
-
-    const fallbackImages = image ? [image] : [DEFAULT_LISTING_IMAGE];
-    const images = Array.isArray(metadata.images)
-      ? metadata.images.filter(value => typeof value === 'string' && value.trim())
-      : fallbackImages;
-
-    return {
-      seoTags: seoTags.trim(),
-      images: images.length ? images : fallbackImages,
-      isFeatured: metadata.isFeatured === true
-    };
     };
 
     const ListingDate = ({ value }) => (
@@ -109,7 +158,7 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
     );
 
     const normalizeListing = (item) => {
-    const metadata = parseListingMetadata(item.seotags, item.image);
+    const metadata = readListingMedia(item, SUPABASE_URL);
     const autoTags = [
       item.title?.toLowerCase().split(' ').join(', ') || '',
       item.category?.toLowerCase() || '',
@@ -129,24 +178,15 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
     };
     };
 
-    const serializeListingTags = (item) => {
-    const images = Array.isArray(item.images)
-      ? item.images.filter(value => typeof value === 'string' && value.trim())
-      : [];
-    const savedImages = images.length ? images : (item.image ? [item.image] : []);
-    const metadata = encodeURIComponent(JSON.stringify({
-      images: savedImages,
-      isFeatured: item.isFeatured === true
-    }));
-
-    return String(item.seoTags || '') + LISTING_META_MARKER + metadata;
-    };
-
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
-  const [activeTab, setActiveTab] = useState(()=>storeIdFromUrl(window.location.href)?'store':'home');
-  const [storeId,setStoreId]=useState(()=>storeIdFromUrl(window.location.href));
+  const [activeTab, setActiveTab] = useState(()=>hasTursoAuthAction()?'add':readPublicNavigation(window.location.href).tab);
+  const [linkedListingId,setLinkedListingId]=useState(()=>listingIdFromUrl(window.location.href));
+  const [storeId,setStoreId]=useState(()=>readPublicNavigation(window.location.href).storeId);
+  const [invalidStoreLink,setInvalidStoreLink]=useState(()=>readPublicNavigation(window.location.href).invalidStoreLink);
+  const [membershipPreferredPlan,setMembershipPreferredPlan]=useState('');
+  const homeOpeningAnchorRef = useRef<HTMLDivElement | null>(null);
   const editFormRef = useRef(null);
 
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -155,12 +195,18 @@ export default function App() {
   ]);
   const [chatInput, setChatInput] = useState('');
 
-  const [listings, setListings] = useState([]);
-  const [listingsLoading, setListingsLoading] = useState(true);
+  const [listings, setListings] = useState(() => readPublicListingsCache() || []);
+  const [listingsLoading, setListingsLoading] = useState(() => !readPublicListingsCache());
   const [listingsError, setListingsError] = useState('');
   const [listingNow, setListingNow] = useState(Date.now);
 
-  const siteSettings = useSiteSettings(SUPABASE_URL, SUPABASE_ANON_KEY, getAdminDbHeaders);
+  const siteSettings = useSiteSettings(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY,
+    getAdminDbHeaders,
+    PUBLIC_SETTINGS_READ_BACKEND,
+    SITE_SETTINGS_BACKEND,
+  );
   const categoriesWithSubs = siteSettings.settings?.categories || {};
   const announcement = siteSettings.settings?.announcement || '';
   const requestFeaturedOffer = () => {
@@ -187,14 +233,28 @@ export default function App() {
 
   const [selectedListing, setSelectedListing] = useState(null);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
-  const [analyticsAuthReady, setAnalyticsAuthReady] = useState(false);
+  const adminAccess = useRef(createAdminAccessGate());
+  const listingRefresh = useRef(createListingRefreshGuard());
+  const listingReadInFlight = useRef(false);
+  const lastListingReadAt = useRef(0);
+  const listingFailureCount = useRef(0);
+  const listingRetryAt = useRef(readRetryAt(publicBrowserStorage(), PUBLIC_LISTINGS_RETRY_KEY));
+  const listingSeoCache = useRef(new Map());
+  const listingSeoAttemptAt = useRef(new Map());
+  const listingSeoInFlight = useRef(new Set());
+  const [featuredBusyIds, setFeaturedBusyIds] = useState<number[]>([]);
   const [adminEmail, setAdminEmail] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   const [adminAuthError, setAdminAuthError] = useState('');
   const [adminAuthLoading, setAdminAuthLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('Tüm kategoriler');
   const [selectedSubCategory, setSelectedSubCategory] = useState('Tümü');
-  const [openCategory, setOpenCategory] = useState('');
+  const [homeSearchQuery, setHomeSearchQuery] = useState('');
+  const [regionOpen, setRegionOpen] = useState(false);
+  const [province, setProvince] = useState('');
+  const [district, setDistrict] = useState('');
+  const [sortKey, setSortKey] = useState<SortKey>('default');
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const [newCategoryName, setNewCategoryName] = useState('');
   const [mainCategoryToRemove, setMainCategoryToRemove] = useState('');
@@ -203,19 +263,27 @@ export default function App() {
   const [editingListing, setEditingListing] = useState(null);
   const [ownerEditingId, setOwnerEditingId] = useState(null);
   const [listingEditMessage, setListingEditMessage] = useState('');
+  const [ownerArchiveBusyId, setOwnerArchiveBusyId] = useState(null);
   const [gallerySaving, setGallerySaving] = useState(false);
   const [lastAddedListing, setLastAddedListing] = useState(null);
   const [customCategoryInput, setCustomCategoryInput] = useState('');
   const [submissionSaving, setSubmissionSaving] = useState(false);
+  const [formImageImporting, setFormImageImporting] = useState(false);
+  const [editImageImporting, setEditImageImporting] = useState(false);
   const [submissionError, setSubmissionError] = useState('');
+  const [formOfferRequested, setFormOfferRequested] = useState(false);
+  const [submissionWarning, setSubmissionWarning] = useState('');
+  const postOfferAuthTarget = useRef<number|'offers'|null>(null);
   const submissionAccount = useSubmissionAccount(supabaseClient, SUPABASE_URL, SUPABASE_ANON_KEY, normalizeListing);
+  const offers = useOffers(supabaseClient, submissionAccount.session);
   const storeMembership=useStoreMembership(supabaseClient,SUPABASE_URL,SUPABASE_ANON_KEY,submissionAccount.session,isAdminLoggedIn,storeId);
   const moderation = useModerationQueue(isAdminLoggedIn, SUPABASE_URL, getAdminDbHeaders, normalizeListing);
-  const advertisements = useAdvertisements(supabaseClient, SUPABASE_URL, SUPABASE_ANON_KEY, isAdminLoggedIn, getAdminDbHeaders);
+  const advertisements = useAdvertisements(
+    supabaseClient, SUPABASE_URL, SUPABASE_ANON_KEY, isAdminLoggedIn, getAdminDbHeaders,
+    `${API_BASE}/api/public-listings`, USE_TURSO_PUBLIC_ADVERTISEMENTS
+  );
   const listingArchive = useListingArchive(isAdminLoggedIn, SUPABASE_URL, getAdminDbHeaders);
-  const traffic = useTrafficAnalytics(activeTab, selectedListing?.id,
-    `${activeTab}|${selectedCategory}|${selectedSubCategory}`, isAdminLoggedIn || !analyticsAuthReady);
-  const trafficReport = useTrafficReport(isAdminLoggedIn && activeTab==='statistics', SUPABASE_URL, getAdminDbHeaders);
+  const trafficReport = useTrafficReport(isAdminLoggedIn && activeTab==='statistics');
   const contactDepot = useContactDepot(isAdminLoggedIn && activeTab==='contacts', SUPABASE_URL, getAdminDbHeaders);
   const unsubscribeToken = new URLSearchParams(window.location.search).get('iletisim_cikis');
 
@@ -233,6 +301,19 @@ export default function App() {
     seoTags: '',
     status: 'pending'
   });
+  const photoTargets = useRef({form, editingListing});
+  photoTargets.current = {form, editingListing};
+  const appendImportedPhotos = (target: 'form' | 'editingListing', images: string[]) => {
+    const current = photoTargets.current[target];
+    if (!current || (target === 'editingListing' && current.id !== editingListing?.id)) {
+      throw new Error('Düzenleme kapandı. Fotoğrafı açık olan ilanda yeniden ekleyin.');
+    }
+    const combined = [...(current.images || []), ...images];
+    if (combined.length > 10) throw new Error('En fazla 10 fotoğraf ekleyebilirsiniz.');
+    photoTargets.current[target] = {...current, images: combined};
+    if (target === 'form') setForm(prev => ({...prev, images: combined}));
+    else setEditingListing(prev => prev?.id === current.id ? {...prev, images: combined} : prev);
+  };
 
   useEffect(() => {
     if (!announcementDirty) {
@@ -266,69 +347,149 @@ export default function App() {
   }, [siteSettings.settings, newCategoryName, selectedCategory, selectedSubCategory]);
 
   const fetchListings = async () => {
+      if (listingReadInFlight.current) return false;
+      if (Date.now() < listingRetryAt.current) return false;
+      const readTicket = listingRefresh.current.startRead();
+      if (readTicket === null) return false;
       setListingsLoading(true);
 
-      if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-        setListings([]);
+      if (!USE_TURSO_PUBLIC_LISTINGS && (!SUPABASE_URL || !SUPABASE_ANON_KEY)) {
         setListingsError('Sunucu bağlantı ayarları eksik. İlanlar yüklenemedi.');
+        listingRetryAt.current = Date.now() + 60 * 60_000;
+        writeRetryAt(publicBrowserStorage(), PUBLIC_LISTINGS_RETRY_KEY, listingRetryAt.current);
         setListingsLoading(false);
         return false;
       }
 
+      listingReadInFlight.current = true;
+      lastListingReadAt.current = Date.now();
       try {
-        const url = SUPABASE_URL + '/rest/v1/listings?select=*&status=eq.approved&order=created_at.desc';
-        const response = await fetch(url, { headers: dbHeaders, cache: 'no-store' });
-        if (!response.ok) throw new Error('HTTP ' + response.status);
+        const data = USE_TURSO_PUBLIC_LISTINGS
+          ? await readPublicListingsFromApi()
+          : await readPublicListings(SUPABASE_URL, dbHeaders);
 
-        const data = await response.json();
-        if (!Array.isArray(data)) throw new Error('Invalid listings response');
-
-        setListings(data.map(normalizeListing));
+        if (!listingRefresh.current.canApply(readTicket)) return false;
+        const normalized = listingRefresh.current.reconcile(data).map(normalizeListing);
+        setListings(normalized);
+        savePublicListingsCache(normalized);
+        listingFailureCount.current = 0;
+        listingRetryAt.current = 0;
+        try { publicBrowserStorage()?.removeItem(PUBLIC_LISTINGS_RETRY_KEY); } catch { /* Storage is optional. */ }
         setListingsError('');
         return true;
       } catch (error) {
+        if (!listingRefresh.current.canApply(readTicket)) return false;
         console.error('İlanlar sunucudan alınamadı:', error);
-        setListings([]);
-        setListingsError('İlanlar sunucudan yüklenemedi. Lütfen yeniden deneyin.');
+        const retry = ++listingFailureCount.current;
+        const fallbackDelay = backoffDelayMs(retry, 15_000, 15 * 60_000);
+        const serverDelay = Number((error as Error & { retryAfterMs?: number })?.retryAfterMs) || 0;
+        listingRetryAt.current = Date.now() + Math.min(60 * 60_000, Math.max(fallbackDelay, serverDelay));
+        writeRetryAt(publicBrowserStorage(), PUBLIC_LISTINGS_RETRY_KEY, listingRetryAt.current);
+        setListingsError('İlanlar geçici olarak güncellenemedi; son alınan veriler korunuyor.');
         return false;
       } finally {
-        setListingsLoading(false);
+        listingReadInFlight.current = false;
+        if (listingRefresh.current.canApply(readTicket)) setListingsLoading(false);
       }
     };
 
   useEffect(() => {
     const splashTimer = window.setTimeout(() => setShowSplash(false), 1200);
-    void fetchListings();
+    if (Date.now() < listingRetryAt.current) {
+      setListingsLoading(false);
+      if (listings.length === 0) setListingsError('İlanlar geçici olarak görüntülenemiyor; otomatik deneme bekleniyor.');
+    } else {
+      void fetchListings();
+    }
     return () => window.clearTimeout(splashTimer);
   }, []);
   useEffect(() => {
     const visible = () => {
-      if (document.visibilityState === 'visible') { setListingNow(Date.now()); void fetchListings(); }
+      if (document.visibilityState !== 'visible') return;
+      const now = Date.now();
+      setListingNow(now);
+      if (automaticRefreshDue(lastListingReadAt.current, now)) void fetchListings();
     };
-    // Check already-loaded expiry timestamps without repeatedly downloading galleries.
     const timer = window.setInterval(() => setListingNow(Date.now()), 60_000);
+    const refreshTimer = window.setInterval(visible, AUTOMATIC_REFRESH_INTERVAL_MS);
     window.addEventListener('focus', visible);
     document.addEventListener('visibilitychange', visible);
     return () => {
-      window.clearInterval(timer); window.removeEventListener('focus', visible);
+      window.clearInterval(timer); window.clearInterval(refreshTimer);
+      window.removeEventListener('focus', visible);
       document.removeEventListener('visibilitychange', visible);
     };
   }, []);
 
   useEffect(() => {
+    const selected = selectedListing;
+    if (!selected || selected.seotags !== undefined) return;
+    const id = Number(selected.id);
+    if (!Number.isSafeInteger(id) || id < 1) return;
+    if (listingSeoCache.current.has(id)) {
+      const seotags = listingSeoCache.current.get(id);
+      setSelectedListing(current => current?.id === id && current.seotags === undefined
+        ? normalizeListing({ ...current, seotags }) : current);
+      return;
+    }
+    if (listingSeoInFlight.current.has(id) ||
+        !automaticRefreshDue(listingSeoAttemptAt.current.get(id) || 0)) return;
+    listingSeoInFlight.current.add(id);
+    listingSeoAttemptAt.current.set(id, Date.now());
+    void (async () => {
+      try {
+        let seotags;
+        if (USE_TURSO_PUBLIC_LISTINGS) {
+          seotags = await readListingSeoFromApi(id);
+        } else {
+          const response = await fetch(listingSeoMetadataUrl(SUPABASE_URL, id), {
+            headers: dbHeaders,
+            cache: 'no-store',
+            signal: AbortSignal.timeout(15_000),
+          });
+          if (!response.ok) throw new Error('HTTP ' + response.status);
+          const rows = await response.json();
+          if (!Array.isArray(rows) || rows.length > 1) throw new Error('Invalid listing metadata response');
+          seotags = rows[0]?.seotags ?? null;
+        }
+        listingSeoCache.current.set(id, seotags);
+        setSelectedListing(current => current?.id === id
+          ? normalizeListing({ ...current, seotags }) : current);
+        setListings(current => current.map(item => item.id === id
+          ? normalizeListing({ ...item, seotags }) : item));
+      } catch {
+        // The detail page keeps generated tags if optional legacy metadata cannot load.
+      } finally {
+        listingSeoInFlight.current.delete(id);
+      }
+    })();
+  }, [selectedListing?.id]);
+
+  useEffect(() => {
+    if (TURSO_AUTH_ENABLED) {
+      adminAccess.current.clear();
+      setIsAdminLoggedIn(false);
+      return;
+    }
     if (!supabaseClient) return;
     let active = true;
     const syncAdminState = async (session) => {
-      if (active) setAnalyticsAuthReady(false);
-      if (!session) {
-        if (active) { setIsAdminLoggedIn(false);setAnalyticsAuthReady(true); }
+      if (!adminAccess.current.allows(session)) {
+        if (adminAccess.current.granted) adminAccess.current.clear();
+        if (active) setIsAdminLoggedIn(false);
         return;
       }
+      const ticket = adminAccess.current.generation;
       try {
         const authorized = await isCurrentUserAdmin();
-        if (active) { setIsAdminLoggedIn(authorized);setAnalyticsAuthReady(true); }
+        if (active && ticket === adminAccess.current.generation && adminAccess.current.allows(session)) {
+          if (!authorized) adminAccess.current.clear();
+          setIsAdminLoggedIn(authorized);
+        }
       } catch (error) {
-        if (active) setIsAdminLoggedIn(false);
+        if (active && ticket === adminAccess.current.generation) {
+          adminAccess.current.clear();setIsAdminLoggedIn(false);
+        }
       }
     };
 
@@ -350,20 +511,39 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-      const refreshVisibleListings = () => {
-        if (document.visibilityState === 'visible') void fetchListings();
-      };
-
-      window.addEventListener('focus', refreshVisibleListings);
-      document.addEventListener('visibilitychange', refreshVisibleListings);
-      const interval = window.setInterval(refreshVisibleListings, 60_000);
-
-      return () => {
-        window.removeEventListener('focus', refreshVisibleListings);
-        document.removeEventListener('visibilitychange', refreshVisibleListings);
-        window.clearInterval(interval);
-      };
-    }, []);
+    if (!TURSO_AUTH_ENABLED || !isAdminLoggedIn) return;
+    let active = true;
+    const checkAdminSession = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/api/auth/session`, {
+          credentials: 'same-origin',
+          cache: 'no-store',
+          headers: { Accept: 'application/json' },
+        });
+        const session = await response.json().catch(() => ({}));
+        const reauthAt = Date.parse(session?.admin_reauth_at || '');
+        const valid = response.ok && session?.is_admin === true &&
+          Number.isFinite(reauthAt) && Date.now() >= reauthAt &&
+          Date.now() - reauthAt <= 15 * 60 * 1000;
+        if (active && !valid) setIsAdminLoggedIn(false);
+      } catch {
+        if (active) setIsAdminLoggedIn(false);
+      }
+    };
+    void checkAdminSession();
+    const interval = window.setInterval(checkAdminSession, 30_000);
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void checkAdminSession();
+    };
+    window.addEventListener('focus', onVisible);
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+      window.removeEventListener('focus', onVisible);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [isAdminLoggedIn]);
 
     const refreshCanonicalListings = async () => {
       if (!isAdminLoggedIn) return;
@@ -372,32 +552,84 @@ export default function App() {
     };
     
   useEffect(() => {
-    window.history.replaceState({ tab: storeIdFromUrl(window.location.href)?'store':'home' }, '');
+    window.history.replaceState({ ...window.history.state, tab: readPublicNavigation(window.location.href).tab }, '');
     const handlePopState = (event) => {
-      if (event.state && event.state.tab) {
-        setActiveTab(event.state.tab);
-      } else {
-        setActiveTab('home');
-      }
+      const route=readPublicNavigation(window.location.href,event.state);
+      setLinkedListingId(route.listingId);
+      setStoreId(route.storeId);
+      setInvalidStoreLink(route.invalidStoreLink);
+      setSelectedListing(null);
+      setActiveTab(route.tab);
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   const changeTab = (tabName) => {
-    const url=new URL(window.location.href);url.searchParams.delete('magaza');
+    const url=new URL(window.location.href);url.searchParams.delete('magaza');url.searchParams.delete('ilan');
+    url.searchParams.delete('teklifler');
+    url.searchParams.delete('hakkimizda');
+    const adminPath = `${API_BASE}/admin` || '/admin';
+    const appRootPath = `${API_BASE}/` || '/';
+    if (tabName === 'admin-page') url.pathname = adminPath;
+    else if (url.pathname.replace(/\/+$/, '') === adminPath) url.pathname = appRootPath;
+    if(tabName==='about')url.searchParams.set('hakkimizda','1');
+    if(tabName==='offers')url.searchParams.set('teklifler','1');
     window.history.pushState({ tab: tabName }, '',url);
+    setLinkedListingId(null);
     setStoreId(null);
+    setInvalidStoreLink(false);
     setActiveTab(tabName);
   };
   const openStore=(id:string)=>{
-    const url=new URL(window.location.href);url.searchParams.set('magaza',id);
-    window.history.pushState({tab:'store'},'',url);setStoreId(id);setActiveTab('store');
+    const url=storeUrl(id,window.location.href,true);
+    setLinkedListingId(null);
+    setInvalidStoreLink(false);
+    window.history.pushState({tab:'store'},'',url);setStoreId(readPublicNavigation(url).storeId);setActiveTab('store');
+  };
+
+  const openListing=(row)=>{
+    const url=new URL(window.location.href);
+    url.searchParams.delete('magaza');url.searchParams.set('ilan',String(row.id));
+    url.searchParams.delete('teklifler');
+    window.history.pushState({tab:'detail'},'',url);
+    setLinkedListingId(null);setStoreId(null);setInvalidStoreLink(false);setSelectedListing(row);setActiveTab('detail');
+  };
+  const signInForOffers = () => {
+    setFormOfferRequested(false);
+    postOfferAuthTarget.current = activeTab==='detail' && selectedListing ? selectedListing.id : 'offers';
+    changeTab('add');
+  };
+  const createOfferListing = () => {
+    setFormOfferRequested(true);
+    changeTab('add');
   };
   useEffect(()=>{
-    const syncStore=()=>{const id=storeIdFromUrl(window.location.href);setStoreId(id);if(id)setActiveTab('store');};
-    window.addEventListener('popstate',syncStore);return()=>window.removeEventListener('popstate',syncStore);
-  },[]);
+    if(!submissionAccount.session || postOfferAuthTarget.current===null)return;
+    const target=postOfferAuthTarget.current;
+    postOfferAuthTarget.current=null;
+    const row=target!=='offers'&&(selectedListing?.id===target?selectedListing:listings.find(item=>item.id===target));
+    if(row)openListing(row);else changeTab('offers');
+  },[submissionAccount.session?.user.id]);
+  useEffect(()=>{
+    if(!linkedListingId||listingsLoading||listingsError)return;
+    setSelectedListing(findSharedListing(listings, linkedListingId));
+  },[linkedListingId,listings,listingsLoading,listingsError]);
+  const copyListingShare=async(text:string,message:string)=>{
+    try{await navigator.clipboard.writeText(text);alert(message);}
+    catch{alert('Kopyalanamadı. Aşağıda görünen ilan bağlantısını elle kopyalayabilirsiniz.');}
+  };
+  const copyPhotoAddress=async(address:string|null)=>{
+    if(!address)return;
+    try{
+      if(!navigator.clipboard?.writeText)throw new Error('Clipboard unavailable');
+      await navigator.clipboard.writeText(address);
+      alert('Fotoğraf adresi kopyalandı.');
+    }catch{
+      alert('Fotoğraf adresi kopyalanamadı. Görünen adresi seçip elle kopyalayabilirsiniz.');
+    }
+  };
+  const selectedPhotoAddress=selectedListing?listingPhotoAddress(selectedListing,window.location.href):null;
 
   const handleSendMessage = (e) => {
     e.preventDefault();
@@ -452,31 +684,20 @@ export default function App() {
     });
   };
 
-  const handleMultipleImageUpload = (e) => {
+  const handleMultipleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
+    e.target.value='';
+    if(submissionSaving)return;
     if (files.length === 0) return;
     const currentCount = form.images.length;
     if (currentCount + files.length > 10) {
       alert('En fazla 10 adet fotoğraf yükleyebilirsiniz!');
       return;
     }
-    let loadedCount = 0;
-    const newImages = [...form.images];
-    files.forEach(file => {
-      if (file.size > 2 * 1024 * 1024) {
-        alert(`"${file.name}" 2 MB sınırını aştığı için eklenmedi.`);
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        newImages.push(reader.result);
-        loadedCount++;
-        if (loadedCount === files.length || newImages.length <= 10) {
-          setForm(prev => ({ ...prev, images: newImages.slice(0, 10) }));
-        }
-      };
-      reader.readAsDataURL(file);
-    });
+    try {
+      const images=await listingFilePreviews(files);
+      setForm(prev=>prev.images.length+images.length<=10?{...prev,images:[...prev.images,...images]}:prev);
+    }catch(error){alert(error.message);}
   };
 
   const removeFormImage = (index) => {
@@ -486,31 +707,22 @@ export default function App() {
     }));
   };
 
-  const handleEditMultipleImageUpload = (e) => {
+  const handleEditMultipleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
+    e.target.value='';
+    if(gallerySaving)return;
+    const editId=editingListing.id;
     if (files.length === 0) return;
     const currentCount = (editingListing.images || []).length;
     if (currentCount + files.length > 10) {
       alert('En fazla 10 adet fotoğraf yükleyebilirsiniz!');
       return;
     }
-    let loadedCount = 0;
-    const newImages = [...(editingListing.images || [])];
-    files.forEach(file => {
-      if (file.size > 2 * 1024 * 1024) {
-        alert(`"${file.name}" 2 MB sınırını aştığı için eklenmedi.`);
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        newImages.push(reader.result);
-        loadedCount++;
-        if (loadedCount === files.length || newImages.length <= 10) {
-          setEditingListing(prev => ({ ...prev, images: newImages.slice(0, 10) }));
-        }
-      };
-      reader.readAsDataURL(file);
-    });
+    try {
+      const images=await listingFilePreviews(files);
+      setEditingListing(prev=>prev?.id===editId && prev.images.length+images.length<=10
+        ?{...prev,images:[...prev.images,...images]}:prev);
+    }catch(error){alert(error.message);}
   };
 
   const removeEditImage = (index) => {
@@ -522,7 +734,7 @@ export default function App() {
 
   const handleDirectAdd = async (e) => {
       e.preventDefault();
-      if (submissionSaving) return;
+      if (submissionSaving || formImageImporting) return;
       setSubmissionError('');
       if (!siteSettings.settings || siteSettings.loading || siteSettings.loadError) {
         setSubmissionError('Kategori ayarları yüklenemedi. Önce site ayarlarını yeniden yükleyin.');
@@ -560,44 +772,105 @@ export default function App() {
 
       try {
         setSubmissionSaving(true);
-        const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
-        if (sessionError || !sessionData.session) throw new Error('LISTING_VERIFIED_ACCOUNT_REQUIRED');
-        const response = await fetch(SUPABASE_URL + '/rest/v1/listings', {
-          method: 'POST',
-          headers: { ...dbHeaders, Authorization: 'Bearer ' + sessionData.session.access_token, 'Prefer': 'return=representation' },
-          body: JSON.stringify({
-            title: newEntry.title,
-            price: newEntry.price,
-            category: newEntry.category,
-            subCategory: newEntry.subCategory,
-            mode: newEntry.mode,
-            location: newEntry.location,
-            description: newEntry.description,
-            seller: newEntry.seller,
-            phone: newEntry.phone,
-            image: newEntry.image,
-            seotags: serializeListingTags(newEntry),
-            status: 'pending'
-          })
-        });
-        if (!response.ok) {
-          const problem = await response.json().catch(() => ({}));
-          throw new Error(problem.message || ('HTTP ' + response.status));
+        let savedListing;
+        if (TURSO_AUTH_ENABLED) {
+          if (submissionAccount.session?.backend !== 'turso') {
+            throw new Error('LISTING_VERIFIED_ACCOUNT_REQUIRED');
+          }
+          const media = await persistTursoListingImages(newEntry.images, {
+            userId: submissionAccount.session.user.id,
+            endpoint: `${API_BASE}/api/listing-media`,
+          });
+          setForm(current => ({...current, images: media.images}));
+          const response = await fetch(`${API_BASE}/api/submissions`, {
+            method: 'POST',
+            credentials: 'same-origin',
+            cache: 'no-store',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify({
+              title: newEntry.title,
+              price: newEntry.price,
+              category: newEntry.category,
+              subCategory: newEntry.subCategory,
+              mode: newEntry.mode,
+              location: newEntry.location,
+              description: newEntry.description,
+              seller: newEntry.seller,
+              phone: newEntry.phone,
+              images: media.images,
+              seoTags: newEntry.seoTags,
+              offerRequested: formOfferRequested,
+            }),
+          });
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(String(result?.error || 'LISTING_SAVE_FAILED'));
+          if (!result?.listing) throw new Error('LISTING_SAVE_FAILED');
+          savedListing = normalizeListing(result.listing);
+        } else {
+          const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+          if (sessionError || !sessionData.session) throw new Error('LISTING_VERIFIED_ACCOUNT_REQUIRED');
+          const media = await persistListingImages(newEntry.images, {
+            client: supabaseClient, baseUrl: SUPABASE_URL, userId: sessionData.session.user.id
+          });
+          setForm(current => ({...current, images: media.images}));
+          const response = await fetch(SUPABASE_URL + '/rest/v1/listings', {
+            method: 'POST',
+            headers: { ...dbHeaders, Authorization: 'Bearer ' + sessionData.session.access_token, 'Prefer': 'return=representation' },
+            body: JSON.stringify({
+              title: newEntry.title,
+              price: newEntry.price,
+              category: newEntry.category,
+              subCategory: newEntry.subCategory,
+              mode: newEntry.mode,
+              location: newEntry.location,
+              description: newEntry.description,
+              seller: newEntry.seller,
+              phone: newEntry.phone,
+              image: media.image,
+              gallery_paths: media.gallery_paths,
+              is_featured: false,
+              seotags: newEntry.seoTags,
+              status: 'pending'
+            })
+          });
+          if (!response.ok) {
+            const problem = await response.json().catch(() => ({}));
+            throw new Error(problem.message || ('HTTP ' + response.status));
+          }
+          const rows = await response.json();
+          if (!Array.isArray(rows) || !rows[0]) throw new Error('Sunucu ilanı kaydetmedi.');
+          assertSavedMedia(rows[0],{gallery_paths:media.gallery_paths,image:media.image,is_featured:false,seotags:newEntry.seoTags});
+          savedListing = normalizeListing(rows[0]);
         }
-        const rows = await response.json();
-        if (!Array.isArray(rows) || !rows[0]) throw new Error('Sunucu ilanı kaydetmedi.');
-
-        const savedListing = normalizeListing(rows[0]);
         setListingsError('');
         setLastAddedListing(savedListing);
+        setSubmissionWarning('');
+        if(formOfferRequested && !TURSO_AUTH_ENABLED){
+          try {
+            const result=await supabaseClient.rpc('set_listing_offer_enabled',{p_listing_id:savedListing.id,p_enabled:true});
+            if(result.error || result.data?.ok!==true)throw new Error('OFFER_SETTINGS_FAILED');
+            await offers.refresh();
+          } catch {
+            setSubmissionWarning('İlanınız kaydedildi; teklif alma açılamadı. İlanı tekrar göndermeyin. Gönderimlerim bölümünden bu ilanın teklif ayarını yeniden açabilirsiniz.');
+          }
+        }
         await submissionAccount.refresh();
         if (isAdminLoggedIn) await moderation.refresh();
         setForm(current => ({ ...current, title: '', price: '', description: '', seoTags: '', images: [DEFAULT_LISTING_IMAGE], status: 'pending' }));
+        setFormOfferRequested(false);
         changeTab('success-wa');
       } catch (error) {
         const reason = String(error?.message || '');
-        setSubmissionError(reason.includes('LISTING_MONTHLY_LIMIT_REACHED')?'Aylık paket ilan kotanız doldu. Yeni dönem için üyelik süresi sonunda ödeme ve yönetici onayı gerekir.':reason.includes('LISTING_ACTIVE_LIMIT_REACHED')?'Paketinizin aktif ilan kapasitesi dolu. Onay bekleyen ilanlar da yer ayırır; mevcut kayıtlarınız korunuyor.':reason.includes('LISTING_DAILY_LIMIT_REACHED')
-          ? '24 saatlik 3 ilan sınırına ulaştınız. Kotanız yenilendiğinde tekrar gönderebilirsiniz.'
+        setSubmissionError(reason.includes('LISTING_MEDIA_STORAGE_REQUIRED')
+          ? 'Fotoğraf yükleme henüz açılmadı. Vercel fotoğraf deposu bağlandığında tekrar deneyebilirsiniz; formunuz korundu.'
+          : reason.includes('LISTING_MEDIA_RETRY_LATER') || reason.includes('LISTING_MEDIA_UNAVAILABLE')
+          ? 'Fotoğraf servisi geçici olarak yanıt vermiyor. İstekler azaltıldı; birkaç dakika sonra yeniden deneyin. Formunuz korundu.'
+          : reason.includes('LISTING_IMAGE_INVALID') || reason.includes('LISTING_IMAGE_TOO_LARGE')
+          ? 'Fotoğraflardan biri geçersiz veya 2 MB sınırını aşıyor. Formunuz korundu.'
+          : reason.includes('gallery_paths') || reason.includes('is_featured') || reason.includes('Bucket not found')
+          ?'Fotoğraf depolama geçişi sunucuda henüz etkinleştirilmemiş. Formunuz korunuyor; yöneticiyle iletişime geçin.'
+          :reason.includes('LISTING_MONTHLY_LIMIT_REACHED')?'Aylık paket ilan kotanız doldu. Yeni dönem için üyelik süresi sonunda ödeme ve yönetici onayı gerekir.':reason.includes('LISTING_ACTIVE_LIMIT_REACHED')?'Paketinizin aktif ilan kapasitesi dolu. Onay bekleyen ilanlar da yer ayırır; mevcut kayıtlarınız korunuyor.':reason.includes('LISTING_DAILY_LIMIT_REACHED')
+          ? '24 saatlik 10 ilan sınırına ulaştınız. Kotanız yenilendiğinde tekrar gönderebilirsiniz.'
           : reason.includes('LISTING_VERIFIED_ACCOUNT_REQUIRED')
             ? 'İlan göndermek için doğrulanmış e-posta hesabınızla giriş yapın.'
             : 'İlan onaya gönderilemedi. Formunuz korunuyor; bağlantınızı ve kotanızı kontrol edip yeniden deneyin.');
@@ -617,28 +890,23 @@ export default function App() {
       if (!isAdminLoggedIn) return;
       const target = listings.find(item => item.id === id);
       if (!target) return;
+      if (!listingRefresh.current.beginWrite(id)) return;
+      setListingsLoading(false);
+      setFeaturedBusyIds(ids => [...ids, id]);
 
       try {
-        const snapshot=await supabaseClient.rpc('get_listing_for_edit',{p_listing_id:id});
-        if(snapshot.error)throw snapshot.error;
-        if(snapshot.data?.listing?.id!==id || !/^[a-f0-9]{64}$/.test(snapshot.data.edit_token))throw new Error('Invalid snapshot');
-        const fresh=normalizeListing(snapshot.data.listing);
-        const updatedListing={...fresh,isFeatured:!fresh.isFeatured};
-        const {data,error}=await supabaseClient.rpc('update_listing_media',{
-          p_listing_id:id,p_edit_token:snapshot.data.edit_token,
-          p_changes:{seotags:serializeListingTags(updatedListing)}
-        });
-        if(error)throw error;
-        if(data?.listing?.id!==id)throw new Error('Sunucu vitrin durumunu kaydetmedi.');
-
-        const savedListing = normalizeListing(data.listing);
+        const savedListing = normalizeListing(await setListingFeatured(supabaseClient,id,!target.isFeatured));
+        listingRefresh.current.rememberFeatured(id, savedListing.isFeatured);
         setListings(currentListings => savedListing.status==='approved'
           ?currentListings.map(item => item.id === id ? savedListing : item)
           :currentListings.filter(item=>item.id!==id));
         setListingsError('');
       } catch (error) {
         console.error('Vitrin durumu kaydedilemedi:', error);
-        alert(editError(error));
+        alert(featuredError(error));
+      } finally {
+        listingRefresh.current.endWrite(id);
+        setFeaturedBusyIds(ids => ids.filter(value => value !== id));
       }
     };
 
@@ -649,8 +917,20 @@ export default function App() {
       return;
     }
     try {
-      const {data,error}=await supabaseClient.rpc('get_listing_for_edit',{p_listing_id:item.id});
-      if(error)throw error;
+      let data;
+      if (TURSO_AUTH_ENABLED) {
+        const response = await fetch(`${API_BASE}/api/listing-moderation?id=${encodeURIComponent(item.id)}`, {
+          credentials: 'same-origin',
+          cache: 'no-store',
+          headers: { Accept: 'application/json' },
+        });
+        data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(String(data?.error || 'LISTING_EDIT_FORBIDDEN'));
+      } else {
+        const result = await supabaseClient.rpc('get_listing_for_edit', { p_listing_id: item.id });
+        if (result.error) throw result.error;
+        data = result.data;
+      }
       if(data?.listing?.id!==item.id || !/^[a-f0-9]{64}$/.test(data.edit_token))throw new Error('Invalid edit snapshot');
       setEditingListing({...normalizeListing(data.listing),_editToken:data.edit_token});
       changeTab('admin-page');
@@ -663,6 +943,48 @@ export default function App() {
     setOwnerEditingId(item.id);
     setListingEditMessage('');
     changeTab('edit-listing');
+  };
+  const changeOwnerListingArchive = async (item) => {
+    if (!TURSO_AUTH_ENABLED || !submissionAccount.session || ownerArchiveBusyId !== null) return;
+    const action = item.status === 'archived' ? 'restore' : 'archive';
+    const confirmation = action === 'archive'
+      ? 'İlan canlı listeden kaldırılacak. İlan ve fotoğraflar silinmez; daha sonra geri açarsanız yönetici onayı gerekir. Devam edilsin mi?'
+      : 'İlan yeniden yönetici incelemesine gönderilecek ve onaylanana kadar yayında olmayacak. Devam edilsin mi?';
+    if (!window.confirm(confirmation)) return;
+    setOwnerArchiveBusyId(Number(item.id));
+    setListingEditMessage('');
+    try {
+      const path = `${API_BASE}/api/listing-owner?id=${encodeURIComponent(item.id)}`;
+      const snapshotResponse = await fetch(path, {
+        credentials: 'same-origin', cache: 'no-store',
+        headers: { Accept: 'application/json' },
+      });
+      const snapshot = await snapshotResponse.json().catch(() => ({}));
+      if (!snapshotResponse.ok || snapshot?.listing?.submitted_by !== submissionAccount.session.user.id ||
+          !/^[a-f0-9]{64}$/.test(snapshot?.edit_token || '')) {
+        throw new Error('İlan sahipliği doğrulanamadı. Listeyi yenileyip tekrar deneyin.');
+      }
+      const response = await fetch(`${API_BASE}/api/listing-owner`, {
+        method: 'POST', credentials: 'same-origin', cache: 'no-store',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          action, id: item.id, edit_token: snapshot.edit_token,
+        }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || String(result?.listing?.id) !== String(item.id) ||
+          result.listing.status !== (action === 'archive' ? 'archived' : 'pending')) {
+        throw new Error('İlan durumu sunucudan doğrulanamadı. Listeyi yenileyip tekrar deneyin.');
+      }
+      setListingEditMessage(action === 'archive'
+        ? 'İlan arşive alındı. Kayıt ve fotoğraflar korunuyor.'
+        : 'İlan yeniden incelemeye gönderildi. Yayına dönmesi için yönetici onayı gerekir.');
+      await Promise.all([submissionAccount.refresh(), offers.refresh(), fetchListings()]);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'İlan durumu güncellenemedi.');
+    } finally {
+      setOwnerArchiveBusyId(null);
+    }
   };
   useEffect(() => {
     setOwnerEditingId(null);
@@ -684,7 +1006,7 @@ export default function App() {
 
   const saveEditedListing = async (e) => {
       e.preventDefault();
-      if (!isAdminLoggedIn || gallerySaving) return;
+      if (!isAdminLoggedIn || gallerySaving || editImageImporting) return;
 
       const primaryImage = (editingListing.images && editingListing.images[0]) || editingListing.image || DEFAULT_LISTING_IMAGE;
       const updatedListing = {
@@ -702,12 +1024,57 @@ export default function App() {
 
       try {
         setGallerySaving(true);
+        if (TURSO_AUTH_ENABLED) {
+          const session = submissionAccount.session;
+          if (!session || session.backend !== 'turso') throw new Error('LISTING_EDIT_FORBIDDEN');
+          const media = await persistTursoListingImages(updatedListing.images, {
+            userId: session.user.id,
+            endpoint: `${API_BASE}/api/listing-media`,
+          });
+          setEditingListing(current=>({...current,images:media.images}));
+          const response = await fetch(`${API_BASE}/api/listing-moderation`, {
+            method: 'POST',
+            credentials: 'same-origin',
+            cache: 'no-store',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify({
+              id: updatedListing.id,
+              decision: 'edit_media',
+              edit_token: editingListing._editToken,
+              changes: {
+                image: media.image,
+                gallery_paths: media.gallery_paths,
+                seotags: updatedListing.seoTags,
+              },
+            }),
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(String(data?.error || 'LISTING_MEDIA_UPDATE_FAILED'));
+          if(data?.listing?.id!==updatedListing.id)throw new Error('Sunucu galeri değişikliğini doğrulamadı.');
+          assertSavedMedia(data.listing,{image:media.image,gallery_paths:media.gallery_paths,seotags:updatedListing.seoTags});
+          const savedListing = normalizeListing(data.listing);
+          setListings(currentListings => savedListing.status==='approved'
+            ?currentListings.map(item => item.id === savedListing.id ? savedListing : item)
+            :currentListings.filter(item=>item.id!==savedListing.id));
+          setListingsError('');
+          setEditingListing(null);
+          alert('Galeri / SEO güncellendi. İlan metni ve fiyatı değiştirilmedi.');
+          changeTab('home');
+          return;
+        }
+        const {data:sessionData,error:sessionError}=await supabaseClient.auth.getSession();
+        if(sessionError || !sessionData.session)throw new Error('LISTING_EDIT_FORBIDDEN');
+        const media=await persistListingImages(updatedListing.images,{
+          client:supabaseClient,baseUrl:SUPABASE_URL,userId:sessionData.session.user.id
+        });
+        setEditingListing(current=>({...current,images:media.images}));
         const {data,error} = await supabaseClient.rpc('update_listing_media',{
           p_listing_id:updatedListing.id,p_edit_token:editingListing._editToken,
-          p_changes:{image:updatedListing.image,seotags:serializeListingTags(updatedListing)}
+          p_changes:{image:media.image,gallery_paths:media.gallery_paths,seotags:updatedListing.seoTags}
         });
         if (error) throw error;
         if(data?.listing?.id!==updatedListing.id)throw new Error('Sunucu galeri değişikliğini doğrulamadı.');
+        assertSavedMedia(data.listing,{image:media.image,gallery_paths:media.gallery_paths,seotags:updatedListing.seoTags});
 
         const savedListing = normalizeListing(data.listing);
         setListings(currentListings => savedListing.status==='approved'
@@ -728,7 +1095,7 @@ export default function App() {
       if (!window.confirm('Bu ilanı silmek istediğinize emin misiniz?')) return;
 
       try {
-        await deleteAdminListing(SUPABASE_URL, await getAdminDbHeaders(), id);
+        await deleteAdminListing(SUPABASE_URL, await getAdminDbHeaders(), id, TURSO_AUTH_ENABLED);
 
         setListings(currentListings => currentListings.filter(item => item.id !== id));
         setListingsError('');
@@ -798,19 +1165,40 @@ export default function App() {
       setAdminAuthError('E-posta ve parola gerekli.');
       return;
     }
-    if (!supabaseClient) {
+    if (!TURSO_AUTH_ENABLED && !supabaseClient) {
       setAdminAuthError('Giriş hizmeti yapılandırılmamış.');
       return;
     }
 
     setAdminAuthLoading(true);
+    const loginTicket = adminAccess.current.clear();
+    setIsAdminLoggedIn(false);
     try {
-      const { error } = await supabaseClient.auth.signInWithPassword({ email, password: adminPassword });
+      if (TURSO_AUTH_ENABLED) {
+        const response = await fetch(`${API_BASE}/api/auth/admin-login`, {
+          method: 'POST',
+          credentials: 'same-origin',
+          cache: 'no-store',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ email, password: adminPassword }),
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || result?.is_admin !== true || result?.admin_login !== true) {
+          throw new Error('Not authorized');
+        }
+        await submissionAccount.refresh();
+        setIsAdminLoggedIn(true);
+        return;
+      }
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: adminPassword });
       if (error) throw error;
       if (!(await isCurrentUserAdmin())) {
         await supabaseClient.auth.signOut();
         throw new Error('Not authorized');
       }
+      const current = await supabaseClient.auth.getSession();
+      if (current.error || current.data.session?.user?.id !== data.user?.id ||
+          !adminAccess.current.grant(data.user?.id, loginTicket)) throw new Error('Session changed');
       setIsAdminLoggedIn(true);
     } catch (error) {
       console.error('Yönetici girişi başarısız.');
@@ -823,22 +1211,96 @@ export default function App() {
   };
 
   const handleAdminLogout = async () => {
-    if (supabaseClient) await supabaseClient.auth.signOut();
+    adminAccess.current.clear();
     setIsAdminLoggedIn(false);
     setAdminAuthError('');
+    if (TURSO_AUTH_ENABLED) {
+      try {
+        const response = await fetch(`${API_BASE}/api/auth/logout`, {
+          method: 'POST',
+          credentials: 'same-origin',
+          cache: 'no-store',
+        });
+        if (!response.ok) throw new Error('LOGOUT_FAILED');
+        await submissionAccount.refresh();
+      } catch {
+        setAdminAuthError('Panel kilitlendi; oturumu sonlandırmak için bağlantınızı kontrol edin.');
+      }
+    } else if (supabaseClient) {
+      try {
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) throw error;
+      }
+      catch { setAdminAuthError('Panel kilitlendi; oturumu sonlandırmak için bağlantınızı kontrol edin.'); }
+    }
   };
 
   const approvedListings = listings.filter(item => item.status === 'approved' && !isListingArchived(item, listingNow));
   const featuredListings = approvedListings.filter(item => item.isFeatured === true);
   const regularApprovedListings = approvedListings.filter(item => !item.isFeatured);
 
-  const filteredListings = (selectedCategory === 'Tüm kategoriler' && selectedSubCategory === 'Tümü')
+  const categoryFilteredListings = (selectedCategory === 'Tüm kategoriler' && selectedSubCategory === 'Tümü')
     ? [...featuredListings, ...regularApprovedListings]
     : approvedListings.filter(item => {
         const matchesCategory = selectedCategory === 'Tüm kategoriler' || item.category === selectedCategory;
         const matchesSubCategory = selectedSubCategory === 'Tümü' || item.subCategory === selectedSubCategory;
         return matchesCategory && matchesSubCategory;
       });
+  const filteredListings = sortListings(
+    categoryFilteredListings.filter(item =>
+      matchesSearch(item, homeSearchQuery) && matchesLocation(item.location, province, district)),
+    sortKey,
+  );
+  const locationChoices = locationOptions(approvedListings, province);
+  const homeFeaturedListings = filteredListings.filter(item => item.isFeatured === true);
+  const homeRegularListings = filteredListings.filter(item => !item.isFeatured);
+  const homeVisibleListings = homeRegularListings.slice(0, 6);
+  const isListingDataLoading = listingsLoading && listings.length === 0;
+  const hasListingLoadError = Boolean(listingsError) && listings.length === 0;
+  const homeListingState = isListingDataLoading ? 'loading'
+    : hasListingLoadError ? 'error'
+      : homeRegularListings.length ? 'listings'
+        : approvedListings.length === 0 ? 'empty' : 'filtered-empty';
+  const goSection = (id: string) => {
+    if (activeTab !== 'home') changeTab('home');
+    window.setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
+  };
+  const menuMain: HomeMenuAction[] = [
+    { key: 'account', label: 'Üye Ol / Giriş Yap', onSelect: () => changeTab('add') },
+    { key: 'nearby', label: 'Bana yakın', onSelect: () => setRegionOpen(true) },
+    { key: 'about', label: 'Hakkımızda', onSelect: () => changeTab('about') },
+    { key: 'offers', label: 'Teklif Pazarı', onSelect: () => changeTab('offers') },
+    { key: 'memberships', label: 'Mağaza Paketleri', onSelect: () => changeTab('memberships') },
+    { key: 'store', label: 'Mağazam', onSelect: storeMembership.data?.mine?.store
+      ? () => openStore(storeMembership.data!.mine!.store!.id)
+      : undefined, note: 'Adınıza kayıtlı bir mağaza bulunamadı.' },
+    { key: 'add', label: 'İlan ver', onSelect: () => changeTab('add') },
+  ];
+  const menuPersonal: HomeMenuAction[] = [
+    { key: 'mine', label: 'İlanlarım', onSelect: () => changeTab('add') },
+    { key: 'favs', label: 'Favori ilanlarım', onSelect: () => changeTab('favorites') },
+    { key: 'my-offers', label: 'Teklifler', onSelect: () => changeTab('offers') },
+    { key: 'saved-search', label: 'Favori aramalarım', note: 'Kaydedilmiş arama özelliği henüz kullanılamıyor.' },
+    { key: 'messages', label: 'Mesajlar', note: 'Mesajlaşma bölümü henüz kullanılamıyor.' },
+    { key: 'add-personal', label: 'İlan ver', onSelect: () => changeTab('add') },
+  ];
+  const menuSections: HomeMenuAction[] = [
+    { key: 'promo-featured', label: 'Ürününüzü daha çok kişiye gösterin', onSelect: () => goSection('promo-featured') },
+    { key: 'promo-store', label: 'Mağaza açma', onSelect: () => goSection('promo-store') },
+    { key: 'promo-trial', label: '30 Gün Ücretsiz Deneme', onSelect: () => goSection('promo-trial') },
+    { key: 'sponsors', label: 'Sponsorlar / Çözüm Ortaklarımız', onSelect: () => goSection('sponsors-section') },
+  ];
+  const announcementBanner = announcement ? (
+    <div data-testid="home-announcement" style={{ backgroundColor: '#fef08a', color: '#713f12', padding: '10px 14px',
+      borderRadius: '10px', marginBottom: '12px', fontSize: '13px', fontWeight: '600', display: 'flex',
+      alignItems: 'center', gap: '8px', border: '1px solid #facc15', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+      <Megaphone size={16} color="#854d0e" style={{ flexShrink: 0 }} />
+      <div style={{ width: '100%', overflow: 'hidden' }}><div className="marquee-text">{announcement}</div></div>
+      <style>{`@keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        .marquee-text { display: inline-block; animation: marquee 15s linear infinite; }
+        @media (prefers-reduced-motion: reduce) { .marquee-text { animation: none; white-space: normal; } }`}</style>
+    </div>
+  ) : null;
 
   if (showSplash) {
     return <OpeningSplash />;
@@ -857,57 +1319,47 @@ export default function App() {
           <button onClick={() => changeTab('favorites')} style={{ backgroundColor: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>
             ❤ ({favorites.length})
           </button>
-          <button onClick={() => changeTab('add')} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: '700', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <button onClick={() => {setFormOfferRequested(false);changeTab('add');}} style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: '700', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px' }}>
             <Plus size={16} /> İlan Ver
           </button>
         </div>
       </header>
 
-      <main style={{ width: '100%', maxWidth: '600px', margin: '0 auto', padding: '12px', flex: 1, boxSizing: 'border-box' }}>
-          <nav aria-label="Mağaza menüsü" style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:12}}>
-            <button type="button" onClick={()=>changeTab('memberships')} data-testid="button-membership-menu" style={{border:'1px solid #86efac',borderRadius:8,padding:'9px 13px',background:'#ecfdf5',color:'#166534',fontWeight:700,cursor:'pointer'}}>Mağaza Paketleri</button>
-            {storeMembership.data?.mine?.store&&<button type="button" onClick={()=>openStore(storeMembership.data!.mine!.store!.id)} style={{border:'1px solid #dce5dc',borderRadius:8,padding:'9px 13px',background:'#fff',color:'#166534',cursor:'pointer'}}>Mağazam</button>}
-          </nav>
-          {activeTab==='memberships'&&<MembershipPage key={submissionAccount.session?.user.id||'public'} state={storeMembership} session={submissionAccount.session} onSignIn={()=>changeTab('add')} onStore={openStore} onSubmitted={()=>{void submissionAccount.refresh();}}/>}
-          {activeTab==='membership-admin'&&(isAdminLoggedIn?<MembershipAdmin state={storeMembership} onBack={()=>changeTab('admin-page')}/>:<p role="alert">Paket yönetimi için yönetici hesabıyla giriş yapın.</p>)}
-          {activeTab==='store'&&<Storefront key={storeId||'none'} state={storeMembership} normalize={normalizeListing} onBack={()=>changeTab('memberships')} onListing={row=>{
+      <main style={{ width: '100%', maxWidth: activeTab==='offers'?'1040px':'600px', margin: '0 auto', padding: '12px', flex: 1, boxSizing: 'border-box' }}>
+          {activeTab==='memberships'&&<DemoMarketplace variant="stores"/>}
+          {activeTab==='about'&&<AboutPage onBack={()=>changeTab('home')} onPackages={()=>changeTab('memberships')} annualReady={!!storeMembership.data?.plans.some(plan=>plan.id==='package-3')}/>}
+          {activeTab==='memberships'&&<MembershipPage key={submissionAccount.session?.user.id||'public'} initialPlanId={membershipPreferredPlan} state={storeMembership} session={submissionAccount.session} onSignIn={()=>changeTab('add')} onStore={openStore} onSubmitted={()=>{void submissionAccount.refresh();}}/>}
+          {activeTab==='membership-admin'&&(isAdminLoggedIn?<MembershipAdmin state={storeMembership} session={submissionAccount.session} authorized={isAdminLoggedIn} onBack={()=>changeTab('admin-page')}/>:<p role="alert">Paket yönetimi için yönetici hesabıyla giriş yapın.</p>)}
+          {activeTab==='offers'&&<OfferMarketplace key={submissionAccount.session?.user.id||'public'} state={offers}
+            listings={listings} ownListings={submissionAccount.items} session={submissionAccount.session}
+            onOpenListing={openListing} onSignIn={signInForOffers} onCreateListing={createOfferListing} onBack={()=>changeTab('home')}/>}
+          {activeTab==='store'&&<Storefront key={storeId||'none'} invalidLink={invalidStoreLink} state={storeMembership} normalize={normalizeListing} offerIds={offers.error?[]:offers.catalogIds} onBack={()=>changeTab('memberships')} onListing={row=>{
             const owner=submissionAccount.items.find(x=>x.id===row.id)||listings.find(x=>x.id===row.id);
-            setSelectedListing({...row,submitted_by:owner?.submitted_by});changeTab('detail');
+            openListing({...row,submitted_by:owner?.submitted_by});
           }}/>}
           <SiteSettingsStatus state={siteSettings} />
-          {listingsError && (
+          {listingsError && isAdminLoggedIn && (
             <div role="alert" style={{ backgroundColor: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca', borderRadius: '8px', padding: '10px 12px', marginBottom: '12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ flex: 1 }}>{listingsError}</span>
               <button onClick={() => fetchListings()} style={{ border: 'none', borderRadius: '5px', padding: '6px 8px', backgroundColor: '#991b1b', color: '#fff', fontWeight: '700', cursor: 'pointer' }}>Yeniden Dene</button>
             </div>
           )}
+          {listingsError && !isAdminLoggedIn && listings.length === 0 && (
+            <div role="status" style={{ backgroundColor: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px 12px', marginBottom: '12px', fontSize: '12px' }}>
+              İlanlar şu anda geçici olarak görüntülenemiyor. Otomatik yeniden deneme yapılacak.
+            </div>
+          )}
           {listingsLoading && listings.length === 0 && (
             <div role="status" style={{ backgroundColor: '#fff', color: '#475569', borderRadius: '8px', padding: '12px', marginBottom: '12px', fontSize: '13px' }}>İlanlar yükleniyor...</div>
           )}
-          {announcement && (
-          <div style={{ backgroundColor: '#fef08a', color: '#713f12', padding: '10px 14px', borderRadius: '10px', marginBottom: '12px', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #facc15', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-            <Megaphone size={16} color="#854d0e" style={{ flexShrink: 0 }} />
-            <style>{`
-              @keyframes marquee {
-                0% { transform: translateX(100%); }
-                100% { transform: translateX(-100%); }
-              }
-              .marquee-text {
-                display: inline-block;
-                animation: marquee 15s linear infinite;
-              }
-            `}</style>
-            <div style={{ width: '100%', overflow: 'hidden' }}>
-              <div className="marquee-text">{announcement}</div>
-            </div>
-          </div>
-        )}
+          {activeTab !== 'home' && announcementBanner}
 
         {activeTab === 'success-wa' && (
           <div style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '24px', textAlign: 'center', border: '1px solid #e2e8f0' }}>
             <CheckCircle size={36} color="#166534" style={{ margin: '0 auto 12px auto' }} />
             <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#1b3a2b', margin: '0 0 8px 0' }}>İlanınız Onay İçin Alındı</h2>
             <p style={{ color: '#64748b', fontSize: '13px', marginBottom: '20px' }}>İlanınız henüz yayında değil. Yönetici onayından sonra herkes tarafından görülebilecek. Durumunu İlan Ver bölümündeki gönderimlerinizden takip edebilirsiniz.</p>
+            {submissionWarning&&<p role="alert" data-testid="status-offer-listing-partial-save" style={{color:'#92400e'}}>{submissionWarning}</p>}
             {lastAddedListing && (
               <a
                 href={`https://api.whatsapp.com/send?phone=905357681550&text=${encodeURIComponent(`PazarTarla ilanım yönetici onayını bekliyor.\n\nBaşlık: ${lastAddedListing.title}\nFiyat: ${lastAddedListing.price} TL\nKategori: ${lastAddedListing.category} / ${lastAddedListing.subCategory}\nSatıcı: ${lastAddedListing.seller} (${lastAddedListing.phone})`)}`}
@@ -922,7 +1374,7 @@ export default function App() {
           </div>
         )}
 
-        {unsubscribeToken && <ContactUnsubscribe token={unsubscribeToken} url={SUPABASE_URL} publicKey={SUPABASE_ANON_KEY} />}
+        {unsubscribeToken && <ContactUnsubscribe token={unsubscribeToken} url={SUPABASE_URL} publicKey={SUPABASE_ANON_KEY} isTurso={TURSO_AUTH_ENABLED} />}
         {activeTab === 'contacts' && (
           isAdminLoggedIn ? <ContactDepotManager state={contactDepot} onBack={()=>changeTab('admin-page')} /> :
             <div role="alert"><p>Kişi deposu yalnızca yetkili yöneticilere açıktır.</p>
@@ -937,11 +1389,49 @@ export default function App() {
         )}
 
         {activeTab === 'home' && (
-          <div>
-            <SponsorPartners state={advertisements} admin={isAdminLoggedIn} onManage={()=>changeTab('advertisements')} />
-            <MembershipNotice plans={storeMembership.data?.plans} onOpen={()=>changeTab('memberships')}/>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div className="rd-strip" ref={homeOpeningAnchorRef} data-testid="home-opening-anchor">
+              <HomeMenuDrawer main={menuMain} personal={menuPersonal} sections={menuSections} open={menuOpen}
+                onOpen={() => setMenuOpen(true)} onClose={() => setMenuOpen(false)}
+                onLogout={() => { void submissionAccount.signOut(); }} signedIn={!!submissionAccount.session} />
+              <BrandLogo />
+            </div>
+            <div style={{ order: 1 }}>
+              <DiscoveryBar
+                query={homeSearchQuery}
+                onQuery={setHomeSearchQuery}
+                categories={categoriesWithSubs}
+                category={selectedCategory}
+                sub={selectedSubCategory}
+                onCategory={category => { setSelectedCategory(category); setSelectedSubCategory('Tümü'); }}
+                onSub={setSelectedSubCategory}
+                province={province}
+                district={district}
+                onRegion={() => setRegionOpen(true)}
+                sort={sortKey}
+                onSort={setSortKey}
+                countText={listingsLoading && listings.length === 0
+                  ? 'İlanlar yükleniyor…'
+                  : listingsError && listings.length === 0
+                    ? 'İlan sayısı bilinmiyor'
+                    : `${filteredListings.length} ilan`}
+                onAll={() => changeTab('results')}
+              />
+            </div>
+            <div style={{ order: 4 }}>
+            <div className="pt-home-promo-grid" data-testid="home-promo-grid">
+              {siteSettings.settings && (
+                <div id="promo-featured"><FeaturedOfferNotice offer={siteSettings.settings.featured_offer} expandable onRequest={requestFeaturedOffer} /></div>
+              )}
+              <div id="promo-store"><MembershipNotice expandable plans={storeMembership.data?.plans} onOpen={()=>changeTab('memberships')}/></div>
+              <div id="promo-trial"><TrialPromotion expandable ready={!!storeMembership.data?.plans.some(plan=>plan.id==='trial-30-days')}
+                used={!!storeMembership.data?.mine?.trial_used}
+                onOpenTrial={()=>{setMembershipPreferredPlan('trial-30-days');changeTab('memberships');}}/></div>
+            </div>
             {advertisements.items.some(ad=>ad.is_active&&ad.media_type==='video')&&
               <AdvertisementPlacement state={{...advertisements,items:advertisements.items.filter(ad=>ad.media_type==='video')}} admin={isAdminLoggedIn} onManage={() => changeTab('advertisements')} />}
+            <div id="sponsors-section"><SponsorPartners state={advertisements} admin={isAdminLoggedIn} onManage={()=>changeTab('advertisements')} /></div>
+            {announcementBanner}
             <div style={{ backgroundColor: '#ecfdf5', border: '1.5px dashed #10b981', borderRadius: '12px', padding: '14px 16px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <div style={{ backgroundColor: '#d1fae5', padding: '8px', borderRadius: '8px', color: '#059669', flexShrink: 0 }}>
@@ -962,68 +1452,83 @@ export default function App() {
                 {isAdminLoggedIn ? 'Reklamları Yönet' : 'Reklam Ver'}
               </a>
             </div>
+            </div>
 
-            {siteSettings.settings && (
-              <FeaturedOfferNotice offer={siteSettings.settings.featured_offer} onRequest={requestFeaturedOffer} />
-            )}
-
-            {featuredListings.length > 0 && (
-              <div style={{ marginBottom: '16px' }}>
+            {homeFeaturedListings.length > 0 && (
+                <div style={{ order: 3, marginBottom: '4px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', fontWeight: '800', fontSize: '14px', color: '#854d0e' }}>
                   <Star size={16} fill="#eab308" color="#eab308" /> Vitrin İlanları
                 </div>
                 <div className="pt-home-listings-grid" data-testid="featured-listings-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gridAutoFlow: 'row', gap: 'var(--pt-card-row-gap, 10px) var(--pt-card-column-gap, 10px)', paddingBottom: '4px' }}>
-                  {featuredListings.map(item => {
+                  {homeFeaturedListings.map(item => {
                     const displayImg = (item.images && item.images[0]) || item.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800';
                     return (
-                      <div key={`feat-${item.id}`} onClick={() => { setSelectedListing({ ...item, images: item.images || [displayImg] }); changeTab('detail'); }} style={{ minWidth: 0, boxSizing: 'border-box', backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #fde047', cursor: 'pointer', overflow: 'hidden', padding: '8px' }}>
+                      <button type="button" key={`feat-${item.id}`} onClick={() => openListing({ ...item, images: item.images || [displayImg] })} style={{ minWidth: 0, boxSizing: 'border-box', backgroundColor: '#fff', color: '#1e293b', textAlign: 'left', font: 'inherit', borderRadius: '8px', border: '1px solid #fde047', cursor: 'pointer', overflow: 'hidden', padding: '8px' }}>
                         <img src={displayImg} alt={item.title} style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '6px', marginBottom: '6px' }} />
                         <div style={{ fontSize: '12px', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</div>
                         <div style={{ fontSize: '13px', fontWeight: '800', color: '#1b3a2b', marginTop: '2px' }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
                         <ListingDate value={item.created_at} />
-                      </div>
+                      </button>
                     );
                   })}
                 </div>
               </div>
             )}
 
-            <div style={{ backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflow: 'hidden', border: '1px solid #e2e8f0', marginBottom: '16px' }}>
-              <div style={{ backgroundColor: '#1b3a2b', color: '#fff', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Menu size={20} />
-                <span style={{ fontSize: '16px', fontWeight: '700' }}>Kategoriler (Canlı)</span>
-              </div>
-              <div onClick={() => { setSelectedCategory('Tüm kategoriler'); setSelectedSubCategory('Tümü'); changeTab('results'); }} style={{ padding: '14px 16px', borderBottom: '1px solid #edf2f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', backgroundColor: '#f8fafc' }}>
-                <span style={{ fontWeight: '700', color: '#1b3a2b', fontSize: '15px' }}>Tüm Türkiye Tarım İlanları</span>
-                <span style={{ color: '#22c55e', fontWeight: '700' }}>({approvedListings.length})</span>
-              </div>
-              {Object.keys(categoriesWithSubs).map(cat => {
-                const isOpen = openCategory === cat;
-                return (
-                  <div key={cat}>
-                    <div onClick={() => setOpenCategory(isOpen ? '' : cat)} style={{ padding: '14px 16px', borderBottom: '1px solid #edf2f7', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', backgroundColor: isOpen ? '#f0fdf4' : '#fff' }}>
-                      <span style={{ fontWeight: '600', color: isOpen ? '#1b3a2b' : '#334155', fontSize: '14px' }}>{cat}</span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#94a3b8', fontSize: '13px' }}>
-                        <span>({approvedListings.filter(i => i.category === cat).length})</span>
-                        {isOpen ? <ChevronDown size={16} color="#22c55e" /> : <ChevronRight size={16} />}
-                      </div>
-                    </div>
-                    {isOpen && (
-                      <div style={{ backgroundColor: '#fafafa', borderBottom: '1px solid #edf2f7' }}>
-                        <div onClick={(e) => { e.stopPropagation(); setSelectedCategory(cat); setSelectedSubCategory('Tümü'); changeTab('results'); }} style={{ padding: '10px 16px 10px 28px', borderBottom: '1px solid #f1f5f9', cursor: 'pointer', fontSize: '13px', color: '#166534', fontWeight: '600' }}>
-                          → Tüm {cat} İlanları
-                        </div>
-                        {(categoriesWithSubs[cat] || []).map(sub => (
-                          <div key={sub} onClick={(e) => { e.stopPropagation(); setSelectedCategory(cat); setSelectedSubCategory(sub); changeTab('results'); }} style={{ padding: '10px 16px 10px 28px', borderBottom: '1px solid #f1f5f9', cursor: 'pointer', fontSize: '13px', color: '#64748b' }}>
-                            • {sub}
-                          </div>
-                        ))}
-                      </div>
-                    )}
+            {(listingsLoading || listingsError || !homeFeaturedListings.length ||
+              ((homeSearchQuery.trim() || selectedCategory !== 'Tüm kategoriler' || province || district || sortKey !== 'default') && homeRegularListings.length > 0)) && (
+              <section aria-labelledby="home-listings-heading" style={{ order: 2, marginBottom: '4px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, marginBottom: 9 }}>
+                  <h2 id="home-listings-heading" style={{ margin: 0, color: '#1b3a2b', fontSize: 18, fontWeight: 800 }}>Güncel Tarım İlanları</h2>
+                  <span data-testid="home-listings-count" style={{ color: '#64748b', fontSize: 12, whiteSpace: 'nowrap' }}>
+                    {listingsLoading && listings.length === 0 ? 'İlanlar yükleniyor…' : listingsError && listings.length === 0 ? 'İlan sayısı bilinmiyor' : `${filteredListings.length} ilan`}
+                  </span>
+                </div>
+                {homeListingState === 'loading' ? (
+                  <div role="status" data-testid="home-listings-loading" style={{ padding: 13, border: '1px solid #e2e8f0', borderRadius: 9, background: '#fff', color: '#64748b', fontSize: 12 }}>
+                    Yayındaki ilanlar yükleniyor…
                   </div>
-                );
-              })}
-            </div>
+                ) : homeListingState === 'error' ? (
+                  <div role="status" data-testid="home-listings-error" style={{ padding: 13, border: '1px solid #fed7aa', borderRadius: 9, background: '#fff7ed', color: '#9a3412', fontSize: 12 }}>
+                    İlanlar geçici olarak yüklenemedi. Sonradan yeniden deneyin.
+                  </div>
+                ) : homeListingState === 'listings' ? (
+                  <>
+                    <div className="pt-home-listings-grid" data-testid="home-listings-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gridAutoFlow: 'row', gap: 'var(--pt-card-row-gap, 10px) var(--pt-card-column-gap, 10px)', paddingBottom: 4 }}>
+                      {homeVisibleListings.map(item => {
+                        const displayImg = (item.images && item.images[0]) || item.image || DEFAULT_LISTING_IMAGE;
+                        return (
+                          <button type="button" key={item.id} onClick={() => openListing({ ...item, images: item.images || [displayImg] })}
+                            data-testid={`home-listing-${item.id}`}
+                            style={{ minWidth: 0, boxSizing: 'border-box', backgroundColor: '#fff', color: '#1e293b', textAlign: 'left', font: 'inherit', borderRadius: 8, border: '1px solid #e2e8f0', cursor: 'pointer', overflow: 'hidden', padding: 8 }}>
+                            <img src={displayImg} alt={item.title} loading="lazy" style={{ width: '100%', height: 100, objectFit: 'cover', borderRadius: 6, marginBottom: 6 }} />
+                            <div style={{ fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</div>
+                            <div style={{ fontSize: 10, color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: 3 }}>{item.category}</div>
+                            <div style={{ fontSize: 12, color: '#64748b', marginTop: 3, overflowWrap: 'anywhere' }}>{item.location}</div>
+                            <div style={{ fontSize: 13, fontWeight: 800, color: '#1b3a2b', marginTop: 3 }}>{Number(item.price).toLocaleString('tr-TR')} TL</div>
+                            <ListingDate value={item.created_at} />
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {homeRegularListings.length > homeVisibleListings.length && (
+                      <button type="button" onClick={() => changeTab('results')} data-testid="button-view-all-home-listings"
+                        style={{ width: '100%', marginTop: 10, padding: '10px 12px', border: '1px solid #1b3a2b', borderRadius: 8, background: '#1b3a2b', color: '#fff', fontWeight: 750, cursor: 'pointer' }}>
+                        Tüm {filteredListings.length} ilanı gör
+                      </button>
+                    )}
+                  </>
+                ) : homeListingState === 'empty' ? (
+                  <div role="status" data-testid="home-listings-empty" style={{ padding: 13, border: '1px solid #e2e8f0', borderRadius: 9, background: '#fff', color: '#64748b', fontSize: 12 }}>
+                    Şu anda yayında ilan yok.
+                  </div>
+                ) : (
+                  <div role="status" data-testid="home-listings-filter-empty" style={{ padding: 13, border: '1px solid #e2e8f0', borderRadius: 9, background: '#fff', color: '#64748b', fontSize: 12 }}>
+                    Bu arama, kategori veya bölge için yayında ilan bulunamadı.
+                  </div>
+                )}
+              </section>
+            )}
           </div>
         )}
 
@@ -1036,7 +1541,7 @@ export default function App() {
             {filteredListings.map(item => {
               const displayImg = (item.images && item.images[0]) || item.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800';
               return (
-                <div key={item.id} onClick={() => { setSelectedListing({ ...item, images: item.images || [displayImg] }); changeTab('detail'); }} style={{ backgroundColor: '#fff', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer', display: 'flex', gap: '10px', padding: '10px', marginBottom: '10px' }}>
+                <div key={item.id} onClick={() => openListing({ ...item, images: item.images || [displayImg] })} style={{ backgroundColor: '#fff', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer', display: 'flex', gap: '10px', padding: '10px', marginBottom: '10px' }}>
                   <img src={displayImg} alt={item.title} style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '8px' }} />
                   <div style={{ flex: 1 }}>
                     <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: '700' }}>{item.title}</h4>
@@ -1050,6 +1555,14 @@ export default function App() {
           </div>
         )}
 
+        {activeTab === 'detail' && !selectedListing && (
+          <section role="status" style={{background:'#fff',padding:'20px',borderRadius:'10px'}}>
+            <h2>{listingsLoading?'İlan yükleniyor…':listingsError?'İlan yüklenemedi':'Paylaşılan ilan bulunamadı'}</h2>
+            <p>{listingsError||(!listingsLoading?'Bu ilan kaldırılmış veya artık yayında olmayabilir.':'Bağlantıdaki ilan açılıyor.')}</p>
+            {listingsError&&<button type="button" onClick={()=>void fetchListings()}>Yeniden dene</button>}
+            <button type="button" onClick={()=>changeTab('home')}>Diğer ilanlara dön</button>
+          </section>
+        )}
         {activeTab === 'detail' && selectedListing && !isAdminLoggedIn && isListingArchived(selectedListing, listingNow) && (
           <div role="status" style={{ padding: '16px', background: '#fff', borderRadius: '12px' }}>
             Bu ilanın 8 aylık yayın süresi doldu ve ilan arşive alındı.
@@ -1091,6 +1604,15 @@ export default function App() {
             ) : (
               <img src={selectedListing.image || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&q=80&w=800'} alt={selectedListing.title} style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '8px', marginBottom: '10px' }} />
             )}
+            <div style={{ margin: '0 0 12px', padding: '10px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+              <label htmlFor="listing-photo-address" style={{ display: 'block', fontSize: '12px', fontWeight: '700', marginBottom: '6px' }}>Fotoğraf adresi</label>
+              {selectedPhotoAddress ? (
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <input id="listing-photo-address" aria-label="Fotoğraf adresi" readOnly value={selectedPhotoAddress} onFocus={event=>event.currentTarget.select()} style={{ flex: '1 1 220px', minWidth: 0, padding: '8px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px' }} />
+                  <button type="button" onClick={()=>void copyPhotoAddress(selectedPhotoAddress)} style={{ padding: '8px 10px', border: '1px solid #cbd5e1', borderRadius: '6px', background: '#fff', cursor: 'pointer' }}>Fotoğraf adresini kopyala</button>
+                </div>
+              ) : <p role="status" style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>Bu fotoğrafın kopyalanabilir bir web adresi yok.</p>}
+            </div>
             <h2 style={{ fontSize: '18px', fontWeight: '800', margin: '8px 0' }}>{selectedListing.title}</h2>
             <ListingDate value={selectedListing.created_at} />
             {isListingArchived(selectedListing, listingNow) && <p role="status" style={{ color: '#854d0e', fontSize: '12px' }}>Arşivde — yayın süresi {formatListingDate(selectedListing.expires_at)} tarihinde doldu. İlan kaydı ve fotoğrafları korunuyor.</p>}
@@ -1114,7 +1636,7 @@ export default function App() {
               <div style={{ fontSize: '12px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>📤 Bu İlanı Paylaş:</div>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <a
-                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`🌾 *PazarTarla İlanı*\n*${selectedListing.title}*\nFiyat: ${Number(selectedListing.price).toLocaleString('tr-TR')} TL\nKonum: ${selectedListing.location}\nİncelemek için tıkla`)}`}
+                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(listingShareText(selectedListing))}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ flex: 1, backgroundColor: '#22c55e', color: '#fff', padding: '8px 10px', borderRadius: '6px', textAlign: 'center', fontWeight: '700', textDecoration: 'none', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
@@ -1122,7 +1644,7 @@ export default function App() {
                   <MessageCircle size={14} /> WhatsApp
                 </a>
                 <a
-                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
+                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(listingShareUrl(selectedListing.id))}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ flex: 1, backgroundColor: '#1877f2', color: '#fff', padding: '8px 10px', borderRadius: '6px', textAlign: 'center', fontWeight: '700', textDecoration: 'none', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
@@ -1130,28 +1652,30 @@ export default function App() {
                   <Share2 size={14} /> Facebook
                 </a>
                 <button
-                  onClick={() => {
-                    const shareText = `PazarTarla'da harika bir tarım ilanı: ${selectedListing.title} - ${Number(selectedListing.price).toLocaleString('tr-TR')} TL (${selectedListing.location})`;
-                    navigator.clipboard.writeText(shareText);
-                    alert('📋 İlan bilgileri panoya kopyalandı! Instagram hikayenizde veya mesajınızda doğrudan yapıştırıp paylaşabilirsiniz.');
-                  }}
+                  onClick={() => void copyListingShare(listingShareText(selectedListing), 'İlan bilgileri ve bağlantısı kopyalandı. Instagram hikâyesinde Bağlantı etiketiyle veya mesajda paylaşabilirsiniz. Gönderi açıklamasındaki bağlantılar tıklanamaz.')}
                   style={{ flex: 1, backgroundColor: '#e1306c', color: '#fff', border: 'none', padding: '8px 10px', borderRadius: '6px', textAlign: 'center', fontWeight: '700', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
                 >
                   <ImageIcon size={14} /> Instagram
                 </button>
+              </div>
+              <div style={{marginTop:'10px',display:'flex',gap:'8px',alignItems:'center',flexWrap:'wrap'}}>
+                <a href={listingShareUrl(selectedListing.id)} target="_blank" rel="noopener noreferrer" style={{fontSize:'12px',overflowWrap:'anywhere',flex:'1 1 180px'}}>{listingShareUrl(selectedListing.id)}</a>
+                <button type="button" onClick={()=>void copyListingShare(listingShareUrl(selectedListing.id),'İlan bağlantısı kopyalandı.')} style={{padding:'8px',border:'1px solid #cbd5e1',borderRadius:'6px',cursor:'pointer'}}>Bağlantıyı kopyala</button>
               </div>
             </div>
 
             <a href={`tel:${selectedListing.phone}`} style={{ width: '100%', backgroundColor: '#1b3a2b', color: '#fff', padding: '12px', borderRadius: '8px', textAlign: 'center', fontWeight: '700', textDecoration: 'none', display: 'block', boxSizing: 'border-box' }}>
               📞 {selectedListing.phone} ({selectedListing.seller})
             </a>
+            <OfferListingControls key={`${submissionAccount.session?.user.id||'public'}:${selectedListing.id}`} listing={selectedListing}
+              state={offers} session={submissionAccount.session} onSignIn={signInForOffers} onViewOffers={()=>changeTab('offers')}/>
           </div>
         )}
 
         {activeTab === 'edit-listing' && submissionAccount.session && ownerEditingId !== null && (
           <ListingEditor key={`${submissionAccount.session.user.id}:${ownerEditingId}`} client={supabaseClient}
             itemId={ownerEditingId} userId={submissionAccount.session.user.id} isAdmin={isAdminLoggedIn}
-            categories={siteSettings.settings?.categories} onSaved={finishOwnerEdit}
+            categories={siteSettings.settings?.categories} onSaved={finishOwnerEdit} isTursoAuth={TURSO_AUTH_ENABLED}
             onCancel={()=>{setOwnerEditingId(null);changeTab('add');}} />
         )}
         {activeTab === 'edit-listing' && (!submissionAccount.session || ownerEditingId === null) &&
@@ -1169,14 +1693,30 @@ export default function App() {
             <SubmissionAccountPanel session={submissionAccount.session} quota={submissionAccount.quota}
               loading={submissionAccount.loading} busy={submissionAccount.busy} error={submissionAccount.error}
               message={submissionAccount.message} onAuthenticate={submissionAccount.authenticate}
-              onResend={submissionAccount.resend} onSignOut={submissionAccount.signOut}
+              onResend={submissionAccount.resend} isTursoAuth={TURSO_AUTH_ENABLED}
+              passwordResetToken={submissionAccount.passwordResetToken}
+              onRequestPasswordReset={submissionAccount.requestPasswordReset}
+              onResetPassword={submissionAccount.resetPassword}
+              onCancelPasswordReset={submissionAccount.cancelPasswordReset}
+              onSignOut={submissionAccount.signOut}
               onRefresh={() => { void submissionAccount.refresh(); }} />
             {listingEditMessage && <p role="status">{listingEditMessage}</p>}
             {submissionAccount.session && <MySubmissions items={submissionAccount.items}
               loading={submissionAccount.loading} error={submissionAccount.error}
-              onRefresh={() => { void submissionAccount.refresh(); }} onEdit={startOwnerEditing} />}
+              offers={offers} onViewOffers={()=>changeTab('offers')}
+              onRefresh={() => { void submissionAccount.refresh();void offers.refresh(); }}
+              onEdit={startOwnerEditing}
+              onArchive={TURSO_AUTH_ENABLED && !isAdminLoggedIn ? changeOwnerListingArchive : undefined}
+              archiveBusyId={ownerArchiveBusyId} />}
             {submissionAccount.session && submissionAccount.quota?.email_verified && (
             <form onSubmit={handleDirectAdd} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <label style={{display:'flex',alignItems:'center',gap:8,padding:12,background:'#fff8e5',borderRadius:8}}>
+                <input type="checkbox" checked={formOfferRequested} disabled={submissionSaving||(!formOfferRequested&&(offers.loading||!!offers.error))}
+                  onChange={event=>setFormOfferRequested(event.target.checked)} data-testid="switch-create-offer-listing"/>
+                Teklife açık ilan oluştur
+              </label>
+              {formOfferRequested&&<p style={{fontSize:12}}>İlan onaylandığında Teklif Pazarı'nda da görünür. Teklif alma seçeneğini daha sonra yalnız bu ilan için kapatabilirsiniz.</p>}
+              {formOfferRequested&&offers.error&&<p role="alert">{offers.error} İlanınızı normal ilan olarak göndermek için teklif seçeneğini kaldırın.</p>}
               <input type="text" name="seller" placeholder="Adınız Soyadınız *" value={form.seller} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               <input type="text" name="phone" placeholder="Telefon Numaranız *" value={form.phone} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               <input type="text" name="title" placeholder="İlan Başlığı * (Otomatik SEO için önemlidir)" value={form.title} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
@@ -1191,7 +1731,9 @@ export default function App() {
               <input type="text" name="seoTags" placeholder="Özel SEO Etiketleri (Boş bırakırsanız otomatik üretilir)" value={form.seoTags} onChange={handleFormChange} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
               <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <label style={{ fontSize: '12px', fontWeight: '700', color: '#475569' }}>📷 Fotoğraf Yükle (En Fazla 10 Adet - Seçili: {form.images.length}/10)</label>
-                <input type="file" accept="image/*" multiple onChange={handleMultipleImageUpload} style={{ width: '100%', fontSize: '12px' }} />
+                <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple disabled={submissionSaving || formImageImporting} onChange={handleMultipleImageUpload} style={{ width: '100%', fontSize: '12px' }} />
+                <RemoteListingImages disabled={submissionSaving} count={form.images.length} onBusyChange={setFormImageImporting}
+                  onAdd={images => appendImportedPhotos('form', images)} />
                 {form.images.length > 0 && (
                   <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
                     {form.images.map((imgSrc, idx) => (
@@ -1209,7 +1751,7 @@ export default function App() {
                 İlanın satıcı adı ve telefonu ile bilinen doğrulanmış hesap e-postası, yalnızca yöneticiye açık
                 iletişim deposunda kaydedilir. İlan vermek toplu mesaj izni değildir; mesaj izinleri ayrıca kayıt altına alınır.
               </p>
-              <button type="submit" disabled={submissionSaving || !submissionAccount.canSubmit || !siteSettings.settings || !!siteSettings.loadError}
+              <button type="submit" disabled={submissionSaving || formImageImporting || (formOfferRequested && (offers.loading||!!offers.error)) || !submissionAccount.canSubmit || !siteSettings.settings || !!siteSettings.loadError}
                 style={{ backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', opacity: submissionSaving || !submissionAccount.canSubmit || !siteSettings.settings || !!siteSettings.loadError ? 0.6 : 1 }}>
                 {submissionSaving ? 'Onaya gönderiliyor…' : 'İlanı Onaya Gönder'}
               </button>
@@ -1234,10 +1776,10 @@ export default function App() {
                 <h2 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '10px' }}>Yönetici Girişi</h2>
                 <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   <input type="email" autoComplete="username" placeholder="E-posta adresi" value={adminEmail} onChange={(e) => setAdminEmail(e.target.value)} required style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-                  <input type="password" autoComplete="current-password" placeholder="Supabase parolası" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} required style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', textAlign: 'center' }} />
+                  <input type="password" autoComplete="current-password" placeholder="Yönetici parolası" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} required style={{ padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', textAlign: 'center' }} />
                   {adminAuthError && <div role="alert" style={{ color: '#b91c1c', fontSize: '12px' }}>{adminAuthError}</div>}
                   <button type="submit" disabled={adminAuthLoading} style={{ backgroundColor: '#1b3a2b', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', fontWeight: '700', cursor: adminAuthLoading ? 'wait' : 'pointer', opacity: adminAuthLoading ? 0.7 : 1 }}>{adminAuthLoading ? 'Giriş yapılıyor…' : 'Giriş Yap'}</button>
-                  <p style={{ margin: 0, color: '#64748b', fontSize: '11px' }}>Yalnızca Supabase’te yetkilendirilmiş hesaplar erişebilir.</p>
+                  <p style={{ margin: 0, color: '#64748b', fontSize: '11px' }}>Yalnızca yetkili yönetici hesapları erişebilir.</p>
                 </form>
               </div>
             ) : (
@@ -1299,7 +1841,9 @@ export default function App() {
                       <input type="text" name="seoTags" value={editingListing.seoTags || ''} onChange={handleEditFormChange} placeholder="SEO Etiketleri (virgülle ayırın)" style={{ padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
                       <div style={{ backgroundColor: '#fff', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <label style={{ fontSize: '11px', fontWeight: '700', color: '#475569' }}>📷 Fotoğrafları Yönet (En Fazla 10 Adet)</label>
-                        <input type="file" accept="image/*" multiple onChange={handleEditMultipleImageUpload} style={{ width: '100%', fontSize: '11px' }} />
+                        <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple disabled={gallerySaving || editImageImporting} onChange={handleEditMultipleImageUpload} style={{ width: '100%', fontSize: '11px' }} />
+                        <RemoteListingImages key={editingListing.id} disabled={gallerySaving} count={(editingListing.images || []).length} onBusyChange={setEditImageImporting}
+                          onAdd={images => appendImportedPhotos('editingListing', images)} />
                         {editingListing.images && editingListing.images.length > 0 && (
                           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
                             {editingListing.images.map((imgSrc, idx) => (
@@ -1312,8 +1856,8 @@ export default function App() {
                         )}
                       </div>
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <button type="submit" disabled={gallerySaving} style={{ flex: 1, backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>{gallerySaving?'Kaydediliyor…':'Galeri / SEO Kaydet'}</button>
-                        <button type="button" disabled={gallerySaving} onClick={() => setEditingListing(null)} style={{ background: '#e2e8f0', border: 'none', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer' }}>İptal</button>
+                        <button type="submit" disabled={gallerySaving || editImageImporting} style={{ flex: 1, backgroundColor: '#22c55e', color: '#fff', border: 'none', padding: '8px', borderRadius: '6px', fontWeight: '700', cursor: 'pointer' }}>{gallerySaving?'Kaydediliyor…':'Galeri / SEO Kaydet'}</button>
+                        <button type="button" disabled={gallerySaving || editImageImporting} onClick={() => setEditingListing(null)} style={{ background: '#e2e8f0', border: 'none', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer' }}>İptal</button>
                       </div>
                     </form>
                   </div>
@@ -1364,8 +1908,8 @@ export default function App() {
                     <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', backgroundColor: '#f8fafc', borderRadius: '6px', marginBottom: '6px' }}>
                       <div><span style={{ fontSize: '12px', fontWeight: '600' }}>{item.title}</span><ListingDate value={item.created_at} /></div>
                       <div style={{ display: 'flex', gap: '4px' }}>
-                        <button onClick={() => toggleFeaturedListing(item.id)} style={{ backgroundColor: isFeat ? '#fef08a' : '#f1f5f9', color: '#854d0e', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>
-                          {isFeat ? '⭐ Vitrinde' : '☆ Vitrin Yap'}
+                        <button type="button" disabled={featuredBusyIds.includes(item.id)} aria-busy={featuredBusyIds.includes(item.id)} onClick={() => toggleFeaturedListing(item.id)} style={{ backgroundColor: isFeat ? '#fef08a' : '#f1f5f9', color: '#854d0e', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>
+                          {featuredBusyIds.includes(item.id) ? 'Kaydediliyor…' : isFeat ? '⭐ Vitrinde' : '☆ Vitrin Yap'}
                         </button>
                         <button onClick={() => startOwnerEditing(item)} style={{ backgroundColor: '#e0f2fe', color: '#0284c7', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}>Düzenle</button>
                         <button onClick={() => startEditingFromDetail(item)} type="button">Galeri / SEO</button>
@@ -1376,7 +1920,7 @@ export default function App() {
                 })}
                 <section aria-labelledby="listing-archive-heading" style={{ marginTop: '20px', padding: '12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
                   <h3 id="listing-archive-heading" style={{ margin: '0 0 8px', fontSize: '14px' }}>İlan Arşivi</h3>
-                  <p style={{ fontSize: '12px', color: '#64748b' }}>İlanlar veriliş tarihinden 8 takvim ayı sonra otomatik olarak yayından kalkar. Kayıtları ve fotoğrafları silinmez. Düzenlemek veya onaylamak bu süreyi yenilemez.</p>
+                  <p style={{ fontSize: '12px', color: '#64748b' }}>İlanlar veriliş tarihinden 12 takvim ayı sonra otomatik olarak yayından kalkar. Kayıtları ve fotoğrafları silinmez. Düzenlemek veya onaylamak bu süreyi yenilemez.</p>
                   <button type="button" onClick={() => { void listingArchive.refresh(); }} disabled={listingArchive.loading || listingArchive.busyId !== null}>Arşivi yenile</button>
                   {listingArchive.loading && <p role="status">Arşiv yükleniyor…</p>}
                   {listingArchive.error && <p role="alert" style={{ color: '#b91c1c' }}>{listingArchive.error}</p>}
@@ -1388,7 +1932,7 @@ export default function App() {
                       <div style={{ fontSize: '11px', color: '#854d0e', margin: '4px 0' }}>Arşive alınma tarihi: {formatListingDate(item.expires_at)}</div>
                       <button type="button" disabled={listingArchive.busyId !== null || listingArchive.loading} onClick={async () => {
                         const row = await listingArchive.view(item.id);
-                        if (row) { setSelectedListing(normalizeListing(row)); changeTab('detail'); }
+                        if (row) { openListing(normalizeListing(row)); }
                       }}>{listingArchive.busyId === item.id ? 'Açılıyor…' : 'İlanı görüntüle'}</button>
                     </div>
                   ))}
@@ -1398,9 +1942,21 @@ export default function App() {
             )}
           </div>
         )}
-        {!isAdminLoggedIn && <TrafficPrivacy state={traffic} />}
       </main>
 
+      <RegionDialog
+        open={regionOpen}
+        onClose={() => setRegionOpen(false)}
+        provinces={PROVINCES}
+        districts={locationChoices.districts}
+        province={province}
+        district={district}
+        onProvince={value => { setProvince(value); setDistrict(''); }}
+        onDistrict={setDistrict}
+        onAll={() => {}}
+      />
+
+      {activeTab === 'home' && <PlatformIntroduction />}
       <footer style={{ backgroundColor: '#1b3a2b', color: '#94a3b8', padding: '20px 16px', textAlign: 'center', fontSize: '12px', marginTop: 'auto', borderTop: '1px solid #2d5a43' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <div style={{ color: '#fff', fontWeight: '700', fontSize: '14px' }}>PazarTarla İletişim &amp; Destek</div>

@@ -2,6 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { isListingArchived } from '../lib/listingLifetime';
 import {readModerationRows,saveModerationSnapshot} from '../lib/moderationRequests';
 
+const TURSO_AUTH_ENABLED = import.meta.env.VITE_AUTH_BACKEND === 'turso';
+const API_BASE = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
+
+async function responseError(response: Response): Promise<Error> {
+  const payload = await response.json().catch(() => ({}));
+  return new Error(String(payload?.error || `HTTP_${response.status}`));
+}
+
 export function useModerationQueue(enabled: boolean, url: string, getHeaders: () => Promise<Record<string, string>>, normalize: (row: any) => any) {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -16,10 +24,16 @@ export function useModerationQueue(enabled: boolean, url: string, getHeaders: ()
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`${url}/rest/v1/rpc/get_listing_moderation_queue`, {
-        method:'POST',body:'{}',headers: await getHeaders(), cache: 'no-store',
-      });
-      if (!response.ok) throw new Error('MODERATION_LOAD_FAILED');
+      const response = TURSO_AUTH_ENABLED
+        ? await fetch(`${API_BASE}/api/listing-moderation`, {
+          credentials: 'same-origin',
+          headers: { Accept: 'application/json' },
+          cache: 'no-store',
+        })
+        : await fetch(`${url}/rest/v1/rpc/get_listing_moderation_queue`, {
+          method:'POST',body:'{}',headers: await getHeaders(), cache: 'no-store',
+        });
+      if (!response.ok) throw await responseError(response);
       const rows = await response.json();
       const normalized=readModerationRows(rows,normalize);
       if (active.current) setItems(normalized.filter(row => !isListingArchived(row)));
@@ -48,12 +62,26 @@ export function useModerationQueue(enabled: boolean, url: string, getHeaders: ()
     decisionInFlight.current = true;
     setBusyId(id); setError('');
     try {
-      await saveModerationSnapshot(url,await getHeaders(),id,decision,token);
+      if (TURSO_AUTH_ENABLED) {
+        const response = await fetch(`${API_BASE}/api/listing-moderation`, {
+          method: 'POST',
+          credentials: 'same-origin',
+          cache: 'no-store',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ id, decision, edit_token: token }),
+        });
+        if (!response.ok) throw await responseError(response);
+      } else {
+        await saveModerationSnapshot(url,await getHeaders(),id,decision,token);
+      }
       if (active.current) setItems(current => current.filter(item => item.id !== id));
       await refresh();
       return true;
-    } catch {
-      if (active.current) setError('Karar kaydedilemedi. İlan değişmiş veya sunucu güncellemesi eksik olabilir; listeyi yenileyip güncel içeriği yeniden inceleyin.');
+    } catch (error) {
+      const code = String((error as Error)?.message || '');
+      if (active.current) setError(code === 'LISTING_ADMIN_REAUTH_REQUIRED'
+        ? 'Yönetici doğrulaması zaman aşımına uğradı. Yeniden yönetici girişi yapın.'
+        : 'Karar kaydedilemedi. İlan değişmiş veya sunucu güncellemesi eksik olabilir; listeyi yenileyip güncel içeriği yeniden inceleyin.');
       return false;
     } finally {
       decisionInFlight.current = false;

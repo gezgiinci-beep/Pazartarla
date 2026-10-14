@@ -5,8 +5,10 @@
   "packageManager": "pnpm@10.26.1",
   "type": "module",
   "scripts": {
+    "simulate:sms": "node --experimental-strip-types scripts/simulate-sms.mjs",
+    "test:sms-mock": "node --experimental-strip-types --test tests/sms-simulation.test.mjs",
     "dev": "vite",
-    "build": "vite build",
+    "build": "node scripts/migrate-inline-listing-media.mjs && vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "check:startup": "node scripts/check-startup.mjs",
@@ -17,15 +19,20 @@
     "check:ads": "node --experimental-strip-types --test tests/advertisements.test.mjs",
     "check:ads-db": "node scripts/check-advertisements-database.mjs",
     "check:lifetime": "node --experimental-strip-types --test tests/listing-lifetime.test.mjs tests/featured-layout.test.mjs",
-    "check:lifetime-db": "node scripts/check-listing-lifetime-database.mjs"
+    "check:lifetime-db": "node scripts/check-listing-lifetime-database.mjs",
+    "check:listing-media": "node --experimental-strip-types --test tests/listing-media.test.mjs tests/listing-media-plan.test.mjs tests/listing-editor.test.mjs && node scripts/check-listing-media-local.mjs",
+  "check:turso": "node --test tests/turso-listings.test.mjs tests/turso-auth.test.mjs tests/turso-auth-flows.test.mjs tests/turso-site-settings.test.mjs tests/turso-membership-data.test.mjs tests/turso-offers.test.mjs tests/turso-submissions.test.mjs tests/turso-listing-mutations.test.mjs tests/turso-admin-compatibility.test.mjs tests/turso-migrations.test.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
+    "@tursodatabase/serverless": "^1.4.1",
+    "@vercel/blob": "^2.8.1",
+    "bcryptjs": "^3.0.3",
     "lucide-react": "^0.344.0",
     "papaparse": "5.5.3",
-    "read-excel-file": "9.3.10",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "read-excel-file": "9.3.10"
   },
   "devDependencies": {
     "@types/papaparse": "5.3.16",

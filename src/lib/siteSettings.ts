@@ -1,3 +1,5 @@
+import { retryAfterDelayMs } from './publicReadResilience.mjs';
+
 export type Categories = Record<string, string[]>;
 export type FeaturedOffer = { monthly_price_try: number; description: string };
 
@@ -21,6 +23,7 @@ export interface SiteSettings {
 }
 
 export type SettingsPatch = Partial<Pick<SiteSettings, 'announcement' | 'categories' | 'featured_offer'>>;
+export type SettingsBackend = 'supabase' | 'turso';
 
 export class SettingsConflictError extends Error {
   constructor() {
@@ -51,28 +54,68 @@ export function parseSiteSettings(value: unknown): SiteSettings {
 }
 
 function endpoint(url: string) {
-  return url.replace(/\/$/, '') + '/rest/v1/site_settings?id=eq.public&select=id,announcement,categories,featured_offer,revision';
+  if (typeof url !== 'string' || !url.trim()) {
+    throw new Error('Sunucu bağlantı ayarları eksik: VITE_SUPABASE_URL tanımlanmalı. Ayarlar düzeltildikten sonra site yeniden derlenip yayımlanmalı.');
+  }
+  let address: URL;
+  try { address = new URL(url.trim()); }
+  catch { throw new Error('Sunucu bağlantı adresi geçersiz: VITE_SUPABASE_URL ayarını kontrol edin.'); }
+  if (!['https:', 'http:'].includes(address.protocol) || address.username || address.password || address.search || address.hash) {
+    throw new Error('Sunucu bağlantı adresi geçersiz: VITE_SUPABASE_URL ayarını kontrol edin.');
+  }
+  return url.trim().replace(/\/$/, '') + '/rest/v1/site_settings?id=eq.public&select=id,announcement,categories,featured_offer,revision';
 }
 
 async function requireOk(response: Response) {
   if (response.ok) return;
+  if (response.status === 409) throw new SettingsConflictError();
   if (response.status === 401 || response.status === 403) {
     throw new Error('Site ayarlarına erişim reddedildi. Kaydetmek için yetkili yönetici hesabıyla tekrar giriş yapın.');
   }
   if (response.status === 404) {
     throw new Error('Ortak site ayarları kurulmamış. Site ayarları veritabanı geçişini uygulayın.');
   }
-  throw new Error('Site ayarları sunucusuna ulaşılamadı (HTTP ' + response.status + '). Lütfen yeniden deneyin.');
+  const error = new Error('Site ayarları sunucusuna ulaşılamadı (HTTP ' + response.status + '). Lütfen yeniden deneyin.') as Error & {
+    status?: number;
+    retryAfterMs?: number;
+  };
+  error.status = response.status;
+  error.retryAfterMs = retryAfterDelayMs(response.headers);
+  throw error;
 }
 
-export async function readSiteSettings(url: string, key: string, request = fetch): Promise<SiteSettings> {
-  const response = await request(endpoint(url), {
-    headers: { apikey: key },
+export async function readSiteSettings(
+  url: string,
+  key: string,
+  request = fetch,
+  backend: SettingsBackend = 'supabase'
+): Promise<SiteSettings> {
+  let target: string;
+  let headers: Record<string, string> = { Accept: 'application/json' };
+  if (backend === 'turso') {
+    target = '/api/site-settings';
+  } else {
+    target = endpoint(url);
+    if (typeof key !== 'string' || !key.trim()) {
+      throw new Error('Sunucu bağlantı ayarları eksik: tarayıcı için VITE_SUPABASE_ANON_KEY tanımlanmalı. Gizli servis anahtarı kullanılmamalı.');
+    }
+    headers = { apikey: key };
+  }
+  const response = await request(target, {
+    headers,
+    ...(backend === 'turso' ? { credentials: 'same-origin' as const } : {}),
     cache: 'no-store',
     signal: AbortSignal.timeout(15_000)
   });
   await requireOk(response);
-  const rows = await response.json();
+  const payload = await response.json();
+  if (backend === 'turso') {
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload) || !('settings' in payload)) {
+      throw new Error('Turso site ayarları yanıtı geçersiz.');
+    }
+    return parseSiteSettings(payload.settings);
+  }
+  const rows = payload;
   if (!Array.isArray(rows) || rows.length !== 1) {
     throw new Error('Ortak site ayarları kaydı bulunamadı. Site ayarları veritabanı geçişini uygulayın.');
   }
@@ -84,7 +127,8 @@ export async function writeSiteSettings(
   headers: Record<string, string>,
   revision: number,
   patch: SettingsPatch,
-  request = fetch
+  request = fetch,
+  backend: SettingsBackend = 'supabase'
 ): Promise<SiteSettings> {
   const keys = Object.keys(patch);
   if (!Number.isSafeInteger(revision) || revision < 1 || keys.length !== 1 ||
@@ -100,14 +144,33 @@ export async function writeSiteSettings(
   if ('featured_offer' in patch && !validFeaturedOffer(patch.featured_offer)) {
     throw new Error('Vitrin fiyatı 0’dan büyük, en fazla 1.000.000 TL ve en fazla iki ondalık basamaklı olmalı. Açıklama en fazla 400 karakter olabilir.');
   }
-  const response = await request(endpoint(url) + '&revision=eq.' + revision, {
+  const target = backend === 'turso'
+    ? '/api/site-settings'
+    : endpoint(url) + '&revision=eq.' + revision;
+  const response = await request(target, {
     method: 'PATCH',
-    headers: { ...headers, 'Content-Type': 'application/json', Prefer: 'return=representation' },
-    body: JSON.stringify(patch),
+    headers: backend === 'turso'
+      ? { Accept: 'application/json', 'Content-Type': 'application/json' }
+      : { ...headers, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+    ...(backend === 'turso' ? { credentials: 'same-origin' as const } : {}),
+    body: JSON.stringify(backend === 'turso' ? { revision, patch } : patch),
     signal: AbortSignal.timeout(15_000)
   });
   await requireOk(response);
-  const rows = await response.json();
+  const payload = await response.json();
+  if (backend === 'turso') {
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload) || !('settings' in payload)) {
+      throw new Error('Sunucu ayar değişikliğini doğrulamadı. Yenileyip kontrol edin.');
+    }
+    const saved = parseSiteSettings(payload.settings);
+    if (saved.revision <= revision) throw new Error('Sunucu ayar değişikliğini doğrulamadı. Yenileyip kontrol edin.');
+    if (patch.featured_offer && (saved.featured_offer.monthly_price_try !== patch.featured_offer.monthly_price_try ||
+        saved.featured_offer.description !== patch.featured_offer.description)) {
+      throw new Error('Sunucu vitrin ücreti değişikliğini doğrulamadı. Yenileyip kontrol edin.');
+    }
+    return saved;
+  }
+  const rows = payload;
   if (Array.isArray(rows) && rows.length === 0) throw new SettingsConflictError();
   if (!Array.isArray(rows) || rows.length !== 1) throw new Error('Sunucu ayar değişikliğini doğrulamadı. Yenileyip kontrol edin.');
   const saved = parseSiteSettings(rows[0]);

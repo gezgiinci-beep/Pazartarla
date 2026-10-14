@@ -30,8 +30,11 @@ test('admin UI uses Auth and server permission with no PIN or localStorage gate'
   assert.match(source,/rpc\('is_listing_admin'\)/);
   assert.match(source,/getAdminDbHeaders\(\), id/);
   assert.doesNotMatch(source,/(?:adminPin|ADMIN_PIN|adminPassword\s*===|localStorage\.setItem\(['"](?:admin|isAdmin))/i);
-  const submit=source.slice(source.indexOf('const newEntry ='),source.indexOf('const newEntry =')+2200);
+  const submitStart=source.indexOf('const newEntry =');
+  const submitEnd=source.indexOf('const moderateListing',submitStart);
+  const submit=source.slice(submitStart,submitEnd);
   assert.match(submit,/status: 'pending'/);
   assert.match(submit,/isFeatured: false/);
   assert.match(submit,/sessionData\.session\.access_token/);
+  assert.match(submit,/\/api\/submissions/);
 });

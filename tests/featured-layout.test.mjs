@@ -10,12 +10,13 @@ import { formatListingDate } from '../src/lib/listingLifetime.ts';
 
 // Compile the actual featured-listings JSX, not a second implementation.
 const source = readFileSync(new URL('../src/App.tsx', import.meta.url), 'utf8');
-const start = source.indexOf('{featuredListings.length > 0 && (');
-const end = source.indexOf("\n            <div style={{ backgroundColor: '#fff', borderRadius: '12px'", start);
+const discoverySource = readFileSync(new URL('../src/components/DiscoveryBar.tsx', import.meta.url), 'utf8');
+const start = source.indexOf('{homeFeaturedListings.length > 0 && (');
+const end = source.indexOf('\n            {(listingsLoading || listingsError || !homeFeaturedListings.length', start);
 assert.ok(start > 0 && end > start, 'Featured section must exist');
 const expression = source.slice(start, end).trim().slice(1, -1);
 const compiled = await transformWithEsbuild(
-  `function Featured({featuredListings,setSelectedListing,changeTab}) { return (${expression}); }`,
+  `function Featured({homeFeaturedListings,openListing}) { return (${expression}); }`,
   'featured-fixture.tsx',
   { jsx: 'transform', jsxFactory: 'React.createElement' }
 );
@@ -38,12 +39,15 @@ runInNewContext(noticeCompiled.code,{React,module:noticeModule,exports:noticeMod
 const notice = renderToStaticMarkup(React.createElement(noticeModule.exports.default,{
   offer:{monthly_price_try:150,description:'Vitrin ilanı için 1 aylık yayın ücreti.'},onRequest(){}
 }));
+const offerTeaser = renderToStaticMarkup(React.createElement(noticeModule.exports.default,{
+  offer:{monthly_price_try:150,description:'Vitrin ilanı için 1 aylık yayın ücreti.'},onRequest(){},expandable:true
+}));
 const photo = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="120"><rect width="200" height="120" fill="#d1fae5"/><path d="M0 95L65 35L110 80L150 40L200 100V120H0Z" fill="#166534"/></svg>');
 const render = count => renderToStaticMarkup(React.createElement(context.Featured, {
-  featuredListings: Array.from({ length: count }, (_, i) => ({
+  homeFeaturedListings: Array.from({ length: count }, (_, i) => ({
     id: i + 1, title: `Vitrin ilanı ${i + 1}`, images: [photo], price: (i + 1) * 1000, created_at: '2026-10-04T00:00:00Z'
   })),
-  setSelectedListing() {}, changeTab() {}
+  openListing() {}
 }));
 
 test('six featured listings render in a three-column grid without a horizontal carousel', () => {
@@ -61,6 +65,30 @@ test('additional featured listings are not truncated and empty state stays empty
   assert.equal((render(7).match(/<img /g) || []).length, 7);
   assert.equal(render(0), '');
 });
+test('home discovery and categories visually precede featured listings, with promotions below', () => {
+  const discovery = source.indexOf('<DiscoveryBar');
+  const categories = discoverySource.indexOf('className="rd-category-list"');
+  const featured = source.indexOf('{homeFeaturedListings.length > 0 && (');
+  const regular = source.indexOf('{(listingsLoading || listingsError || !homeFeaturedListings.length');
+  const promotions = source.indexOf('<div style={{ order: 4 }}>');
+  assert.ok(discovery >= 0 && categories >= 0);
+  assert.ok(source.includes('className="rd-strip"'));
+  assert.ok(source.includes('order: 1'));
+  assert.ok(source.includes('order: 2'));
+  assert.ok(source.includes('order: 3, marginBottom'));
+  assert.ok(regular > 0 && featured > 0 && promotions > 0);
+  assert.match(discoverySource, /Kelime veya ilan numarası ara/);
+  assert.match(discoverySource, /data-testid="select-sort"/);
+  assert.match(discoverySource, /data-testid="button-select-region"/);
+  assert.doesNotMatch(discoverySource, /Tarım ilanı kategorileri/);
+  assert.ok(source.indexOf('className="rd-discovery"') < featured);
+  assert.ok(source.includes('id="promo-featured"'));
+  assert.ok(source.includes('id="promo-store"'));
+  assert.ok(source.includes('id="promo-trial"'));
+  assert.ok(source.includes('className="pt-home-promo-grid"'));
+  assert.ok(source.includes('id="sponsors-section"'));
+  assert.ok(source.includes('activeTab !== \'home\' && announcementBanner'));
+});
 test('mobile spacing and hover stay subtle without changing columns, palette or card layout',()=>{
   const css=readFileSync(new URL('../src/site-interactions.css',import.meta.url),'utf8');
   assert.match(source,/import '\.\/site-interactions\.css'/);
@@ -73,13 +101,20 @@ test('mobile spacing and hover stay subtle without changing columns, palette or 
   assert.match(css,/:not\(:disabled\):not\(\[aria-disabled="true"\]\):hover/);
   assert.match(css,/brightness\(0\.96\)/);
   assert.match(css,/prefers-reduced-motion: reduce/);
-  assert.doesNotMatch(css,/grid-template-columns|background(-color)?\s*:|transform\s*:|transition:\s*all/);
+  assert.match(css,/--pt-card-column-gap: 8px/);
+  assert.match(css,/\.pt-site \.pt-home-promo-grid\s*\{/);
 });
 test('monthly fee notice is outside the listing count gate and editable from admin',()=>{
   assert.match(notice,/150 TL/);
   assert.match(notice,/1 aylık/);
   assert.match(notice,/button-request-featured-offer/);
-  assert.ok(source.indexOf('<FeaturedOfferNotice offer={siteSettings.settings.featured_offer}') < start);
+  assert.match(offerTeaser,/<details[^>]*data-testid="featured-offer-notice"/);
+  assert.match(offerTeaser,/<summary[^>]*data-testid="featured-offer-toggle"/);
+  assert.match(offerTeaser,/Ürününüzü daha çok kişiye gösterin/);
+  assert.match(offerTeaser,/150 TL/);
+  assert.match(offerTeaser,/button-request-featured-offer/);
+  assert.doesNotMatch(offerTeaser,/<details[^>]* open/);
+  assert.ok(source.indexOf('<FeaturedOfferNotice offer={siteSettings.settings.featured_offer} expandable') < start);
   assert.equal((source.match(/<FeaturedOfferNotice offer=/g)||[]).length,2);
   assert.match(source,/<FeaturedOfferManager state=\{siteSettings\} \/>/);
 });

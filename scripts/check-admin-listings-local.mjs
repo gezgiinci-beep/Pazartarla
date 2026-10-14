@@ -47,7 +47,7 @@ try{
     CREATE TABLE auth.users(id uuid PRIMARY KEY,email text,email_confirmed_at timestamptz,is_anonymous boolean DEFAULT false,banned_until timestamptz);
     CREATE TABLE public.listings(id serial PRIMARY KEY,title text,price numeric,category text,"subCategory" text,
       location text,description text,seller text,phone text,status text,image text,seotags text,mode text,
-      created_at timestamptz DEFAULT now(),expires_at timestamptz DEFAULT now()+interval '8 months');
+      created_at timestamptz DEFAULT now(),expires_at timestamptz DEFAULT now()+interval '12 months');
     CREATE TABLE public.site_settings(id text PRIMARY KEY,categories jsonb);
     INSERT INTO public.site_settings VALUES('public','{"Mahsuller":["Ceviz"]}');
     GRANT USAGE ON SCHEMA public,auth TO anon,authenticated;

@@ -13,7 +13,7 @@ try {
   const admin=(await client.query(`SELECT u.id,lower(u.email) email FROM auth.users u
     JOIN private.listing_admins a ON a.email=lower(u.email) WHERE u.email_confirmed_at IS NOT NULL LIMIT 1`)).rows[0];
   assert.ok(admin);
-  const listing=(await client.query("SELECT id::text id FROM public.listings WHERE status='approved' AND created_at+interval '8 months'>now() LIMIT 1")).rows[0];
+  const listing=(await client.query("SELECT id::text id FROM public.listings WHERE status='approved' AND expires_at>now() LIMIT 1")).rows[0];
   assert.ok(listing,'An approved active listing is needed.');
   async function role(name,claims) {
     await client.query('RESET ROLE');

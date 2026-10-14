@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { AlertCircle, ArrowLeft, Check, ExternalLink, Film, Image as ImageIcon, Plus, RefreshCw, Save, Trash2, UploadCloud, X } from 'lucide-react';
-import { AD_ACCEPT, adFile } from '../lib/advertisements';
+import { AD_ACCEPT, adFile, adPublicationConfirmation } from '../lib/advertisements';
 import type { Advertisement, AdvertisementDraft } from '../lib/advertisements';
 import type { useAdvertisements } from '../hooks/useAdvertisements';
 import './advertisements.css';
@@ -10,7 +10,7 @@ type AdvertisementState = ReturnType<typeof useAdvertisements>;
 type Props = { state: AdvertisementState; onBack: () => void };
 
 function createDraft(): AdvertisementDraft {
-  return { id: crypto.randomUUID(), title: '', target_url: '', is_active: true, file: null, existing: null };
+  return { id: crypto.randomUUID(), title: '', target_url: '', is_active: false, file: null, existing: null };
 }
 
 function formatSize(bytes: number) {
@@ -85,11 +85,13 @@ export default function AdvertisementManager({ state, onBack }: Props) {
   };
 
   const togglePublished = async (ad: Advertisement) => {
+    const publish = !ad.is_active;
+    if (!window.confirm(adPublicationConfirmation(ad.title, publish))) return;
     await save({
       id: ad.id,
       title: ad.title,
       target_url: ad.target_url ?? '',
-      is_active: !ad.is_active,
+      is_active: publish,
       file: null,
       existing: ad,
     });
@@ -199,22 +201,20 @@ export default function AdvertisementManager({ state, onBack }: Props) {
             )}
 
             <div className="pt-ad-status-line">
-              <button className="pt-ad-switch" type="button" role="switch" aria-checked={draft.is_active}
-                aria-label={draft.is_active ? 'Reklam yayında' : 'Reklam duraklatıldı'}
-                onClick={() => setDraft(current => ({ ...current, is_active: !current.is_active }))}
-                disabled={busy} data-testid="switch-advertisement-publish">
-                <span className="pt-ad-switch-track" aria-hidden="true"><span className="pt-ad-switch-thumb" /></span>
-                <span>{draft.is_active ? 'Yayında' : 'Duraklatıldı'}</span>
-              </button>
-              <span className={`pt-ad-status ${draft.is_active ? 'pt-ad-status-live' : ''}`} role="status" aria-live="polite">
-                {draft.is_active ? 'Yayınlanacak' : 'Gizli kalacak'}
+              <span className={`pt-ad-status ${draft.existing?.is_active ? 'pt-ad-status-live' : ''}`} role="status" aria-live="polite">
+                {draft.existing ? draft.existing.is_active ? 'Şu an yayında' : 'Yayında değil' : 'Taslak'}
+              </span>
+              <span className="pt-ad-help">
+                {isEditing
+                  ? 'Bu form yayın durumunu değiştirmez. Yayınlama veya duraklatma için listedeki düğmeyi kullanın.'
+                  : 'Kaydetmek yalnızca taslak oluşturur. Ziyaretçilere göstermek için liste üzerinden ayrıca onaylayıp yayınlayın.'}
               </span>
             </div>
 
             {formError && <div className="pt-ad-feedback pt-ad-feedback-error" role="alert" data-testid="error-advertisement-form"><AlertCircle size={16} /><span>{formError}</span></div>}
             <div className="pt-ad-actions">
               <button className="pt-ad-button pt-ad-button-primary" type="submit" disabled={busy} data-testid="button-save-advertisement">
-                <Save size={14} /> {busy ? 'Kaydediliyor…' : isEditing ? 'Değişiklikleri kaydet' : 'Reklamı kaydet'}
+                <Save size={14} /> {busy ? 'Kaydediliyor…' : isEditing ? 'Değişiklikleri kaydet' : 'Taslağı kaydet'}
               </button>
               {isEditing && <button className="pt-ad-button" type="button" onClick={resetDraft} disabled={busy} data-testid="button-cancel-edit-advertisement"><X size={14} /> Vazgeç</button>}
             </div>
@@ -225,7 +225,7 @@ export default function AdvertisementManager({ state, onBack }: Props) {
         <section className="pt-ad-panel" aria-labelledby="pt-ad-list-heading">
           <div className="pt-ad-row-head" style={{ marginBottom: 13 }}>
             <h2 className="pt-ad-panel-title" id="pt-ad-list-heading" style={{ margin: 0 }}>Reklamlar <span className="pt-ad-help">({items.length})</span></h2>
-            <span className="pt-ad-help" role="status" aria-live="polite">{busy ? 'İşlem sürüyor…' : 'Yayın durumunu anında değiştirebilirsiniz.'}</span>
+            <span className="pt-ad-help" role="status" aria-live="polite">{busy ? 'İşlem sürüyor…' : 'Yayınlama ve duraklatma ayrı onay ister.'}</span>
           </div>
           {loading ? (
             <div className="pt-ad-list" aria-label="Reklamlar yükleniyor" aria-busy="true">
@@ -261,7 +261,7 @@ export default function AdvertisementManager({ state, onBack }: Props) {
                     <div className="pt-ad-row-content">
                       <div className="pt-ad-row-head">
                         <h3 className="pt-ad-row-title" title={ad.title}>{ad.title}</h3>
-                        <span className={`pt-ad-status ${ad.is_active ? 'pt-ad-status-live' : ''}`} role="status" aria-live="polite">{ad.is_active ? 'Yayında' : 'Duraklatıldı'}</span>
+                        <span className={`pt-ad-status ${ad.is_active ? 'pt-ad-status-live' : ''}`} role="status" aria-live="polite">{ad.is_active ? 'Yayında' : 'Yayında değil'}</span>
                       </div>
                       {ad.target_url && <a className="pt-ad-row-link" href={ad.target_url} target="_blank" rel="noopener noreferrer"><ExternalLink size={11} /> {ad.target_url}</a>}
                       <div className="pt-ad-actions">

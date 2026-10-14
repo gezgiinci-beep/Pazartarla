@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useStoreMembership } from '../hooks/useStoreMembership';
-import type { StorePlan, StoreRequest } from '../lib/storeMembership';
+import { planCapacityText, planPriceText, storePlanChoices, storeUrl, type StorePlan, type StoreRequest } from '../lib/storeMembership';
+import { membershipAccess } from '../lib/membershipAccess';
 import './membership.css';
 
 type Props = {
@@ -9,18 +10,17 @@ type Props = {
   onSignIn: () => void;
   onStore: (id: string) => void;
   onSubmitted: () => void;
+  initialPlanId?: string;
 };
 
-const money = (amount: number) => new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 }).format(amount);
 const date = (value?: string) => value && Number.isFinite(Date.parse(value))
   ? new Intl.DateTimeFormat('tr-TR', { dateStyle: 'medium' }).format(new Date(value))
   : 'Tarih bilgisi yok';
-const confirmed = (session: any | null) => Boolean(session?.user?.email_confirmed_at);
 
-export default function MembershipPage({ state, session, onSignIn, onStore, onSubmitted }: Props) {
+export default function MembershipPage({ state, session, onSignIn, onStore, onSubmitted, initialPlanId }: Props) {
   const requestStorageKey='pt-membership-request-id:'+(session?.user?.id||'anonymous');
   const data = state.data;
-  const [planId, setPlanId] = useState('');
+  const [planId, setPlanId] = useState(initialPlanId || '');
   const [storeName, setStoreName] = useState('');
   const [description, setDescription] = useState('');
   const [storeRevision, setStoreRevision] = useState<number | null>(null);
@@ -29,9 +29,10 @@ export default function MembershipPage({ state, session, onSignIn, onStore, onSu
     try { return window.sessionStorage.getItem(requestStorageKey) || crypto.randomUUID(); }
     catch { return crypto.randomUUID(); }
   });
-  const activeStore = data?.mine?.store;
-  const membership = data?.mine?.membership;
-  const mineRequests = data?.mine?.requests ?? [];
+  const { signedIn, verified } = membershipAccess(session);
+  const activeStore = verified ? data?.mine?.store : null;
+  const membership = verified ? data?.mine?.membership : null;
+  const mineRequests = verified ? data?.mine?.requests ?? [] : [];
   const pending = mineRequests.some((request: StoreRequest) => request.status === 'pending');
   const expired = membership ? Date.parse(membership.ends_at) <= Date.now() : false;
   const canRequestMembership = !membership || expired;
@@ -47,18 +48,20 @@ export default function MembershipPage({ state, session, onSignIn, onStore, onSu
 
   const availablePlans = useMemo(() => data?.plans ?? [], [data?.plans]);
   const selectedPlan = availablePlans.find((plan: StorePlan) => plan.id === planId);
-  const verified = confirmed(session);
+  const trialUsed = data?.mine?.trial_used === true;
+  const trialSelected = selectedPlan?.billing_period === 'trial';
 
   const submitRequest = async (event: FormEvent) => {
     event.preventDefault();
     setFormError('');
-    if (!session || !verified) { setFormError('Talep göndermek için giriş yapın ve e-posta adresinizi doğrulayın.'); return; }
+    if (!verified) { setFormError('Talep göndermek için giriş yapın ve e-posta adresinizi doğrulayın.'); return; }
     if (!selectedPlan) { setFormError('Sunucudan yüklenen paketlerden birini seçin.'); return; }
     if (storeName.trim().length < 2 || storeName.trim().length > 100 || description.length > 500) {
       setFormError('Mağaza adı 2–100 karakter, açıklama en fazla 500 karakter olmalıdır.'); return;
     }
     try { window.sessionStorage.setItem(requestStorageKey, requestId); } catch { /* retry id stays in component state */ }
-    const ok = await state.action('request', requestId, null, {
+    if (trialSelected && trialUsed) { setFormError('Bu hesabın ücretsiz deneme hakkı kullanıldı'); return; }
+    const ok = await state.action(trialSelected ? 'trial_start' : 'request', requestId, null, {
       plan_id: selectedPlan.id, store_name: storeName.trim(), description: description.trim(),
     });
     if (ok) {
@@ -72,6 +75,7 @@ export default function MembershipPage({ state, session, onSignIn, onStore, onSu
   const saveStore = async (event: FormEvent) => {
     event.preventDefault();
     setFormError('');
+    if (!verified || !activeStore) { setFormError('Mağaza düzenlemek için doğrulanmış hesabınızla giriş yapın.'); return; }
     if (storeName.trim().length < 2 || storeName.trim().length > 100 || description.length > 500) {
       setFormError('Mağaza adı 2–100 karakter, açıklama en fazla 500 karakter olmalıdır.'); return;
     }
@@ -100,13 +104,23 @@ export default function MembershipPage({ state, session, onSignIn, onStore, onSu
       {state.loading && !data ? <div className="pt-member-loading" role="status"><span /> Üyelik bilgileri yükleniyor…</div> : null}
       {!state.loading && state.error && <button className="pt-button pt-button-secondary" type="button" onClick={() => void state.refresh()}>Yeniden yükle</button>}
 
+      {!signedIn && (
+        <section className="pt-member-panel" aria-labelledby="pt-member-signin-title" data-testid="membership-login-required">
+          <h2 id="pt-member-signin-title">Mağaza işlemleri için giriş yapın</h2>
+          <p className="pt-member-copy">Paketleri ve herkese açık mağazaları inceleyebilirsiniz. Başvuru, mağaza düzenleme ve üyelik bilgileri yalnız hesabınıza giriş yaptıktan sonra açılır.</p>
+          <button type="button" className="pt-button pt-button-primary" onClick={onSignIn}>Giriş yap / Üye ol</button>
+        </section>
+      )}
+      {signedIn && !verified && <div className="pt-member-alert" role="alert">Mağaza işlemleri için e-posta adresinizi doğrulayın. Doğrulama tamamlanmadan başvuru ve düzenleme alanları açılmaz.</div>}
+
       {membership && (
         <section className="pt-member-panel" aria-labelledby="pt-member-current">
           <div className="pt-section-head"><div><p className="pt-member-kicker">ÜYELİK DURUMU</p><h2 id="pt-member-current">{membership.plan_name}</h2></div>
             <span className={`pt-status ${expired ? 'is-muted' : 'is-approved'}`}>{expired ? 'Süresi doldu' : 'Aktif'}</span>
           </div>
           <p className="pt-member-copy">Dönem: <strong>{date(membership.starts_at)} – {date(membership.ends_at)}</strong></p>
-          <p className="pt-member-copy">Aylık ilan gönderim sınırı: <strong>{membership.monthly_limit}</strong> · Eşzamanlı aktif ilan kapasitesi: <strong>{membership.active_limit}</strong></p>
+          <p className="pt-member-copy">{membership.billing_period === 'trial' ? 'Ücretsiz deneme' : membership.billing_period === 'year' ? 'Yıllık paket' : 'Aylık paket'} kapasitesi: <strong>{planCapacityText(membership)}</strong></p>
+          {membership.billing_period === 'trial' && <p className="pt-member-note">Deneme {date(membership.ends_at)} tarihinde sona erer. Otomatik ücretlendirme veya yenileme yoktur.</p>}
           {!expired && <p className="pt-member-note">Yenileme talebi yalnızca mevcut dönem sona erdiğinde gönderilebilir.</p>}
         </section>
       )}
@@ -132,31 +146,43 @@ export default function MembershipPage({ state, session, onSignIn, onStore, onSu
       <section className="pt-member-section" aria-labelledby="pt-plans-title">
         <div className="pt-section-head"><div><p className="pt-member-kicker">PAKETLER</p><h2 id="pt-plans-title">İhtiyacınıza uygun kapasite</h2></div></div>
         {data && data.plans.length === 0 && <div className="pt-member-empty">Paket bilgisi şu anda sunucuda bulunmuyor. Lütfen daha sonra yeniden deneyin.</div>}
-        {data?.plans.length ? <div className="pt-plan-grid">{data.plans.map((plan: StorePlan) => (
-          <button key={plan.id} type="button" className={`pt-plan ${planId === plan.id ? 'is-selected' : ''}`} aria-pressed={planId === plan.id} onClick={() => setPlanId(plan.id)}>
-            <span className="pt-plan-name">{plan.name}</span><strong className="pt-plan-price">{money(plan.monthly_price_try)} <small>TL / ay</small></strong>
-            <span>{plan.monthly_limit} gönderim / ay</span><span>{plan.active_limit} eşzamanlı aktif ilan</span>
-            <span className="pt-plan-select">{planId === plan.id ? 'Seçildi' : 'Paketi seç'}</span>
-          </button>
-        ))}</div> : null}
-         <p className="pt-member-note">Aylık ilan kotası, üyelik döneminde eklenen yeni ilanları sayar. Listeleme kotası, aynı anda yayındaki ilan kapasitesidir. Onay bekleyen ilanlar bu kapasitede yer ayırır; iki kota birbirinden ayrıdır. Ücretli üyelerde günlük 3 ilan sınırı uygulanmaz; yönetici onayı devam eder.</p>
+        {data ? <div className="pt-plan-grid">{storePlanChoices(data.plans).map(({ plan, available }) => {
+          const annual = plan.billing_period === 'year';
+          const trial = plan.billing_period === 'trial';
+          const used = trial && trialUsed;
+          const usable = available && !used;
+          const sel = usable && planId === plan.id;
+          return <button key={plan.id} type="button" disabled={!usable} aria-disabled={!usable} data-testid={plan.id === 'package-3' ? 'plan-package-3' : trial ? 'plan-trial-30-days' : undefined} className={`pt-plan ${sel ? 'is-selected' : ''} ${annual ? 'is-annual' : ''} ${trial ? 'is-trial' : ''} ${!usable ? 'is-unavailable' : ''}`} aria-pressed={sel} onClick={() => usable && setPlanId(plan.id)}>
+            {annual && <span className="pt-plan-badge">Yıllık · Sınırsız</span>}
+            {trial && <span className="pt-plan-badge">Ücretsiz · 30 gün</span>}
+            {trial && <span>Doğrulanmış gönderimden hemen sonra başlar; ödeme gerekmez, otomatik yenileme yoktur. İlanlar yine yönetici onayından geçer.</span>}
+            <span className="pt-plan-name">{plan.name}{annual ? ' — Sınırsız' : ''}</span><strong className="pt-plan-price">{planPriceText(plan)}</strong>
+            <span>{planCapacityText(plan)}</span>
+            {annual && <span>Ödenen yıl boyunca; ilanlar yine yönetici onayından geçer.</span>}
+            {used ? <span className="pt-plan-wait" data-testid="trial-already-used">Bu hesabın ücretsiz deneme hakkı kullanıldı</span>
+              : available ? <span className="pt-plan-select">{sel ? 'Seçildi' : 'Paketi seç'}</span>
+              : <span className="pt-plan-wait" data-testid={trial ? 'trial-plan-setup-required' : 'annual-plan-setup-required'}>{trial ? 'Kurulum bekleniyor' : 'Yönetici kurulumu bekleniyor'}</span>}
+          </button>;
+        })}</div> : null}
+         <p className="pt-member-note">Aylık ilan kotası, üyelik döneminde eklenen yeni ilanları sayar. Listeleme kotası, aynı anda yayındaki ilan kapasitesidir. Onay bekleyen ilanlar bu kapasitede yer ayırır; iki kota birbirinden ayrıdır. Sınırsız paket, ödenen yıl boyunca sınırsız yeni gönderim ve aktif ilan demektir; yönetici yetkisi vermez, moderasyonu atlamaz. İlanlar veriliş tarihinden itibaren 12 takvim ayı yayında kalır. Ücretli üyelerde günlük 3 ilan sınırı uygulanmaz; yönetici onayı devam eder.</p>
       </section>
 
-      {(!activeStore || expired) && (
+      {verified && (!activeStore || expired) && (
         <section className="pt-member-panel" aria-labelledby="pt-request-title">
           <div className="pt-section-head"><div><p className="pt-member-kicker">BAŞVURU</p><h2 id="pt-request-title">{membership && expired ? 'Yeni dönem talebi' : 'Mağaza başvurusu'}</h2></div></div>
-          {session && !verified && <div className="pt-member-alert">Başvuru için giriş yapılmış ve e-posta adresi doğrulanmış hesap gerekir.</div>}
-          {!session && <div className="pt-member-callout"><span>Başvuru için hesabınıza giriş yapın.</span><button type="button" className="pt-button pt-button-secondary" onClick={onSignIn}>Giriş yap</button></div>}
           {!canRequestMembership && <div className="pt-member-note">Üyeliğiniz dönem sonuna kadar aktif. Yenileme talebini dönem sona erdiğinde gönderebilirsiniz.</div>}
           {pending && <div className="pt-member-note">Bekleyen bir talebiniz var. Yönetici incelemesi tamamlanana kadar yeni talep gönderemezsiniz.</div>}
           <form className="pt-member-form" onSubmit={submitRequest}>
+            {!selectedPlan && <div className="pt-member-alert" role="status">Başvurmadan önce yukarıdaki paketlerden birini seçin. Kartta “Seçildi” yazmalıdır.</div>}
              <label>Mağaza adı<input value={storeName} maxLength={100} minLength={2} required onChange={e => {dirty.current=true;setStoreName(e.target.value);}} placeholder="Örn. Akpınar Çiftliği" /></label>
              <label>Mağaza tanıtımı <span className="pt-optional">İsteğe bağlı</span><textarea value={description} maxLength={500} rows={4} onChange={e => {dirty.current=true;setDescription(e.target.value);}} placeholder="Ürünlerinizi ve üretim yerinizi kısaca anlatın." /><small>{description.length}/500</small></label>
+            {trialSelected && trialUsed && <div className="pt-member-alert" role="status">Bu hesabın ücretsiz deneme hakkı kullanıldı</div>}
             {formError && <div className="pt-member-alert" role="alert">{formError}</div>}
-            <button className="pt-button pt-button-primary" type="submit" disabled={!selectedPlan || !session || !verified || !canRequestMembership || pending || state.busy || state.loading || !data?.plans.length}>
-              {state.busy ? 'Talep gönderiliyor…' : 'Üyelik talebi gönder'}
+            <button className="pt-button pt-button-primary" type="submit" disabled={(trialSelected && trialUsed) || !selectedPlan || !session || !verified || !canRequestMembership || pending || state.busy || state.loading || !data?.plans.length}>
+              {state.busy ? (trialSelected ? 'Deneme başlatılıyor…' : 'Talep gönderiliyor…') : trialSelected ? '30 günlük denemeyi başlat' : 'Üyelik talebi gönder'}
             </button>
-            <p className="pt-member-fine">Ödeme banka havalesiyle yapılır. Talep, ödemenin yönetici tarafından gerçekten doğrulanıp onaylanmasına kadar üyeliği etkinleştirmez. Otomatik yenileme yoktur.</p>
+            {trialSelected ? <p className="pt-member-fine">Doğrulanmış hesabınızla gönderdiğinizde deneme hemen başlar; yönetici onayı beklenmez ve ödeme gerekmez. 30 gün sonra sona erer, otomatik ücretlendirme yoktur.</p>
+              : <p className="pt-member-fine">Ödeme banka havalesiyle yapılır. Talep, ödemenin yönetici tarafından gerçekten doğrulanıp onaylanmasına kadar üyeliği etkinleştirmez. Otomatik yenileme yoktur.</p>}
           </form>
         </section>
       )}
@@ -164,8 +190,8 @@ export default function MembershipPage({ state, session, onSignIn, onStore, onSu
       {mineRequests.length > 0 && <section className="pt-member-section" aria-labelledby="pt-history-title">
         <p className="pt-member-kicker">TALEP GEÇMİŞİ</p><h2 id="pt-history-title">Başvurularınız</h2>
         <div className="pt-request-list">{mineRequests.map((request: StoreRequest) => <article className="pt-request-row" key={request.id}>
-          <div><strong>{request.store_name}</strong><span>{request.plan_name} · {date(request.created_at)}</span></div>
-          <span className={`pt-status is-${request.status}`}>{request.status === 'pending' ? 'İncelemede' : request.status === 'approved' ? 'Onaylandı' : 'Reddedildi'}</span>
+          <div><strong>{request.store_name}</strong><span>{request.plan_name} · {planPriceText(request)} · {planCapacityText(request)} · {date(request.created_at)}</span></div>
+          <span className={`pt-status is-${request.status}`}>{request.billing_period === 'trial' ? 'Deneme başladı' : request.status === 'pending' ? 'İncelemede' : request.status === 'approved' ? 'Onaylandı' : 'Reddedildi'}</span>
         </article>)}</div>
       </section>}
 
@@ -182,7 +208,7 @@ export default function MembershipPage({ state, session, onSignIn, onStore, onSu
 
 function StoreUrl({ id }: { id: string }) {
   const [copied, setCopied] = useState(false);
-  const url = typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname}?magaza=${encodeURIComponent(id)}` : '';
+  const url = typeof window !== 'undefined' ? storeUrl(id,window.location.href) : '';
   const copy = async () => {
     try { await navigator.clipboard.writeText(url); setCopied(true); window.setTimeout(() => setCopied(false), 1800); }
     catch { setCopied(false); }

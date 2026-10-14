@@ -12,7 +12,7 @@ and on the submission page. Its button opens the existing business WhatsApp
 contact with the current canonical monthly price. No checkout, payment
 collection, automatic featuring or automatic one-month featured-status expiry
 is introduced. Administrators continue managing featured flags manually.
-The eight-month archive lifetime of a listing remains unchanged.
+Listings retain the 12-calendar-month archive lifetime.
 
 The protected administrator **Vitrin Ücreti** section edits the price and
 description, with a live preview. Only the price notice is edited here.

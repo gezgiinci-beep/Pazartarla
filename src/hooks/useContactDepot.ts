@@ -1,8 +1,11 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
-import {depotRpc,parseDepotPage,validateContact} from '../lib/contactDepot';
+import {depotRpc,parseDepotPage,tursoDepotRpc,validateContact} from '../lib/contactDepot';
 import type {CampaignDraft,ContactDraft,DepotPage,MessageChannel} from '../lib/contactDepot';
 import {parseImportResults} from '../lib/contactImport';
 import type {ImportRow} from '../lib/contactImport';
+const TURSO_AUTH_ENABLED=import.meta.env.VITE_AUTH_BACKEND==='turso';
+const callDepot=(url:string,headers:Record<string,string>,name:string,args:unknown)=>
+  TURSO_AUTH_ENABLED?tursoDepotRpc(name,args):depotRpc(url,headers,name,args);
 export function useContactDepot(enabled:boolean,url:string,getHeaders:()=>Promise<Record<string,string>>) {
   const [data,setData]=useState<DepotPage|null>(null);
   const [search,setSearch]=useState(''),[page,setPage]=useState(0),[archived,setArchived]=useState(false);
@@ -12,7 +15,7 @@ export function useContactDepot(enabled:boolean,url:string,getHeaders:()=>Promis
     if(!enabled)return false;
     const n=++sequence.current;setLoading(true);setError('');
     try {
-      const result=parseDepotPage(await depotRpc(url,await getHeaders(),'get_contact_depot',{
+      const result=parseDepotPage(await callDepot(url,await getHeaders(),'get_contact_depot',{
         p_search:search,p_page:page,p_archived:archived}));
       if(n!==sequence.current)return false;
       if(result.total>0&&page*50>=result.total){setPage(Math.ceil(result.total/50)-1);return false;}
@@ -37,7 +40,7 @@ export function useContactDepot(enabled:boolean,url:string,getHeaders:()=>Promis
     if(!enabled||lock.current)return false;
     const current=scope.current;lock.current=true;setBusy(true);setError('');setNotice('');
     try {
-      const ack=await depotRpc(url,await getHeaders(),name,args);
+      const ack=await callDepot(url,await getHeaders(),name,args);
       if(ack!==true&&!(typeof ack==='string'&&/^[0-9a-f-]{36}$/.test(ack)))throw Error('Sunucu kaydı doğrulamadı. Yenileyip kontrol edin.');
       if(current!==scope.current)return false;
       setNotice(message);
@@ -56,7 +59,7 @@ export function useContactDepot(enabled:boolean,url:string,getHeaders:()=>Promis
     const current=scope.current;lock.current=true;setBusy(true);setError('');
     try {
       const args=save?{p_rows:rows,p_request_id:requestId}:{p_rows:rows};
-      const result=parseImportResults(await depotRpc(url,await getHeaders(),
+      const result=parseImportResults(await callDepot(url,await getHeaders(),
         save?'import_depot_contacts':'preview_depot_import',args),rows,save);
       if(current!==scope.current)throw Error('Yönetici oturumu değişti. Kaydedilen kişileri yeniden giriş yapıp kontrol edin.');
       return result;

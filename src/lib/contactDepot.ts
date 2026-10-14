@@ -59,6 +59,25 @@ export async function depotRpc(url:string,headers:Record<string,string>,name:str
   const response=await request(url.replace(/\/$/,'')+'/rest/v1/rpc/'+name,{
     method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify(args),
     cache:'no-store',signal:AbortSignal.timeout(15_000)});
+  return parseDepotRpcResponse(response,name);
+}
+export async function tursoDepotRpc(name:string,args:unknown,request=fetch) {
+  const isRead=name==='get_contact_depot';
+  const query=args as {p_search?:string;p_page?:number;p_archived?:boolean};
+  const base=(import.meta.env?.BASE_URL||'/').replace(/\/$/,'');
+  const endpoint=isRead
+    ? base+'/api/contact-depot?'+new URLSearchParams({
+      search:query.p_search||'',page:String(query.p_page||0),archived:String(query.p_archived===true)
+    }).toString()
+    : base+'/api/contact-depot';
+  const response=await request(endpoint,{
+    method:isRead?'GET':'POST',
+    credentials:'same-origin',
+    ...(isRead?{}:{headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({operation:name,args})}),
+    cache:'no-store',signal:AbortSignal.timeout(15_000)});
+  return parseDepotRpcResponse(response,name,!isRead);
+}
+async function parseDepotRpcResponse(response:Response,name:string,isWrapped=false) {
   if(!response.ok) {
     const failure=await response.json().catch(()=>({}));
     const messages:Record<string,string>={
@@ -73,12 +92,14 @@ export async function depotRpc(url:string,headers:Record<string,string>,name:str
       CONTACT_IMPORT_INVALID:'İçe aktarım bilgileri geçersiz. Dosyayı yeniden seçin.',
       CONTACT_IMPORT_CHANGED:'Bu aktarım kimliği farklı veriyle kullanılmış. Dosyayı yeniden seçin.',
     };
-    if(messages[failure.message])throw Error(messages[failure.message]);
+    const code=failure.error||failure.message;
+    if(messages[code])throw Error(messages[code]);
     if(response.status===401||response.status===403)throw Error(name==='unsubscribe_depot_contact'
       ?'Çıkış bağlantısı şu an doğrulanamıyor. Site yöneticisine bildirin.'
       :'Bu işlem için yetkili yönetici girişi gerekiyor.');
     if(response.status===404)throw Error('Kişi deposu veritabanı kurulumu eksik.');
     throw Error('İşlem kaydedilemedi (HTTP '+response.status+'). Yenileyip durumu kontrol edin.');
   }
-  return response.json();
+  const value=await response.json();
+  return isWrapped?value?.result:value;
 }

@@ -119,7 +119,7 @@
 .pt-ad-placement-body { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; }
 .pt-ad-placement-title { margin: 0; color: var(--ad-forest); font-size: 14px; line-height: 1.35; font-weight: 800; }
 .pt-ad-visit { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 5px; color: var(--ad-leaf); font-size: 11px; font-weight: 800; text-decoration: none; }
-.pt-ad-media-error { display: grid; place-items: center; min-height: 80px; padding: 12px; color: #8d332d; background: #fff2ef; font-size: 11px; text-align: center; }
+.pt-ad-media-error { display: grid; place-items: center; min-height: 80px; padding: 12px; color: #596354; background: #f4f5ec; font-size: 11px; text-align: center; }
 @keyframes pt-ad-shimmer { to { background-position: -200% 0; } }
 @media (max-width: 760px) {
   .pt-ad-manager { padding: 15px; }

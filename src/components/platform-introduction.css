@@ -1,0 +1,16 @@
+.pt-intro { max-width: 960px; margin: 24px auto; padding: 0 12px; box-sizing: border-box; color: #1b3a2b; }
+.pt-intro *, .pt-intro *::before { box-sizing: border-box; }
+.pt-intro__summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; padding: 8px 16px; cursor: pointer; list-style: none; font-weight: 700; font-size: 14px; background: #f6efd9; border: 1px solid #e3d5a4; border-left: 4px solid #166534; border-radius: 8px; }
+.pt-intro__summary::-webkit-details-marker { display: none; }
+.pt-intro__summary:focus-visible { outline: 3px solid #166534; outline-offset: 2px; }
+.pt-intro__chev { width: 8px; height: 8px; border-right: 2px solid #166534; border-bottom: 2px solid #166534; transform: rotate(45deg); margin-top: -4px; flex: none; }
+.pt-intro[open] .pt-intro__chev { transform: rotate(-135deg); margin-top: 4px; }
+.pt-intro[open] .pt-intro__summary { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.pt-intro__body { padding: 20px 18px; background: #fffdf5; border: 1px solid #e3d5a4; border-top: 0; border-radius: 0 0 8px 8px; font-size: 14px; line-height: 1.7; color: #334155; overflow-wrap: anywhere; }
+.pt-intro__body h2 { margin: 0 0 12px; font-size: 18px; line-height: 1.35; color: #1b3a2b; }
+.pt-intro__body h3 { margin: 20px 0 8px; font-size: 15px; color: #166534; }
+.pt-intro__body p { margin: 0 0 12px; }
+.pt-intro__benefits { margin: 0 0 12px; padding: 0; list-style: none; display: grid; gap: 8px; }
+.pt-intro__benefits li { padding: 10px 12px; background: #f6efd9; border-left: 3px solid #166534; border-radius: 4px; }
+.pt-intro__benefits strong { color: #1b3a2b; }
+@media (min-width: 768px) { .pt-intro__body { padding: 24px 28px; font-size: 15px; } .pt-intro__body h2 { font-size: 21px; } }

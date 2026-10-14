@@ -1,5 +1,31 @@
 # Mağaza paketleri — güvenli aktivasyon
 
+## Canlı kurulum durumu — 2026-10-05
+
+Kullanıcı mağaza başvurusunu canlıda etkinleştirmeyi açıkça onayladı.
+`reviewed_changes/20261004_store_memberships.sql` hedef Supabase projesinde
+uygulandı; özel paket/mağaza/başvuru/üyelik/ödeme tabloları ve sunucu işlevleri
+oluşturuldu. Mevcut ilan, kullanıcı, fotoğraf ve gönderim geçmişini yeniden
+yazan veya silen bir işlem çalıştırılmadı; hiçbir gerçek üyelik etkinleştirilmedi.
+
+Anonim katalog cevabı, arayüzün gerçek `parseStoreData` sözleşmesiyle transaction
+içinde doğrulandı. Özel tabloların RLS'i ve anonim başvuru yetkisinin kapalı
+olması doğrulandı. Dosyanın sonundaki şema bildirimi, kurulum doğrulamasıyla
+birlikte COMMIT öncesinde gönderildi; transaction başarıyla tamamlandı.
+Ardından canlı PostgREST kataloğu da gerçek arayüz çağrısıyla iki paketi
+başarıyla döndürdü; anonim cevaba özel başvuru/ödeme geçmişi dahil edilmedi.
+
+Yeni Vercel frontend yayını gerekmedi: mevcut mağaza ekranı bu işlevleri çağırır.
+Eski hata ekranındaki **Yeniden yükle** düğmesi paketleri formu sıfırlamadan
+yeniden getirir. Paket seçimi ve doğrulanmış e-posta oturumu başvuru koşuludur.
+Havale/EFT kontrolü ve yönetici onayı olmadan ücretli üyelik başlamaz.
+
+Kullanıcının önceki ek prova/testleri durdurma isteği nedeniyle gerçek hesapla
+başvuru/ödeme fixture'ı veya yeni kurtarma provası çalıştırılmadı. Tam kurtarma
+ve Storage-byte yedeği doğrulanmış sayılmaz; oturumlu başvuru, yönetici ödeme
+onayı ve yenilemenin uçtan uca başarı kanıtı ayrıca yoktur. Bu aktivasyon,
+gelecekteki değişikliklerin koruma koşullarını kalıcı olarak kaldırmaz.
+
 ## İş kuralı
 - Paket 1: **350 TL/ay**, yeni gönderim **30**, aynı anda aktif ilan **100**.
 - Paket 2: **500 TL/ay**, yeni gönderim **150**, aynı anda aktif ilan **250**.
@@ -31,7 +57,7 @@ başvuru geçmişi anonim mağaza cevabına dahil edilmez.
 ## Üretim öncesi zorunlu sıra
 1. DATA_PROTECTION.md uyarınca doğrulanmış şifreli yedek, manifest ve geri
    yükleme provası. Gerçek üretim verisiyle test yoktur.
-2. Doğrulanmış/moderasyonlu üyelik, yönetici muafiyeti, 8 ay sona erme ve
+2. Doğrulanmış/moderasyonlu üyelik, yönetici muafiyeti, 12 takvim ayı sona erme ve
    owner-listing-edit altyapısı kurulmuş olmalı.
 3. `reviewed_changes/20261004_store_memberships.sql` ayrıca incelenip ayrı
    kullanıcı onayı sonrası yetkili operatörce uygulanır. Tarihî migration

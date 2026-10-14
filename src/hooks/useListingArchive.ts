@@ -3,6 +3,8 @@ export type ArchivedListing = {
   id: number; title: string; created_at: string; expires_at: string; status: string;
 };
 const PAGE_SIZE = 50;
+const TURSO_AUTH_ENABLED = import.meta.env.VITE_AUTH_BACKEND === 'turso';
+const API_BASE = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
 export function useListingArchive(enabled: boolean, url: string, getHeaders: () => Promise<Record<string, string>>) {
   const [items, setItems] = useState<ArchivedListing[]>([]);
   const [loading, setLoading] = useState(false);
@@ -20,18 +22,23 @@ export function useListingArchive(enabled: boolean, url: string, getHeaders: () 
     const offset = more ? count.current : 0;
     setLoading(true); setError('');
     try {
-      const response = await fetch(`${url}/rest/v1/listing_archive?select=*&order=expires_at.desc,id.desc&limit=${PAGE_SIZE + 1}&offset=${offset}`, {
-        headers: await getHeaders(), cache: 'no-store', signal: AbortSignal.timeout(15_000)
-      });
+      const response = TURSO_AUTH_ENABLED
+        ? await fetch(`${API_BASE}/api/listing-archive?offset=${offset}`, {
+          credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.timeout(15_000)
+        })
+        : await fetch(`${url}/rest/v1/listing_archive?select=*&order=expires_at.desc,id.desc&limit=${PAGE_SIZE + 1}&offset=${offset}`, {
+          headers: await getHeaders(), cache: 'no-store', signal: AbortSignal.timeout(15_000)
+        });
       if (!response.ok) throw new Error('ARCHIVE_LOAD_FAILED');
-      const rows = await response.json();
+      const payload = await response.json();
+      const rows = TURSO_AUTH_ENABLED ? payload?.items : payload;
       if (!Array.isArray(rows) || rows.some(row => !Number.isSafeInteger(row.id) || typeof row.title !== 'string' ||
         !Number.isFinite(Date.parse(row.created_at)) || !Number.isFinite(Date.parse(row.expires_at)))) throw new Error('ARCHIVE_LOAD_FAILED');
       if (active.current && sequence.current === n) {
         const page = rows.slice(0, PAGE_SIZE);
         setItems(previous => more ? [...previous, ...page.filter(row => !previous.some(item => item.id === row.id))] : page);
         count.current = offset + page.length;
-        setHasMore(rows.length > PAGE_SIZE);
+        setHasMore(TURSO_AUTH_ENABLED ? payload.has_more === true : rows.length > PAGE_SIZE);
       }
     } catch {
       if (active.current && sequence.current === n) setError('İlan arşivi yüklenemedi. Yönetici oturumunuzu ve bağlantınızı kontrol edip yeniden deneyin.');
@@ -54,11 +61,16 @@ export function useListingArchive(enabled: boolean, url: string, getHeaders: () 
     const n = ++detailSequence.current;
     setBusyId(id); setError('');
     try {
-      const response = await fetch(`${url}/rest/v1/listings?id=eq.${id}&select=*`, {
-        headers: await getHeaders(), cache: 'no-store', signal: AbortSignal.timeout(15_000)
-      });
+      const response = TURSO_AUTH_ENABLED
+        ? await fetch(`${API_BASE}/api/listing-archive?id=${encodeURIComponent(id)}`, {
+          credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.timeout(15_000)
+        })
+        : await fetch(`${url}/rest/v1/listings?id=eq.${id}&select=*`, {
+          headers: await getHeaders(), cache: 'no-store', signal: AbortSignal.timeout(15_000)
+        });
       if (!response.ok) throw new Error('ARCHIVE_DETAIL_FAILED');
-      const rows = await response.json();
+      const payload = await response.json();
+      const rows = TURSO_AUTH_ENABLED ? [payload?.listing] : payload;
       if (!Array.isArray(rows) || rows.length !== 1 || rows[0].id !== id) throw new Error('ARCHIVE_DETAIL_FAILED');
       return active.current && detailSequence.current === n ? rows[0] : null;
     } catch {

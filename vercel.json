@@ -23,6 +23,10 @@
       },
       "continue": true
     },
+    {
+      "src": "/api/auth/(.*)",
+      "dest": "/api/auth-router?action=$1"
+    },
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]

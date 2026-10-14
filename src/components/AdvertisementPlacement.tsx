@@ -39,7 +39,7 @@ export default function AdvertisementPlacement({ state, admin, onManage }: Props
             return (
               <article className="pt-ad-placement-card" key={ad.id} data-testid={`placement-advertisement-${ad.id}`}>
                 {broken ? (
-                  <div className="pt-ad-media-error" role="status" aria-live="polite">Tanıtım medyası yüklenemedi. Lütfen daha sonra tekrar deneyin.</div>
+                  <div className="pt-ad-media-error" role="status" aria-live="polite">Tanıtım görseli geçici olarak görüntülenemiyor.</div>
                 ) : ad.media_type === 'video' ? (
                   <video
                     className="pt-ad-placement-media"

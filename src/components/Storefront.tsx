@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { useStoreMembership } from '../hooks/useStoreMembership';
 import './membership.css';
 
-type Props = { state: ReturnType<typeof useStoreMembership>; normalize: (row: any) => any; onListing: (row: any) => void; onBack: () => void };
+type Props = { state: ReturnType<typeof useStoreMembership>; normalize: (row: any) => any; onListing: (row: any) => void; onBack: () => void; offerIds?: number[]; invalidLink?: boolean };
 
-export default function Storefront({ state, normalize, onListing, onBack }: Props) {
+export default function Storefront({ state, normalize, onListing, onBack, offerIds=[], invalidLink=false }: Props) {
   const store = state.data?.store;
   const [broken, setBroken] = useState<Record<string, boolean>>({});
   const rows = state.data?.listings ?? [];
   const retry = () => { void state.refresh(); };
+  if(invalidLink)return <main className="pt-membership pt-storefront"><div className="pt-member-alert" role="alert">Mağaza bağlantısı geçersiz. Adreste tek bir geçerli magaza numarası bulunmalı.</div><button className="pt-text-button pt-back" type="button" onClick={onBack}>← Mağazalara dön</button></main>;
   return <main className="pt-membership pt-storefront">
     <button className="pt-text-button pt-back" type="button" onClick={onBack}>← Mağazalara dön</button>
     {state.loading && !state.data && <div className="pt-member-loading" role="status"><span /> Mağaza bilgileri yükleniyor…</div>}
@@ -25,7 +26,7 @@ export default function Storefront({ state, normalize, onListing, onBack }: Prop
           try { const parsed = new URL(candidate, window.location.origin); if (['https:', 'http:'].includes(parsed.protocol)) src = parsed.href; } catch { /* render safe image fallback */ }
           return <button type="button" className="pt-listing-card" key={key} onClick={() => onListing(item)}>
             {src && !broken[key] ? <img src={src} alt="" loading="lazy" onError={() => setBroken(current => ({ ...current, [key]: true }))} /> : <span className="pt-listing-image-fallback">PazarTarla</span>}
-            <span className="pt-listing-copy"><strong>{item?.title || 'İlan'}</strong><span>{[item?.category, item?.location].filter(Boolean).join(' · ')}</span>{item?.price != null && <b>{new Intl.NumberFormat('tr-TR').format(Number(item.price))} TL</b>}</span>
+            <span className="pt-listing-copy"><strong>{item?.title || 'İlan'}</strong><span>{[item?.category, item?.location].filter(Boolean).join(' · ')}</span>{item?.price != null && <b>{new Intl.NumberFormat('tr-TR').format(Number(item.price))} TL</b>}{offerIds.includes(Number(item.id))&&<span data-testid={`badge-store-offers-${item.id}`} style={{fontWeight:700,color:'#795d20'}}>Teklife açık — özel teklif ver</span>}</span>
           </button>;
         })}</div> : state.loading ? <div className="pt-member-loading" role="status"><span /> İlanlar yükleniyor…</div> : <div className="pt-member-empty">Bu mağazada şu anda yayındaki ilan bulunmuyor.</div>}
       </section>

@@ -24,3 +24,331 @@
     transition: none;
   }
 }
+
+.pt-site .rd-strip {
+  background: #1b3a2b;
+  color: #fff;
+  border-radius: 12px 12px 0 0;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pt-site .rd-discovery {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0 0 12px 12px;
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+  scroll-margin-top: 150px;
+}
+
+.pt-site .rd-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  padding: 0 10px;
+  background: #fffef9;
+}
+
+.pt-site .rd-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  padding: 10px 0;
+  font: inherit;
+  background: none;
+}
+
+.pt-site .rd-category-list {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+}
+
+.pt-site .rd-category-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 68px;
+  width: 100%;
+  padding: 10px 4px;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid #e7ede8;
+  text-align: left;
+  font: inherit;
+  color: #1b3a2b;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.pt-site .rd-category-row > svg {
+  flex: none;
+  margin-left: auto;
+  color: #829488;
+}
+
+.pt-site .rd-category-copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+}
+
+.pt-site .rd-category-copy strong {
+  overflow: hidden;
+  color: #1b3a2b;
+  font-size: 16px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pt-site .rd-category-copy small {
+  overflow: hidden;
+  color: #78877c;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pt-site .rd-category-row:hover,
+.pt-site .rd-category-row.on {
+  background: #edf5ef;
+}
+
+.pt-site .rd-category-row:focus-visible,
+.pt-site .rd-category-back:focus-visible {
+  outline: 2px solid #b29647;
+  outline-offset: 2px;
+}
+
+.pt-site .rd-category-back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 0;
+  border: 0;
+  background: none;
+  color: #386247;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.pt-site .rd-category-selected {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 4px;
+  border-radius: 8px;
+  background: #f4f8f3;
+  color: #1b3a2b;
+}
+
+.pt-site .rd-category-sub {
+  min-height: 48px;
+  padding-left: 18px;
+}
+
+.pt-site .rd-category-sub .rd-category-copy strong {
+  font-size: 14px;
+}
+
+.pt-site .rd-filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+}
+
+.pt-site .rd-filters select {
+  min-width: 0;
+  padding: 8px 6px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: #fff;
+  font-size: 12px;
+}
+
+.pt-site .rd-count {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.pt-site .rd-region-choice,
+.pt-site .rd-view-all,
+.pt-site .rd-location-action button {
+  min-height: 38px;
+  padding: 4px 8px;
+  border: 0;
+  background: none;
+  color: #315e43;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.pt-site .rd-location-action {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.pt-site .rd-location-action button {
+  min-height: 34px;
+}
+
+.pt-site .rd-region-dialog {
+  width: min(420px, calc(100vw - 32px));
+  max-height: calc(100dvh - 48px);
+  box-sizing: border-box;
+  overflow: auto;
+  border: 1px solid #dce5dc;
+  border-radius: 12px;
+  padding: 18px;
+  background: #fff;
+  color: #244735;
+}
+
+.pt-site .rd-region-dialog::backdrop {
+  background: rgb(15 35 25 / 35%);
+}
+
+.pt-site .rd-region-dialog[open] {
+  display: grid;
+  gap: 12px;
+}
+
+.pt-site .rd-region-dialog-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.pt-site .rd-region-dialog h2 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font-size: 18px;
+}
+
+.pt-site .rd-note {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.pt-site .rd-region-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.pt-site .rd-region-fields label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  color: #386247;
+  font-size: 12px;
+}
+
+.pt-site .rd-region-fields select {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 6px;
+  border: 1px solid #e2e8e2;
+  border-radius: 6px;
+  background: #fff;
+  color: #526852;
+  font: inherit;
+}
+
+.pt-site .rd-region-fields select:disabled {
+  background: #fafbf9;
+  color: #879087;
+}
+
+.pt-site .rd-region-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.pt-site .rd-region-actions button {
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 1px solid #dce5dc;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.pt-site .rd-region-go {
+  background: #fff;
+  color: #315e43;
+  font-weight: 600;
+}
+
+.pt-site .rd-region-clear {
+  background: none;
+  color: #647564;
+}
+
+.pt-site .rd-region-dialog select:focus-visible,
+.pt-site .rd-region-dialog button:focus-visible {
+  outline: 2px solid #315e43;
+  outline-offset: 2px;
+}
+
+.pt-site .pt-home-promo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 8px;
+  margin: 8px auto 14px;
+}
+
+.pt-site .pt-home-promo-grid > details,
+.pt-site .pt-home-promo-grid > div {
+  min-width: 0;
+}
+
+.pt-site .pt-home-promo-grid > details[open],
+.pt-site .pt-home-promo-grid > div:has(> details[open]) {
+  grid-column: 1 / -1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pt-site .rd-category-row {
+    scroll-behavior: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .pt-site .pt-home-promo-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .pt-site .pt-home-promo-grid > details:nth-child(3):not([open]),
+  .pt-site .pt-home-promo-grid > div:nth-child(3):not(:has(> details[open])) {
+    grid-column: 1 / -1;
+  }
+}

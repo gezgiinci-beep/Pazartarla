@@ -8,8 +8,13 @@ try {
   await c.connect(); await assertTestEnvironment(c); await c.query('BEGIN');
   await c.query("SET LOCAL statement_timeout='15s'");
   if (process.argv.includes('--with-migration')) {
-    const sql = readFileSync(new URL('../supabase/migrations/20261004_listing_expiry.sql',import.meta.url),'utf8');
-    await c.query(sql.replace(/^BEGIN;/,'').replace(/COMMIT;\s*$/,''));
+    for (const path of [
+      '../supabase/migrations/20261004_listing_expiry.sql',
+      '../supabase/reviewed_changes/20261012_listing_expiry_twelve_months.sql',
+    ]) {
+      const sql = readFileSync(new URL(path,import.meta.url),'utf8');
+      await c.query(sql.replace(/(^|\n)\s*BEGIN;\s*/i,'$1').replace(/\s*COMMIT;\s*$/i,''));
+    }
   }
   const admin = (await c.query(`SELECT u.id,lower(u.email) AS email FROM auth.users u
     JOIN private.listing_admins a ON a.email=lower(u.email) WHERE u.email_confirmed_at IS NOT NULL LIMIT 1`)).rows[0];
@@ -28,12 +33,13 @@ try {
   };
   stage='calendar month and timezone boundaries';
   for (const [created,expected] of [
-    ['2026-01-31T09:00:00+03:00','2026-09-30T09:00:00+03:00'],
-    ['2023-06-30T09:00:00+03:00','2024-02-29T09:00:00+03:00'],
-    ['2024-06-30T09:00:00+03:00','2025-02-28T09:00:00+03:00'],
-    ['2026-01-31T22:30:00Z','2026-09-30T22:30:00Z'],
+    ['2026-01-31T09:00:00+03:00','2027-01-31T09:00:00+03:00'],
+    ['2023-06-30T09:00:00+03:00','2024-06-30T09:00:00+03:00'],
+    ['2024-06-30T09:00:00+03:00','2025-06-30T09:00:00+03:00'],
+    ['2024-02-29T09:00:00+03:00','2025-02-28T09:00:00+03:00'],
+    ['2026-01-31T22:30:00Z','2027-01-31T22:30:00Z'],
   ]) {
-    const r = (await c.query(`SELECT (($1::timestamptz AT TIME ZONE 'Europe/Istanbul') + interval '8 months') AT TIME ZONE 'Europe/Istanbul' AS expires`,[created])).rows[0];
+    const r = (await c.query(`SELECT (($1::timestamptz AT TIME ZONE 'Europe/Istanbul') + interval '12 months') AT TIME ZONE 'Europe/Istanbul' AS expires`,[created])).rows[0];
     assert.equal(r.expires.getTime(),Date.parse(expected));
   }
   await role(true); stage='trusted creation timestamp';
@@ -49,8 +55,10 @@ try {
   }
   stage='past-expiry fixture without altering real records';
   await c.query('RESET ROLE');
+  const leap = (await c.query("UPDATE public.listings SET created_at='2024-02-29T09:00:00+03:00' WHERE id=$1 RETURNING expires_at",[ids[0]])).rows[0];
+  assert.equal(leap.expires_at.getTime(),Date.parse('2025-02-28T09:00:00+03:00'));
   const old = (await c.query("UPDATE public.listings SET created_at='2001-01-31T09:00:00+02:00' WHERE id=$1 RETURNING expires_at",[ids[0]])).rows[0];
-  assert.equal(old.expires_at.getTime(),Date.parse('2001-09-30T09:00:00+03:00'));
+  assert.equal(old.expires_at.getTime(),Date.parse('2002-01-31T09:00:00+02:00'));
   stage='anonymous visibility and archive privacy';
   await c.query("SELECT set_config('request.jwt.claims','{\"role\":\"anon\"}',true)"); await c.query('SET LOCAL ROLE anon');
   assert.equal((await c.query('SELECT id FROM public.listings WHERE id=$1',[ids[0]])).rowCount,0);
@@ -62,7 +70,7 @@ try {
   await role(true);
   assert.equal((await c.query('SELECT * FROM public.listing_archive WHERE id=$1',[ids[0]])).rowCount,1);
   assert.equal((await c.query('SELECT * FROM public.listing_archive WHERE id=$1',[ids[1]])).rowCount,0);
-  stage='edits cannot restart the eight-month clock';
+  stage='edits cannot restart the 12-month clock';
   await denied('UPDATE public.listings SET created_at=now() WHERE id=$1',[ids[0]],'42501');
   await denied('UPDATE public.listings SET expires_at=now() WHERE id=$1',[ids[0]],'428C9');
   const edited = (await c.query("UPDATE public.listings SET title='Edited archive fixture' WHERE id=$1 RETURNING expires_at",[ids[0]])).rows[0];
@@ -70,7 +78,7 @@ try {
   assert.equal((await c.query('SELECT id FROM public.listing_archive WHERE id=$1',[ids[0]])).rowCount,1);
   await c.query('RESET ROLE'); await c.query('ROLLBACK');
   assert.equal((await c.query('SELECT id FROM public.listings WHERE id=ANY($1::int[])',[ids])).rowCount,0);
-  console.log('Lifetime DB checks passed: eight calendar months, Istanbul/leap-year boundaries, trusted immutable dates, public expiry, admin-only archive and retained records. All fixtures and optional test setup rolled back; no media changed.');
+  console.log('Lifetime DB checks passed: 12 calendar months, Istanbul/leap-year boundaries, trusted immutable dates, public expiry, admin-only archive and retained records. All fixtures and optional test setup rolled back; no media changed.');
 } catch(e) {
   console.error('Lifetime DB check failed:',stage,e.code||e.name||'UNKNOWN'); process.exitCode=1;
 } finally { await c.query('ROLLBACK').catch(()=>{}); await c.end().catch(()=>{}); }

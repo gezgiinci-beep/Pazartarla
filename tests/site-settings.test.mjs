@@ -1,10 +1,50 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { validCategories, validFeaturedOffer, parseSiteSettings, readSiteSettings, writeSiteSettings, SettingsConflictError } from '../src/lib/siteSettings.ts';
+import { backoffDelayMs, readCachedValue, retryAfterDelayMs, writeCachedValue } from '../src/lib/publicReadResilience.mjs';
 
 const row = { id: 'public', announcement: 'Ortak duyuru', categories: { Mahsuller: ['Ceviz'] },
   featured_offer: { monthly_price_try: 150, description: '1 aylık vitrin ilanı.' }, revision: 1 };
 const json = (value, status = 200) => new Response(JSON.stringify(value), { status });
+
+test('public read cache is validated, expires, and safely ignores storage failures', () => {
+  const values = new Map();
+  const storage = {
+    getItem: key => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value),
+  };
+  assert.equal(writeCachedValue(storage, 'settings', row, 1_000), true);
+  assert.deepEqual(readCachedValue(storage, 'settings', 5_000, value => value?.id === 'public', 2_000), row);
+  assert.equal(readCachedValue(storage, 'settings', 500, () => true, 2_000), null);
+  assert.equal(readCachedValue(storage, 'settings', 5_000, () => false, 2_000), null);
+  assert.equal(readCachedValue({ getItem() { throw new Error('blocked'); } }, 'settings', 5_000), null);
+  assert.equal(writeCachedValue({ setItem() { throw new Error('full'); } }, 'settings', row), false);
+});
+
+test('public read backoff is exponential and respects a bounded Retry-After value', () => {
+  assert.equal(backoffDelayMs(1), 15_000);
+  assert.equal(backoffDelayMs(3), 60_000);
+  assert.equal(backoffDelayMs(99, 15_000, 15 * 60_000), 15 * 60_000);
+  assert.equal(retryAfterDelayMs(new Headers({ 'retry-after': '300' })), 300_000);
+  assert.equal(retryAfterDelayMs({ 'Retry-After': '7200' }), 60 * 60_000);
+  assert.equal(retryAfterDelayMs(new Headers({ 'retry-after': 'not-a-date' })), 0);
+});
+
+test('missing or malformed connection addresses report configuration errors before read or write', async () => {
+  const request = async () => assert.fail('Invalid configuration must not make a request');
+  for (const url of [undefined, null, '', '   ', 'undefined', 'javascript:alert(1)', 'https://user:password@example.invalid', 'https://example.invalid?token=test']) {
+    await assert.rejects(readSiteSettings(url, 'public-test-key', request), error =>
+      error instanceof Error && !(error instanceof TypeError) && error.message.includes('VITE_SUPABASE_URL'));
+    await assert.rejects(writeSiteSettings(url, {}, 1, { announcement: 'New' }, request), /VITE_SUPABASE_URL/);
+  }
+});
+
+test('missing browser keys never send an unauthenticated settings request', async () => {
+  for (const key of [undefined, null, '', '   ']) {
+    await assert.rejects(readSiteSettings('https://example.invalid', key,
+      async () => assert.fail('Missing key must not make a request')), /VITE_SUPABASE_ANON_KEY/);
+  }
+});
 
 test('monthly offer validates bounded amounts, cents and editable description', () => {
   assert.equal(validFeaturedOffer({ monthly_price_try: 150, description: '' }), true);
@@ -76,6 +116,42 @@ test('missing records and server failures never silently use hardcoded defaults'
   await assert.rejects(readSiteSettings('https://example.invalid', 'key', async () => json({}, 404)), /kurulmamış/);
   await assert.rejects(readSiteSettings('https://example.invalid', 'key', async () => json({}, 500)), /HTTP 500/);
   await assert.rejects(readSiteSettings('https://example.invalid', 'key', async () => { throw new Error('Network unavailable'); }), /Network/);
+});
+
+test('Turso settings reads use the same-origin API without requiring Supabase configuration', async () => {
+  let calls = 0;
+  const saved = await readSiteSettings('', '', async (url, init) => {
+    calls++;
+    assert.equal(url, '/api/site-settings');
+    assert.equal(init.credentials, 'same-origin');
+    assert.equal(init.headers.apikey, undefined);
+    return json({ settings: row });
+  }, 'turso');
+  assert.equal(calls, 1);
+  assert.deepEqual(saved, row);
+});
+
+test('Turso settings preserve 402/429 status and bounded Retry-After for client backoff', async () => {
+  await assert.rejects(
+    readSiteSettings('', '', async () => new Response('{}', { status: 429, headers: { 'retry-after': '75' } }), 'turso'),
+    error => error.status === 429 && error.retryAfterMs === 75_000,
+  );
+});
+
+test('Turso settings writes send revisioned patches with same-origin cookies and handle conflicts', async () => {
+  const patch = { announcement: 'Turso duyurusu' };
+  const savedRow = { ...row, announcement: patch.announcement, revision: 2 };
+  const saved = await writeSiteSettings('', {}, 1, patch, async (url, init) => {
+    assert.equal(url, '/api/site-settings');
+    assert.equal(init.method, 'PATCH');
+    assert.equal(init.credentials, 'same-origin');
+    assert.deepEqual(JSON.parse(init.body), { revision: 1, patch });
+    assert.equal(init.headers.Authorization, undefined);
+    return json({ settings: savedRow });
+  }, 'turso');
+  assert.deepEqual(saved, savedRow);
+  await assert.rejects(writeSiteSettings('', {}, 1, patch,
+    async () => json({ error: 'settings_conflict' }, 409), 'turso'), SettingsConflictError);
 });
 
 test('announcement writes are revision-checked patches, including intentionally blank announcements', async () => {

@@ -22,7 +22,7 @@ channel permissions with evidence, archive and restore. Server revisions reject
 stale writes from other sessions. Destination edits revoke that channel's
 permissions and pending deliveries; automatic capture preserves manual name
 curation. Archiving revokes permissions but does not delete listings. Contact
-records are independent of the eight-month listing archive. Choose retention/
+records are independent of the 12-month listing archive. Choose retention/
 erasure policy before running marketing campaigns; no legal-compliance guarantee
 is made merely by storing a checkbox or evidence text.
 

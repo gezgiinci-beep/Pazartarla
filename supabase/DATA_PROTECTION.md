@@ -43,24 +43,16 @@ açıkça reddedilir; geri alınan test transaction'ı bile canlıda çalıştı
    hazırlayın. Auth hesapları test projesinin normal/admin Auth API'siyle oluşturulur.
 2. Şema ve politikaları gözden geçirilmiş şema-only yöntemle test projesinde kurun;
    özel yönetici allowlist'ine yalnızca sentetik test yöneticisini ekleyin.
-3. **Sadece test projesinde**, SQL Editor ile işaret ekleyin:
-
-   ```sql
-   CREATE TABLE private.environment_guard(
-     singleton boolean PRIMARY KEY CHECK(singleton),
-     environment text NOT NULL CHECK(environment='test')
-   );
-   ALTER TABLE private.environment_guard ENABLE ROW LEVEL SECURITY;
-   REVOKE ALL ON private.environment_guard FROM PUBLIC,anon,authenticated;
-   INSERT INTO private.environment_guard VALUES(true,'test');
-   ```
-
+3. Proje adını ve kimliğini doğruladıktan sonra **yalnızca test projesinde**,
+   SQL Editor ile `supabase/test_project_environment_guard.sql` dosyasını çalıştırın.
+   Bu dosya tam şemayı kurmaz; eksik `private` şeması varsa veya işaret zaten varsa durur.
 4. Güvenli ortam değişkenlerinde `PAZARTARLA_TEST_DATABASE_URL`,
    `PAZARTARLA_TEST_PROJECT_REF`, `PAZARTARLA_TEST_DATABASE_CA_FILE` tanımlayın.
    Bağlantı hedefi ve açıkça belirtilen proje aynı olmalı. İşaret yoksa test durur.
 5. `--apply`, `--seed`, `--reset` test komutlarında yasaktır. Testler normalde
    ROLLBACK ile biter. Şu anda test projesi yapılandırılmadığından DB fixture
    testlerinin durması **beklenen güvenlik davranışıdır**, canlıya dönüş yapılmaz.
+   Ekran ekran kurulum için `supabase/TEST_DATABASE_SETUP.md` dosyasını izleyin.
 
 Şifreli canlı yedeğinin kurtarma provası ayrı, erişimi kısıtlı bir kurtarma
 ortamıdır; geliştirici/tester ortamına gerçek kişisel bilgiler aktarılmaz.
@@ -79,7 +71,7 @@ Kalıcı çıktı sadece `database.dump.pzb`, `code.tar.pzb`, metadata receipt'i
 Yedekler Git ağacında saklanamaz, tekrar yazılmaz ve içinde PII bulunan arşivler
 Library'ye, commit'e veya normal loga eklenmez.
 
-**Gerekli kurulum (henüz etkinleştirilmedi):**
+**Otomatik yedekleme için gereken kurulum:**
 
 0. GitHub bağlantısı normal kaynak dosyalarını yazabiliyor, ancak workflow
    dosyalarını yazmayı reddetti. Bu nedenle çalıştırılabilir örnekler
@@ -107,8 +99,10 @@ Library'ye, commit'e veya normal loga eklenmez.
    hesaba/sağlayıcıya indirin; GitHub hesabının kaybı tek kurtarma noktasını kaldırmamalı.
 5. Yerel operatör için ayrıca `SUPABASE_DATABASE_CA_FILE` resmi CA yolunu ve
    `PAZARTARLA_BACKUP_DIRECTORY` repo dışındaki güvenli dizini gösterir.
-   PostgreSQL client sürümü sunucu sürümünden eski olamaz; workflow client 18 kullanır.
-   Proje yükselirse client da gözden geçirilir.
+    PostgreSQL client ana sürümü sunucu ana sürümünden eski olamaz; workflow
+    client 18 kullanır. Aynı ana sürümün farklı bakım sürümleri uyumludur
+    (yerel 17.5 istemcisiyle 17.6 sunucusunun yedeği doğrulandı).
+    Proje ana sürüm yükseltirse client da gözden geçirilir.
 
 Receipt şifreli dosyaların SHA-256 değerlerini, kaynak proje/commit/zamanını tutar;
 **archiveReadable** tam kurtarma testi değildir, **restoreDrillVerified=false**
@@ -167,6 +161,17 @@ Kaynaklar:
 - https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore
 - https://www.postgresql.org/download/linux/ubuntu/
 
-**Bu çalışma gerçek verileri silmedi/sıfırlamadı; canlıda test fixture çalıştırmadı.
-Henüz gerçek şifreli yedek alınmadı, cron/branch protection etkinliği ve tam restore
-doğrulanmadı. Bunlar kurulum akışının açık aktivasyon/kabul adımlarıdır.**
+**2026-10-05 hazırlık güncellemesi:** Gerçek verileri silmeden/sıfırlamadan ve
+canlıda test fixture çalıştırmadan, resmi CA ile doğrulanmış bağlantı kullanılarak
+repo dışındaki özel klasöre gerçek şifreli DB + yerel kod yedeği alındı.
+Arşiv okunabilirliği doğrulandı. Bu, tam restore veya Storage-byte yedeği
+değildir; bağımsız kopya, tam kurtarma provası, Storage dosya koruması ve
+cron/branch protection etkinliği henüz doğrulanmadı. Yerel kod arşivi ayrıca
+canlı Vercel release kaynağıyla eşitlenmeden canlı release yedeği sayılmaz.
+Bu hazırlık aşamasında üretim SQL kurulumu ve yayın yapılmadı. Sonraki açık
+kullanıcı onayı ve ek kontrolleri/provaları durdurma talebiyle, yalnız
+`reviewed_changes/20261004_owner_listing_edit.sql` içindeki altı işlev canlı
+veritabanına transaction olarak uygulandı; COMMIT başarılı oldu.
+Tam kurtarma provası ve Storage kopyası doğrulanmış sayılmaz. Bu işlem için
+verilen istisna, gelecekteki değişiklikler için yukarıdaki koruma kurallarını
+kalıcı olarak kaldırmaz. Yeni frontend yayını başlatılmadı.

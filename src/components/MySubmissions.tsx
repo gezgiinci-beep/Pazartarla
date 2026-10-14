@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import type { OffersState } from '../hooks/useOffers';
 
 export type MySubmissionsProps = {
   items: any[];
@@ -6,12 +7,17 @@ export type MySubmissionsProps = {
   error: string;
   onRefresh: () => void;
   onEdit?: (item: any) => void;
+  onArchive?: (item: any) => void;
+  archiveBusyId?: number | null;
+  offers?: OffersState;
+  onViewOffers?: () => void;
 };
 
 const statusPresentation: Record<string, { label: string; background: string; color: string }> = {
   pending: { label: "Onay bekliyor", background: "#fff4d9", color: "#795d20" },
   approved: { label: "Yayında", background: "#edf4eb", color: "#315e43" },
   rejected: { label: "Reddedildi", background: "#fff0ee", color: "#9e3d35" },
+  archived: { label: "Arşivde", background: "#edf0e9", color: "#526256" },
 };
 
 const buttonStyle: CSSProperties = {
@@ -38,7 +44,7 @@ function statusFor(value: unknown) {
   return statusPresentation[key] ?? { label: String(value ?? "Durum bilinmiyor"), background: "#edf0e9", color: "#526256" };
 }
 
-export default function MySubmissions({ items, loading, error, onRefresh, onEdit }: MySubmissionsProps) {
+export default function MySubmissions({ items, loading, error, onRefresh, onEdit, onArchive, archiveBusyId, offers, onViewOffers }: MySubmissionsProps) {
   return (
     <section aria-labelledby="my-submissions-title" data-testid="panel-my-submissions" style={{ width: "100%", boxSizing: "border-box", padding: 18, border: "1px solid #dce5dc", borderRadius: 12, background: "#f7f8f2", color: "#26392e", fontFamily: "inherit" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
@@ -57,6 +63,8 @@ export default function MySubmissions({ items, loading, error, onRefresh, onEdit
           {error}
         </div>
       )}
+      {offers?.actionError && <p role="alert" style={{color:'#9e3d35'}}>{offers.actionError}</p>}
+      {offers && !offers.loading && offers.error && <p role="status" style={{color:'#795d20',fontSize:12}}>Teklif ayarları: {offers.error} Normal ilan işlemleriniz etkilenmez.</p>}
 
       {loading ? (
         <div role="status" data-testid="status-my-submissions-loading" style={{ display: "grid", gap: 8, marginTop: 15 }}>
@@ -74,6 +82,8 @@ export default function MySubmissions({ items, loading, error, onRefresh, onEdit
         <div style={{ display: "grid", gap: 8, marginTop: 15 }}>
           {items.map((item, index) => {
             const status = statusFor(item.status);
+            const expired = Boolean(item.expires_at) && new Date(item.expires_at).getTime() <= Date.now();
+            const archived = item.status === 'archived';
             return (
               <article key={item.id ?? index} data-testid={`row-my-submission-${item.id ?? index}`} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", padding: "12px 13px", border: "1px solid #dce5dc", borderRadius: 8, background: "#fff" }}>
                 <div style={{ minWidth: 0, flex: "1 1 180px" }}>
@@ -85,7 +95,22 @@ export default function MySubmissions({ items, loading, error, onRefresh, onEdit
                 <span data-testid={`status-my-submission-${item.id ?? index}`} style={{ flex: "0 0 auto", padding: "6px 9px", borderRadius: 99, background: status.background, color: status.color, fontSize: 11, fontWeight: 800 }}>
                   {status.label}
                 </span>
-                {onEdit && <button type="button" style={buttonStyle} onClick={()=>onEdit(item)}>İlanı Düzenle / Güncelle</button>}
+                {onEdit && !archived && !expired && <button type="button" style={buttonStyle} onClick={()=>onEdit(item)}>İlanı Düzenle / Güncelle</button>}
+                {onArchive && !expired && (
+                  <button type="button" style={buttonStyle} disabled={archiveBusyId === Number(item.id)}
+                    onClick={()=>onArchive(item)} data-testid={`button-my-submission-${archived?'restore':'archive'}-${item.id}`}>
+                    {archiveBusyId === Number(item.id) ? 'İşleniyor…' : archived ? 'Yeniden incelemeye gönder' : 'Arşive al'}
+                  </button>
+                )}
+                {offers && offers.ownerIds.includes(Number(item.id)) && (
+                  <label style={{display:'flex',alignItems:'center',gap:8,minHeight:44,fontSize:12,fontWeight:700}}>
+                    <input type="checkbox" role="switch" checked={!!offers.settings[Number(item.id)]}
+                      disabled={offers.busy||offers.loading||!!offers.error||(!offers.settings[Number(item.id)]&&(!['pending','approved'].includes(item.status)||new Date(item.expires_at).getTime()<=Date.now()))}
+                      onChange={event=>void offers.toggle(Number(item.id),event.target.checked)}
+                      data-testid={`switch-my-submission-offers-${item.id}`}/>
+                    Bu ilanda teklif {offers.settings[Number(item.id)]?'açık':'kapalı'}
+                  </label>
+                )}
               </article>
             );
           })}
@@ -95,6 +120,7 @@ export default function MySubmissions({ items, loading, error, onRefresh, onEdit
       <div data-testid="text-my-submissions-policy" style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid #dce5dc", color: "#64756a", fontSize: 12, lineHeight: 1.55 }}>
         Her ilan, herkese görünmeden önce yönetici onayı almalıdır. Onaylanmış, reddedilmiş veya silinmiş tüm gönderimler kayan 24 saatlik gönderim kotasına dahildir.
       </div>
+      {onViewOffers && <button type="button" onClick={onViewOffers} style={{...buttonStyle,marginTop:12}} data-testid="button-my-submission-offers">Gelen ve verdiğim teklifler</button>}
     </section>
   );
 }
