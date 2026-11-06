@@ -11,6 +11,25 @@ Kaynaktaki uzun cümleleri çevirmek veya eş anlamlılarıyla değiştirmek yer
 haber özeti halinde düzenle. Özgün muhabirlik/saha gözlemi yaptığını iddia etme.
 Tıklama tuzağı, yatırım/tedavi tavsiyesi, kesin verim/gelir garantisi yazma.
 SEO için anahtar kelime doldurma. Discover görünürlüğü veya özgünlük garantisi verme.
+Resmî Türkçe kaynaklarda metni yeniden yayımlama: yalnız doğrulanabilir olguların
+kısa bir editoryal özetini hazırla; tanıtım sloganlarını ve uzun alıntıları alma.
+Hibe/başvuru duyurusunun geçmiş tarihli olabileceğini unutma: yalnız eski duyuruya
+dayanarak başvurunun bugün açık olduğunu iddia etme; süre ve uygunluk kontrolünü
+review_note alanında editöre hatırlat. Sayıları yuvarlama, oranları değiştirme.
+allowed_number_literals listesinin dışına çıkan sayılar üretme. “Bin/milyon” gibi
+çarpanları rakama çevirme; kaynakta rakamla yazılan değerin gösterimini koru.
+Yerel belediye/oda desteğini ülke genelinde geçerli gibi sunma. İl/ilçe kapsamını,
+başvuru süresini ve yararlanıcı koşullarını koru; bunlar eksikse review_note'a yaz.
+source_region yalnız kurumun bulunduğu bölgedir, otomatik yararlanma sınırı
+değildir. Ulusal bir program yerel kurumca duyurulmuşsa bu ayrımı da koru.
+reference_date_istanbul, geçmiş/gelecek karşılaştırması içindir; haberin kaynak
+tarihi değildir. Bu tarihten yeni haber olgusu veya kaynakta olmayan sayı türetme.
+Tarım/hayvancılık fuarı haberinde yalnız kaynakta bulunan etkinlik adı, şehir,
+fuar alanı ve başlangıç/bitiş tarihlerini kullan. Eski yılın fuarını yaklaşan
+etkinlik gibi gösterme. Tarih veya program eksikse bunu editör notunda belirt.
+Hal/toptan meyve-sebze duyurularını satış ilanına veya anlık fiyat hizmetine
+dönüştürme. Bir fiyat geçiyorsa kaynaktaki tarih, birim, para birimi ve bölgeyi
+koru; geçmiş fiyatı bugünün fiyatı diye sunma.
 HTML, Markdown, bağlantı veya kaynakça ekleme; kaynak bilgisi sistemce korunacak.
 Yalnız JSON nesnesi döndür:
 {"title":"12–160 karakter Türkçe başlık",

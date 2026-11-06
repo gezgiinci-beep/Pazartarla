@@ -24,7 +24,7 @@ class NoRedirect(request.HTTPRedirectHandler):
         raise ValueError("Source redirect rejected")
 
 
-def download(url, allowed_prefix, limit=MAX_HTML, image=False, archive_year=None):
+def download(url, allowed_prefix, limit=MAX_HTML, image=False, archive_year=None, feed_xml=False):
     if archive_year is not None:
         if url != f"https://www.ars.usda.gov/news-events/news-archive/?year={archive_year}" or not 2000 <= archive_year <= 2100:
             raise ValueError("Archive query rejected")
@@ -39,6 +39,8 @@ def download(url, allowed_prefix, limit=MAX_HTML, image=False, archive_year=None
     with request.build_opener(NoRedirect()).open(req, timeout=30) as response:
         mime = response.headers.get_content_type()
         allowed = {"image/jpeg", "image/png", "image/webp"} if image else {"text/html"}
+        if feed_xml and not image:
+            allowed = {"application/rss+xml", "application/xml", "text/xml"}
         if mime not in allowed:
             raise ValueError("Source content type rejected")
         data = response.read(limit + 1)
@@ -131,6 +133,12 @@ class ArticleParser(HTMLParser):
 
 
 def discover(source, now=None):
+    if source.get("parser") == "rss":
+        from official_sources import discover_feed
+        return discover_feed(source, download, safe_url, now or datetime.now(timezone.utc))
+    if source.get("parser") in {"ministry", "tkdk", "local"}:
+        from official_sources import discover_official
+        return discover_official(source, download, safe_url, now or datetime.now(timezone.utc))
     now = now or datetime.now(timezone.utc)
     found = {}
     # Around New Year, include the previous archive without missing recent articles.
@@ -148,6 +156,10 @@ def discover(source, now=None):
 
 
 def read_article(source, item):
+    if source.get("parser") in {"ministry", "tkdk", "local", "rss"}:
+        from official_sources import read_official
+        safe_url(item["url"], source["article_prefix"])
+        return item.get("_article") or read_official(source, item["url"], download)
     parser = ArticleParser(source)
     parser.feed(download(item["url"], source["article_prefix"]).decode("utf-8", errors="replace"))
     body = "\n\n".join(parser.paragraphs)[:16000]

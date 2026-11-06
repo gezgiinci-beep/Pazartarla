@@ -13,7 +13,7 @@ sys.path.insert(0, str(ROOT / "scripts/news"))
 import fetch_news
 from news_source import ArchiveParser, ArticleParser, discover, safe_url, NoRedirect
 
-SOURCE = json.loads((ROOT / "scripts/news/sources.json").read_text())["sources"][0]
+SOURCE = next(source for source in json.loads((ROOT / "scripts/news/sources.json").read_text())["sources"] if source["id"] == "usda-ars")
 URL = SOURCE["article_prefix"] + "2026/research/"
 
 
@@ -98,6 +98,13 @@ class RewriteTests(unittest.TestCase):
                 draft = {**self.draft(), "review_note": f"Kaynakta {translated} değerini kontrol edin."}
                 with self.assertRaises(ValueError):
                     fetch_news.validate_rewrite(draft, f"Research value {source}")
+
+    def test_turkish_source_numbers_and_calendar_dates(self):
+        draft = {**self.draft(), "review_note": "5 Kasım 2026 tarihli duyurudaki 1.500 değeri doğrulanmalı."}
+        fetch_news.validate_rewrite(draft, "Duyuru tarihi 05.11.2026, değer 1.500.", original_language="tr")
+        with self.assertRaises(ValueError):
+            fetch_news.validate_rewrite({**draft, "review_note": "Destek oranı 1,5 olarak verildi."},
+                                        "Duyuru tarihi 05.11.2026, değer 1.500.", original_language="tr")
 
     def test_prompt_protects_geography_and_human_approval(self):
         prompt = (ROOT / "scripts/news/editorial-prompt.txt").read_text()

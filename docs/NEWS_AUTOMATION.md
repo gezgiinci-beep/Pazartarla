@@ -16,12 +16,24 @@ Yayımla işlemi ve ek editoryal onay sorusu ile yayına alır.
 
 ## Kaynak ve görsel hakkı
 
-Başlangıç kaynağı USDA Agricultural Research Service araştırma haberleridir.
-Bu **ABD kaynaklı** bir akıştır; Türkçe hazırlanır ama Türkiye haberi, yerli hibe
-veya Türkiye'de başvuruya açık bir destek gibi sunulamaz.
+Kaynaklar `scripts/news/sources.json` içinde açıkça sınırlandırılmıştır:
+
+- Tarım ve Orman Bakanlığı haberleri; TKDK haberleri ve destek duyuruları.
+- İlk yerel kaynaklar: İzmir ve Tekirdağ büyükşehir belediyeleri, Nilüfer
+  Belediyesi, Bolu ve Akdeniz ziraat odaları. Balıkesir tarafında Balıkesir
+  Büyükşehir Belediyesi, **Balıkesir Gönen Belediyesi**, Balıkesir İl Tarım ve
+  Orman Müdürlüğü ile Gönen Ticaret Odasının tarımsal haber/duyuruları izlenir.
+  Gönen Ticaret Odası, Ziraat Odası olarak adlandırılmaz. Gönen Ziraat Odasına
+  ait erişilebilir resmî web akışı henüz doğrulanmadığı için bir adres
+  uydurularak eklenmemiştir. Bu başlangıç listesi Türkiye'deki
+  bütün belediyeleri/odaları kapsadığı anlamına gelmez. Başka bir kurum ancak
+  resmî adresi, tarih/içerik ayrıştırması ve güvenli URL sınırları doğrulanınca
+  eklenir. Tarihi eski veya tarımsal olmayan sayfa taslağa alınmaz.
+- USDA Agricultural Research Service araştırma haberleri. Bu **ABD kaynaklı**
+  haberler Türkiye haberi, yerli hibe veya burada açık destek gibi sunulamaz.
 Resmî telif bildirimi: https://www.ars.usda.gov/oc/images/copyright/
 
-Yalnız ARS kaynak fotoğrafı olduğu açıkça belirtilen, üçüncü taraf telif işareti
+USDA'da yalnız ARS kaynak fotoğrafı olduğu açıkça belirtilen, üçüncü taraf telif işareti
 olmayan görseller kullanılır. Metin ve fotoğrafın her ikisi de uygun değilse
 kayıt atlanır; rastgele fotoğraf veya sahte haber üretilmez.
 Kaynak adresi, kaynak tarihi, görsel künyesi ve yapay zekâ kullanımı taslakta
@@ -29,6 +41,30 @@ saklanır. Orijinal fotoğraf Blob'a güvenli JPEG olarak aktarılır; başka si
 sunucusuna sürekli hotlink verilmez. Küçük fotoğraf yapay olarak 1200px'e büyütülmez.
 Bu otomatik kontroller insan editörün kullanım hakkı ve doğruluk denetiminin
 yerini almaz. Kaynağın sonradan değişen koşulları ayrıca değerlendirilmelidir.
+
+Türk resmî ve yerel kaynaklarda kurum fotoğrafları, logoları, ek dosyaları veya
+tam metinleri kopyalanmaz. Kısa olgusal özet, kaynak bağlantısı ve kaynak tarihi
+saklanır. Sunucu PazarTarla'nın kendi 1200×675 JPEG bilgilendirme kapağını üretir;
+üzerinde “TEMSİLİ KAPAK · KAYNAK FOTOĞRAFI DEĞİLDİR” yazar. Bu yöntem fotoğrafı
+kopyalama riskini azaltır; bütün telif ve doğruluk sorunlarını çözme garantisi
+değildir. Son kullanım hakkı ve içerik kontrolü editördedir.
+
+Yerel kaynaklarda tarım/hayvancılık/üretici destekleri dışındaki belediye ve oda
+haberleri ayıklanır. Kurumun il/ilçesi editör notuna eklenir; bu bilgi otomatik
+yararlanma sınırı değildir. Geçmiş duyurudan bugünkü başvurunun açık olduğu
+çıkarılmaz; süre ve koşullar editörce kaynakta doğrulanır. Başlık, kaynak tarihi
+ve yeterli metin bulunmazsa haber/görsel uydurmak yerine kayıt atlanır.
+
+Hayvancılıkta büyükbaş/küçükbaş, süt, damızlık, yem, mera ve yetiştirici
+destekleri dahildir; sokak hayvanı/pet belediye haberleri bu kapsama girmez.
+Tarım/hayvancılık fuarları ile hal/toptan meyve-sebze resmî duyuruları da
+haber taslağıdır. Eski fuar yaklaşan etkinlik, eski hal fiyatı bugünkü fiyat
+gibi sunulmaz. Günlük fiyat tablosu kazınarak anlık fiyat hizmeti oluşturulmaz.
+
+Kaynaklar 12 saatlik dilimlerde dönen bir sırayla iç içe işlenir; tek bir akış
+bütün taslak yerlerini sürekli tüketmez. Çalışma başına üç, günlük toplam altı
+taslak sınırı değişmez. Daha çok kaynak, her haberi veya her gün altı haberi
+garanti etmez. `--check-sources` yapay zekâ ve veritabanı yazımı olmadan tarar.
 Yeni kaynak eklemek için `scripts/news/sources.json`, izin belgesi, parser ve
 sunucu doğrulaması birlikte gözden geçirilmelidir; herhangi bir RSS adresini
 eklemek tam metni/fotoğrafları yeniden yayımlama izni vermez.
@@ -41,7 +77,7 @@ modelin ücretsiz giriş/çıkış katmanı vardır:
 https://ai.google.dev/gemini-api/docs/pricing
 
 Kısa haber özetleri için hafif Flash-Lite modeli sabitlenmiştir; çalışma sırasında
-başka modele otomatik geçiş yoktur. Sayısal iddialar İngilizce kaynak ve Türkçe
+başka modele otomatik geçiş yoktur. Sayısal iddialar kaynağın dili ve Türkçe
 yazımın binlik/ondalık farkları gözetilerek karşılaştırılır; değer yuvarlanmaz.
 
 Kullanıcının isteği: **yalnız ücretsiz katman, OpenAI ve ücretli sağlayıcı yok.**

@@ -3,6 +3,7 @@
 import argparse
 import base64
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 from difflib import SequenceMatcher
 from decimal import Decimal, InvalidOperation
 import json
@@ -11,6 +12,7 @@ from pathlib import Path
 import re
 import sys
 import time
+from itertools import zip_longest
 from urllib import request, parse, error
 
 sys.path.insert(0, str(Path(__file__).parent / "scripts" / "news"))
@@ -25,6 +27,17 @@ MAX_PER_RUN = 3
 AI_RETRY_DELAYS = (5, 10)
 RETRYABLE_AI_STATUSES = frozenset({500, 502, 503, 504})
 NUMBER_TOKEN = re.compile(r"\d+(?:[.,]\d+)*(?:[ \u00a0\u202f]\d{3}(?!\d))*")
+
+
+def numeric_tokens(value):
+    def calendar_parts(match):
+        day, month, year = re.split(r"[./]", match.group())
+        try:
+            datetime(int(year), int(month), int(day))
+        except ValueError:
+            return match.group()
+        return f"{day} {month} {year}"
+    return NUMBER_TOKEN.findall(re.sub(r"\b\d{1,2}[./]\d{1,2}[./]20\d{2}\b", calendar_parts, value))
 
 
 def number_value(token, language):
@@ -73,7 +86,7 @@ def importer(method, payload=None, source_url=None):
     return http_json(url, method, payload, {"Authorization": "Bearer " + oidc()})
 
 
-def validate_rewrite(result, original):
+def validate_rewrite(result, original, original_language="en"):
     limits = {"title": (12, 160), "excerpt": (30, 400), "body": (200, 6000), "review_note": (1, 600)}
     if not isinstance(result, dict):
         raise ValueError("AI output must be an object")
@@ -89,9 +102,14 @@ def validate_rewrite(result, original):
     if SequenceMatcher(None, left, right, autojunk=False).ratio() > 0.7:
         raise ValueError("AI output too similar to source")
     # Numeric claims must already occur in the source; editorial review is still required.
-    original_numbers = set(NUMBER_TOKEN.findall(original))
-    original_values = {number_value(token, "en") for token in original_numbers}
-    for token in NUMBER_TOKEN.findall(" ".join(result.values())):
+    original_numbers = set(numeric_tokens(original))
+    original_values = set()
+    for token in original_numbers:
+        try:
+            original_values.add(number_value(token, original_language))
+        except ValueError:
+            pass  # Opaque source literals may only be repeated exactly.
+    for token in numeric_tokens(" ".join(result.values())):
         if token not in original_numbers and number_value(token, "tr") not in original_values:
             raise ValueError("AI added unsupported numbers")
     return {key: result[key].strip() for key in limits}
@@ -104,6 +122,10 @@ def rewrite(article, source, item):
     prompt = (ROOT / "scripts/news/editorial-prompt.txt").read_text()
     content = {"source_name": source["name"], "source_url": item["url"],
                "original_published_at": item["published"].isoformat(),
+               "reference_date_istanbul": datetime.now(ZoneInfo("Europe/Istanbul")).date().isoformat(),
+               "source_region": source.get("region", "Kaynakta belirtilen coğrafi kapsam"),
+               "allowed_number_literals": sorted(set(numeric_tokens(article["title"] + "\n" + article["body"]
+                   + "\n" + item["published"].date().isoformat()))),
                "title": article["title"], "text": article["body"]}
     payload = {
         "systemInstruction": {"parts": [{"text": prompt}]},
@@ -147,7 +169,8 @@ def rewrite(article, source, item):
             if not generated or len(generated) > 20000:
                 raise ValueError("AI response invalid")
             return validate_rewrite(json.loads(generated),
-                                    article["title"] + "\n" + article["body"])
+                                    article["title"] + "\n" + article["body"] + "\n" + item["published"].date().isoformat(),
+                                    original_language=source.get("language", "en"))
         except error.HTTPError as exc:
             # A quota/billing/auth error ends this run; never upgrade billing or retry
             # against a different (possibly paid) model/provider.
@@ -160,6 +183,15 @@ def rewrite(article, source, item):
     raise ValueError("AI unavailable")
 
 
+def source_order(sources, now=None):
+    enabled = [source for source in sources if source.get("enabled")]
+    if not enabled:
+        return []
+    slot = int((now or datetime.now(timezone.utc)).timestamp() // (12 * 60 * 60))
+    offset = slot % len(enabled)
+    return enabled[offset:] + enabled[:offset]
+
+
 def run(check_sources=False):
     if not check_sources:
         if not os.environ.get(AI_SECRET):
@@ -168,10 +200,21 @@ def run(check_sources=False):
             raise ValueError("Automation runs only on the trusted repository main branch")
     sources = json.loads((ROOT / "scripts/news/sources.json").read_text())["sources"]
     created, duplicate, skipped, failed, candidates = 0, 0, 0, 0, 0
-    for source in sources:
+    streams = []
+    for source in source_order(sources):
         if not source.get("enabled"):
             continue
-        for item in discover(source):
+        try:
+            streams.append([(source, item) for item in discover(source)])
+        except (ValueError, KeyError, error.URLError, OSError):
+            failed += 1
+            print(json.dumps({"source": source["id"], "result": "discovery_failed"}), file=sys.stderr)
+    # Interleave sources so one busy feed cannot consume all three draft slots.
+    for group in zip_longest(*streams):
+        for entry in group:
+            if entry is None:
+                continue
+            source, item = entry
             candidates += 1
             if created >= MAX_PER_RUN:
                 break
@@ -181,20 +224,23 @@ def run(check_sources=False):
                     continue
                 try:
                     article = read_article(source, item)
-                    image = download(article["image"]["url"], source["image_prefix"], MAX_IMAGE, image=True)
+                    generated_cover = source.get("image_policy") == "generated-editorial-cover"
+                    image = None if generated_cover else download(article["image"]["url"], source["image_prefix"], MAX_IMAGE, image=True)
                 except ValueError:
                     skipped += 1
                     print(json.dumps({"source": source["id"], "result": "skipped_unusable_text_or_unlicensed_photo"}))
                     continue
                 if check_sources:
                     print(json.dumps({"source": source["id"], "url": item["url"], "date": item["published"].isoformat(),
-                                      "usable_original_photo": True, "image_bytes": len(image)}))
+                                      "usable_original_photo": not generated_cover, "generated_editorial_cover": generated_cover,
+                                      "image_bytes": len(image) if image else 0}))
                     continue
                 rewritten = rewrite(article, source, item)
                 payload = {**rewritten, "source_id": source["id"], "source_url": item["url"],
-                           "source_published_at": item["published"].isoformat(), "ai_model": MODEL,
-                           "original_image_url": article["image"]["url"], "image_credit": article["image"]["credit"],
-                           "image_base64": base64.b64encode(image).decode()}
+                           "source_published_at": item["published"].isoformat(), "ai_model": MODEL}
+                if not generated_cover:
+                    payload.update(original_image_url=article["image"]["url"], image_credit=article["image"]["credit"],
+                                   image_base64=base64.b64encode(image).decode())
                 result = importer("POST", payload)
                 if result.get("created"):
                     created += 1
@@ -210,6 +256,8 @@ def run(check_sources=False):
             except (ValueError, KeyError, error.URLError, OSError):
                 failed += 1
                 print(json.dumps({"source": source["id"], "result": "processing_failed"}), file=sys.stderr)
+        if created >= MAX_PER_RUN:
+            break
     print(json.dumps({"created_drafts": created, "duplicates": duplicate, "skipped": skipped,
                       "failed": failed, "candidates": candidates, "check_sources_only": check_sources}))
     return 1 if failed else 0
