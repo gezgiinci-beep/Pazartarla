@@ -119,6 +119,9 @@ class DailyTargetTests(unittest.TestCase):
 
     def test_schedule_runs_twelve_times_without_changing_trusted_workflow(self):
         workflow = (fetch_news.ROOT / ".github/workflows/fetch-news.yml").read_text()
-        self.assertIn("25 */2 * * *", workflow)
+        self.assertRegex(workflow, r"(?m)^\s+- cron: '[0-5]?\d \*/2 \* \* \*'$")
+        self.assertEqual(workflow.count("cron:"), 1)
+        self.assertIn("refs/heads/main", workflow)
+        self.assertIn("vars.PAZARTARLA_NEWS_AUTOMATION_ENABLED == 'true'", workflow)
         self.assertIn("environment: gazette-automation", workflow)
         self.assertIn("id-token: write", workflow)
