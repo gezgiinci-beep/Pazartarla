@@ -426,12 +426,13 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--bank", choices=list(SOURCES))
-    parser.add_argument("--max-items", type=int, default=12)
+    parser.add_argument("--max-items", type=int, default=10)
     args = parser.parse_args()
     if not 1 <= args.max_items <= 30:
         parser.error("--max-items must be between 1 and 30")
     from os import environ
-    summary = {"candidates": 0, "accepted": 0, "unavailable_sources": [],
+    summary = {"candidates": 0, "accepted": 0, "attempted": 0, "skipped_reviewed": 0,
+               "target": args.max_items, "shortfall": args.max_items, "unavailable_sources": [],
                "source_warnings": [], "source_candidates": {}, "dry_run": args.dry_run}
     token = None
     queues = []
@@ -440,7 +441,10 @@ def main():
         try:
             if source.get("paused"):
                 raise SourceUnavailable(source["paused"])
-            if source.get("adapter") == "leasing":
+            if bank_id in ("vakifbank", "vakif_leasing"):
+                from intengo_catalogue import collect
+                drafts = collect(bank_id, sys.modules[__name__], args.max_items)
+            elif source.get("adapter") == "leasing":
                 from leasing_sources import collect_leasing
                 drafts, warnings = collect_leasing(bank_id, source, sys.modules[__name__], args.max_items)
                 summary["source_warnings"].extend({"source": bank_id, "reason": w} for w in warnings)
@@ -459,14 +463,15 @@ def main():
             reason = str(exc) if isinstance(exc, SourceUnavailable) else type(exc).__name__
             summary["unavailable_sources"].append({"bank": bank_id, "reason": reason})
     # Round robin: a full bank catalogue must not starve the leasing sources.
-    while queues and summary["accepted"] < args.max_items:
+    while queues and summary["accepted"] < args.max_items and summary["attempted"] < args.max_items * 4:
         remaining = []
         for queue in queues:
             draft = next(queue, None)
             if draft is None:
                 continue
-            if summary["accepted"] >= args.max_items:
+            if summary["accepted"] >= args.max_items or summary["attempted"] >= args.max_items * 4:
                 break
+            summary["attempted"] += 1
             if "contact_phone" not in draft:
                 try:
                     draft["contact_phone"] = enrich_sale_phone(draft)
@@ -480,10 +485,15 @@ def main():
             if not args.dry_run:
                 if token is None:
                     token = oidc_token(environ)
-                import_draft(draft, token)
+                status = import_draft(draft, token)
+                if status in ("transferred", "rejected"):
+                    summary["skipped_reviewed"] += 1
+                    remaining.append(queue)
+                    continue
             summary["accepted"] += 1
             remaining.append(queue)
         queues = remaining
+    summary["shortfall"] = max(0, args.max_items - summary["accepted"])
     print(json.dumps(summary, ensure_ascii=False))
     if len(summary["unavailable_sources"]) == (1 if args.bank else len(SOURCES)):
         return 1
@@ -525,6 +535,7 @@ def import_draft(draft, token):
         result = json.loads(response.read(16_000))
         if result.get("status") not in ("draft", "rejected", "transferred"):
             raise SourceUnavailable("unexpected_import_response")
+        return result["status"]
 
 
 if __name__ == "__main__":

@@ -32,7 +32,7 @@ jobs:
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
         run: |
           if [ "$DRY_RUN" = "true" ]; then
-            python -B scripts/bank_listings.py --dry-run --max-items 12
+            python -B scripts/bank_listings.py --dry-run --max-items 10
           else
-            python -B scripts/bank_listings.py --max-items 12
+            python -B scripts/bank_listings.py --max-items 10
           fi

@@ -1,5 +1,20 @@
 # Resmî satış telefonu
 
+## Her taramada 10 uygun taslak hedefi
+
+VakıfBank ve Vakıf Leasing için yalnız ilk katalog sayfası değil, kurumun
+halka açık arama servisindeki en fazla 8 sayfa taranır. Her sayfa en fazla
+50 kayıt döndürür; altı saatlik zaman dilimlerine göre diğer sayfalara da
+sıra gelir. Arama POST isteği yalnız sabit `/look-up/search` sorgusudur;
+oturum açılmaz, teklif verilmez, iletişim formu gönderilmez.
+
+Kaynak kurum ve tarımsal varlık türü her kayıtta doğrulanır; sona ermiş
+ihaleler elenir. Aynı kaynak kimliği tekilleştirilir. Hedef 10 taslaktır;
+daha önce aktarılmış veya reddedilmiş kayıtlar hedefi tüketmez ve yeniden
+açılmaz. Tarama başına en fazla 40 aktarım denemesi yapılır. Özet,
+`accepted`, `skipped_reviewed`, `target` ve `shortfall` sayılarını ayrı
+raporlar; yeterli resmî ilan yoksa 10'a tamamlamak için kayıt üretilmez.
+
 Otomasyon yalnız ilanın resmî kaynak sayfasındaki açık satış iletişim alanını
 okur. VakıfBank/Vakıf Leasing için `callUs` içindeki `tel:` bağlantısı,
 diğer kaynaklarda açıkça etiketlenmiş satış telefonu tablo satırları kullanılır.
