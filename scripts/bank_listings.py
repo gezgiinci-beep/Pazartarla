@@ -327,6 +327,101 @@ def parse_catalogue(bank_id, html, now=None):
     return list({item["external_id"]: item for item in records}.values())
 
 
+def normalize_contact_phone(value):
+    """Only Turkish public sale contacts; never infer a country or extensions."""
+    value = value.strip()
+    if not re.fullmatch(r"\+?[\d ()\u00a0.-]+", value):
+        return ""
+    digits = re.sub(r"\D", "", value)
+    if digits.startswith("0090"):
+        digits = digits[2:]
+    if digits.startswith("90") and len(digits) == 12:
+        digits = "0" + digits[2:]
+    elif len(digits) == 10:
+        digits = "0" + digits
+    return digits if re.fullmatch(r"0[23458]\d{9}", digits) else ""
+
+
+def extract_sale_phone(root, bank_id):
+    """Read explicit sale-contact markup only, not site-wide/footer numbers."""
+    values = set()
+    if bank_id in ("vakifbank", "vakif_leasing"):
+        scopes = [n for n in root.nodes() if n.has_class("callUs")]
+        for scope in scopes:
+            for node in scope.nodes():
+                href = node.attrs.get("href", "")
+                if node.tag == "a" and href.lower().startswith("tel:"):
+                    phone = normalize_contact_phone(href[4:])
+                    if phone:
+                        values.add(phone)
+    else:
+        # Explicitly labelled two-column facts, never arbitrary page text.
+        for row in root.nodes():
+            if row.tag != "tr":
+                continue
+            cells = [n for n in row.children if isinstance(n, Node) and n.tag in ("td", "th")]
+            if len(cells) != 2 or fold(cells[0].text()).strip(" :") not in (
+                "yetkili telefon", "satis yetkilisi telefon", "iletisim telefonu",
+            ):
+                continue
+            phone = normalize_contact_phone(cells[1].text())
+            if phone:
+                values.add(phone)
+    # Multiple different numbers require human selection; don't choose randomly.
+    return next(iter(values)) if len(values) == 1 else ""
+
+
+def enrich_sale_phone(record):
+    """Bounded official-detail GET; a missing contact never blocks discovery."""
+    source = SOURCES[record["bank_id"]]
+    host = source.get("detail_host", source["host"])
+    scope = {"host": host, "url": record["source_url"]}
+    if not robots_allowed(scope):
+        raise SourceUnavailable("contact_robots_disallowed")
+    html, content_type = public_read(record["source_url"], host)
+    if "text/html" not in content_type.lower():
+        raise SourceUnavailable("contact_not_html")
+    root = Tree(html).root
+    heading = root.first(lambda n: n.tag == "h1")
+    if not heading or fold(heading.text()) != fold(record["title"]):
+        raise SourceUnavailable("contact_listing_mismatch")
+    if record["bank_id"] in ("vakifbank", "vakif_leasing"):
+        record.update(extract_property_facts(root, record.get("asset_kind")))
+    return extract_sale_phone(root, record["bank_id"])
+
+
+def extract_property_facts(root, kind):
+    """Intengo's explicit label/value facts, never numbers from free-form prose."""
+    if kind not in ("field", "vineyard", "orchard", "farm"):
+        return {}
+    values = {}
+    for row in root.nodes():
+        if row.tag != "li":
+            continue
+        cells = [n for n in row.children if isinstance(n, Node) and n.tag == "span"]
+        if len(cells) == 2:
+            label = fold(cells[0].text()).strip(" :")
+            values.setdefault(label, set()).add(" ".join(cells[1].text().split()))
+    def single(label):
+        options = values.get(label, set())
+        return next(iter(options)) if len(options) == 1 else ""
+    result = {}
+    location = single("il / ilce / semt")
+    if location and len(location) <= 200:
+        result["location"] = location
+    area = single("m2")
+    if area:
+        try:
+            result["area_m2"] = decimal_text(area)
+        except ValueError:
+            pass
+    for label, key in (("ada / parsel", "parcel"), ("tapu durumu", "deed_status")):
+        value = single(label)
+        if value and len(value) <= 100:
+            result[key] = value
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true")
@@ -372,6 +467,16 @@ def main():
                 continue
             if summary["accepted"] >= args.max_items:
                 break
+            if "contact_phone" not in draft:
+                try:
+                    draft["contact_phone"] = enrich_sale_phone(draft)
+                except Exception as exc:
+                    reason = str(exc) if isinstance(exc, SourceUnavailable) else type(exc).__name__
+                    summary["source_warnings"].append({
+                        "source": draft["bank_id"], "reason": "contact_" + reason,
+                    })
+                    draft["contact_phone"] = ""
+                time.sleep(1)
             if not args.dry_run:
                 if token is None:
                     token = oidc_token(environ)

@@ -1,3 +1,25 @@
+# Resmî satış telefonu
+
+Otomasyon yalnız ilanın resmî kaynak sayfasındaki açık satış iletişim alanını
+okur. VakıfBank/Vakıf Leasing için `callUs` içindeki `tel:` bağlantısı,
+diğer kaynaklarda açıkça etiketlenmiş satış telefonu tablo satırları kullanılır.
+Altbilgi, form girdileri veya genel sayfa metninden telefon tahmin edilmez.
+Türkiye numaraları `0XXXXXXXXXX` biçimine dönüştürülür. Birden fazla farklı
+numara, erişim hatası veya doğrulanamayan işaretleme varsa numara boş kalır.
+Numaralar çalışma günlüklerine yazılmaz.
+
+`contact_phone` isteğe bağlı bir taslak bilgisidir; mevcut `facts_json`
+içinde saklanır, yeni tablo/sütun gerektirmez. Eski kayıtlar uyumludur.
+Telefon değişirse taslak sürümü de değişir; kaldırılırsa eski numara korunmaz.
+Taslak kartı resmî numarayı başlangıç değeri olarak kullanır, yönetici
+düzeltebilir ve resmî kaynak kontrolünü ayrıca onaylamalıdır.
+Aktarım ve yayın onayları aynen korunur.
+
+Canlıya geçiş hem web/backend sürümünün hem GitHub banka üreticisinin
+güncellenmesini gerektirir. Yalnız web yayını mevcut taslaklara numara eklemez.
+Aktarılmamış taslaklar sonraki başarılı otomasyon taramasında güncellenir;
+önceden aktarılmış veya yayımlanmış ilanların telefonu otomatik değiştirilmez.
+
 # Banka kaynaklı tarım ilanları
 
 Bu modül **Gazete değildir**. Haber API'si, haber tablosu, Gemini ve haber

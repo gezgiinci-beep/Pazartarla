@@ -52,7 +52,11 @@ def verified_vakif_detail(canonical, expected_kind, source, core):
         raise core.SourceUnavailable("detail_asset_changed")
     # Intengo also uses real-estate placeholders (including m²) for machines.
     # Do not turn those placeholders into agricultural/property facts.
-    return draft("vakif_leasing", heading.text(), canonical, core, detail.text())
+    value = draft("vakif_leasing", heading.text(), canonical, core, detail.text())
+    if value:
+        value["contact_phone"] = core.extract_sale_phone(detail, "vakif_leasing")
+        value.update(core.extract_property_facts(detail, expected_kind))
+    return value
 
 
 def draft(source_id, title, canonical, core, price_text="", reference="", location=""):
@@ -138,6 +142,7 @@ def parse_ziraat(root, core):
         canonical = (source_id, core.SOURCES["ziraat_leasing"]["url"])
         value = draft("ziraat_leasing", title, canonical, core, fields.get("fiyat", ""), reference)
         if value:
+            value["contact_phone"] = core.extract_sale_phone(table, "ziraat_leasing")
             candidates.append(value)
     if not structure_seen:
         raise core.SourceUnavailable("catalogue_structure_changed")

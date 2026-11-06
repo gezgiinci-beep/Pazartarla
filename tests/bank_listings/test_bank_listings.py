@@ -9,6 +9,60 @@ SPEC.loader.exec_module(bank)
 
 
 class BankListingTests(unittest.TestCase):
+    def test_property_facts_are_labelled_and_never_machine_placeholders(self):
+        html = """<ul><li><span>İl / İlçe / Semt</span><span>Balıkesir / Gönen</span></li>
+        <li><span>m²</span><span>8.966</span></li>
+        <li><span>Ada / Parsel</span><span>101 / 250</span></li>
+        <li><span>Tapu Durumu</span><span>Müstakil Tapulu</span></li></ul>"""
+        root = bank.Tree(html).root
+        self.assertEqual(bank.extract_property_facts(root, "field"), {
+            "location": "Balıkesir / Gönen", "area_m2": "8966",
+            "parcel": "101 / 250", "deed_status": "Müstakil Tapulu"})
+        self.assertEqual(bank.extract_property_facts(root, "tractor"), {})
+        self.assertEqual(bank.extract_property_facts(bank.Tree("<p>Tarla 8966 m²</p>").root, "field"), {})
+        self.assertNotIn("area_m2", bank.extract_property_facts(bank.Tree(
+            html + "<li><span>m²</span><span>123</span></li>").root, "field"))
+
+    def test_sale_contact_normalization(self):
+        for raw in ["+90 (216) 555 01 23", "0090 216 555 01 23",
+                    "0216 555 01 23", "2165550123"]:
+            self.assertEqual(bank.normalize_contact_phone(raw), "02165550123")
+        for raw in ["123", "+1 212 555 0123", "02165550123;ext=2",
+                    "02165550123 veya 02165550456", "javascript:02165550123"]:
+            self.assertEqual(bank.normalize_contact_phone(raw), "")
+
+    def test_sale_contact_scoped_not_footer_or_form(self):
+        html = """<footer><a href="tel:02165550456">Merkez</a></footer>
+        <div class="contactForm"><input value="02165550456"></div>
+        <div class="callUs"><div class="tel"><a href="tel:+90 (216) 555 01 23">Ara</a></div></div>"""
+        self.assertEqual(bank.extract_sale_phone(bank.Tree(html).root, "vakifbank"), "02165550123")
+        self.assertEqual(bank.extract_sale_phone(bank.Tree("<footer><a href='tel:02165550456'>Ara</a></footer>").root, "vakifbank"), "")
+        ambiguous = html + '<div class="callUs"><a href="tel:02165550456">Ara</a></div>'
+        self.assertEqual(bank.extract_sale_phone(bank.Tree(ambiguous).root, "vakifbank"), "")
+        self.assertEqual(bank.extract_sale_phone(bank.Tree(html).root, "ziraat"), "")
+
+    def test_leasing_contact_is_per_table(self):
+        html = "<table><tr><td>Yetkili Telefon:</td><td>0216 555 01 23</td></tr></table>"
+        self.assertEqual(bank.extract_sale_phone(bank.Tree(html).root, "ziraat_leasing"), "02165550123")
+
+    def test_enrichment_requires_same_listing_and_robots(self):
+        from unittest.mock import patch
+        row = {"bank_id": "vakifbank", "title": "VakıfBank'tan Satılık Tarla",
+               "source_url": "https://gayrimenkul.intengo.com/vakifbank/ilan/tarla-123/"}
+        html = "<h1>Başka satıcı</h1><div class='callUs'><a href='tel:02165550123'>Ara</a></div>"
+        with patch.object(bank, "robots_allowed", return_value=True), \
+             patch.object(bank, "public_read", return_value=(html, "text/html")):
+            with self.assertRaises(bank.SourceUnavailable):
+                bank.enrich_sale_phone(row)
+            html = html.replace("Başka satıcı", row["title"])
+            with patch.object(bank, "public_read", return_value=(html, "text/html")):
+                self.assertEqual(bank.enrich_sale_phone(row), "02165550123")
+        with patch.object(bank, "robots_allowed", return_value=False), \
+             patch.object(bank, "public_read") as read:
+            with self.assertRaises(bank.SourceUnavailable):
+                bank.enrich_sale_phone(row)
+            read.assert_not_called()
+
     def test_requested_asset_kinds(self):
         examples = [
             ("Bankadan satılık tarla", "field"),
