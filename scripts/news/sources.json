@@ -1,0 +1,15 @@
+{
+  "sources": [
+    {
+      "id": "usda-ars",
+      "name": "USDA Agricultural Research Service",
+      "archive_url": "https://www.ars.usda.gov/news-events/news-archive/?year={year}",
+      "article_prefix": "https://www.ars.usda.gov/news-events/news/research-news/",
+      "image_prefix": "https://www.ars.usda.gov/ARSUserFiles/",
+      "rights_url": "https://www.ars.usda.gov/oc/images/copyright/",
+      "rights": "US federal government work; third-party material excluded",
+      "max_age_days": 45,
+      "enabled": true
+    }
+  ]
+}
