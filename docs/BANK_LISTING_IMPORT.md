@@ -1,5 +1,22 @@
 # Resmî satış telefonu
 
+## Halkbank ve Ziraat Bankası
+
+Halkbank'ın resmî portalında yalnız halka açık `ListeTumu` ve `Detay`
+okuma servisleri kullanılır. `/ilan-detay/<seriNo>` kaynak kimliği detay
+yanıtıyla karşılaştırılır; ayrı GYO ilanları, konut ve işyerleri elenir.
+Fotoğraflar ve uzun açıklamalar kopyalanmaz. Bankanın başlangıç fiyatı
+“İhale başlangıç bedeli” olarak korunur; ilgili şubenin açık telefon bilgisi
+varsa taslağa alınır.
+
+Ziraat Bankası'nın halka açık Arsa araması, kısa ömürlü anonim çerez ve
+ViewState ile sorgulanır. Yalnız `searchForm` içindeki “Ara” düğmesi
+kullanılır; giriş, teklif ve iletişim formlarına istek gönderilmez.
+Kayıtlı URL'lerden anonim oturum ve izleme parametreleri temizlenir.
+Fizikî ihale kartının gizli sona-erdi şablonu ancak açık ihale tarihi
+henüz geçmemişse göz ardı edilir. Süresi geçmiş veya durumu belirsiz
+ilanlar bu istisnayla kabul edilmez.
+
 ## Her taramada 10 uygun taslak hedefi
 
 VakıfBank ve Vakıf Leasing için yalnız ilk katalog sayfası değil, kurumun

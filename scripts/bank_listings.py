@@ -29,12 +29,9 @@ SOURCES = {
         "url": "https://gayrimenkul.intengo.com/vakifbank",
         "host": "gayrimenkul.intengo.com",
     },
-    # The public site currently returns an application shell, not a verified
-    # catalogue feed. Never treat HTML from its JSON-looking routes as JSON.
     "halkbank": {
         "url": "https://www.halkbankgayrimenkul.com.tr/",
         "host": "www.halkbankgayrimenkul.com.tr",
-        "paused": "public_feed_not_verified",
     },
     "vakif_leasing": {
         # Directly linked by the company's official sale page. Its own site
@@ -243,6 +240,9 @@ def canonical_source(bank_id, href):
         if not value.isdigit():
             return None
         return value, f"https://{source['host']}/gm-details.intengo?" + urlencode({"gayrimenkulId": value})
+    if bank_id == "halkbank" and not u.query:
+        match = re.fullmatch(r"/ilan-detay/(\d{1,20})", u.path)
+        return (match.group(1), f"https://{host}{u.path}") if match else None
     if bank_id in ("vakifbank", "vakif_leasing"):
         prefix = source.get("detail_prefix", "/vakifbank/ilan/")
         match = re.fullmatch(re.escape(prefix) + r"[A-Za-z0-9%_-]+-(\d+)/?", u.path)
@@ -289,6 +289,22 @@ def parse_catalogue(bank_id, html, now=None):
         if not canonical:
             continue
         source_text = " ".join(tile.text().split())
+        if bank_id == "ziraat" and "fiziki ihale" in fold(source_text):
+            # The source includes a hidden "time-up" template in every tile.
+            # Ignore that template only when an explicit future physical auction
+            # date proves that this record has not ended yet.
+            date_match = re.search(r"İHALE TARİHİ:\s*(\d{2}\.\d{2}\.\d{4})", source_text, re.I)
+            if date_match:
+                from datetime import timedelta
+                from zoneinfo import ZoneInfo
+                try:
+                    deadline = datetime.strptime(date_match.group(1), "%d.%m.%Y").replace(
+                        tzinfo=ZoneInfo("Europe/Istanbul")) + timedelta(days=1)
+                    if deadline <= (now or datetime.now(timezone.utc)):
+                        continue
+                    source_text = re.sub(r"İHALE SONA ERDİ", "", source_text, flags=re.I)
+                except ValueError:
+                    continue
         if re.search(r"ihale(?:si)? sona erdi|satildi|satisi tamamlandi|suresi doldu", fold(source_text)):
             continue
         type_node = tile.first(lambda n: n.has_class("type"))
@@ -382,7 +398,8 @@ def enrich_sale_phone(record):
     if "text/html" not in content_type.lower():
         raise SourceUnavailable("contact_not_html")
     root = Tree(html).root
-    heading = root.first(lambda n: n.tag == "h1")
+    heading = root.first(lambda n: n.tag == "h4" and n.has_class("heading")) \
+        if record["bank_id"] == "ziraat" else root.first(lambda n: n.tag == "h1")
     if not heading or fold(heading.text()) != fold(record["title"]):
         raise SourceUnavailable("contact_listing_mismatch")
     if record["bank_id"] in ("vakifbank", "vakif_leasing"):
@@ -441,7 +458,13 @@ def main():
         try:
             if source.get("paused"):
                 raise SourceUnavailable(source["paused"])
-            if bank_id in ("vakifbank", "vakif_leasing"):
+            if bank_id == "halkbank":
+                from public_bank_sources import collect_halk
+                drafts = collect_halk(sys.modules[__name__], args.max_items)
+            elif bank_id == "ziraat":
+                from public_bank_sources import collect_ziraat
+                drafts = collect_ziraat(sys.modules[__name__])
+            elif bank_id in ("vakifbank", "vakif_leasing"):
                 from intengo_catalogue import collect
                 drafts = collect(bank_id, sys.modules[__name__], args.max_items)
             elif source.get("adapter") == "leasing":
