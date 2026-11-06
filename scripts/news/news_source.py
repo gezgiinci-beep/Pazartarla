@@ -36,7 +36,7 @@ def download(url, allowed_prefix, limit=MAX_HTML, image=False, archive_year=None
         if not ipaddress.ip_address(record[4][0]).is_global:
             raise ValueError("Non-public source address rejected")
     req = request.Request(url, headers={"User-Agent": "PazarTarlaGazete/1.0 (editorial-draft-reader)"})
-    with request.build_opener(NoRedirect()).open(req, timeout=30) as response:
+    with request.build_opener(NoRedirect()).open(req, timeout=12) as response:
         mime = response.headers.get_content_type()
         allowed = {"image/jpeg", "image/png", "image/webp"} if image else {"text/html"}
         if feed_xml and not image:

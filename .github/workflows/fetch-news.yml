@@ -1,7 +1,7 @@
 name: PazarTarla - onay bekleyen haber taslakları
 on:
   schedule:
-    - cron: '25 5,17 * * *'
+    - cron: '25 */2 * * *'
   workflow_dispatch:
 permissions:
   contents: read
@@ -13,7 +13,7 @@ jobs:
   prepare-drafts:
     if: github.repository == 'gezgiinci-beep/Pazartarla' && github.ref == 'refs/heads/main' && vars.PAZARTARLA_NEWS_AUTOMATION_ENABLED == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     environment: gazette-automation
     steps:
       - name: Kaynağı al

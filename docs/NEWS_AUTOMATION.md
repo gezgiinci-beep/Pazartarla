@@ -61,10 +61,13 @@ Tarım/hayvancılık fuarları ile hal/toptan meyve-sebze resmî duyuruları da
 haber taslağıdır. Eski fuar yaklaşan etkinlik, eski hal fiyatı bugünkü fiyat
 gibi sunulmaz. Günlük fiyat tablosu kazınarak anlık fiyat hizmeti oluşturulmaz.
 
-Kaynaklar 12 saatlik dilimlerde dönen bir sırayla iç içe işlenir; tek bir akış
-bütün taslak yerlerini sürekli tüketmez. Çalışma başına üç, günlük toplam altı
-taslak sınırı değişmez. Daha çok kaynak, her haberi veya her gün altı haberi
-garanti etmez. `--check-sources` yapay zekâ ve veritabanı yazımı olmadan tarar.
+Kaynaklar iki saatlik dilimlerde dönen bir sırayla iç içe işlenir; tek bir akış
+bütün taslak yerlerini sürekli tüketmez. Günlük hedef 10 güncel taslaktır;
+çalışma başına en fazla 6 taslak ve 8 yeniden yazım girişimi yapılır. Sunucunun
+Türkiye takvim günü başına 20 kayıt güvenlik sınırı, günlük 10 hedefinden ayrıdır.
+Kaynak/ücretsiz Gemini kotası yetersizse eksik sayı raporlanır; kesin adet
+garantisi verilmez. `--check-sources` yapay zekâ ve veritabanı yazımı olmadan tarar.
+Güncel kaynak ve sınır ayrıntıları: `docs/NEWS_DAILY_TARGET.md`.
 Yeni kaynak eklemek için `scripts/news/sources.json`, izin belgesi, parser ve
 sunucu doğrulaması birlikte gözden geçirilmelidir; herhangi bir RSS adresini
 eklemek tam metni/fotoğrafları yeniden yayımlama izni vermez.
@@ -127,9 +130,10 @@ taklit etmez; kullanıcı hesabı yaratılmaz.
 
 ## Zamanlama ve sınırlar
 
-`.github/workflows/fetch-news.yml`: her gün 05:25 ve 17:25 UTC (İstanbul 08:25 ve
-20:25); GitHub yoğunluk nedeniyle zamanlamayı geciktirebilir.
-En çok 3 yeni taslak/çalıştırma, sunucuda toplam 6/son 24 saat.
+`.github/workflows/fetch-news.yml`: `25 */2 * * *` UTC, günde 12 tarama;
+GitHub yoğunluk nedeniyle zamanlamayı geciktirebilir.
+Son 72 saatte yayımlanmış içerikler değerlendirilir; hedefe ulaşınca yeni AI
+çağrısı yapılmaz. Sayım Europe/Istanbul takvim gününe göredir.
 `workflow_dispatch` ile elle çalıştırılabilir, yine aynı sınırlar uygulanır.
 Repo değişkeni `PAZARTARLA_NEWS_AUTOMATION_ENABLED` tam olarak `true` olmadıkça
 iş çalışmaz. Bu kapı ancak www'de doğrulanmış canlı API hazır olduktan sonra açılır.

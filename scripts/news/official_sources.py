@@ -6,7 +6,10 @@ import unicodedata
 from html import unescape
 from email.utils import parsedate_to_datetime
 import xml.etree.ElementTree as ET
-from urllib.parse import urljoin
+import json
+import sys
+from urllib import error
+from urllib.parse import urljoin, urlsplit, unquote
 
 VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"}
 MONTHS = {"ocak": 1, "şubat": 2, "mart": 3, "nisan": 4, "mayıs": 5, "haziran": 6,
@@ -18,7 +21,10 @@ AGRICULTURE = ("tarim", "ciftci", "hayvancil", "tohum", "fide", "fidan", "aricil
                "duve", "koyun", "keci", "besicilik", "yem destek", "yem bitki", "mera", "coban",
                "cig sut", "sut primi", "sut fiyat", "sut tesvik", "agroexpo", "growtech", "burtarim",
                "toptanci hal", "toptan meyve", "toptan sebze", "hal mudurlug", "hal esnafi",
-               "hal kayit sistemi", "hal duyuru", "yas meyve")
+               "hal kayit sistemi", "hal duyuru", "yas meyve", "misir", "tmo",
+               "ziraat", "seracilik", "genomik", "bitki sagligi", "pancar",
+               "patates", "domates", "narenciye", "findik", "ceviz", "turkseker",
+               "tarsim", "gida", "balikcilik", "kanatli", "yumurta")
 UNRELATED = ("emlak vergisi", "imar plani", "cenaze", "taziye", "personel alimi", "vefat",
              "ziyaret", "kutlama", "meclis kurulu", "sosyal destek kart")
 
@@ -187,14 +193,19 @@ class OfficialArticle(HTMLParser):
 
 def discover_official(source, download, validate, now):
     links = OfficialLinks(source, validate)
-    links.feed(download(source["archive_url"], source["archive_url"]).decode("utf-8", errors="replace"))
+    options = ({"limit": min(4_000_000, source["max_archive_bytes"])}
+               if source.get("max_archive_bytes") else {})
+    links.feed(download(source["archive_url"], source["archive_url"], **options).decode("utf-8", errors="replace"))
     if not links.urls:
         raise ValueError("Official archive article links missing; review source structure")
-    found = []
-    urls = links.urls
-    if source.get("agriculture_only"):
+    found, network_errors = [], 0
+    urls = [url for url in links.urls if url not in source.get("_known_urls", set())]
+    if source.get("agriculture_only") and source.get("organization_type") not in {
+        "agricultural_faculty", "agricultural_research"
+    }:
         # Prefer agricultural slugs without downloading every unrelated municipal article.
-        urls = [url for url in urls if relevant(source, links.labels.get(url, "") + " " + url)]
+        urls = [url for url in urls if relevant(
+            source, links.labels.get(url, "") + " " + unquote(urlsplit(url).path))]
     for url in urls[:source.get("max_article_reads", 12)]:
         try:
             article = read_official(source, url, download)
@@ -208,6 +219,12 @@ def discover_official(source, download, validate, now):
             found.append({"url": url, "published": article["published"], "_article": article})
         except ValueError:
             continue
+        except (error.URLError, OSError) as exc:
+            network_errors += 1
+            print(json.dumps({"source": source["id"], "result": "article_unavailable",
+                              "status": getattr(exc, "code", None)}), file=sys.stderr)
+    if network_errors and not found:
+        raise ValueError("Official article requests unavailable")
     return sorted(found, key=lambda item: item["published"], reverse=True)
 
 
@@ -244,10 +261,12 @@ def discover_feed(source, download, validate, now):
     except ET.ParseError as exc:
         raise ValueError("Malformed source feed") from exc
     found = []
-    for item in root.findall("./channel/item")[:20]:
+    for item in root.findall("./channel/item")[:60]:
         try:
             url = (item.findtext("link") or "").strip()
             source_url(source, url, validate)
+            if url in source.get("_known_urls", set()):
+                continue
             published = parsedate_to_datetime(item.findtext("pubDate") or "")
             if published.tzinfo is None:
                 raise ValueError("Feed publication timezone missing")
