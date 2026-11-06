@@ -1,0 +1,38 @@
+name: Banka tarım ilanları — yalnız özel taslak
+on:
+  schedule:
+    - cron: '35 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Veritabanına yazmadan kaynakları kontrol et
+        type: boolean
+        default: true
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: bank-listing-draft-import
+  cancel-in-progress: false
+jobs:
+  collect-private-drafts:
+    if: vars.PAZARTARLA_BANK_IMPORT_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    environment: bank-listing-import
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Sınıflandırma ve kaynak güvenliği testleri
+        run: python -B -m unittest discover -s tests/bank_listings -p 'test_*.py'
+      - name: Resmî kataloglardan özel ilan taslakları
+        env:
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            python -B scripts/bank_listings.py --dry-run --max-items 12
+          else
+            python -B scripts/bank_listings.py --max-items 12
+          fi
