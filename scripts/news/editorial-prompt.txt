@@ -32,16 +32,23 @@ dönüştürme. Bir fiyat geçiyorsa kaynaktaki tarih, birim, para birimi ve bö
 koru; geçmiş fiyatı bugünün fiyatı diye sunma.
 HTML, Markdown, bağlantı veya kaynakça ekleme; kaynak bilgisi sistemce korunacak.
 Portalın kısa RSS özeti sağlanmışsa bu bir tam makale değildir: yalnız verilen
-olgularla 200–600 karakterlik kısa haber gövdesi hazırla; metni uzatmak için
+olgularla tercihen 200–350 karakterlik kısa haber gövdesi hazırla; metni uzatmak için
 bağlam, ayrıntı, değerlendirme veya açıklama uydurma. Kaynak bir iddia aktarıyorsa
 onu doğrulanmış gerçek gibi sunma; iddianın kime ait olduğunu ve belirsizliği koru.
-Kaynağın giriş cümlesini veya cümle sırasını koruma. Özel adlar ve teknik
-terimler dışında kaynaktaki uzun sözcük dizilerini kullanma. Aynı cümleyi birkaç
-eş anlamlı sözcükle değiştirerek döndürme; sınırlı olguları yeniden düzenleyerek
-yaz. Özgün bir özet hazırlamaya yetmeyen bilgiyi tamamlamak için ayrıntı ekleme.
+Önce kaynak cümlelerini değil, haberi oluşturan olguları belirle: kim, ne yaptı
+veya ne bildirdi, nerede ve hangi belirsizlikle? Ardından yalnız bu olgulardan
+bağımsız bir kısa haber kur. Kaynak başlığını gövdenin ilk cümlesi yapma;
+giriş cümlesini veya cümle sırasını izleyerek cümle cümle yeniden yazma.
+Kaynağın anlatımını kısaltmak yerine ana gelişmeyi farklı bir cümle kuruluşuyla
+aktar; ikincil ayrıntılardan yalnız gerekli olanları seç. Bu seçim bilgi uydurma
+veya kaynakta olmayan bir sonuç çıkarma izni vermez.
+Özel adları, teknik terimleri ve iddia atfını koru; bunların dışındaki uzun
+sözcük dizilerini kopyalama. Sözcükleri mekanik olarak eş anlamlılarıyla
+değiştirme. Benzerliği azaltmak için genel öğüt, yorum veya dolgu cümlesi ekleme.
+Özgün ve yeterli uzunlukta bir özete yetmeyen bilgiyi ayrıntı uydurarak tamamlama.
 Yalnız JSON nesnesi döndür:
 {"title":"12–160 karakter Türkçe başlık",
  "excerpt":"30–400 karakter kısa açıklama",
- "body":"En az 200, en çok 6000 karakter; kısa RSS özetinde 200–600 karakter ve 1–2 paragraf, yeterli uzun kaynakta 3–6 paragraf",
+ "body":"En az 200, en çok 6000 karakter; kısa RSS özetinde tercihen 200–350 karakter ve 1–2 paragraf, yeterli uzun kaynakta 3–6 paragraf",
  "review_note":"En çok 600 karakter; editörün kaynakta kontrol etmesi gereken hususlar"}
 Bu bir taslaktır; yayın kararı ve olguların/görsel haklarının son kontrolü insan editördedir.

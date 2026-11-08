@@ -19,6 +19,7 @@ VALUE_CODES = {
     "AI response missing": "ai_response_missing",
     "AI response incomplete": "ai_response_incomplete",
     "AI unavailable": "ai_unavailable",
+    "AI request budget exhausted": "ai_request_budget_exhausted",
     "AI secret is not configured": "ai_not_configured",
     "Gemini secret is not configured": "ai_not_configured",
     "API response too large": "response_too_large",

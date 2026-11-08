@@ -32,6 +32,16 @@ FRESH_HOURS = 72
 RUN_BUDGET_SECONDS = 1080
 AI_RETRY_DELAYS = (5, 10)
 RETRYABLE_AI_STATUSES = frozenset({500, 502, 503, 504})
+SIMILARITY_RETRY_INSTRUCTION = (
+    "\nÖnceki deneme kaynak anlatımına fazla benzediği için kabul edilmedi. "
+    "Önceki metni düzeltmeye veya sözcüklerini değiştirmeye çalışma. "
+    "Yalnız girdideki doğrulanabilir olgulardan, farklı bir giriş ve cümle kuruluşuyla "
+    "yeni ve kısa bir haber özeti yaz. Kaynak başlığını gövdeye kopyalama. "
+    "Özel adları, sayıları, coğrafyayı, iddia atfını ve belirsizlikleri koru. "
+    "Benzerliği azaltmak için yeni bilgi, dolgu, tavsiye veya genel yorum ekleme. "
+    "Kısa RSS gövdesinde tercihen 200–350 karakter kullan; JSON alanları ve "
+    "bütün kaynak/sayı/içerik kuralları geçerlidir."
+)
 NUMBER_TOKEN = re.compile(r"\d+(?:[.,]\d+)*(?:[ \u00a0\u202f]\d{3}(?!\d))*")
 
 
@@ -128,7 +138,7 @@ def validate_rewrite(result, original, original_language="en"):
     return {key: result[key].strip() for key in limits}
 
 
-def rewrite(article, source, item):
+def rewrite(article, source, item, *, reserve_extra_attempt=None):
     key = os.environ.get(AI_SECRET)
     if not key:
         raise ValueError("AI secret is not configured")
@@ -156,7 +166,12 @@ def rewrite(article, source, item):
             },
         },
     }
+    similarity_retried = False
     for attempt in range(len(AI_RETRY_DELAYS) + 1):
+        # The runner reserves the initial call; every extra HTTP request shares
+        # the same per-run budget, including transient-error and similarity retries.
+        if attempt and reserve_extra_attempt is not None:
+            reserve_extra_attempt()
         try:
             # No key in URLs/logs, no paid tools, alternate model or provider fallback.
             # Free-vs-paid is controlled by the key's Google project, not by this request.
@@ -182,9 +197,19 @@ def rewrite(article, source, item):
                                 and not part.get("thought") and isinstance(part.get("text"), str))
             if not generated or len(generated) > 20000:
                 raise ValueError("AI response invalid")
-            return validate_rewrite(json.loads(generated),
-                                    article["title"] + "\n" + article["body"] + "\n" + item["published"].date().isoformat(),
-                                    original_language=source.get("language", "en"))
+            try:
+                return validate_rewrite(json.loads(generated),
+                                        article["title"] + "\n" + article["body"] + "\n" + item["published"].date().isoformat(),
+                                        original_language=source.get("language", "en"))
+            except ValueError as exc:
+                if (str(exc) != "AI output too similar to source" or similarity_retried
+                        or attempt == len(AI_RETRY_DELAYS)):
+                    raise
+                similarity_retried = True
+                # Do not include the rejected text or raw error in a prompt/log.
+                payload["systemInstruction"] = {"parts": [{"text": prompt + SIMILARITY_RETRY_INSTRUCTION}]}
+                print("RETRY: source similarity rejected; one factual rewrite within the existing request budget.",
+                      file=sys.stderr)
         except error.HTTPError as exc:
             # A quota/billing/auth error ends this run; never upgrade billing or retry
             # against a different (possibly paid) model/provider.
@@ -271,6 +296,11 @@ def run(check_sources=False, source_ids=None):
                         "reason": "target_reached" if daily_before >= DAILY_TARGET else "capacity_reached"})
         return 0
     created, duplicate, skipped, failed, candidates, ai_attempts = 0, 0, 0, 0, 0, 0
+    def reserve_extra_attempt():
+        nonlocal ai_attempts
+        if ai_attempts >= MAX_AI_ATTEMPTS_PER_RUN:
+            raise ValueError("AI request budget exhausted")
+        ai_attempts += 1
     known = set(progress.get("recent_urls", []))
     streams, failed = collect_sources(sources, known, now)
     seen = set(known)
@@ -316,7 +346,7 @@ def run(check_sources=False, source_ids=None):
                     continue
                 phase = "ai"
                 ai_attempts += 1
-                rewritten = rewrite(article, source, item)
+                rewritten = rewrite(article, source, item, reserve_extra_attempt=reserve_extra_attempt)
                 payload = {**rewritten, "source_id": source["id"], "source_url": item["url"],
                            "source_published_at": item["published"].isoformat(), "ai_model": MODEL}
                 if not generated_cover:
