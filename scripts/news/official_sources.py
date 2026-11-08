@@ -27,6 +27,13 @@ AGRICULTURE = ("tarim", "ciftci", "hayvancil", "tohum", "fide", "fidan", "aricil
                "tarsim", "gida", "balikcilik", "kanatli", "yumurta")
 UNRELATED = ("emlak vergisi", "imar plani", "cenaze", "taziye", "personel alimi", "vefat",
              "ziyaret", "kutlama", "meclis kurulu", "sosyal destek kart")
+# Most entries are intentional agricultural stems. "Mera" is ambiguous:
+# prefix matching also accepts merak, meraklı, Meral, Meram and merasim.
+# Keep the pasture noun and its normal inflections, not those unrelated words.
+TERM_PATTERNS = tuple(re.compile(
+    r"(?<!\w)mera(?:lar\w*|nin|ya|yi|da|dan|si(?:nin|ni|na|nda|ndan|yla)?)?(?!\w)"
+    if term == "mera" else r"(?<!\w)" + re.escape(term)
+) for term in AGRICULTURE)
 
 
 def folded(text):
@@ -42,7 +49,7 @@ def relevant(source, title, body=""):
            for term in ("sahipsiz hayvan", "sokak hayvan", "kedi", "kopek")):
         return False
     return not any(term in heading for term in UNRELATED) and any(
-        re.search(r"(?<!\w)" + re.escape(term), text) for term in AGRICULTURE)
+        pattern.search(text) for pattern in TERM_PATTERNS)
 
 
 def matches(tag, attrs, selector):
