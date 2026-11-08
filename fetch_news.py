@@ -18,6 +18,7 @@ from urllib import request, parse, error
 
 sys.path.insert(0, str(Path(__file__).parent / "scripts" / "news"))
 from news_source import discover, read_article, download, MAX_IMAGE, NoRedirect  # noqa: E402
+from news_diagnostics import DraftValidationError, failure_details  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent
 ENDPOINT = "https://www.pazartarla.com.tr/api/gazette-import"
@@ -100,8 +101,14 @@ def validate_rewrite(result, original, original_language="en"):
         raise ValueError("AI output has unexpected fields")
     for key, (minimum, maximum) in limits.items():
         value = result.get(key)
-        if not isinstance(value, str) or not minimum <= len(value.strip()) <= maximum or re.search(r"[<>]|\x00|https?://", value):
-            raise ValueError("AI output validation failed")
+        if not isinstance(value, str):
+            raise DraftValidationError("ai_field_type", key)
+        if len(value.strip()) < minimum:
+            raise DraftValidationError("ai_field_too_short", key)
+        if len(value.strip()) > maximum:
+            raise DraftValidationError("ai_field_too_long", key)
+        if re.search(r"[<>]|\x00|https?://", value):
+            raise DraftValidationError("ai_field_unsafe_text", key)
     # Reject near-verbatim text. This is only a guard, not a legal/SEO originality guarantee.
     left = re.sub(r"\W+", " ", original.casefold()).strip()
     right = re.sub(r"\W+", " ", result["body"].casefold()).strip()
@@ -230,9 +237,10 @@ def collect_sources(sources, known, now):
             source = futures[future]
             try:
                 collected[source["id"]] = future.result()
-            except (ValueError, KeyError, error.URLError, OSError):
+            except (ValueError, KeyError, error.URLError, OSError) as exc:
                 failed += 1
-                print(json.dumps({"source": source["id"], "result": "discovery_failed"}), file=sys.stderr)
+                print(json.dumps({"source": source["id"], "result": "discovery_failed",
+                                  **failure_details("discovery", exc)}), file=sys.stderr)
     return [[(source, item) for item in collected.get(source["id"], [])]
             for source in ordered], failed
 
@@ -296,9 +304,10 @@ def run(check_sources=False, source_ids=None):
                     article = read_article(source, item)
                     generated_cover = source.get("image_policy") == "generated-editorial-cover"
                     image = None if generated_cover else download(article["image"]["url"], source["image_prefix"], MAX_IMAGE, image=True)
-                except ValueError:
+                except ValueError as exc:
                     skipped += 1
-                    print(json.dumps({"source": source["id"], "result": "skipped_unusable_text_or_unlicensed_photo"}))
+                    print(json.dumps({"source": source["id"], "result": "skipped_unusable_text_or_unlicensed_photo",
+                                      **failure_details("source", exc)}))
                     continue
                 if check_sources:
                     print(json.dumps({"source": source["id"], "url": item["url"], "date": item["published"].isoformat(),
@@ -322,16 +331,20 @@ def run(check_sources=False, source_ids=None):
             except error.HTTPError as exc:
                 # Do not log headers/provider bodies: they can contain credentials or private data.
                 if phase != "source" and exc.code in {401, 402, 403, 404, 429}:
+                    print(json.dumps({"source": source["id"], "result": "processing_stopped",
+                                      **failure_details(phase, exc)}), file=sys.stderr)
                     print(f"STOP: authorization, model access or quota unavailable (HTTP {exc.code}); no paid fallback.", file=sys.stderr)
                     record_summary({"day": day, "created_drafts": created, "daily_total": daily_before + created,
                                     "shortfall": max(0, DAILY_TARGET - daily_before - created),
                                     "failed": failed + 1, "reason": "provider_or_importer_limit"})
                     return 1
-                print(json.dumps({"source": source["id"], "result": "http_error", "status": exc.code}), file=sys.stderr)
+                print(json.dumps({"source": source["id"], "result": "http_error",
+                                  **failure_details(phase, exc)}), file=sys.stderr)
                 failed += 1
-            except (ValueError, KeyError, error.URLError, OSError):
+            except (ValueError, KeyError, error.URLError, OSError) as exc:
                 failed += 1
-                print(json.dumps({"source": source["id"], "result": "processing_failed"}), file=sys.stderr)
+                print(json.dumps({"source": source["id"], "result": "processing_failed",
+                                  **failure_details(phase, exc)}), file=sys.stderr)
         if (not check_sources and (created >= run_limit or ai_attempts >= MAX_AI_ATTEMPTS_PER_RUN)) or time.monotonic() - started >= RUN_BUDGET_SECONDS:
             break
     record_summary({"day": day, "created_drafts": created, "duplicates": duplicate, "skipped": skipped,
@@ -348,6 +361,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     try:
         sys.exit(run(args.check_sources, args.source))
-    except (ValueError, KeyError, error.URLError, OSError):
+    except (ValueError, KeyError, error.URLError, OSError) as exc:
+        print(json.dumps({"result": "startup_failed", **failure_details("startup", exc)}), file=sys.stderr)
         print("STOP: automation configuration or source is unavailable; no publication was attempted.", file=sys.stderr)
         sys.exit(1)
