@@ -20,6 +20,8 @@ from urllib.robotparser import RobotFileParser
 
 USER_AGENT = "PazarTarlaBankImporter/1.0"
 MAX_BYTES = 2_000_000
+MAX_IMPORT_ATTEMPTS = 120
+MAX_SCAN_SECONDS = 8 * 60
 SOURCES = {
     "ziraat": {
         "url": "https://e-satis.ziraatbank.com.tr/gm-index.intengo?activeTab=newAdditions",
@@ -440,6 +442,7 @@ def extract_property_facts(root, kind):
 
 
 def main():
+    deadline = time.monotonic() + MAX_SCAN_SECONDS
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--bank", choices=list(SOURCES))
@@ -456,6 +459,8 @@ def main():
     for bank_id in ([args.bank] if args.bank else SOURCES):
         source = SOURCES[bank_id]
         try:
+            if time.monotonic() >= deadline:
+                raise SourceUnavailable("scan_time_budget_exhausted")
             if source.get("paused"):
                 raise SourceUnavailable(source["paused"])
             if bank_id == "halkbank":
@@ -485,14 +490,20 @@ def main():
         except Exception as exc:
             reason = str(exc) if isinstance(exc, SourceUnavailable) else type(exc).__name__
             summary["unavailable_sources"].append({"bank": bank_id, "reason": reason})
-    # Round robin: a full bank catalogue must not starve the leasing sources.
-    while queues and summary["accepted"] < args.max_items and summary["attempted"] < args.max_items * 4:
+    # The old global 4x budget was exhausted by reviewed records even when
+    # other banks still had unexamined candidates. Preserve the per-source
+    # allowance, with hard request/time ceilings for the ten-minute runner.
+    attempt_limit = min(MAX_IMPORT_ATTEMPTS, args.max_items * 4 * len(queues))
+    summary["attempt_limit"] = attempt_limit
+    while (queues and summary["accepted"] < args.max_items
+           and summary["attempted"] < attempt_limit and time.monotonic() < deadline):
         remaining = []
         for queue in queues:
             draft = next(queue, None)
             if draft is None:
                 continue
-            if summary["accepted"] >= args.max_items or summary["attempted"] >= args.max_items * 4:
+            if (summary["accepted"] >= args.max_items or summary["attempted"] >= attempt_limit
+                    or time.monotonic() >= deadline):
                 break
             summary["attempted"] += 1
             if "contact_phone" not in draft:
@@ -517,6 +528,9 @@ def main():
             remaining.append(queue)
         queues = remaining
     summary["shortfall"] = max(0, args.max_items - summary["accepted"])
+    summary["remaining_candidates"] = max(0, summary["candidates"] - summary["attempted"])
+    summary["scan_limit_reached"] = bool(summary["shortfall"] and summary["remaining_candidates"])
+    summary["time_limit_reached"] = time.monotonic() >= deadline
     print(json.dumps(summary, ensure_ascii=False))
     if len(summary["unavailable_sources"]) == (1 if args.bank else len(SOURCES)):
         return 1

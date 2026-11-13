@@ -80,5 +80,80 @@ class CatalogueTests(unittest.TestCase):
         self.assertEqual(importer.call_count, 12)
 
 
+class MultiSourceScanBudgetTests(unittest.TestCase):
+    def run_scan(self, counts, statuses=None, clock=None):
+        import json
+        import sys
+        from contextlib import ExitStack
+        from types import SimpleNamespace
+
+        def records(bank_id):
+            return [{**row(i + 1000), "bank_id": bank_id, "contact_phone": "",
+                     "external_id": str(i)} for i in range(counts.get(bank_id, 0))]
+
+        sources = {name: {} for name in counts}
+        public = SimpleNamespace(
+            collect_halk=lambda *args: records("halkbank"),
+            collect_ziraat=lambda *args: records("ziraat"))
+        calls = []
+
+        def imported(*args):
+            calls.append(args[0]["external_id"])
+            return next(statuses) if statuses is not None else "transferred"
+
+        with ExitStack() as stack:
+            stack.enter_context(patch.dict(sys.modules, {
+                "bank_listings": bank, "intengo_catalogue": catalogue,
+                "public_bank_sources": public}))
+            stack.enter_context(patch.dict(bank.SOURCES, sources, clear=True))
+            stack.enter_context(patch.object(sys, "argv", ["bank_listings.py"]))
+            stack.enter_context(patch.object(catalogue, "collect",
+                side_effect=lambda bank_id, *args: records(bank_id)))
+            stack.enter_context(patch.object(bank, "oidc_token", return_value="test-only"))
+            stack.enter_context(patch.object(bank, "import_draft", side_effect=imported))
+            stack.enter_context(patch.object(bank.time, "sleep"))
+            if clock is not None:
+                stack.enter_context(patch.object(bank.time, "monotonic", side_effect=clock))
+            output = stack.enter_context(patch("builtins.print"))
+            result = bank.main()
+        return result, json.loads(output.call_args.args[0]), calls
+
+    def test_49_candidates_continue_after_40_reviewed_records(self):
+        result, summary, calls = self.run_scan(
+            {"vakifbank": 40, "halkbank": 9},
+            iter(["transferred"] * 40 + ["draft"] * 9))
+        self.assertEqual(result, 0)
+        self.assertEqual(len(calls), 49)
+        self.assertEqual(summary["skipped_reviewed"], 40)
+        self.assertEqual(summary["accepted"], 9)
+        self.assertEqual(summary["shortfall"], 1)
+        self.assertEqual(summary["remaining_candidates"], 0)
+        self.assertFalse(summary["scan_limit_reached"])
+
+    def test_all_reviewed_records_are_not_counted_as_new_drafts(self):
+        _, summary, calls = self.run_scan({"vakifbank": 40, "halkbank": 9})
+        self.assertEqual(len(calls), 49)
+        self.assertEqual(summary["accepted"], 0)
+        self.assertEqual(summary["shortfall"], 10)
+        self.assertEqual(summary["remaining_candidates"], 0)
+        self.assertFalse(summary["scan_limit_reached"])
+
+    def test_large_multi_source_scan_keeps_hard_request_limit(self):
+        _, summary, calls = self.run_scan(
+            {"vakifbank": 100, "halkbank": 100, "ziraat": 100})
+        self.assertEqual(len(calls), 120)
+        self.assertEqual(summary["attempt_limit"], 120)
+        self.assertEqual(summary["remaining_candidates"], 180)
+        self.assertTrue(summary["scan_limit_reached"])
+
+    def test_elapsed_time_stops_before_importing_another_candidate(self):
+        _, summary, calls = self.run_scan(
+            {"vakifbank": 40, "halkbank": 9},
+            clock=iter([0, 0, 0, 481, 481]))
+        self.assertEqual(len(calls), 0)
+        self.assertEqual(summary["remaining_candidates"], 49)
+        self.assertTrue(summary["time_limit_reached"])
+
+
 if __name__ == "__main__":
     unittest.main()
