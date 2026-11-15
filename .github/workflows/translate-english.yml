@@ -1,0 +1,37 @@
+name: PazarTarla - automatic English public content
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: pazartarla-public-english
+  cancel-in-progress: false
+jobs:
+  translate-public:
+    if: github.repository == 'gezgiinci-beep/Pazartarla' && github.ref == 'refs/heads/main' && vars.PAZARTARLA_ENGLISH_AUTOMATION_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+      - name: Install pinned translation-only dependencies
+        working-directory: automation/english
+        run: npm ci --ignore-scripts
+      - name: Verify isolated worker
+        working-directory: automation/english
+        run: node --test site-english/production/production.test.mjs
+      - name: Translate only published, changed public content
+        working-directory: automation/english
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            node site-english/production/worker.mjs --verify-connection
+          else
+            node site-english/production/worker.mjs
+          fi

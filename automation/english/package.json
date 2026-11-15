@@ -1,0 +1,12 @@
+{
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "22.x"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "4.3.2",
+    "typescript": "5.9.3",
+    "parse5": "8.0.0"
+  }
+}
