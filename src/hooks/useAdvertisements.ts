@@ -31,8 +31,8 @@ export function useAdvertisements(
       const rows = await readAds(url, await headers());
       if (mounted.current && sequence.current === n) { setItems(rows); setError(''); }
     } catch (e) {
-      if (mounted.current && sequence.current === n) setError('Reklam alanları şu an güncelleniyor, lütfen birazdan tekrar deneyin. ' + explain(e));
-    } finally {
+      if (mounted.current && sequence.current === n) setError('Reklam alanları şu an güncelleniyor, lütfen birazdan tekrar deneyin.');
+    }
       if (mounted.current && sequence.current === n) setLoading(false);
     }
   }, [url, headers]);
@@ -164,7 +164,7 @@ export function useAdvertisements(
           // Keep the pending identity so retry cannot create a duplicate after an ambiguous response.
         }
       }
-      if (mounted.current) setSaveError('Reklam kaydedilemedi. ' + explain(e));
+      if (mounted.current) setSaveError('Reklam kaydedilemedi, lütfen birazdan tekrar deneyin.');
       if (mounted.current && replacement.current) setWarning('Görsel kaydının sonucu belirsiz. Eski dosya silinmedi; aynı taslak ve dosyayla yeniden deneyin.');
       if (e instanceof AdConflictError) { locked.current = false; void refresh(); }
       return null;
@@ -186,7 +186,7 @@ export function useAdvertisements(
       await removeFile(ad.media_path);
       return true;
     } catch (e) {
-      if (mounted.current) setSaveError('Reklam silinemedi. ' + explain(e));
+      if (mounted.current) setSaveError('Reklam silinemedi, lütfen birazdan tekrar deneyin.');
       return false;
     } finally {
       locked.current = false;
@@ -205,7 +205,7 @@ export function useAdvertisements(
         else cleanup.current = cleanup.current.filter(p => p !== path);
       }
       if (!cleanup.current.length) setWarning('');
-    } catch (e) { setWarning('Dosya temizlenemedi. ' + explain(e)); }
+    } catch { setWarning('Dosya temizlenemedi, lütfen birazdan tekrar deneyin.'); }
     finally { locked.current = false; if (mounted.current) setBusy(false); }
   };
   return { items, loading, busy, error, saveError, success, warning, canCleanup: cleanup.current.length > 0, refresh, save, remove, retryCleanup, mediaUrl };
