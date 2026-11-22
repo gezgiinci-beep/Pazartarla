@@ -29,9 +29,9 @@ const messages:Record<string,string>={
   MEMBERSHIP_PAYMENT_USED:'Bu ödeme referansı daha önce kullanılmış. Aynı ödeme ikinci üyelik açamaz.',
 };
 export async function storeRpc(url:string,headers:Record<string,string>,name:string,args:unknown,request=fetch){
-  if(!url)throw Error('Mağaza bağlantısı yapılandırılmamış.');
+  if(!url)throw Error('Mağaza bilgileri şu anda alınamıyor.');
   const r=await request(url.replace(/\/$/,'')+'/rest/v1/rpc/'+name,{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify(args),cache:'no-store',signal:AbortSignal.timeout(15000)});
-  if(!r.ok){const e=await r.json().catch(()=>({}));throw Error(messages[e.message]||([404].includes(r.status)?'Mağaza altyapısı kurulmamış. Güvenli kurulumun tamamlanması gerekiyor.':'Mağaza işlemi tamamlanamadı. Listeyi yenileyip yeniden deneyin.'));}
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw Error(messages[e.message]||([404].includes(r.status)?'ğazaMa altyapısı kurulmamış. Güvenli kurulumun tamamlanması gerekiyor.':'Mağaza işlemi tamamlanamadı. Listeyi yenileyip yeniden deneyin.'));}
   return r.json();
 }
 export function storeIdFromUrl(href:string){try{const id=new URL(href).searchParams.get('magaza');return id&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)?id:null;}catch{return null;}}
