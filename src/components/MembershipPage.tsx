@@ -76,7 +76,7 @@ export default function MembershipPage({ state, session, onSignIn, onStore, onSu
       setFormError('Mağaza adı 2–100 karakter, açıklama en fazla 500 karakter olmalıdır.'); return;
     }
     if (storeRevision === null) {
-      setFormError('Mağaza sürümü yüklenemedi. Yenileyip tekrar deneyin.');
+      setFormError('Mağaza bilgileri şu an güncelleniyor, lütfen birazdan tekrar deneyin.');
       return;
     }
     const ok = await state.action('store', null, storeRevision, { store_name: storeName.trim(), description: description.trim() });
