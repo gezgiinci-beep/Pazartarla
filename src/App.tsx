@@ -289,7 +289,7 @@ export default function App() {
       } catch (error) {
         console.error('İlanlar sunucudan alınamadı:', error);
         setListings([]);
-        setListingsError('İlanlar sunucudan yüklenemedi. Lütfen yeniden deneyin.');
+        setListingsError('İlanlar şu an güncelleniyor, lütfen birazdan tekrar deneyin.');
         return false;
       } finally {
         setListingsLoading(false);
