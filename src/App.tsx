@@ -525,7 +525,7 @@ export default function App() {
       if (submissionSaving) return;
       setSubmissionError('');
       if (!siteSettings.settings || siteSettings.loading || siteSettings.loadError) {
-        setSubmissionError('Kategori ayarları yüklenemedi. Önce site ayarlarını yeniden yükleyin.');
+        setSubmissionError('Kategori bilgileri şu an güncelleniyor, lütfen birazdan tekrar deneyin.');
         return;
       }
       if (!submissionAccount.canSubmit) {

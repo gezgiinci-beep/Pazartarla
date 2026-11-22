@@ -33,7 +33,7 @@ export function useSiteSettings(url: string, key: string, getAdminHeaders: () =>
       return row;
     } catch (error) {
       if (mounted.current && id === requestId.current) {
-        setLoadError(message(error, 'Site ayarları yüklenemedi. '));
+        setLoadError(message(error, 'Site ayarları şu an güncelleniyor, lütfen birazdan tekrar deneyin. '));
       }
       return null;
     } finally {
