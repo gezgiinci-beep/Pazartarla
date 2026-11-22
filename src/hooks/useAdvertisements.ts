@@ -34,7 +34,7 @@ export function useAdvertisements(
       if (mounted.current && sequence.current === n) setError('Reklam alanları şu an güncelleniyor, lütfen birazdan tekrar deneyin.');
     }
       if (mounted.current && sequence.current === n) setLoading(false);
-  ), [url, headers]);
+ , [url, headers]);
   useEffect(() => {
     mounted.current = true;
     ++sequence.current;
