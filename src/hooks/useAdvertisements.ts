@@ -31,7 +31,7 @@ export function useAdvertisements(
       const rows = await readAds(url, await headers());
       if (mounted.current && sequence.current === n) { setItems(rows); setError(''); }
     } catch (e) {
-      if (mounted.current && sequence.current === n) setError('Reklamlar yüklenemedi. ' + explain(e));
+      if (mounted.current && sequence.current === n) setError('Reklam alanları şu an güncelleniyor, lütfen birazdan tekrar deneyin. ' + explain(e));
     } finally {
       if (mounted.current && sequence.current === n) setLoading(false);
     }
